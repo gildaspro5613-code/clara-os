@@ -1,0 +1,46 @@
+/**
+ * ============================================
+ * CLARA OS
+ * Core Module
+ * --------------------------------------------
+ * File : orchestrator.ts
+ * Responsibility :
+ * Coordinates Clara's complete reasoning cycle.
+ * ============================================
+ */
+
+import { Event } from "../types";
+
+import { buildContext } from "../brain/context";
+import { loadMemory } from "../brain/memory";
+import { understand } from "../brain/reasoning";
+import { prioritize } from "../brain/priorities";
+import { plan } from "../brain/planner";
+import { recommend } from "../brain/recommendations";
+
+/**
+ * Main orchestration pipeline.
+ * Executes one complete reasoning cycle.
+ */
+export async function orchestrate(event: Event): Promise<void> {
+  // 1. Build working context
+  const context = await buildContext(event);
+
+  // 2. Load Clara's memory
+  const memory = await loadMemory();
+
+  // 3. Understand the current situation
+  const understanding = await understand(context, memory);
+
+  // 4. Determine priorities
+  const priorities = await prioritize(understanding);
+
+  // 5. Build an action plan
+  const planning = await plan(priorities);
+
+  // 6. Produce recommendations
+  const recommendations = await recommend(planning);
+
+  // TODO:
+  // Dispatch recommendations to Clara.
+}
