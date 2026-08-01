@@ -5,12 +5,14 @@
  * --------------------------------------------
  * File : brain.ts
  * Responsibility :
- * Public entry point for Clara's Brain.
- * Executes one complete reasoning cycle.
+ * Main orchestration of Clara's Brain.
  * ============================================
  */
 
-import { Event, Recommendation } from "../../types";
+import {
+  Event,
+  Recommendation,
+} from "@/types";
 
 import { buildContext } from "./context";
 import { loadMemory } from "./memory";
@@ -20,26 +22,26 @@ import { plan } from "./planners";
 import { recommend } from "./recommendations";
 
 /**
- * Executes one complete reasoning cycle.
+ * Execute the complete Brain pipeline.
  */
-export async function runBrain(
-  event: Event
-): Promise<Recommendation[]> {
-  // Build working context
-  const context = await buildContext(event);
+export function runBrain(event: Event): Recommendation {
 
-  // Load Clara's memory
-  const memory = await loadMemory();
+  const context = buildContext(event);
 
-  // Understand the current situation
-  const understanding = await reasoning(context, memory);
+  const memory = loadMemory(context);
 
-  // Determine priorities
-  const priorities = await prioritize(understanding);
+  const understanding = reasoning(
+    context,
+    memory
+  );
 
-  // Build an action plan
-  const planning = await plan(priorities);
+  const decision = prioritize(
+    understanding
+  );
 
-  // Produce recommendations
-  return await recommend(planning);
+  // Execution plan generated for future execution.
+  // It is intentionally kept although not yet consumed.
+  plan(decision);
+
+  return recommend(decision);
 }

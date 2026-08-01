@@ -1,34 +1,34 @@
-// src/lib/brain/context.ts
+/**
+ * ============================================
+ * CLARA OS
+ * Brain Module
+ * --------------------------------------------
+ * File : context.ts
+ * Responsibility :
+ * Builds the execution context from an event.
+ * ============================================
+ */
 
-import { BrainContext } from "./types";
+import { Context, Event } from "@/types";
 
 /**
- * Construit le contexte d'une requête utilisateur.
+ * Build a processing context from an incoming event.
  */
-export function buildContext(
-  input: string,
-  options?: {
-    userId?: string;
-    sessionId?: string;
-    metadata?: Record<string, unknown>;
-  }
-): BrainContext {
+export function buildContext(event: Event): Context {
   return {
-    userId: options?.userId ?? "anonymous",
-    sessionId: options?.sessionId ?? crypto.randomUUID(),
-    input: input.trim(),
-    timestamp: new Date(),
-    metadata: options?.metadata,
+    event,
+    now: new Date(),
+    metadata: {},
   };
 }
 
 /**
- * Retourne une copie enrichie du contexte.
+ * Add additional metadata to an existing context.
  */
 export function enrichContext(
-  context: BrainContext,
+  context: Context,
   metadata: Record<string, unknown>
-): BrainContext {
+): Context {
   return {
     ...context,
     metadata: {
@@ -39,12 +39,12 @@ export function enrichContext(
 }
 
 /**
- * Vérifie qu'un contexte est exploitable.
+ * Validate that a context contains the minimum
+ * information required by the Brain.
  */
-export function isValidContext(context: BrainContext): boolean {
+export function isValidContext(context: Context): boolean {
   return (
-    context.input.length > 0 &&
-    context.userId.length > 0 &&
-    context.sessionId.length > 0
+    context.event !== undefined &&
+    context.now instanceof Date
   );
 }

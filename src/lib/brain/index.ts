@@ -19,14 +19,4 @@ export { plan } from "./planners";
 export { recommend } from "./recommendations";
 export { buildDashboard } from "./dashboard";
 
-export type {
-  Context,
-  Event,
-  Memory,
-  Understanding,
-  Priority,
-  MissionPlan,
-  Recommendations,
-} from "../types";
-
- 
+export type { BrainDashboard } from "./dashboard";

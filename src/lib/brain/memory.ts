@@ -1,14 +1,27 @@
-// src/lib/brain/memory.ts
+/**
+ * ============================================
+ * CLARA OS
+ * Brain Module
+ * --------------------------------------------
+ * File : memory.ts
+ * Responsibility :
+ * Loads the memory available to the Brain.
+ * ============================================
+ */
 
-import { BrainMemory } from "./types";
+import { Context, Memory } from "@/types";
 
 /**
- * Charge la mémoire du Brain.
+ * Load the memory associated with the current context.
+ *
+ * This is the first implementation of Clara's Brain.
+ * It returns an empty memory that will later be
+ * connected to the Memory module.
  */
-export async function loadMemory(): Promise<BrainMemory> {
+export function loadMemory(_context: Context): Memory {
   return {
     shortTerm: [],
     longTerm: [],
-    facts: {},
+    facts: [],
   };
 }

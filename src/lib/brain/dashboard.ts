@@ -5,80 +5,49 @@
  * --------------------------------------------
  * File : dashboard.ts
  * Responsibility :
- * Builds the Brain Dashboard from the
- * current reasoning cycle.
+ * Build a dashboard view of the current
+ * Brain execution.
  * ============================================
  */
 
-import type { Priority } from "./priorities";
-import type { MissionPlan } from "./planners";
-import type { Recommendation } from "./recommendations";
+import {
+  Context,
+  Memory,
+  Understanding,
+  Decision,
+  Task,
+  Recommendation,
+} from "@/types";
 
-export interface Dashboard {
-  priorities: Priority[];
-  missions: MissionPlan[];
-  recommendations: Recommendation[];
-
-  summary: DashboardSummary;
-
+export interface BrainDashboard {
+  context: Context;
+  memory: Memory;
+  understanding: Understanding;
+  decision: Decision;
+  tasks: Task[];
+  recommendation: Recommendation;
   generatedAt: Date;
-  brainVersion: string;
-}
-
-export interface DashboardSummary {
-  totalPriorities: number;
-
-  critical: number;
-  high: number;
-  medium: number;
-  low: number;
 }
 
 /**
- * Builds the dashboard displayed by Clara OS.
+ * Build a dashboard snapshot of the current
+ * Brain execution.
  */
-export async function buildDashboard(
-  priorities: Priority[],
-  missions: MissionPlan[],
-  recommendations: Recommendation[]
-): Promise<Dashboard> {
-  const summary: DashboardSummary = {
-    totalPriorities: priorities.length,
-    critical: 0,
-    high: 0,
-    medium: 0,
-    low: 0,
-  };
-
-  for (const priority of priorities) {
-    switch (priority.level) {
-      case "critical":
-        summary.critical++;
-        break;
-
-      case "high":
-        summary.high++;
-        break;
-
-      case "medium":
-        summary.medium++;
-        break;
-
-      case "low":
-        summary.low++;
-        break;
-    }
-  }
-
-  return Object.freeze({
-    priorities,
-    missions,
-    recommendations,
-
-    summary: Object.freeze(summary),
-
+export function buildDashboard(
+  context: Context,
+  memory: Memory,
+  understanding: Understanding,
+  decision: Decision,
+  tasks: Task[],
+  recommendation: Recommendation
+): BrainDashboard {
+  return {
+    context,
+    memory,
+    understanding,
+    decision,
+    tasks,
+    recommendation,
     generatedAt: new Date(),
-
-    brainVersion: "0.3.0",
-  });
+  };
 }

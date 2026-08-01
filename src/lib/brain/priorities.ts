@@ -1,55 +1,42 @@
-// src/lib/brain/priorities.ts
+/**
+ * ============================================
+ * CLARA OS
+ * Brain Module
+ * --------------------------------------------
+ * File : priorities.ts
+ * Responsibility :
+ * Transform Clara's understanding into
+ * a prioritized decision.
+ * ============================================
+ */
 
 import {
-  BrainAction,
-  BrainPriority,
-} from "./types";
+  Decision,
+  DecisionPriority,
+  Objective,
+  Understanding,
+} from "@/types";
 
 /**
- * Calcule les priorités à partir d'une liste d'actions.
+ * Build a decision from Clara's understanding.
  */
-export function calculatePriorities(
-  actions: BrainAction[]
-): BrainPriority[] {
-  return actions
-    .map((action) => ({
-      id: action.id,
-      label: action.title,
-      score: action.priority,
-    }))
-    .sort((a, b) => b.score - a.score);
-}
+export function prioritize(
+  understanding: Understanding
+): Decision {
 
-/**
- * Retourne la priorité la plus importante.
- */
-export function getTopPriority(
-  priorities: BrainPriority[]
-): BrainPriority | undefined {
-  return priorities[0];
-}
+  const objective: Objective = {
+    id: crypto.randomUUID(),
+    title: understanding.intent,
+    description: understanding.summary,
+    priority: 1,
+    completed: false,
+  };
 
-/**
- * Retourne uniquement les priorités supérieures ou égales
- * au score demandé.
- */
-export function filterPriorities(
-  priorities: BrainPriority[],
-  minimumScore: number
-): BrainPriority[] {
-  return priorities.filter(
-    (priority) => priority.score >= minimumScore
-  );
-}
-
-/**
- * Recherche une priorité par son identifiant.
- */
-export function findPriority(
-  priorities: BrainPriority[],
-  id: string
-): BrainPriority | undefined {
-  return priorities.find(
-    (priority) => priority.id === id
-  );
+  return {
+    id: crypto.randomUUID(),
+    objective,
+    summary: understanding.summary,
+    priority: DecisionPriority.MEDIUM,
+    createdAt: new Date(),
+  };
 }

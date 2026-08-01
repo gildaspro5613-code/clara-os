@@ -5,18 +5,29 @@
  * --------------------------------------------
  * File : orchestrator.ts
  * Responsibility :
- * Coordinates Clara's operational cycle.
+ * Coordinates one complete execution cycle
+ * between the Core and the Brain.
  * ============================================
  */
 
-import { Event } from "../types";
-import { runBrain } from "../brain";
+import { Event } from "@/types";
+
+import { runBrain } from "@/lib/brain";
 
 /**
- * Executes one complete Clara cycle.
+ * Execute one complete Clara cycle.
  */
-export async function orchestrate(event: Event): Promise<void> {
-  const recommendations = await runBrain(event);
+export async function orchestrate(
+  event: Event
+): Promise<void> {
 
-  // Dispatch recommendations
+  const recommendation = runBrain(event);
+
+  // Future:
+  // Dispatcher
+  // Connectors
+  // Scheduler
+  // Dashboard
+
+  void recommendation;
 }
