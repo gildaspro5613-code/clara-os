@@ -14,39 +14,48 @@ import {
   ClaraSession,
   createSession,
 } from "./session";
+import { createSystemEvent } from "./events";
+import { orchestrate } from "./orchestrator";
 
 export class Clara {
+
   private session: ClaraSession = createSession();
 
   /**
    * Starts Clara.
    */
   public async start(): Promise<ClaraSession> {
+
     this.session = createSession();
 
     this.session.state = ClaraState.STARTING;
+    this.session.updatedAt = new Date();
 
-    // Future:
-    // - Brain initialization
-    // - Connectors
-    // - Monitor
-    // - Planner
+    const event = createSystemEvent();
+
+    this.session = await orchestrate(
+      this.session,
+      event,
+    );
 
     this.session.state = ClaraState.WORKING;
     this.session.updatedAt = new Date();
 
     return this.session;
+
   }
 
   /**
    * Stops Clara.
    */
   public async stop(): Promise<void> {
+
     this.session.state = ClaraState.STOPPING;
     this.session.updatedAt = new Date();
 
     this.session.state = ClaraState.STOPPED;
     this.session.updatedAt = new Date();
+
   }
 
   /**
@@ -62,4 +71,5 @@ export class Clara {
   public getSession(): ClaraSession {
     return this.session;
   }
+
 }

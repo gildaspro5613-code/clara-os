@@ -9,27 +9,32 @@
  * ============================================
  */
 
+import { createSession } from "@/lib/core";
+import { getActions } from "@/lib/clara";
+
 export default function HeroActions() {
+
+  const session = createSession();
+
+  const actions = session.recommendation
+    ? getActions(session.recommendation)
+    : [
+        "Parler à Clara",
+        "Voir le journal",
+        "Ouvrir les missions",
+      ];
+
   return (
     <div className="flex flex-wrap gap-4">
 
-      <button
-        className="rounded-xl bg-emerald-500 px-6 py-3 font-medium text-white transition hover:bg-emerald-400"
-      >
-        Parler à Clara
-      </button>
-
-      <button
-        className="rounded-xl border border-slate-600 px-6 py-3 font-medium text-slate-200 transition hover:border-slate-400"
-      >
-        Voir le journal
-      </button>
-
-      <button
-        className="rounded-xl border border-slate-600 px-6 py-3 font-medium text-slate-200 transition hover:border-slate-400"
-      >
-        Ouvrir les missions
-      </button>
+      {actions.map((action) => (
+        <button
+          key={action}
+          className="rounded-xl border border-slate-600 px-6 py-3 font-medium text-slate-200 transition hover:border-slate-400"
+        >
+          {action}
+        </button>
+      ))}
 
     </div>
   );
