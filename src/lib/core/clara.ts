@@ -18,10 +18,19 @@ import {
 } from "./session";
 import { createSystemEvent } from "./events";
 import { orchestrate } from "./orchestrator";
+import { Journal } from "./journal";
 
 export class Clara {
 
+  /**
+   * Current runtime session.
+   */
   private session: ClaraSession = createSession();
+
+  /**
+   * Clara's operational journal.
+   */
+  private readonly journal = new Journal();
 
   /**
    * Starts Clara.
@@ -68,6 +77,13 @@ export class Clara {
       this.session,
       event,
     );
+
+    /*
+     * Journal integration will be added
+     * once the complete writing pipeline
+     * is finalized.
+     */
+    void this.journal;
 
     return this.session;
 

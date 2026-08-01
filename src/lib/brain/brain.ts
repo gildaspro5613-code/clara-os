@@ -14,59 +14,56 @@ import {
   Recommendation,
 } from "@/types";
 
-import { buildContext } from "./context";
-import { loadMemory } from "./memory";
 import { shouldRemember } from "./learning";
+import { buildBrainContext } from "./brain-context-builder";
 import { reasoning } from "./reasoning";
 import { prioritize } from "./priorities";
 import { plan } from "./planners";
 import { recommend } from "./recommendations";
 
 /**
- * Execute the complete Brain pipeline.
+ * Execute one complete cognitive cycle.
  */
 export function runBrain(
   event: Event,
 ): Recommendation {
 
   /*
-   * 1. Build execution context.
-   */
-  const context = buildContext(event);
-
-  /*
-   * 2. Decide whether this event
+   * Decide whether this event
    * should contribute to memory.
    */
   shouldRemember(event);
 
   /*
-   * 3. Retrieve relevant memory.
+   * Build Clara's complete
+   * cognitive context.
    */
-  const memory = loadMemory(context);
-
-  /*
-   * 4. Understand the situation.
-   */
-  const understanding = reasoning(
-    context,
-    memory,
+  const brainContext = buildBrainContext(
+    event,
   );
 
   /*
-   * 5. Decide.
+   * Understand the situation.
+   */
+  const understanding = reasoning(
+    brainContext.context,
+    brainContext.memory,
+  );
+
+  /*
+   * Decide.
    */
   const decision = prioritize(
     understanding,
   );
 
   /*
-   * 6. Build execution plan.
+   * Build execution plan.
    */
   plan(decision);
 
   /*
-   * 7. Produce recommendation.
+   * Produce recommendation.
    */
   return recommend(decision);
 

@@ -10,6 +10,8 @@
  * ============================================
  */
 
+import { KnowledgeModule } from "./module";
+
 import { FOUNDATION_MODULE } from "./foundation/module";
 
 /**
@@ -18,27 +20,38 @@ import { FOUNDATION_MODULE } from "./foundation/module";
 export class KnowledgeEngine {
 
   /**
-   * Returns every loaded knowledge module.
+   * Loaded knowledge modules.
    */
-  public getModules() {
+  private readonly modules: KnowledgeModule[] = [
+    FOUNDATION_MODULE,
+  ];
 
-    return [
-      FOUNDATION_MODULE,
-    ];
-
+  /**
+   * Returns every loaded module.
+   */
+  public getModules(): readonly KnowledgeModule[] {
+    return this.modules;
   }
 
   /**
-   * Returns one knowledge module.
+   * Returns one module.
    */
   public getModule(
     id: string,
-  ) {
+  ): KnowledgeModule | undefined {
 
-    return this.getModules().find(
+    return this.modules.find(
       (module) => module.id === id,
     );
 
   }
 
+  /**
+   * Returns all available knowledge.
+   */
+  public getKnowledge(): readonly KnowledgeModule[] {
+    return this.modules;
+  }
+
 }
+    

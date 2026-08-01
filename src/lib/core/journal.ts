@@ -5,50 +5,63 @@
  * --------------------------------------------
  * File : journal.ts
  * Responsibility :
- * Stores Clara's recent activity.
+ * Stores Clara's operational journal.
  * ============================================
  */
 
-import { Event } from "@/types";
-
-const journal: Event[] = [];
-
-/**
- * Records a new event.
- */
-export function recordEvent(
-  event: Event,
-): void {
-
-  journal.unshift(event);
-
-}
+import {
+  JournalEntry,
+} from "./journal-entry";
 
 /**
- * Returns all recorded events.
+ * Clara's operational journal.
  */
-export function getJournal(): Event[] {
+export class Journal {
 
-  return [...journal];
+  /**
+   * Stored entries.
+   */
+  private readonly entries: JournalEntry[] = [];
 
-}
+  /**
+   * Adds one entry.
+   */
+  public addEntry(
+    entry: JournalEntry,
+  ): void {
 
-/**
- * Returns the most recent events.
- */
-export function getRecentEvents(
-  limit = 10,
-): Event[] {
+    this.entries.push(
+      entry,
+    );
 
-  return journal.slice(0, limit);
+  }
 
-}
+  /**
+   * Returns every entry.
+   */
+  public getEntries(): readonly JournalEntry[] {
 
-/**
- * Clears the journal.
- */
-export function clearJournal(): void {
+    return this.entries;
 
-  journal.length = 0;
+  }
+
+  /**
+   * Returns the latest entry.
+   */
+  public getLatestEntry():
+    JournalEntry | undefined {
+
+    return this.entries.at(-1);
+
+  }
+
+  /**
+   * Clears the journal.
+   */
+  public clear(): void {
+
+    this.entries.length = 0;
+
+  }
 
 }

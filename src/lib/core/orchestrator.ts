@@ -18,10 +18,6 @@ import {
   ClaraSession,
 } from "./session";
 
-import {
-  recordEvent,
-} from "./journal";
-
 /**
  * Executes one complete Clara reasoning cycle.
  */
@@ -30,11 +26,16 @@ export async function orchestrate(
   event: Event,
 ): Promise<ClaraSession> {
 
-  // Store the incoming event.
-  recordEvent(event);
+  /*
+   * Execute one Brain cycle.
+   */
+  const recommendation = runBrain(
+    event,
+  );
 
-  const recommendation = runBrain(event);
-
+  /*
+   * Update the current session.
+   */
   session.recommendation = recommendation;
   session.updatedAt = new Date();
 
