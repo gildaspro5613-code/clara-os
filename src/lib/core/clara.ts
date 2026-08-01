@@ -9,6 +9,8 @@
  * ============================================
  */
 
+import { Event } from "@/types";
+
 import { ClaraState } from "./state";
 import {
   ClaraSession,
@@ -31,11 +33,8 @@ export class Clara {
     this.session.state = ClaraState.STARTING;
     this.session.updatedAt = new Date();
 
-    const event = createSystemEvent();
-
-    this.session = await orchestrate(
-      this.session,
-      event,
+    await this.processEvent(
+      createSystemEvent(),
     );
 
     this.session.state = ClaraState.WORKING;
@@ -55,6 +54,22 @@ export class Clara {
 
     this.session.state = ClaraState.STOPPED;
     this.session.updatedAt = new Date();
+
+  }
+
+  /**
+   * Processes one incoming event.
+   */
+  public async processEvent(
+    event: Event,
+  ): Promise<ClaraSession> {
+
+    this.session = await orchestrate(
+      this.session,
+      event,
+    );
+
+    return this.session;
 
   }
 
