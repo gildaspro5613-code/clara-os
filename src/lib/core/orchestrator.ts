@@ -14,20 +14,22 @@ import { Event } from "@/types";
 
 import { runBrain } from "@/lib/brain";
 
+import {
+  ClaraSession,
+} from "./session";
+
 /**
- * Execute one complete Clara cycle.
+ * Executes one complete Clara reasoning cycle.
  */
 export async function orchestrate(
-  event: Event
-): Promise<void> {
+  session: ClaraSession,
+  event: Event,
+): Promise<ClaraSession> {
 
   const recommendation = runBrain(event);
 
-  // Future:
-  // Dispatcher
-  // Connectors
-  // Scheduler
-  // Dashboard
+  session.recommendation = recommendation;
+  session.updatedAt = new Date();
 
-  void recommendation;
+  return session;
 }

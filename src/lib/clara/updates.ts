@@ -1,22 +1,42 @@
-export function getUpdates() {
+/**
+ * ============================================
+ * CLARA OS
+ * Clara Module
+ * --------------------------------------------
+ * File : updates.ts
+ * Responsibility :
+ * Provides Clara's current operational updates.
+ * ============================================
+ */
+
+export interface ClaraUpdate {
+  id: number;
+  title: string;
+  description: string;
+}
+
+/**
+ * Returns Clara's current updates.
+ */
+export function getUpdates(): ClaraUpdate[] {
+
   return [
     {
       id: 1,
-      icon: "phone",
-      title: "2 relances sont prêtes",
-      description: "Finom et Agence Kobalt",
+      title: "Clara est opérationnelle",
+      description: "Tous les systèmes essentiels sont disponibles.",
     },
     {
       id: 2,
-      icon: "users",
-      title: "3 prospects qualifiés",
-      description: "Score élevé, prêts à être contactés",
+      title: "Session initialisée",
+      description: "Le Brain est prêt à analyser les événements.",
     },
     {
       id: 3,
-      icon: "calendar",
-      title: "Agenda synchronisé",
-      description: "4 rendez-vous aujourd'hui",
+      title: "Cockpit synchronisé",
+      description: "Les informations sont prêtes à être affichées.",
     },
   ];
+
 }
+      

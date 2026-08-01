@@ -1,12 +1,26 @@
-export function getActions() {
+/**
+ * ============================================
+ * CLARA OS
+ * Clara Module
+ * --------------------------------------------
+ * File : actions.ts
+ * Responsibility :
+ * Builds Clara's suggested actions from
+ * the current recommendation.
+ * ============================================
+ */
+
+import { Recommendation } from "@/types";
+
+/**
+ * Returns Clara's suggested actions.
+ */
+export function getActions(
+  recommendation: Recommendation,
+): string[] {
+
   return [
-    {
-      label: "On y va",
-      variant: "primary",
-    },
-    {
-      label: "Voir pourquoi",
-      variant: "secondary",
-    },
+    recommendation.summary,
   ];
+
 }

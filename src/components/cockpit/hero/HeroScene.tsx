@@ -12,9 +12,14 @@
 import HeroCharacter from "./HeroCharacter";
 import ClaraStatus from "@/components/clara/ClaraStatus";
 
-import { ClaraState } from "@/lib/core";
+import {
+  createSession,
+} from "@/lib/core";
 
 export default function HeroScene() {
+
+  const session = createSession();
+
   return (
     <div className="grid gap-8 lg:grid-cols-2 items-center">
 
@@ -23,7 +28,7 @@ export default function HeroScene() {
       <div className="space-y-6">
 
         <ClaraStatus
-          state={ClaraState.WORKING}
+          state={session.state}
         />
 
       </div>

@@ -9,26 +9,26 @@
  * ============================================
  */
 
-export interface HeroBriefProps {
-  title?: string;
-  message?: string;
-}
+import { createSession } from "@/lib/core";
+import { buildMessage } from "@/lib/clara";
 
-export default function HeroBrief({
-  title = "Bonjour Gildas 👋",
-  message = "Clara est opérationnelle. Je suis prête à vous accompagner tout au long de votre journée.",
-}: HeroBriefProps) {
+export default function HeroBrief() {
+
+  const session = createSession();
+
   return (
     <div className="space-y-4">
 
       <div>
+
         <h1 className="text-4xl font-bold tracking-tight text-white">
-          {title}
+          Bonjour Gildas 👋
         </h1>
 
-        <p className="mt-4 max-w-2xl text-lg text-slate-300 leading-relaxed">
-          {message}
+        <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-300 whitespace-pre-line">
+          {buildMessage(session)}
         </p>
+
       </div>
 
     </div>

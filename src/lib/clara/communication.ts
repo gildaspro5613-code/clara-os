@@ -1,8 +1,25 @@
-export function getRecommendation() {
-  return {
-    title: "Je te conseille de rappeler Finom.",
-    description:
-      "Ils ont ouvert ton dernier email hier. C'est probablement le bon moment.",
-    priority: "high",
-  };
+/**
+ * ============================================
+ * CLARA OS
+ * Clara Module
+ * --------------------------------------------
+ * File : communication.ts
+ * Responsibility :
+ * Centralizes Clara's communication messages.
+ * ============================================
+ */
+
+import { ClaraSession } from "@/lib/core";
+
+import { buildGreeting } from "./greeting";
+
+/**
+ * Returns Clara's current message.
+ */
+export function buildMessage(
+  session: ClaraSession,
+): string {
+
+  return buildGreeting(session);
+
 }

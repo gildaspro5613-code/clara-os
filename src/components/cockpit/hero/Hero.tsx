@@ -6,7 +6,7 @@
  * File : Hero.tsx
  * Responsibility :
  * Main hero section of Clara OS.
- * Assembles the complete hero scene.
+ * Composes the Hero interface.
  * ============================================
  */
 
