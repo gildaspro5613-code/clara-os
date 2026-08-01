@@ -1,16 +1,29 @@
+/**
+ * ============================================
+ * CLARA OS
+ * Cockpit Module
+ * --------------------------------------------
+ * File : HeroCharacter.tsx
+ * Responsibility :
+ * Displays Clara inside the Hero section.
+ * ============================================
+ */
+
 import Image from "next/image";
 
 export default function HeroCharacter() {
   return (
-    <div className="absolute inset-0 flex items-end justify-center">
+    <div className="relative flex items-end justify-center">
+
       <Image
-        src="/images/clara/summer/hero.png"
+        src="/images/clara/clara.png"
         alt="Clara"
         width={520}
-        height={620}
+        height={720}
         priority
-        className="object-contain"
+        className="h-auto w-full max-w-md object-contain"
       />
+
     </div>
   );
 }

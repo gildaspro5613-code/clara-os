@@ -1,21 +1,36 @@
-export default function ClaraStatus() {
+/**
+ * ============================================
+ * CLARA OS
+ * Cockpit Module
+ * --------------------------------------------
+ * File : ClaraStatus.tsx
+ * Responsibility :
+ * Displays Clara's current operational state.
+ * ============================================
+ */
+
+import { ClaraState } from "@/lib/core";
+
+export interface ClaraStatusProps {
+  state: ClaraState;
+}
+
+export default function ClaraStatus({
+  state,
+}: ClaraStatusProps) {
   return (
-    <div>
+    <div className="rounded-xl border border-slate-700 bg-slate-900 px-4 py-3">
+      <div className="text-xs uppercase tracking-wider text-slate-400">
+        Clara
+      </div>
 
-      <h3 className="font-semibold text-slate-700 mb-3">
-        Aujourd'hui
-      </h3>
+      <div className="mt-2 flex items-center gap-2">
+        <span className="h-3 w-3 rounded-full bg-emerald-500" />
 
-      <ul className="space-y-2 text-slate-600">
-
-        <li>✓ 3 prospects à rappeler</li>
-
-        <li>✓ 1 scénario Make en attente</li>
-
-        <li>✓ 2 rendez-vous programmés</li>
-
-      </ul>
-
+        <span className="font-medium text-white">
+          {state}
+        </span>
+      </div>
     </div>
   );
 }

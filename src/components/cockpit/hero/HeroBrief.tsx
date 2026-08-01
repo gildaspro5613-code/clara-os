@@ -1,29 +1,34 @@
-export default function HeroBrief() {
+/**
+ * ============================================
+ * CLARA OS
+ * Cockpit Module
+ * --------------------------------------------
+ * File : HeroBrief.tsx
+ * Responsibility :
+ * Displays Clara's daily briefing.
+ * ============================================
+ */
+
+export interface HeroBriefProps {
+  title?: string;
+  message?: string;
+}
+
+export default function HeroBrief({
+  title = "Bonjour Gildas 👋",
+  message = "Clara est opérationnelle. Je suis prête à vous accompagner tout au long de votre journée.",
+}: HeroBriefProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
 
       <div>
-
-        <p className="text-sm uppercase tracking-[0.25em] text-slate-400">
-          Bienvenue à bord
-        </p>
-
-        <h1 className="mt-3 text-4xl font-semibold text-white">
-          Le Cockpit est opérationnel.
+        <h1 className="text-4xl font-bold tracking-tight text-white">
+          {title}
         </h1>
 
-      </div>
-
-      <div className="space-y-3 text-slate-300">
-
-        <p>
-          Pendant votre absence, plusieurs actions ont été préparées.
+        <p className="mt-4 max-w-2xl text-lg text-slate-300 leading-relaxed">
+          {message}
         </p>
-
-        <p>
-          Je recommande de commencer par relancer Finom.
-        </p>
-
       </div>
 
     </div>
