@@ -5,71 +5,61 @@
  * --------------------------------------------
  * File : clara.ts
  * Responsibility :
- * Main entry point of Clara OS.
- * Manages Clara's lifecycle.
+ * Main Clara runtime.
  * ============================================
  */
 
-import { orchestrate } from "./orchestrator";
-
-export enum ClaraState {
-  STOPPED = "STOPPED",
-  STARTING = "STARTING",
-  WORKING = "WORKING",
-  STOPPING = "STOPPING",
-}
+import { ClaraState } from "./state";
+import {
+  ClaraSession,
+  createSession,
+} from "./session";
 
 export class Clara {
-  private state: ClaraState = ClaraState.STOPPED;
+  private session: ClaraSession = createSession();
 
   /**
    * Starts Clara.
    */
-  public async start(): Promise<void> {
-    if (this.state !== ClaraState.STOPPED) {
-      return;
-    }
+  public async start(): Promise<ClaraSession> {
+    this.session = createSession();
 
-    this.state = ClaraState.STARTING;
+    this.session.state = ClaraState.STARTING;
 
-    // Future initialization:
-    // Scheduler
-    // Monitor
-    // Connectors
+    // Future:
+    // - Brain initialization
+    // - Connectors
+    // - Monitor
+    // - Planner
 
-    this.state = ClaraState.WORKING;
+    this.session.state = ClaraState.WORKING;
+    this.session.updatedAt = new Date();
+
+    return this.session;
   }
 
   /**
    * Stops Clara.
    */
   public async stop(): Promise<void> {
-    if (this.state !== ClaraState.WORKING) {
-      return;
-    }
+    this.session.state = ClaraState.STOPPING;
+    this.session.updatedAt = new Date();
 
-    this.state = ClaraState.STOPPING;
-
-    this.state = ClaraState.STOPPED;
+    this.session.state = ClaraState.STOPPED;
+    this.session.updatedAt = new Date();
   }
 
   /**
-   * Executes one event.
-   */
-  public async run(event: Parameters<typeof orchestrate>[0]): Promise<void> {
-    if (this.state !== ClaraState.WORKING) {
-      throw new Error("Clara is not running.");
-    }
-
-    await orchestrate(event);
-  }
-
-  /**
-   * Returns the current state.
+   * Returns current state.
    */
   public getState(): ClaraState {
-    return this.state;
+    return this.session.state;
+  }
+
+  /**
+   * Returns current session.
+   */
+  public getSession(): ClaraSession {
+    return this.session;
   }
 }
-
-  
