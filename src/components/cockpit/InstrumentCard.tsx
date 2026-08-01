@@ -1,25 +1,35 @@
-type InstrumentCardProps = {
+/**
+ * ============================================
+ * CLARA OS
+ * Cockpit Module
+ * --------------------------------------------
+ * File : InstrumentCard.tsx
+ * Responsibility :
+ * Generic card used to display
+ * an instrument inside the Cockpit.
+ * ============================================
+ */
+
+import { ReactNode } from "react";
+
+export interface InstrumentCardProps {
   title: string;
-  value: string;
-  subtitle: string;
-};
+  children: ReactNode;
+}
 
 export default function InstrumentCard({
   title,
-  value,
-  subtitle,
+  children,
 }: InstrumentCardProps) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#111827] p-6">
-      <p className="text-sm text-slate-400">{title}</p>
+    <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+      <h3 className="text-lg font-semibold text-white">
+        {title}
+      </h3>
 
-      <h2 className="mt-3 text-3xl font-semibold text-white">
-        {value}
-      </h2>
-
-      <p className="mt-2 text-sm text-slate-500">
-        {subtitle}
-      </p>
-    </div>
+      <div className="mt-4">
+        {children}
+      </div>
+    </section>
   );
 }

@@ -1,39 +1,33 @@
-import InstrumentCard from "./InstrumentCard";
+/**
+ * ============================================
+ * CLARA OS
+ * Cockpit Module
+ * --------------------------------------------
+ * File : Instruments.tsx
+ * Responsibility :
+ * Displays the collection of
+ * Cockpit instruments.
+ * ============================================
+ */
 
-const instruments = [
-  {
-    title: "Prospects",
-    value: "17",
-    subtitle: "3 nouveaux aujourd'hui",
-  },
-  {
-    title: "Rendez-vous",
-    value: "4",
-    subtitle: "2 cet après-midi",
-  },
-  {
-    title: "Automatisations",
-    value: "31",
-    subtitle: "Toutes opérationnelles",
-  },
-  {
-    title: "Emails",
-    value: "12",
-    subtitle: "5 nécessitent une réponse",
-  },
-];
+import InstrumentCard from "./InstrumentCard";
 
 export default function Instruments() {
   return (
-    <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {instruments.map((card) => (
-        <InstrumentCard
-          key={card.title}
-          title={card.title}
-          value={card.value}
-          subtitle={card.subtitle}
-        />
-      ))}
+    <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+
+      <InstrumentCard title="Agenda">
+        Aucun rendez-vous.
+      </InstrumentCard>
+
+      <InstrumentCard title="Emails">
+        Aucun nouvel email.
+      </InstrumentCard>
+
+      <InstrumentCard title="Automatisations">
+        Toutes les automatisations sont opérationnelles.
+      </InstrumentCard>
+
     </section>
   );
 }

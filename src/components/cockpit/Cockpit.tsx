@@ -1,28 +1,29 @@
+/**
+ * ============================================
+ * CLARA OS
+ * Cockpit Module
+ * --------------------------------------------
+ * File : Cockpit.tsx
+ * Responsibility :
+ * Main entry point for Clara's Cockpit.
+ * ============================================
+ */
+
 import Hero from "./hero/Hero";
-import Instruments from "./Instruments";
+import Brief from "./Brief";
 import Journal from "./Journal";
 import QuickActions from "./QuickActions";
+import Instruments from "./Instruments";
+import CockpitLayout from "./CockpitLayout";
 
 export default function Cockpit() {
   return (
-    <main className="space-y-8">
-
-      <Hero />
-
-      <section className="grid grid-cols-12 gap-6">
-
-        <div className="col-span-8">
-          <Instruments />
-        </div>
-
-        <aside className="col-span-4">
-          <Journal />
-        </aside>
-
-      </section>
-
-      <QuickActions />
-
-    </main>
+    <CockpitLayout
+      hero={<Hero />}
+      brief={<Brief />}
+      journal={<Journal />}
+      actions={<QuickActions />}
+      instruments={<Instruments />}
+    />
   );
 }
