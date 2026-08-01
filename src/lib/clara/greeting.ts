@@ -20,7 +20,26 @@ export function buildGreeting(
 
   switch (session.state) {
 
+    case "STARTING":
+      return [
+        "Bonjour Gildas.",
+        "",
+        "Je démarre mon environnement.",
+        "J'initialise mon Brain et mes services.",
+      ].join("\n");
+
     case "WORKING":
+
+      if (session.recommendation) {
+        return [
+          "Bonjour Gildas.",
+          "",
+          session.recommendation.summary,
+          "",
+          "Quelle est notre priorité ?",
+        ].join("\n");
+      }
+
       return [
         "Bonjour Gildas.",
         "",
@@ -29,13 +48,17 @@ export function buildGreeting(
         "Quelle est notre priorité aujourd'hui ?",
       ].join("\n");
 
-    case "STARTING":
-      return "Je démarre...";
-
     case "STOPPING":
-      return "Je termine les tâches en cours...";
+      return [
+        "Je termine les tâches en cours.",
+        "Je sécurise la session avant l'arrêt.",
+      ].join("\n");
+
+    case "STOPPED":
+      return "Je suis arrêtée.";
 
     default:
       return "Je suis en attente.";
   }
+
 }

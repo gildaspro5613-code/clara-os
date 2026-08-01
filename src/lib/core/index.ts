@@ -18,3 +18,4 @@ export * from "./scheduler";
 export * from "./session";
 export * from "./state";
 export * from "./runtime";
+export * from "./journal";
