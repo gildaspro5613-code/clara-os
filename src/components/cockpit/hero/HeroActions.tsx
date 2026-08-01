@@ -9,12 +9,12 @@
  * ============================================
  */
 
-import { createSession } from "@/lib/core";
+import { getSession } from "@/lib/core";
 import { getActions } from "@/lib/clara";
 
 export default function HeroActions() {
 
-  const session = createSession();
+  const session = getSession();
 
   const actions = session.recommendation
     ? getActions(session.recommendation)

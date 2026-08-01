@@ -9,12 +9,12 @@
  * ============================================
  */
 
-import { createSession } from "@/lib/core";
+import { getSession } from "@/lib/core";
 import { buildMessage } from "@/lib/clara";
 
 export default function HeroBrief() {
 
-  const session = createSession();
+  const session = getSession();
 
   return (
     <div className="space-y-4">
@@ -25,7 +25,7 @@ export default function HeroBrief() {
           Bonjour Gildas 👋
         </h1>
 
-        <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-300 whitespace-pre-line">
+        <p className="mt-4 max-w-2xl text-lg leading-relaxed whitespace-pre-line text-slate-300">
           {buildMessage(session)}
         </p>
 

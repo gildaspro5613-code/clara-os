@@ -13,15 +13,15 @@ import HeroCharacter from "./HeroCharacter";
 import ClaraStatus from "@/components/clara/ClaraStatus";
 
 import {
-  createSession,
+  getSession,
 } from "@/lib/core";
 
 export default function HeroScene() {
 
-  const session = createSession();
+  const session = getSession();
 
   return (
-    <div className="grid gap-8 lg:grid-cols-2 items-center">
+    <div className="grid gap-8 items-center lg:grid-cols-2">
 
       <HeroCharacter />
 
