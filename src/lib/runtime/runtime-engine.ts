@@ -3,49 +3,65 @@
  * CLARA OS
  * Runtime Engine
  * --------------------------------------------
- * File : runtime-engine.ts
  * Responsibility :
  * Coordinates one complete Clara
- * execution cycle.
+ * runtime execution.
  * ============================================
  */
 
-import { Capability, CapabilityRouter } from "./capability-router";
+import { CapabilityEngine } from "@/lib/capabilities/capability-engine";
+
 import { Runtime } from "./runtime";
 import { RuntimeEvent } from "./runtime-event";
 import { RuntimeResult } from "./runtime-result";
 
 /**
- * Runtime engine.
+ * Runtime Engine.
  */
 export class RuntimeEngine {
 
   /**
-   * Capability Router.
+   * Capability Engine.
    */
-  private readonly router = new CapabilityRouter();
+  private readonly capabilityEngine =
+    new CapabilityEngine();
 
   /**
-   * Executes one complete runtime cycle.
+   * Executes one runtime cycle.
    */
   public async run(
     runtime: Runtime,
     event: RuntimeEvent,
   ): Promise<RuntimeResult> {
 
-    // Future RuntimeEvent will expose capability.
-    // Until then we use generate-text.
-    const capability: Capability = "generate-text";
+    const result =
+      await this.capabilityEngine.execute({
 
-    const provider = this.router.resolve(capability);
+        capabilityId: "generate-document",
+
+        context: {
+
+          title: "Commercial Proposal",
+
+          objective: "Present Clara OS",
+
+          audience: "Festival",
+
+          language: "French",
+
+          tone: "Professional",
+
+        },
+
+      });
 
     return {
 
-      success: true,
+      success: result.success,
 
-      message: `Runtime executed using provider: ${provider}`,
+      message: result.message,
 
-      completedAt: new Date(),
+      completedAt: result.completedAt,
 
     };
 

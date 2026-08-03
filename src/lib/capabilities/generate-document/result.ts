@@ -21,6 +21,16 @@ export interface GenerateDocumentResult {
   readonly success: boolean;
 
   /**
+   * Generated document title.
+   */
+  readonly title: string;
+
+  /**
+   * Generated document content.
+   */
+  readonly content?: string;
+
+  /**
    * Generated document identifier.
    */
   readonly documentId?: string;

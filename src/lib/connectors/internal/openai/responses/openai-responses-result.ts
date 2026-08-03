@@ -18,31 +18,31 @@ export interface OpenAIResponsesResult {
   /**
    * Operation status.
    */
-  success: boolean;
+  readonly success: boolean;
 
   /**
    * Generated content.
    */
-  content: string;
+  readonly content: string;
 
   /**
    * Model used.
    */
-  model?: string;
+  readonly model?: string;
 
   /**
-   * Optional finish reason.
+   * Finish reason.
    */
-  finishReason?: string;
+  readonly finishReason?: string;
 
   /**
-   * Optional message.
+   * Execution message.
    */
-  message?: string;
+  readonly message: string;
 
   /**
    * Execution date.
    */
-  completedAt: Date;
+  readonly completedAt: Date;
 
 }
