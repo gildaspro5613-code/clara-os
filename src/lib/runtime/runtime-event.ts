@@ -5,8 +5,8 @@
  * --------------------------------------------
  * File : runtime-event.ts
  * Responsibility :
- * Defines an event entering
- * Clara Runtime.
+ * Defines an execution request
+ * entering Clara Runtime.
  * ============================================
  */
 
@@ -18,26 +18,26 @@ export interface RuntimeEvent {
   /**
    * Unique identifier.
    */
-  id: string;
+  readonly id: string;
 
   /**
    * Event source.
    */
-  source: string;
+  readonly source: string;
 
   /**
-   * Event type.
+   * Capability to execute.
    */
-  type: string;
+  readonly capabilityId: string;
 
   /**
-   * Event payload.
+   * Capability execution context.
    */
-  payload: unknown;
+  readonly context: unknown;
 
   /**
    * Reception date.
    */
-  receivedAt: Date;
+  readonly receivedAt: Date;
 
 }

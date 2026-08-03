@@ -3,6 +3,7 @@
  * CLARA OS
  * Runtime Engine
  * --------------------------------------------
+ * File : runtime-engine.ts
  * Responsibility :
  * Coordinates one complete Clara
  * runtime execution.
@@ -37,21 +38,9 @@ export class RuntimeEngine {
     const result =
       await this.capabilityEngine.execute({
 
-        capabilityId: "generate-document",
+        capabilityId: event.capabilityId,
 
-        context: {
-
-          title: "Commercial Proposal",
-
-          objective: "Present Clara OS",
-
-          audience: "Festival",
-
-          language: "French",
-
-          tone: "Professional",
-
-        },
+        context: event.context,
 
       });
 
