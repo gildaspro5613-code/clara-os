@@ -8,7 +8,7 @@
  * Public exports for the Brain module.
  * ============================================
  */
-
+export type { BrainContext } from "./brain-context";
 export { runBrain } from "./brain";
 
 export { buildContext } from "./context";
