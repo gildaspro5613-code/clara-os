@@ -25,21 +25,13 @@ export class GoogleDocsEngine {
     context: GoogleDocsContext,
   ): Promise<GoogleDocsResult> {
 
-    return {
+    // TODO:
+    // Replace with Google Docs API.
 
-      success: true,
-
-      documentId: crypto.randomUUID(),
-
-      title: context.title,
-
-      url: undefined,
-
-      message: "Document created successfully.",
-
-      completedAt: new Date(),
-
-    };
+    return this.buildResult(
+      context,
+      "Document created successfully.",
+    );
 
   }
 
@@ -50,21 +42,13 @@ export class GoogleDocsEngine {
     context: GoogleDocsContext,
   ): Promise<GoogleDocsResult> {
 
-    return {
+    // TODO:
+    // Replace with Google Docs API.
 
-      success: true,
-
-      documentId: context.documentId ?? "",
-
-      title: context.title,
-
-      url: undefined,
-
-      message: "Document loaded successfully.",
-
-      completedAt: new Date(),
-
-    };
+    return this.buildResult(
+      context,
+      "Document loaded successfully.",
+    );
 
   }
 
@@ -75,46 +59,30 @@ export class GoogleDocsEngine {
     context: GoogleDocsContext,
   ): Promise<GoogleDocsResult> {
 
-    return {
+    // TODO:
+    // Replace with Google Docs API.
 
-      success: true,
-
-      documentId: context.documentId ?? "",
-
-      title: context.title,
-
-      url: undefined,
-
-      message: "Document updated successfully.",
-
-      completedAt: new Date(),
-
-    };
+    return this.buildResult(
+      context,
+      "Document updated successfully.",
+    );
 
   }
 
   /**
    * Exports a document.
    */
-  public async export(
+  public async exportDocument(
     context: GoogleDocsContext,
   ): Promise<GoogleDocsResult> {
 
-    return {
+    // TODO:
+    // Replace with Google Docs API.
 
-      success: true,
-
-      documentId: context.documentId ?? "",
-
-      title: context.title,
-
-      url: undefined,
-
-      message: "Document exported successfully.",
-
-      completedAt: new Date(),
-
-    };
+    return this.buildResult(
+      context,
+      "Document exported successfully.",
+    );
 
   }
 
@@ -125,17 +93,38 @@ export class GoogleDocsEngine {
     context: GoogleDocsContext,
   ): Promise<GoogleDocsResult> {
 
+    // TODO:
+    // Replace with Google Docs API.
+
+    return this.buildResult(
+      context,
+      "Document deleted successfully.",
+    );
+
+  }
+
+  /**
+   * Builds a connector result.
+   */
+  private buildResult(
+    context: GoogleDocsContext,
+    message: string,
+  ): GoogleDocsResult {
+
     return {
 
       success: true,
 
-      documentId: context.documentId ?? "",
+      documentId:
+        context.documentId ?? crypto.randomUUID(),
 
       title: context.title,
 
       url: undefined,
 
-      message: "Document deleted successfully.",
+      exportUrl: undefined,
+
+      message,
 
       completedAt: new Date(),
 

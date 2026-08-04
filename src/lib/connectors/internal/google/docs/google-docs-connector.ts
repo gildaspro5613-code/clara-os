@@ -48,7 +48,7 @@ export interface GoogleDocsConnector extends Connector {
   /**
    * Exports a document.
    */
-  export(
+  exportDocument(
     context: GoogleDocsContext,
   ): Promise<GoogleDocsResult>;
 
