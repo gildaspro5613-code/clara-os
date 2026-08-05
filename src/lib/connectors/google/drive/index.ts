@@ -21,3 +21,4 @@ export type { DeleteFileOptions } from "./delete-file";
 export { deleteFile } from "./delete-file";
 export { shareFile } from "./share-file";
 export { listPermissions } from "./list-permissions";
+export { removePermission } from "./remove-permission";
