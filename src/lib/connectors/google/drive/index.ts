@@ -17,3 +17,5 @@ export type { UpdateFileOptions, DriveUpdatedFile } from "./update-file";
 export { updateFile } from "./update-file";
 export type { MoveFileOptions, DriveMovedFile } from "./move-file";
 export { moveFile } from "./move-file";
+export type { DeleteFileOptions } from "./delete-file";
+export { deleteFile } from "./delete-file";
