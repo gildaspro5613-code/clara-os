@@ -10,7 +10,15 @@
  * ============================================
  */
 
+import { DriveClient } from "./drive-client";
+import { DriveFiles } from "./drive-files";
+import { DriveFolders } from "./drive-folders";
+import { DriveHealth } from "./drive-health";
+import { DrivePermissions } from "./drive-permissions";
 import { GoogleDriveEngine } from "./google-drive-engine";
+
+const googleDriveClient =
+  new DriveClient().create();
 
 /**
  * Google Drive connector module.
@@ -26,6 +34,28 @@ export const GOOGLE_DRIVE_MODULE = {
   description:
     "Provides access to Google Drive through Clara OS.",
 
-  engine: new GoogleDriveEngine(),
+  client: googleDriveClient,
+
+  folders:
+    new DriveFolders(
+      googleDriveClient,
+    ),
+
+  files: new DriveFiles(
+    googleDriveClient,
+  ),
+
+  permissions:
+    new DrivePermissions(
+      googleDriveClient,
+    ),
+
+  health: new DriveHealth(
+    googleDriveClient,
+  ),
+
+  engine: new GoogleDriveEngine(
+    googleDriveClient,
+  ),
 
 } as const;
