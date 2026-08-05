@@ -9,3 +9,5 @@ export type {
   ListFilesResult,
 } from "./list-files";
 export { listFiles } from "./list-files";
+export type { UploadFileOptions, DriveUploadedFile } from "./upload-file";
+export { uploadFile } from "./upload-file";
