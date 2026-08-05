@@ -36,6 +36,16 @@ export interface GoogleDriveResult {
   url?: string;
 
   /**
+   * File content.
+   */
+  content?: Buffer;
+
+  /**
+   * File MIME type.
+   */
+  mimeType?: string;
+
+  /**
    * Optional message.
    */
   message?: string;
