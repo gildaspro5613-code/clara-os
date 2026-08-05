@@ -5,24 +5,54 @@
  * --------------------------------------------
  * File : workspace-template.ts
  * Responsibility :
- * Defines the default Google Workspace
- * structure.
+ * Defines one Google Workspace
+ * template.
  * ============================================
  */
 
 /**
  * Workspace template.
  */
-export const WORKSPACE_TEMPLATE = [
+export interface WorkspaceTemplate {
 
-  "Commercial",
+  /**
+   * Template identifier.
+   */
+  id: string;
 
-  "Contrats",
+  /**
+   * Template name.
+   */
+  name: string;
 
-  "Factures",
+  /**
+   * Workspace folders.
+   */
+  folders: string[];
 
-  "Documents",
+}
 
-  "IA",
+/**
+ * Default workspace template.
+ */
+export const WORKSPACE_TEMPLATE: WorkspaceTemplate = {
 
-] as const;
+  id: "default",
+
+  name: "Default Workspace",
+
+  folders: [
+
+    "Commercial",
+
+    "Contrats",
+
+    "Factures",
+
+    "Documents",
+
+    "IA",
+
+  ],
+
+};

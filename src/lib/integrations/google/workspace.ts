@@ -5,13 +5,16 @@
  * --------------------------------------------
  * File : workspace.ts
  * Responsibility :
- * Provides a unified entry point
- * for Google Workspace services.
+ * Unified entry point for
+ * every Google Workspace service.
  * ============================================
  */
 
+import { GoogleCalendarIntegration } from "./calendar";
 import { GoogleDocsIntegration } from "./docs";
 import { GoogleDriveIntegration } from "./drive";
+import { GoogleGmailIntegration } from "./gmail";
+import { GoogleSheetsIntegration } from "./sheets";
 
 /**
  * Google Workspace.
@@ -19,7 +22,7 @@ import { GoogleDriveIntegration } from "./drive";
 export class GoogleWorkspace {
 
   /**
-   * Returns Google Drive integration.
+   * Google Drive.
    */
   public static drive(): GoogleDriveIntegration {
 
@@ -28,11 +31,38 @@ export class GoogleWorkspace {
   }
 
   /**
-   * Returns Google Docs integration.
+   * Google Docs.
    */
   public static docs(): GoogleDocsIntegration {
 
     return new GoogleDocsIntegration();
+
+  }
+
+  /**
+   * Google Sheets.
+   */
+  public static sheets(): GoogleSheetsIntegration {
+
+    return new GoogleSheetsIntegration();
+
+  }
+
+  /**
+   * Google Calendar.
+   */
+  public static calendar(): GoogleCalendarIntegration {
+
+    return new GoogleCalendarIntegration();
+
+  }
+
+  /**
+   * Gmail.
+   */
+  public static gmail(): GoogleGmailIntegration {
+
+    return new GoogleGmailIntegration();
 
   }
 

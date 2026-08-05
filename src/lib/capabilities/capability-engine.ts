@@ -5,8 +5,7 @@
  * --------------------------------------------
  * File : capability-engine.ts
  * Responsibility :
- * Executes a capability through
- * its declared workflow.
+ * Executes Clara capabilities.
  * ============================================
  */
 
@@ -14,6 +13,9 @@ import { CapabilityRegistry } from "./capability-registry";
 
 import { GenerateDocumentContext } from "./generate-document/context";
 import { GenerateDocumentWorkflow } from "./generate-document/workflow";
+
+import { WorkspaceInstallContext } from "./workspace-install/context";
+import { WorkspaceInstallWorkflow } from "./workspace-install/workflow";
 
 /**
  * Capability execution request.
@@ -65,16 +67,19 @@ export interface CapabilityExecutionResult {
 export class CapabilityEngine {
 
   /**
-   * Capability registry.
+   * Registry.
    */
   private readonly registry =
     new CapabilityRegistry();
 
   /**
-   * Generate Document workflow.
+   * Workflows.
    */
-  private readonly generateDocumentWorkflow =
+  private readonly generateDocument =
     new GenerateDocumentWorkflow();
+
+  private readonly workspaceInstall =
+    new WorkspaceInstallWorkflow();
 
   /**
    * Executes one capability.
@@ -84,7 +89,9 @@ export class CapabilityEngine {
   ): Promise<CapabilityExecutionResult> {
 
     const capability =
-      this.registry.findById(request.capabilityId);
+      this.registry.findById(
+        request.capabilityId,
+      );
 
     if (!capability) {
 
@@ -100,43 +107,65 @@ export class CapabilityEngine {
 
     }
 
-    /**
-     * Temporary implementation.
-     * The registry will later expose the
-     * workflow directly.
-     */
-    if (request.capabilityId === "generate-document") {
+    switch (request.capabilityId) {
 
-      const result =
-        await this.generateDocumentWorkflow.execute(
+      case "generate-document": {
 
-          request.context as GenerateDocumentContext,
+        const result =
+          await this.generateDocument.execute(
 
-        );
+            request.context as GenerateDocumentContext,
 
-      return {
+          );
 
-        success: result.success,
+        return {
 
-        message: result.message,
+          success: result.success,
 
-        content: result.content,
+          message: result.message,
 
-        completedAt: result.completedAt,
+          content: result.content,
 
-      };
+          completedAt: result.completedAt,
+
+        };
+
+      }
+
+      case "workspace-install": {
+
+        const result =
+          await this.workspaceInstall.execute(
+
+            request.context as WorkspaceInstallContext,
+
+          );
+
+        return {
+
+          success: result.success,
+
+          message: result.message,
+
+          completedAt: result.completedAt,
+
+        };
+
+      }
+
+      default:
+
+        return {
+
+          success: false,
+
+          message: "Capability not implemented.",
+
+          completedAt: new Date(),
+
+        };
 
     }
-
-    return {
-
-      success: false,
-
-      message: "Capability not implemented.",
-
-      completedAt: new Date(),
-
-    };
 
   }
 

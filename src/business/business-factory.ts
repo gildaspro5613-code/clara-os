@@ -5,28 +5,38 @@
  * --------------------------------------------
  * File : business-factory.ts
  * Responsibility :
- * Creates one Business Engine.
+ * Creates the Business Engine.
  * ============================================
  */
 
 import { BusinessEngine } from "./business-engine";
 import { BusinessRegistry } from "./registry/business-registry";
 
+import { CLARA_ESSENTIALS } from "./applications/clara-essentials";
+
 /**
- * Business Factory.
+ * Business factory.
  */
 export class BusinessFactory {
 
   /**
-   * Creates one Business Engine.
+   * Creates the business engine.
    */
   public static create(): BusinessEngine {
 
     const registry: BusinessRegistry = {
 
-      applications: [],
+      applications: [
 
-      offers: [],
+        CLARA_ESSENTIALS,
+
+      ],
+
+      offers: [
+
+        CLARA_ESSENTIALS.offer,
+
+      ],
 
       pricing: [],
 
@@ -46,19 +56,7 @@ export class BusinessFactory {
 
       },
 
-      branding: {
-
-        companyName: "Melodie Digital",
-
-        primaryColor: "",
-
-        secondaryColor: "",
-
-        logo: "",
-
-        slogan: "",
-
-      },
+      branding: CLARA_ESSENTIALS.branding,
 
       distribution: [],
 
@@ -66,7 +64,11 @@ export class BusinessFactory {
 
     };
 
-    return new BusinessEngine(registry);
+    return new BusinessEngine(
+
+      registry,
+
+    );
 
   }
 

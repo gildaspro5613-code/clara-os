@@ -3,7 +3,6 @@
  * CLARA OS
  * Capability Registry
  * --------------------------------------------
- * File : capability-registry.ts
  * Responsibility :
  * Registers every capability available
  * inside Clara OS.
@@ -15,11 +14,17 @@ import {
   GenerateDocumentCapabilityDefinition,
 } from "./generate-document/capability";
 
+import {
+  WorkspaceInstallCapability,
+  WorkspaceInstallCapabilityDefinition,
+} from "./workspace-install/capability";
+
 /**
  * Capability definition.
  */
 export type CapabilityDefinition =
-  | GenerateDocumentCapability;
+  | GenerateDocumentCapability
+  | WorkspaceInstallCapability;
 
 /**
  * Capability Registry.
@@ -32,6 +37,8 @@ export class CapabilityRegistry {
   private readonly capabilities: CapabilityDefinition[] = [
 
     GenerateDocumentCapabilityDefinition,
+
+    WorkspaceInstallCapabilityDefinition,
 
   ];
 

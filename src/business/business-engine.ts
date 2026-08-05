@@ -5,14 +5,15 @@
  * --------------------------------------------
  * File : business-engine.ts
  * Responsibility :
- * Provides access to business resources.
+ * Central business engine.
  * ============================================
  */
 
+import { Application } from "./models/application";
 import { BusinessRegistry } from "./registry/business-registry";
 
 /**
- * Business Engine.
+ * Business engine.
  */
 export class BusinessEngine {
 
@@ -20,56 +21,60 @@ export class BusinessEngine {
    * Constructor.
    */
   constructor(
+
     private readonly registry: BusinessRegistry,
+
   ) {}
+
+  /**
+   * Returns every application.
+   */
+  public getApplications(): Application[] {
+
+    return this.registry.applications;
+
+  }
+
+  /**
+   * Returns one application.
+   */
+  public getApplication(
+    id: string,
+  ): Application | undefined {
+
+    return this.registry.applications.find(
+
+      application => application.id === id,
+
+    );
+
+  }
+
+  /**
+   * Returns every offer.
+   */
+  public getOffers() {
+
+    return this.registry.offers;
+
+  }
 
   /**
    * Returns company information.
    */
   public getCompany() {
+
     return this.registry.company;
-  }
 
-  /**
-   * Returns available applications.
-   */
-  public getApplications() {
-    return this.registry.applications;
-  }
-
-  /**
-   * Returns commercial offers.
-   */
-  public getOffers() {
-    return this.registry.offers;
-  }
-
-  /**
-   * Returns pricing rules.
-   */
-  public getPricing() {
-    return this.registry.pricing;
   }
 
   /**
    * Returns branding.
    */
   public getBranding() {
+
     return this.registry.branding;
-  }
 
-  /**
-   * Returns document templates.
-   */
-  public getDocuments() {
-    return this.registry.documents;
-  }
-
-  /**
-   * Returns distribution channels.
-   */
-  public getDistribution() {
-    return this.registry.distribution;
   }
 
 }

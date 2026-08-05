@@ -3,56 +3,118 @@
  * CLARA OS
  * Workspace Installer
  * --------------------------------------------
- * File : workspace-installer.ts
  * Responsibility :
- * Creates a complete Google Workspace
- * environment for a new customer.
+ * Installs one Clara application.
  * ============================================
  */
 
-import { GoogleWorkspace } from "@/lib/integrations/google/workspace";
+import { Application } from "@/business/models/application";
 
-import { WorkspaceInstallationResult } from "./workspace-installation-result";
+import { WorkspaceInstallationResult } from "../models/workspace-installation-result";
 
-/**
- * Workspace installer.
- */
+import { CreateCalendar } from "./workspace/create-calendar";
+import { CreateCompanyFolder } from "./workspace/create-company-folder";
+import { CreateDocuments } from "./workspace/create-documents";
+import { CreateEmails } from "./workspace/create-emails";
+import { CreateFolders } from "./workspace/create-folders";
+import { CreateSheets } from "./workspace/create-sheets";
+
 export class WorkspaceInstaller {
 
-  /**
-   * Creates the customer workspace.
-   */
+  private readonly companyFolder =
+    new CreateCompanyFolder();
+
+  private readonly folders =
+    new CreateFolders();
+
+  private readonly documents =
+    new CreateDocuments();
+
+  private readonly sheets =
+    new CreateSheets();
+
+  private readonly calendar =
+    new CreateCalendar();
+
+  private readonly emails =
+    new CreateEmails();
+
   public async install(
-    companyName: string,
+    application: Application,
   ): Promise<WorkspaceInstallationResult> {
 
-    const drive = GoogleWorkspace.drive();
+    const steps = [];
 
     const companyFolderId =
-      await drive.createFolder(companyName);
-
-    const folders = [
-
-      "Commercial",
-
-      "Contrats",
-
-      "Factures",
-
-      "Documents",
-
-      "IA",
-
-    ];
-
-    for (const folder of folders) {
-
-      await drive.createFolder(
-        folder,
-        companyFolderId,
+      await this.companyFolder.execute(
+        application.branding.companyName,
       );
 
-    }
+    steps.push({
+
+      name: "Create company folder",
+
+      success: true,
+
+    });
+
+    await this.folders.execute(
+      companyFolderId,
+    );
+
+    steps.push({
+
+      name: "Create folders",
+
+      success: true,
+
+    });
+
+    await this.documents.execute(
+      application.branding.companyName,
+    );
+
+    steps.push({
+
+      name: "Create documents",
+
+      success: true,
+
+    });
+
+    await this.sheets.execute(
+      application.branding.companyName,
+    );
+
+    steps.push({
+
+      name: "Create spreadsheets",
+
+      success: true,
+
+    });
+
+    await this.calendar.execute(
+      application.branding.companyName,
+    );
+
+    steps.push({
+
+      name: "Create calendar",
+
+      success: true,
+
+    });
+
+    await this.emails.execute();
+
+    steps.push({
+
+      name: "Initialize Gmail",
+
+      success: true,
+
+    });
 
     return {
 
@@ -60,12 +122,16 @@ export class WorkspaceInstaller {
 
       companyFolderId,
 
-      foldersCreated: folders.length,
+      foldersCreated:
+        application.workspace.folders.length,
+
+      steps,
 
       message:
-        "Workspace installed successfully.",
+        `${application.name} installed successfully.`,
 
-      completedAt: new Date(),
+      completedAt:
+        new Date(),
 
     };
 

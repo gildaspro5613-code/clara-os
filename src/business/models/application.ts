@@ -9,34 +9,53 @@
  * ============================================
  */
 
+import { Offer } from "./offer";
+import { Branding } from "./branding";
+import { WorkspaceTemplate } from "../templates/workspace-template";
+
 /**
- * One Clara application.
+ * Clara application.
  */
 export interface Application {
 
   /**
-   * Unique application identifier.
+   * Identifier.
    */
   id: string;
 
   /**
-   * Public application name.
+   * Display name.
    */
   name: string;
 
   /**
-   * Short description.
+   * Description.
    */
   description: string;
 
   /**
-   * Current version.
+   * Commercial offer.
    */
-  version: string;
+  offer: Offer;
 
   /**
-   * Is application enabled.
+   * Branding.
    */
-  enabled: boolean;
+  branding: Branding;
+
+  /**
+   * Workspace template.
+   */
+  workspace: WorkspaceTemplate;
+
+  /**
+   * Enabled connectors.
+   */
+  connectors: string[];
+
+  /**
+   * Enabled capabilities.
+   */
+  capabilities: string[];
 
 }

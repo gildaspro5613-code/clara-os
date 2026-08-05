@@ -11,12 +11,17 @@
 
 import Image from "next/image";
 
+/**
+ * Hero character.
+ */
 export default function HeroCharacter() {
+
   return (
+
     <div className="relative flex items-end justify-center">
 
       <Image
-        src="/images/clara/clara.png"
+        src="/images/clara/summer/Clara.png"
         alt="Clara"
         width={520}
         height={720}
@@ -25,5 +30,7 @@ export default function HeroCharacter() {
       />
 
     </div>
+
   );
+
 }
