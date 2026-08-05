@@ -13,3 +13,5 @@ export type { UploadFileOptions, DriveUploadedFile } from "./upload-file";
 export { uploadFile } from "./upload-file";
 export type { DownloadFileOptions } from "./download-file";
 export { downloadFile } from "./download-file";
+export type { UpdateFileOptions, DriveUpdatedFile } from "./update-file";
+export { updateFile } from "./update-file";
