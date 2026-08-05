@@ -1,4 +1,6 @@
 export { DriveClient } from "./drive-client";
+export type { CreateFolderOptions, DriveFolder } from "./create-folder";
+export { createFolder } from "./create-folder";
 export type { DriveFileDetail } from "./get-file";
 export { getFile } from "./get-file";
 export type {
