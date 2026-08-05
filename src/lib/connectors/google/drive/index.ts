@@ -11,3 +11,5 @@ export type {
 export { listFiles } from "./list-files";
 export type { UploadFileOptions, DriveUploadedFile } from "./upload-file";
 export { uploadFile } from "./upload-file";
+export type { DownloadFileOptions } from "./download-file";
+export { downloadFile } from "./download-file";
