@@ -22,3 +22,5 @@ export { deleteFile } from "./delete-file";
 export { shareFile } from "./share-file";
 export { listPermissions } from "./list-permissions";
 export { removePermission } from "./remove-permission";
+export type { ExportMimeType } from "./export-google-doc";
+export { exportGoogleDoc } from "./export-google-doc";
