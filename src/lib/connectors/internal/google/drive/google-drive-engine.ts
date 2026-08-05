@@ -40,10 +40,9 @@ export class GoogleDriveEngine {
   /**
    * Creates a Google Drive engine.
    */
-  constructor() {
-
-    const drive =
-      new DriveClient().create();
+  constructor(
+    drive = new DriveClient().create(),
+  ) {
 
     this.files =
       new DriveFiles(drive);

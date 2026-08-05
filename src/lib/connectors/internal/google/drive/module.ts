@@ -34,7 +34,7 @@ export const GOOGLE_DRIVE_MODULE = {
   description:
     "Provides access to Google Drive through Clara OS.",
 
-  client: new DriveClient(),
+  client: googleDriveClient,
 
   folders:
     new DriveFolders(
@@ -54,6 +54,8 @@ export const GOOGLE_DRIVE_MODULE = {
     googleDriveClient,
   ),
 
-  engine: new GoogleDriveEngine(),
+  engine: new GoogleDriveEngine(
+    googleDriveClient,
+  ),
 
 } as const;

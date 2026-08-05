@@ -43,6 +43,23 @@ export interface GoogleDriveContext {
   /**
    * Sharing permissions.
    */
-  permissions?: string[];
+  permissions?: GoogleDrivePermissionInput[];
+
+}
+
+/**
+ * Google Drive permission input.
+ */
+export interface GoogleDrivePermissionInput {
+
+  /**
+   * Recipient email address.
+   */
+  email: string;
+
+  /**
+   * Permission role.
+   */
+  role?: "reader" | "commenter" | "writer";
 
 }

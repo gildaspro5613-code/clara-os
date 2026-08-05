@@ -12,6 +12,8 @@
 
 import type { drive_v3 } from "googleapis";
 
+import type { GoogleDrivePermissionInput } from "./google-drive-context";
+
 /**
  * Google Drive permissions service.
  */
@@ -29,13 +31,13 @@ export class DrivePermissions {
    */
   public async share(
     fileId: string,
-    permissions: string[],
+    permissions: GoogleDrivePermissionInput[],
   ): Promise<void> {
 
-    for (const email of permissions) {
+    for (const permission of permissions) {
 
       const normalizedEmail =
-        email.trim();
+        permission.email.trim();
 
       if (!normalizedEmail) {
 
@@ -55,7 +57,8 @@ export class DrivePermissions {
 
           type: "user",
 
-          role: "writer",
+          role:
+            permission.role ?? "writer",
 
           emailAddress:
             normalizedEmail,

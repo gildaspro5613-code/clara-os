@@ -238,6 +238,7 @@ export class DriveFiles {
     content: unknown,
   ): Readable {
 
+
     if (content instanceof Uint8Array) {
 
       return Readable.from(content);
@@ -252,11 +253,6 @@ export class DriveFiles {
 
     }
 
-    if (Buffer.isBuffer(content)) {
-
-      return Readable.from(content);
-
-    }
 
     if (content === undefined) {
 
