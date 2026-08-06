@@ -45,7 +45,7 @@ export default function GlassPanel({ children, className = "" }: GlassPanelProps
     >
       {/* Inner highlight — top-edge shimmer */}
       <div
-        aria-hidden
+        aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"
       />
 
