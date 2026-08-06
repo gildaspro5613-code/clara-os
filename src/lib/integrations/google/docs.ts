@@ -10,11 +10,9 @@
  * ============================================
  */
 
-import type { docs_v1 } from "googleapis";
-
 import {
   createDocument as createGoogleDocument,
-  getDocument as getGoogleDocument,
+  DocsClient,
   insertText as insertDocumentText,
 } from "@/lib/connectors/google/docs";
 
@@ -41,9 +39,15 @@ export class GoogleDocsIntegration {
    */
   public async getDocument(
     documentId: string,
-  ): Promise<docs_v1.Schema$Document> {
+  ) {
 
-    return getGoogleDocument({ documentId });
+    const docs = new DocsClient().create();
+
+    return docs.documents.get({
+
+      documentId,
+
+    });
 
   }
 

@@ -125,7 +125,7 @@ export async function replaceText(
     occurrencesChanged:
       response.replies?.[0]?.replaceAllText?.occurrencesChanged ?? 0,
 
-    writeControl: response.writeControl ?? undefined,
+    writeControl: response.writeControl,
 
   };
 

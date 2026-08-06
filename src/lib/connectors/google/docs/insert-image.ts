@@ -134,7 +134,7 @@ export async function insertImage(
 
     objectId: response.replies?.[0]?.insertInlineImage?.objectId ?? undefined,
 
-    writeControl: response.writeControl ?? undefined,
+    writeControl: response.writeControl,
 
   };
 
