@@ -173,21 +173,27 @@ export async function createSheet(
 
   }
 
-  const createdSheets =
-    (response.data.sheets ?? [])
-      .map((entry) => entry.properties)
-      .filter(
-        (properties): properties is sheets_v4.Schema$SheetProperties & {
-          sheetId: number;
-          title: string;
-        } =>
-          typeof properties?.sheetId === "number" &&
-          typeof properties.title === "string",
-      )
-      .map((properties) => ({
-        sheetId: properties.sheetId,
-        title: properties.title,
-      }));
+  const createdSheets = (response.data.sheets ?? []).map((entry, index) => {
+
+    const properties = entry.properties;
+
+    if (
+      typeof properties?.sheetId !== "number" ||
+      typeof properties.title !== "string"
+    ) {
+
+      throw new Error(
+        `createSheet: Google API returned incomplete sheet metadata at index ${index}.`,
+      );
+
+    }
+
+    return {
+      sheetId: properties.sheetId,
+      title: properties.title,
+    };
+
+  });
 
   return {
 

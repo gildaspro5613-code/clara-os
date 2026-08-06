@@ -68,9 +68,9 @@ export interface UpdateRangeOptions {
 export interface UpdateRangeResult {
 
   /**
-   * Number of updated ranges.
+   * Number of updated sheets touched by the batch update.
    */
-  totalUpdatedRanges: number;
+  totalUpdatedSheets: number;
 
   /**
    * Number of updated rows.
@@ -155,7 +155,7 @@ export async function updateRange(
 
   return {
 
-    totalUpdatedRanges: response.data.totalUpdatedRanges ?? 0,
+    totalUpdatedSheets: response.data.totalUpdatedSheets ?? 0,
 
     totalUpdatedRows: response.data.totalUpdatedRows ?? 0,
 
