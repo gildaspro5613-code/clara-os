@@ -10,36 +10,18 @@
  * ============================================
  */
 
-import { google } from "googleapis";
+import type { docs_v1 } from "googleapis";
 
-import { GoogleIntegration } from "./auth";
+import {
+  createDocument as createGoogleDocument,
+  getDocument as getGoogleDocument,
+  insertText as insertDocumentText,
+} from "@/lib/connectors/google/docs";
 
 /**
  * Google Docs integration.
  */
 export class GoogleDocsIntegration {
-
-  /**
-   * Google Docs API.
-   */
-  private readonly docs;
-
-  /**
-   * Constructor.
-   */
-  constructor() {
-
-    const auth = GoogleIntegration.createClient();
-
-    this.docs = google.docs({
-
-      version: "v1",
-
-      auth,
-
-    });
-
-  }
 
   /**
    * Creates a document.
@@ -48,18 +30,9 @@ export class GoogleDocsIntegration {
     title: string,
   ): Promise<string> {
 
-    const response =
-      await this.docs.documents.create({
+    const document = await createGoogleDocument({ title });
 
-        requestBody: {
-
-          title,
-
-        },
-
-      });
-
-    return response.data.documentId ?? "";
+    return document.documentId;
 
   }
 
@@ -68,13 +41,9 @@ export class GoogleDocsIntegration {
    */
   public async getDocument(
     documentId: string,
-  ) {
+  ): Promise<docs_v1.Schema$Document> {
 
-    return this.docs.documents.get({
-
-      documentId,
-
-    });
+    return getGoogleDocument({ documentId });
 
   }
 
@@ -86,33 +55,11 @@ export class GoogleDocsIntegration {
     text: string,
   ): Promise<void> {
 
-    await this.docs.documents.batchUpdate({
+    await insertDocumentText({
 
       documentId,
 
-      requestBody: {
-
-        requests: [
-
-          {
-
-            insertText: {
-
-              location: {
-
-                index: 1,
-
-              },
-
-              text,
-
-            },
-
-          },
-
-        ],
-
-      },
+      text,
 
     });
 
@@ -122,15 +69,6 @@ export class GoogleDocsIntegration {
    * Deletes a document.
    */
   public async deleteDocument(): Promise<void> {
-
-    /**
-     * Google Docs API
-     * does not support deleting
-     * documents directly.
-     *
-     * Deletion must be done
-     * through Google Drive.
-     */
 
     throw new Error(
 
