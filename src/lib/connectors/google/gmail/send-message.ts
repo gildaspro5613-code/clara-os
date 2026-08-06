@@ -11,10 +11,10 @@
  */
 
 import type { gmail_v1 } from "googleapis";
+import { randomBytes } from "node:crypto";
 
-import { GmailClient } from "./gmail-client";
+import { DEFAULT_GMAIL_USER_ID, GmailClient } from "./gmail-client";
 
-const DEFAULT_USER_ID = "me";
 const MIME_LINE_BREAK = "\r\n";
 
 /**
@@ -96,7 +96,7 @@ export async function sendMessage(
 
   const response = await gmail.users.messages.send({
 
-    userId: options.userId ?? DEFAULT_USER_ID,
+    userId: options.userId ?? DEFAULT_GMAIL_USER_ID,
 
     requestBody: {
 
@@ -174,11 +174,11 @@ function buildSinglePartMessage(
 
       'Content-Type: text/plain; charset="UTF-8"',
 
-      "Content-Transfer-Encoding: 7bit",
+      "Content-Transfer-Encoding: base64",
 
       "",
 
-      textBody,
+      encodeMimePartContent(textBody),
 
     ].join(MIME_LINE_BREAK);
 
@@ -190,11 +190,11 @@ function buildSinglePartMessage(
 
     'Content-Type: text/html; charset="UTF-8"',
 
-    "Content-Transfer-Encoding: 7bit",
+    "Content-Transfer-Encoding: base64",
 
     "",
 
-    htmlBody ?? "",
+    encodeMimePartContent(htmlBody ?? ""),
 
   ].join(MIME_LINE_BREAK);
 
@@ -209,7 +209,7 @@ function buildMultipartMessage(
   htmlBody: string,
 ): string {
 
-  const boundary = `claraos_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+  const boundary = randomBytes(24).toString("hex");
 
   return [
 
@@ -223,21 +223,21 @@ function buildMultipartMessage(
 
     'Content-Type: text/plain; charset="UTF-8"',
 
-    "Content-Transfer-Encoding: 7bit",
+    "Content-Transfer-Encoding: base64",
 
     "",
 
-    textBody,
+    encodeMimePartContent(textBody),
 
     `--${boundary}`,
 
     'Content-Type: text/html; charset="UTF-8"',
 
-    "Content-Transfer-Encoding: 7bit",
+    "Content-Transfer-Encoding: base64",
 
     "",
 
-    htmlBody,
+    encodeMimePartContent(htmlBody),
 
     `--${boundary}--`,
 
@@ -257,6 +257,19 @@ function toBase64Url(message: string): string {
     .replace(/\+/g, "-")
     .replace(/\//g, "_")
     .replace(/=+$/u, "");
+
+}
+
+/**
+ * Encodes MIME part content as base64 with line wrapping.
+ */
+function encodeMimePartContent(content: string): string {
+
+  const encoded = Buffer.from(content, "utf8").toString("base64");
+
+  const lines = encoded.match(/.{1,76}/g);
+
+  return lines?.join(MIME_LINE_BREAK) ?? "";
 
 }
 
@@ -288,13 +301,7 @@ function validateAddresses(
 
   }
 
-  for (const address of cleanAddresses) {
-
-    sanitizeHeaderValue(address);
-
-  }
-
-  return cleanAddresses;
+  return cleanAddresses.map((address) => sanitizeHeaderValue(address));
 
 }
 

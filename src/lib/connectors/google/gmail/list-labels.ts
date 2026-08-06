@@ -12,9 +12,8 @@
 
 import type { gmail_v1 } from "googleapis";
 
-import { GmailClient } from "./gmail-client";
+import { DEFAULT_GMAIL_USER_ID, GmailClient } from "./gmail-client";
 
-const DEFAULT_USER_ID = "me";
 
 /**
  * Options for listing Gmail labels.
@@ -46,7 +45,7 @@ export async function listLabels(
 
   const response = await gmail.users.labels.list({
 
-    userId: options?.userId ?? DEFAULT_USER_ID,
+    userId: options?.userId ?? DEFAULT_GMAIL_USER_ID,
 
   });
 

@@ -12,13 +12,12 @@
 
 import type { gmail_v1 } from "googleapis";
 
-import { GmailClient } from "./gmail-client";
+import { DEFAULT_GMAIL_USER_ID, GmailClient } from "./gmail-client";
 import {
   buildRawMimeMessage,
   type EmailMessageOptions,
 } from "./send-message";
 
-const DEFAULT_USER_ID = "me";
 
 /**
  * Options for creating a Gmail draft.
@@ -51,7 +50,7 @@ export async function draftMessage(
 
   const response = await gmail.users.drafts.create({
 
-    userId: options.userId ?? DEFAULT_USER_ID,
+    userId: options.userId ?? DEFAULT_GMAIL_USER_ID,
 
     requestBody: {
 

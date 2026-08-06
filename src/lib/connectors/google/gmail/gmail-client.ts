@@ -16,6 +16,11 @@ import type { gmail_v1 } from "googleapis";
 import { GoogleAuth } from "@/lib/connectors/internal/google/auth/google-auth";
 
 /**
+ * Default Gmail user identifier for authenticated calls.
+ */
+export const DEFAULT_GMAIL_USER_ID = "me";
+
+/**
  * Google Gmail client factory.
  */
 export class GmailClient {

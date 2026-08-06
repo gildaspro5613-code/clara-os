@@ -12,9 +12,8 @@
 
 import type { gmail_v1 } from "googleapis";
 
-import { GmailClient } from "./gmail-client";
+import { DEFAULT_GMAIL_USER_ID, GmailClient } from "./gmail-client";
 
-const DEFAULT_USER_ID = "me";
 
 /**
  * Options for modifying labels on a Gmail message.
@@ -53,6 +52,7 @@ export interface ModifyLabelsOptions {
  * @param options - User id, message id and label modifications.
  * @returns The updated Gmail message.
  * @throws {Error} When `messageId` is empty or blank.
+ * @throws {Error} When no label ids are provided for addition or removal.
  */
 export async function modifyLabels(
   options: ModifyLabelsOptions,
@@ -64,11 +64,22 @@ export async function modifyLabels(
 
   }
 
+  if (
+    (!options.addLabelIds || options.addLabelIds.length === 0) &&
+    (!options.removeLabelIds || options.removeLabelIds.length === 0)
+  ) {
+
+    throw new Error(
+      "modifyLabels: at least one label id must be provided in addLabelIds or removeLabelIds.",
+    );
+
+  }
+
   const gmail = new GmailClient().create();
 
   const response = await gmail.users.messages.modify({
 
-    userId: options.userId ?? DEFAULT_USER_ID,
+    userId: options.userId ?? DEFAULT_GMAIL_USER_ID,
 
     id: options.messageId,
 

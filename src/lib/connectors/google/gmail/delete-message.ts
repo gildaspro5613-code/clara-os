@@ -10,9 +10,8 @@
  * ============================================
  */
 
-import { GmailClient } from "./gmail-client";
+import { DEFAULT_GMAIL_USER_ID, GmailClient } from "./gmail-client";
 
-const DEFAULT_USER_ID = "me";
 
 /**
  * Options for deleting one Gmail message.
@@ -56,7 +55,7 @@ export async function deleteMessage(
 
   await gmail.users.messages.delete({
 
-    userId: options.userId ?? DEFAULT_USER_ID,
+    userId: options.userId ?? DEFAULT_GMAIL_USER_ID,
 
     id: options.messageId,
 
