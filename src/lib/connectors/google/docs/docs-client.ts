@@ -162,7 +162,7 @@ export function normalizeWriteControl(
   }
 
   const requiredRevisionId =
-    writeControl.requiredRevisionId === undefined
+    writeControl.requiredRevisionId == null
       ? undefined
       : assertNonEmptyString(
         writeControl.requiredRevisionId,
@@ -171,7 +171,7 @@ export function normalizeWriteControl(
       );
 
   const targetRevisionId =
-    writeControl.targetRevisionId === undefined
+    writeControl.targetRevisionId == null
       ? undefined
       : assertNonEmptyString(
         writeControl.targetRevisionId,
@@ -281,7 +281,9 @@ function normalizeLocation(
   operation: string,
 ): docs_v1.Schema$Location {
 
-  if (!Number.isInteger(location.index) || location.index < 0) {
+  const index = location.index;
+
+  if (typeof index !== "number" || !Number.isInteger(index) || index < 0) {
 
     throw new Error(`${operation}: location.index must be a non-negative integer.`);
 
@@ -289,15 +291,15 @@ function normalizeLocation(
 
   return {
 
-    index: location.index,
+    index,
 
     segmentId:
-      location.segmentId === undefined
+      location.segmentId == null
         ? undefined
         : assertNonEmptyString(location.segmentId, "location.segmentId", operation),
 
     tabId:
-      location.tabId === undefined
+      location.tabId == null
         ? undefined
         : assertNonEmptyString(location.tabId, "location.tabId", operation),
 
@@ -316,7 +318,7 @@ function normalizeEndOfSegmentLocation(
   return {
 
     segmentId:
-      location.segmentId === undefined
+      location.segmentId == null
         ? undefined
         : assertNonEmptyString(
           location.segmentId,
@@ -325,7 +327,7 @@ function normalizeEndOfSegmentLocation(
         ),
 
     tabId:
-      location.tabId === undefined
+      location.tabId == null
         ? undefined
         : assertNonEmptyString(
           location.tabId,
