@@ -11,7 +11,7 @@
  * ============================================
  */
 
-import BriefPanel from "@/components/cockpit/panels/BriefPanel";
+import Stage from "@/components/cockpit/Stage";
 import HeroBackground from "./HeroBackground";
 
 /**
@@ -24,13 +24,7 @@ export default function Hero() {
   return (
     <section className="relative w-full min-h-[560px] overflow-hidden">
       <HeroBackground />
-
-      {/* Greeting panel — floats over the office, right side to keep Clara's face visible */}
-      <div className="absolute inset-0 flex items-center justify-end pointer-events-none">
-        <div className="w-full max-w-sm mx-6 sm:mx-10 md:mr-16 lg:mr-24">
-          <BriefPanel />
-        </div>
-      </div>
+      <Stage />
     </section>
   );
 }
