@@ -5,37 +5,15 @@
  * --------------------------------------------
  * File : HeroActions.tsx
  * Responsibility :
- * Displays Clara's primary actions.
+ * Reserved overlay container for Clara's primary
+ * actions above the cockpit scene.
+ * Populated in a later phase.
  * ============================================
  */
 
-import { getSession } from "@/lib/core";
-import { getActions } from "@/lib/clara";
-
+/**
+ * Empty overlay slot for Hero actions.
+ */
 export default function HeroActions() {
-
-  const session = getSession();
-
-  const actions = session.recommendation
-    ? getActions(session.recommendation)
-    : [
-        "Parler à Clara",
-        "Voir le journal",
-        "Ouvrir les missions",
-      ];
-
-  return (
-    <div className="flex flex-wrap gap-4">
-
-      {actions.map((action) => (
-        <button
-          key={action}
-          className="rounded-xl border border-slate-600 px-6 py-3 font-medium text-slate-200 transition hover:border-slate-400"
-        >
-          {action}
-        </button>
-      ))}
-
-    </div>
-  );
+  return <div />;
 }
