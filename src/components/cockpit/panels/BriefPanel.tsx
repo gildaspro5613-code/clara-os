@@ -18,20 +18,16 @@ import GlassPanel from "@/components/ui/GlassPanel";
  */
 export default function BriefPanel() {
   return (
-    <GlassPanel className="max-w-[15rem] px-6 py-7 bg-white/[0.035] border-white/[0.08] shadow-[0_2px_18px_rgba(0,0,0,0.18)]">
-      <p className="mb-6 text-xs font-semibold uppercase tracking-widest text-white/40">
-        Clara OS
-      </p>
-
-      <h2 className="mb-3 text-[1.6rem] leading-snug font-light text-white/90">
+    <GlassPanel className="max-w-[15rem] px-6 py-5 bg-white/[0.035] border-white/[0.08] shadow-[0_2px_18px_rgba(0,0,0,0.18)]">
+      <h2 className="mb-2 text-[1.6rem] leading-snug font-light text-white/90">
         Bonjour Gildas.
       </h2>
 
-      <p className="mb-5 text-sm leading-relaxed text-white/72">
+      <p className="mb-3 text-sm leading-normal text-white/72">
         J&rsquo;ai préparé votre journée.
       </p>
 
-      <p className="mb-7 text-sm leading-relaxed text-white/58">
+      <p className="mb-4 text-sm leading-normal text-white/58">
         Deux sujets méritent votre attention.
       </p>
 
