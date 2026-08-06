@@ -1,3 +1,18 @@
+/**
+ * ============================================
+ * CLARA OS
+ * Google Calendar
+ * --------------------------------------------
+ * File : index.ts
+ * Responsibility :
+ * Public exports for Google Calendar
+ * connector client and operations.
+ * ============================================
+ */
+
+/**
+ * Google Calendar connector public API exports.
+ */
 export { CalendarClient } from "./calendar-client";
 export type {
   ListCalendarsOptions,
