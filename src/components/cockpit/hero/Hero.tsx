@@ -12,23 +12,15 @@
  */
 
 import HeroBackground from "./HeroBackground";
-import HeroScene from "./HeroScene";
 
 /**
  * Clara's office Hero.
  * The cockpit image is the permanent backdrop.
- * All UI elements float above it via HeroScene.
  */
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden rounded-3xl">
-
-      {/* Permanent cockpit office background */}
+    <section className="relative w-full min-h-[560px] overflow-hidden">
       <HeroBackground />
-
-      {/* Overlay layout for all future Hero regions */}
-      <HeroScene />
-
     </section>
   );
 }
