@@ -14,12 +14,11 @@ import Image from "next/image";
 
 /**
  * Presentation-only Hero background.
- * Renders the cockpit office image as a full-cover backdrop with a subtle dark layer
- * to preserve foreground readability.
+ * Renders the official cockpit office image as a full-cover backdrop.
  */
 export default function HeroBackground() {
   return (
-    <div className="absolute inset-0 overflow-hidden rounded-3xl">
+    <div className="absolute inset-0 w-full overflow-hidden">
       <Image
         src="/cockpit/summer/cockpit.png"
         alt=""
@@ -28,7 +27,6 @@ export default function HeroBackground() {
         className="object-cover object-center"
         sizes="100vw"
       />
-      <div className="absolute inset-0 bg-black/30" />
     </div>
   );
 }
