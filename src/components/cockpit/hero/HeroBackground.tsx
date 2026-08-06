@@ -27,7 +27,6 @@ export default function HeroBackground() {
         priority
         className="object-cover object-center"
         sizes="100vw"
-        aria-hidden="true"
       />
       <div className="absolute inset-0 bg-black/30" />
     </div>
