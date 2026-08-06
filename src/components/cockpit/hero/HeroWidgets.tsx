@@ -3,17 +3,18 @@
  * CLARA OS
  * Cockpit Module
  * --------------------------------------------
- * File : HeroCharacter.tsx
+ * File : HeroWidgets.tsx
  * Responsibility :
- * Reserved overlay container for Clara's character
- * inside the Hero section.
+ * Reserved overlay container for future floating
+ * widgets above the cockpit scene.
  * Populated in a later phase.
  * ============================================
  */
 
 /**
- * Empty overlay slot for the Hero character.
+ * Empty overlay slot for Hero widgets.
+ * Widgets will float above the office in future phases.
  */
-export default function HeroCharacter() {
+export default function HeroWidgets() {
   return <div />;
 }
