@@ -29,7 +29,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
       <Sidebar />
 
       {/* Main content */}
-      <div className="ml-72 flex min-h-screen flex-col">
+      <div className="ml-72 flex h-screen flex-col overflow-hidden">
         {/* Top header */}
         <Header />
 
