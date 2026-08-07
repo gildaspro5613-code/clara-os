@@ -15,12 +15,13 @@ import GlassPanel from "@/components/ui/GlassPanel";
 
 export default function TodayPanel() {
   return (
-    <GlassPanel title="Aujourd'hui">
+    <GlassPanel
+      title="Aujourd'hui"
+      className="h-full w-full border-white/12 bg-black/28 px-6 py-5 shadow-[0_20px_60px_rgba(0,0,0,0.34)]"
+    >
       <div className="space-y-5">
-
         <div className="flex items-start gap-3">
           <div className="mt-2 h-2.5 w-2.5 rounded-full bg-cyan-400" />
-
           <div>
             <p className="font-semibold">
               Développement Clara OS
@@ -35,12 +36,9 @@ export default function TodayPanel() {
             </p>
           </div>
         </div>
-
         <div className="h-px bg-white/10" />
-
         <div className="flex items-start gap-3">
           <div className="mt-2 h-2.5 w-2.5 rounded-full bg-emerald-400" />
-
           <div>
             <p className="font-semibold">
               Validation de l'interface
@@ -55,12 +53,9 @@ export default function TodayPanel() {
             </p>
           </div>
         </div>
-
         <div className="h-px bg-white/10" />
-
         <div className="flex items-start gap-3">
           <div className="mt-2 h-2.5 w-2.5 rounded-full bg-violet-400" />
-
           <div>
             <p className="font-semibold">
               Préparer le Life Engine
@@ -75,7 +70,6 @@ export default function TodayPanel() {
             </p>
           </div>
         </div>
-
       </div>
     </GlassPanel>
   );

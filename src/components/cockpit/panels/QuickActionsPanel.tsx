@@ -24,13 +24,17 @@ export default function QuickActionsPanel() {
   ];
 
   return (
-    <GlassPanel title="Raccourcis rapides">
+    <GlassPanel
+      title="Raccourcis rapides"
+      className="h-full w-full border-white/12 bg-black/28 px-6 py-5 shadow-[0_20px_60px_rgba(0,0,0,0.34)]"
+    >
       <div className="grid grid-cols-3 gap-3">
-
         {actions.map((action) => (
           <button
+            type="button"
             key={action}
             className="
+              h-14
               rounded-2xl
               border
               border-white/10
@@ -51,7 +55,6 @@ export default function QuickActionsPanel() {
             {action}
           </button>
         ))}
-
       </div>
     </GlassPanel>
   );
