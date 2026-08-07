@@ -41,7 +41,7 @@ export default function TodayPanel() {
           <div className="mt-2 h-2.5 w-2.5 rounded-full bg-emerald-400" />
           <div>
             <p className="font-semibold">
-              Validation de l'interface
+              Validation de l&apos;interface
             </p>
 
             <p className="mt-1 text-sm text-white/70">
