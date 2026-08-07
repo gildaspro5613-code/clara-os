@@ -27,7 +27,7 @@ export interface CockpitLayoutProps {
  */
 export default function CockpitLayout({ hero }: CockpitLayoutProps) {
   return (
-    <main className="relative h-full w-full">
+    <main className="relative w-full flex-1">
 
       {/* Office — primary experience */}
       {hero}

@@ -34,7 +34,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         <Header />
 
         {/* Workspace */}
-        <main className="relative flex-1 overflow-hidden">
+        <main className="relative flex flex-1 overflow-hidden">
           {children}
         </main>
       </div>
