@@ -56,7 +56,7 @@ export default function ConversationsPanel() {
             </span>
           </div>
           <p className="mt-2 text-sm text-white/70">
-            Deux rendez-vous sont confirmés aujourd'hui.
+            Deux rendez-vous sont confirmés aujourd&apos;hui.
           </p>
         </div>
       </div>

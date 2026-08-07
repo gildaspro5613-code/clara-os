@@ -36,11 +36,12 @@ export default function SummaryPanel() {
         </div>
         <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
           <p className="text-xs uppercase tracking-[0.20em] text-white/50">
-            Aujourd'hui
+            Aujourd&apos;hui
           </p>
+
           <p className="mt-2 text-sm leading-relaxed text-white/75">
             Belle progression. Le cockpit est presque finalisé et Clara poursuit
-            l'assemblage des derniers éléments de l'interface.
+            l&apos;assemblage des derniers éléments de l&apos;interface.
           </p>
         </div>
       </div>

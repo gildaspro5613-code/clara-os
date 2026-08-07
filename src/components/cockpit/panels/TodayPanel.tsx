@@ -28,7 +28,7 @@ export default function TodayPanel() {
             </p>
 
             <p className="mt-1 text-sm text-white/70">
-              Continuer l'assemblage du cockpit V1.
+              Continuer l&apos;assemblage du cockpit V1.
             </p>
 
             <p className="mt-2 text-xs text-white/45">

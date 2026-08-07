@@ -26,7 +26,7 @@ export default function TasksPanel() {
           </p>
 
           <p className="mt-2 text-sm leading-relaxed text-white/70">
-            Clara poursuit l'intégration des derniers éléments de l'interface.
+            Clara poursuit l&apos;intégration des derniers éléments de l&apos;interface.
           </p>
         </div>
         <div>
