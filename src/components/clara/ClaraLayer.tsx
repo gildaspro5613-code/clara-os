@@ -24,20 +24,22 @@ export default function ClaraLayer() {
   return (
     <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden">
       <div
-        className="absolute top-1/2 left-1/2 relative"
+        className="absolute top-1/2 left-1/2"
         style={{
           ...canvasStyle,
           transform: "translate(-50%, -50%)",
         }}
       >
-        <Image
-          src="/clara/master/Clara_Master.png"
-          alt="Clara"
-          fill
-          priority
-          sizes="100vw"
-          className="select-none object-cover"
-        />
+        <div className="relative h-full w-full">
+          <Image
+            src="/clara/master/Clara_Master.png"
+            alt="Clara"
+            fill
+            priority
+            sizes="100vw"
+            className="select-none object-cover"
+          />
+        </div>
       </div>
     </div>
   );
