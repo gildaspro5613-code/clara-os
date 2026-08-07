@@ -12,9 +12,12 @@
  * ============================================
  */
 
-import BriefPanel from "@/components/cockpit/panels/BriefPanel";
-import AgendaPanel from "@/components/cockpit/panels/AgendaPanel";
-import GlassPanel from "@/components/ui/GlassPanel";
+import AttentionPanel from "@/components/cockpit/panels/AttentionPanel";
+import SummaryPanel from "@/components/cockpit/panels/SummaryPanel";
+import TodayPanel from "@/components/cockpit/panels/TodayPanel";
+import ConversationsPanel from "@/components/cockpit/panels/ConversationsPanel";
+import TasksPanel from "@/components/cockpit/panels/TasksPanel";
+import QuickActionsPanel from "@/components/cockpit/panels/QuickActionsPanel";
 
 const stageStyles = `
   @keyframes stage-fade-in {
@@ -25,44 +28,69 @@ const stageStyles = `
     opacity: 0;
     animation: stage-fade-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
-  .stage-enter-1 { animation-delay: 0ms; }
-  .stage-enter-2 { animation-delay: 180ms; }
-  .stage-enter-3 { animation-delay: 360ms; }
+  .stage-enter-1 { animation-delay:   0ms; }
+  .stage-enter-2 { animation-delay: 120ms; }
+  .stage-enter-3 { animation-delay: 240ms; }
+  .stage-enter-4 { animation-delay: 360ms; }
+  .stage-enter-5 { animation-delay: 480ms; }
+  .stage-enter-6 { animation-delay: 600ms; }
 `;
 
 /**
- * Presentation-only Hero stage.
- * Arranges floating panels with absolute positioning.
- * Panels enter sequentially via CSS-only staged animations.
+ * Presentation-only stage.
+ *
+ * Layout mirrors the official maquette:
+ *
+ *   LEFT  |  [Clara]  |  RIGHT
+ *   ------+-----------+------
+ *   Attention         Résumé
+ *   Aujourd'hui       Conversations
+ *   À faire           Raccourcis
+ *
+ * Panels sit near their respective edges; Clara occupies the centre.
+ * Z-index order: Background → Clara (z-20) → Panels (z-30) → Header.
  */
 export default function Stage() {
   return (
     <>
       <style>{stageStyles}</style>
-      <div className="absolute inset-0 flex items-center justify-end pointer-events-none">
-        <div className="w-full max-w-sm mx-6 sm:mx-10 md:mr-16 lg:mr-24 flex flex-col items-start">
-          <div className="stage-enter stage-enter-1 w-full">
-            <BriefPanel />
+
+      {/* Panels layer — above Clara (z-20), below Header */}
+      <div className="pointer-events-none absolute inset-0 z-30">
+
+        {/* ── LEFT COLUMN ────────────────────────────────────── */}
+        <div
+          className="absolute top-0 bottom-0 flex flex-col justify-center gap-4 px-6"
+          style={{ left: 0, width: "22%" }}
+        >
+          <div className="stage-enter stage-enter-1 pointer-events-auto">
+            <AttentionPanel />
           </div>
-
-      <div
-        className="absolute"
-        style={{
-          top: "525px",
-          right: "625px",
-          width: "285px",
-        }}
-      >
-        <TasksPanel />
-      </div>
-
-          <div className="stage-enter stage-enter-3">
-            <GlassPanel className="mt-5 ml-6 h-24 w-[12.25rem] bg-white/[0.028] border-white/[0.065] shadow-[0_2px_14px_rgba(0,0,0,0.15)]">
-              <div aria-hidden="true" className="h-full w-full" />
-            </GlassPanel>
+          <div className="stage-enter stage-enter-3 pointer-events-auto">
+            <TodayPanel />
+          </div>
+          <div className="stage-enter stage-enter-5 pointer-events-auto">
+            <TasksPanel />
           </div>
         </div>
+
+        {/* ── RIGHT COLUMN ───────────────────────────────────── */}
+        <div
+          className="absolute top-0 bottom-0 flex flex-col justify-center gap-4 px-6"
+          style={{ right: 0, width: "22%" }}
+        >
+          <div className="stage-enter stage-enter-2 pointer-events-auto">
+            <SummaryPanel />
+          </div>
+          <div className="stage-enter stage-enter-4 pointer-events-auto">
+            <ConversationsPanel />
+          </div>
+          <div className="stage-enter stage-enter-6 pointer-events-auto">
+            <QuickActionsPanel />
+          </div>
+        </div>
+
       </div>
-    </div>
+    </>
   );
 }
