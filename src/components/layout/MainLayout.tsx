@@ -1,9 +1,26 @@
+/**
+ * ============================================
+ * CLARA OS
+ * Layout Module
+ * --------------------------------------------
+ * File : MainLayout.tsx
+ * Responsibility :
+ * Main application layout.
+ *
+ * Sidebar (fixed)
+ * Header
+ * Main workspace
+ * ============================================
+ */
+
+import type { ReactNode } from "react";
+
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 
-type MainLayoutProps = {
-  children: React.ReactNode;
-};
+interface MainLayoutProps {
+  children: ReactNode;
+}
 
 export default function MainLayout({ children }: MainLayoutProps) {
   return (
@@ -11,11 +28,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
       {/* Sidebar */}
       <Sidebar />
 
-      {/* Zone principale */}
+      {/* Main content */}
       <div className="ml-72 flex min-h-screen flex-col">
+        {/* Top header */}
         <Header />
 
-        <main className="flex-1 p-8">
+        {/* Workspace */}
+        <main className="relative flex-1 overflow-hidden">
           {children}
         </main>
       </div>

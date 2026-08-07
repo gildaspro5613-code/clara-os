@@ -1,0 +1,89 @@
+/**
+ * ============================================
+ * CLARA OS
+ * Life Module
+ * --------------------------------------------
+ * File : animations.css
+ * Responsibility :
+ * Central animation library for Clara's
+ * visual presence.
+ * ============================================
+ */
+
+/* ============================================
+   BREATHING
+============================================ */
+
+@keyframes clara-breathe {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateY(-2px) scale(1.003);
+  }
+
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-clara-breathe {
+  animation: clara-breathe 8s ease-in-out infinite;
+}
+
+/* ============================================
+   FADE IN
+============================================ */
+
+@keyframes clara-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-clara-fade {
+  animation: clara-fade-in 500ms ease;
+}
+
+/* ============================================
+   THINKING (placeholder)
+============================================ */
+
+@keyframes clara-thinking {
+  0% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-1px);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.animate-clara-thinking {
+  animation: clara-thinking 3s ease-in-out infinite;
+}
+
+/* ============================================
+   LISTENING (placeholder)
+============================================ */
+
+.animate-clara-listening {
+  transition: all 400ms ease;
+}
+
+/* ============================================
+   SPEAKING (placeholder)
+============================================ */
+
+.animate-clara-speaking {
+  transition: all 250ms ease;
+}

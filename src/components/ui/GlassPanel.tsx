@@ -5,51 +5,56 @@
  * --------------------------------------------
  * File : GlassPanel.tsx
  * Responsibility :
- * Base visual component implementing the
- * glassmorphism design language of Clara OS.
- * Presentation only — no business logic.
+ * Official premium glass container.
+ * Every cockpit panel inherits from this
+ * component.
  * ============================================
  */
 
 import { ReactNode } from "react";
 
-export interface GlassPanelProps {
-  /** Content rendered inside the panel. */
+interface GlassPanelProps {
+  title?: string;
   children: ReactNode;
-  /** Additional Tailwind classes for layout customisation. */
   className?: string;
 }
 
-/**
- * GlassPanel — reusable glassmorphism surface.
- *
- * Provides an elegant frosted-glass backdrop with a subtle blur,
- * soft translucent border, and rounded corners.
- * It is purely presentational and accepts any children.
- */
-export default function GlassPanel({ children, className = "" }: GlassPanelProps) {
+export default function GlassPanel({
+  title,
+  children,
+  className = "",
+}: GlassPanelProps) {
   return (
-    <div
-      className={[
-        "relative",
-        "rounded-2xl",
-        "border border-white/10",
-        "bg-white/5",
-        "backdrop-blur-md",
-        "shadow-[0_4px_32px_rgba(0,0,0,0.25)]",
-        "overflow-hidden",
-        className,
-      ]
-        .filter(Boolean)
-        .join(" ")}
+    <section
+      className={`
+        rounded-[30px]
+
+        border
+        border-white/10
+
+        bg-black/30
+
+        backdrop-blur-[28px]
+
+        shadow-[0_20px_60px_rgba(0,0,0,0.30)]
+
+        p-6
+
+        text-white
+
+        transition-all
+        duration-300
+
+        ${className}
+      `}
     >
-      {/* Inner highlight — top-edge shimmer */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"
-      />
+      {title && (
+        <h2 className="mb-5 text-xs uppercase tracking-[0.30em] text-white/80">
+          {title}
+        </h2>
+      )}
 
       {children}
-    </div>
+    </section>
   );
 }
