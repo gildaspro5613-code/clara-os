@@ -18,7 +18,7 @@ import GlassPanel from "@/components/ui/GlassPanel";
  */
 export default function ActionsPanel() {
   return (
-    <GlassPanel className="mt-5 ml-4 w-[13rem] px-5 py-4 bg-white/[0.025] border-white/[0.06] shadow-[0_2px_14px_rgba(0,0,0,0.14)]">
+    <GlassPanel className="w-[13rem] px-5 py-4 bg-white/[0.025] border-white/[0.06] shadow-[0_2px_14px_rgba(0,0,0,0.14)]">
       <h3 className="mb-3 text-sm font-medium tracking-[0.08em] uppercase text-white/74">
         Actions
       </h3>

@@ -13,9 +13,9 @@
  */
 
 import AgendaPanel from "@/components/cockpit/panels/AgendaPanel";
+import ActionsPanel from "@/components/cockpit/panels/ActionsPanel";
 import BriefPanel from "@/components/cockpit/panels/BriefPanel";
 import TasksPanel from "@/components/cockpit/panels/TasksPanel";
-import GlassPanel from "@/components/ui/GlassPanel";
 
 const COCKPIT_CANVAS_RATIO = 1536 / 1024;
 
@@ -100,9 +100,7 @@ export default function Stage() {
               width: "208px",
             }}
           >
-            <GlassPanel className="h-24 bg-white/[0.028] border-white/[0.065] shadow-[0_2px_14px_rgba(0,0,0,0.15)]">
-              <div aria-hidden="true" className="h-full w-full" />
-            </GlassPanel>
+            <ActionsPanel />
           </div>
         </div>
       </div>
