@@ -13,22 +13,30 @@
 
 import Image from "next/image";
 
+const COCKPIT_CANVAS_RATIO = 1536 / 1024;
+
+const canvasStyle = {
+  width: `max(100vw, calc(100vh * ${COCKPIT_CANVAS_RATIO}))`,
+  height: `max(100vh, calc(100vw / ${COCKPIT_CANVAS_RATIO}))`,
+};
+
 export default function ClaraLayer() {
   return (
     <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden">
       <div
-        className="absolute bottom-0 left-1/2"
+        className="absolute top-1/2 left-1/2 relative"
         style={{
-          transform: "translateX(-30%)",
+          ...canvasStyle,
+          transform: "translate(-50%, -50%)",
         }}
       >
         <Image
           src="/clara/master/Clara_Master.png"
           alt="Clara"
-          width={790}
-          height={1020}
+          fill
           priority
-          className="select-none object-contain"
+          sizes="100vw"
+          className="select-none object-cover"
         />
       </div>
     </div>
