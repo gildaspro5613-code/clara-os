@@ -11,6 +11,7 @@
  */
 
 import Image from "next/image";
+import cockpitMaster from "../../../../docs/design/cockpit_master.png";
 
 /**
  * Presentation-only Hero background.
@@ -20,12 +21,12 @@ export default function HeroBackground() {
   return (
     <div className="absolute inset-0 overflow-hidden">
       <Image
-        src="/cockpit/summer/cockpit.png"
+        src={cockpitMaster}
         alt=""
-        width={1536}
-        height={1024}
+        fill
         priority
-        className="h-[1024px] w-[1536px] object-none"
+        className="select-none object-none object-top-left"
+        sizes="1536px"
       />
     </div>
   );

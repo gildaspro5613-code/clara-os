@@ -14,16 +14,12 @@
  */
 
 import HeroBackground from "./HeroBackground";
-import ClaraLayer from "@/components/clara/ClaraLayer";
-import Stage from "@/components/cockpit/Stage";
 
 export default function Hero() {
   return (
-    <section className="relative min-h-screen w-full overflow-auto bg-black">
+    <section className="relative h-[1024px] w-[1536px] overflow-hidden">
       <div className="relative h-[1024px] w-[1536px] overflow-hidden">
         <HeroBackground />
-        <ClaraLayer />
-        <Stage />
       </div>
     </section>
   );
