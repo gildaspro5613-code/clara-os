@@ -17,9 +17,11 @@ import HeroBackground from "./HeroBackground";
 
 export default function Hero() {
   return (
-    <section className="relative h-[1024px] w-[1536px] overflow-hidden">
-      <div className="relative h-[1024px] w-[1536px] overflow-hidden">
-        <HeroBackground />
+    <section className="relative h-full min-h-full w-full overflow-hidden bg-black">
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute left-1/2 top-1/2 aspect-[1536/1024] h-full min-w-full -translate-x-1/2 -translate-y-1/2 overflow-hidden">
+          <HeroBackground />
+        </div>
       </div>
     </section>
   );
