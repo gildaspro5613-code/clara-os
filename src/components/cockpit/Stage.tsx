@@ -12,7 +12,7 @@
 
 import BriefPanel from "@/components/cockpit/panels/BriefPanel";
 import AgendaPanel from "@/components/cockpit/panels/AgendaPanel";
-import GlassPanel from "@/components/ui/GlassPanel";
+import ActionsPanel from "@/components/cockpit/panels/ActionsPanel";
 
 const stageStyles = `
   @keyframes stage-fade-in {
@@ -47,10 +47,8 @@ export default function Stage() {
             <AgendaPanel />
           </div>
 
-          <div className="stage-enter stage-enter-3">
-            <GlassPanel className="mt-5 ml-6 h-24 w-[12.25rem] bg-white/[0.028] border-white/[0.065] shadow-[0_2px_14px_rgba(0,0,0,0.15)]">
-              <div aria-hidden="true" className="h-full w-full" />
-            </GlassPanel>
+          <div className="stage-enter stage-enter-3 w-full">
+            <ActionsPanel />
           </div>
         </div>
       </div>
