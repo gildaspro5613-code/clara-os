@@ -5,7 +5,8 @@
  * --------------------------------------------
  * File : QuickActionsPanel.tsx
  * Responsibility :
- * Displays Clara's most frequently used actions.
+ * Displays Clara's most frequently used actions,
+ * matching cockpit_master.png.
  *
  * Presentation only.
  * ============================================
@@ -13,46 +14,35 @@
 
 import GlassPanel from "@/components/ui/GlassPanel";
 
+const ACTIONS = [
+  { icon: "+", label: "Créer une mission" },
+  { icon: "✆", label: "Lancer un appel IA" },
+  { icon: "⚙", label: "Nouvelle automatisation" },
+  { icon: "◈", label: "Ouvrir le Brain" },
+] as const;
+
+/** QuickActionsPanel — ⚡ RACCOURCIS RAPIDES with four vertically listed actions. */
 export default function QuickActionsPanel() {
-  const actions = [
-    "Nouvelle mission",
-    "Agenda",
-    "Appeler",
-    "Notes",
-    "Brain",
-    "Automatisations",
-  ];
-
   return (
-    <GlassPanel title="Raccourcis rapides">
-      <div className="grid grid-cols-3 gap-3">
-
-        {actions.map((action) => (
-          <button
-            key={action}
-            className="
-              rounded-2xl
-              border
-              border-white/10
-              bg-white/5
-              px-4
-              py-4
-              text-sm
-              font-medium
-              text-white/90
-              transition-all
-              duration-200
-              hover:bg-white/10
-              hover:border-white/20
-              hover:scale-[1.02]
-              active:scale-[0.98]
-            "
-          >
-            {action}
-          </button>
-        ))}
-
+    <GlassPanel className="p-5">
+      <div className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-[0.20em] text-white/70">
+        <span>⚡</span>
+        <span>Raccourcis rapides</span>
       </div>
+
+      <ul className="space-y-2.5">
+        {ACTIONS.map(({ icon, label }) => (
+          <li key={label}>
+            <button
+              type="button"
+              className="flex w-full items-center gap-3 text-left text-sm text-white/80 transition-colors hover:text-white/95"
+            >
+              <span className="w-5 shrink-0 text-center text-base">{icon}</span>
+              <span>{label}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
     </GlassPanel>
   );
 }

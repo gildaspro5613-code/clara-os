@@ -5,7 +5,8 @@
  * --------------------------------------------
  * File : TodayPanel.tsx
  * Responsibility :
- * Displays today's schedule.
+ * Displays today's schedule, matching
+ * cockpit_master.png.
  *
  * Presentation only.
  * ============================================
@@ -13,70 +14,36 @@
 
 import GlassPanel from "@/components/ui/GlassPanel";
 
+/** TodayPanel — 📅 AUJOURD'HUI with time-slot list and agenda link. */
 export default function TodayPanel() {
   return (
-    <GlassPanel title="Aujourd'hui">
-      <div className="space-y-5">
-
-        <div className="flex items-start gap-3">
-          <div className="mt-2 h-2.5 w-2.5 rounded-full bg-cyan-400" />
-
-          <div>
-            <p className="font-semibold">
-              Développement Clara OS
-            </p>
-
-            <p className="mt-1 text-sm text-white/70">
-              Continuer l'assemblage du cockpit V1.
-            </p>
-
-            <p className="mt-2 text-xs text-white/45">
-              09:30 — En cours
-            </p>
-          </div>
-        </div>
-
-        <div className="h-px bg-white/10" />
-
-        <div className="flex items-start gap-3">
-          <div className="mt-2 h-2.5 w-2.5 rounded-full bg-emerald-400" />
-
-          <div>
-            <p className="font-semibold">
-              Validation de l'interface
-            </p>
-
-            <p className="mt-1 text-sm text-white/70">
-              Vérifier le placement de Clara et des panneaux.
-            </p>
-
-            <p className="mt-2 text-xs text-white/45">
-              Cet après-midi
-            </p>
-          </div>
-        </div>
-
-        <div className="h-px bg-white/10" />
-
-        <div className="flex items-start gap-3">
-          <div className="mt-2 h-2.5 w-2.5 rounded-full bg-violet-400" />
-
-          <div>
-            <p className="font-semibold">
-              Préparer le Life Engine
-            </p>
-
-            <p className="mt-1 text-sm text-white/70">
-              Une fois le cockpit validé.
-            </p>
-
-            <p className="mt-2 text-xs text-white/45">
-              Prochaine étape
-            </p>
-          </div>
-        </div>
-
+    <GlassPanel className="p-5">
+      <div className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-[0.20em] text-white/70">
+        <span>📅</span>
+        <span>Aujourd&rsquo;hui</span>
       </div>
+
+      <ul className="mb-4 space-y-2">
+        <li className="flex items-baseline gap-3">
+          <span className="shrink-0 text-xs tabular-nums text-white/60">09:00</span>
+          <span className="text-sm text-white/80">Préparation des priorités</span>
+        </li>
+        <li className="flex items-baseline gap-3">
+          <span className="shrink-0 text-xs tabular-nums text-white/60">11:00</span>
+          <span className="text-sm text-white/80">Développement Clara OS</span>
+        </li>
+        <li className="flex items-baseline gap-3">
+          <span className="shrink-0 text-xs tabular-nums text-white/60">15:00</span>
+          <span className="text-sm text-white/80">Revue des missions</span>
+        </li>
+      </ul>
+
+      <button
+        type="button"
+        className="text-sm text-white/60 transition-colors hover:text-white/80"
+      >
+        Voir l&rsquo;agenda complet &rarr;
+      </button>
     </GlassPanel>
   );
 }
