@@ -13,6 +13,7 @@
 import BriefPanel from "@/components/cockpit/panels/BriefPanel";
 import AgendaPanel from "@/components/cockpit/panels/AgendaPanel";
 import ActionsPanel from "@/components/cockpit/panels/ActionsPanel";
+import ClaraLayer from "@/components/cockpit/ClaraLayer";
 
 const stageStyles = `
   @keyframes stage-fade-in {
@@ -37,6 +38,11 @@ export default function Stage() {
   return (
     <>
       <style>{stageStyles}</style>
+
+      {/* Clara — left presence layer */}
+      <ClaraLayer />
+
+      {/* Panels — right overlay column */}
       <div className="absolute inset-0 flex items-center justify-end pointer-events-none">
         <div className="w-full max-w-sm mx-6 sm:mx-10 md:mr-16 lg:mr-24 flex flex-col items-start">
           <div className="stage-enter stage-enter-1 w-full">
