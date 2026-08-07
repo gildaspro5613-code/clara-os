@@ -18,14 +18,14 @@ import Image from "next/image";
  */
 export default function HeroBackground() {
   return (
-    <div className="absolute inset-0 w-full overflow-hidden">
+    <div className="absolute inset-0 overflow-hidden">
       <Image
         src="/cockpit/summer/cockpit.png"
         alt=""
-        fill
+        width={1536}
+        height={1024}
         priority
-        className="object-cover object-center"
-        sizes="100vw"
+        className="h-[1024px] w-[1536px] object-none"
       />
     </div>
   );

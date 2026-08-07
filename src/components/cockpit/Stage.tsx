@@ -10,48 +10,41 @@
  * ============================================
  */
 
-import BriefPanel from "@/components/cockpit/panels/BriefPanel";
-import AgendaPanel from "@/components/cockpit/panels/AgendaPanel";
-import ActionsPanel from "@/components/cockpit/panels/ActionsPanel";
+import AttentionPanel from "@/components/cockpit/panels/AttentionPanel";
+import TodayPanel from "@/components/cockpit/panels/TodayPanel";
+import TasksPanel from "@/components/cockpit/panels/TasksPanel";
+import SummaryPanel from "@/components/cockpit/panels/SummaryPanel";
+import ConversationsPanel from "@/components/cockpit/panels/ConversationsPanel";
+import QuickActionsPanel from "@/components/cockpit/panels/QuickActionsPanel";
 
-const stageStyles = `
-  @keyframes stage-fade-in {
-    from { opacity: 0; transform: translateY(6px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .stage-enter {
-    opacity: 0;
-    animation: stage-fade-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  }
-  .stage-enter-1 { animation-delay: 0ms; }
-  .stage-enter-2 { animation-delay: 180ms; }
-  .stage-enter-3 { animation-delay: 360ms; }
-`;
-
-/**
- * Presentation-only Hero stage.
- * Arranges floating panels with absolute positioning.
- * Panels enter sequentially via CSS-only staged animations.
- */
 export default function Stage() {
   return (
-    <>
-      <style>{stageStyles}</style>
-      <div className="absolute inset-0 flex items-center justify-end pointer-events-none">
-        <div className="w-full max-w-sm mx-6 sm:mx-10 md:mr-16 lg:mr-24 flex flex-col items-start">
-          <div className="stage-enter stage-enter-1 w-full">
-            <BriefPanel />
-          </div>
-
-          <div className="stage-enter stage-enter-2 w-full">
-            <AgendaPanel />
-          </div>
-
-          <div className="stage-enter stage-enter-3 w-full">
-            <ActionsPanel />
-          </div>
-        </div>
+    <div className="pointer-events-none absolute inset-0 z-30">
+      <div className="pointer-events-auto absolute left-[92px] top-[84px] w-[342px]">
+        <AttentionPanel />
       </div>
-    </>
+      <div className="pointer-events-auto absolute left-[92px] top-[338px] w-[342px]">
+        <TodayPanel />
+      </div>
+      <div className="pointer-events-auto absolute left-[92px] top-[686px] w-[342px]">
+        <TasksPanel />
+      </div>
+
+      <div className="pointer-events-auto absolute left-[1102px] top-[84px] w-[342px]">
+        <SummaryPanel />
+      </div>
+      <div className="pointer-events-auto absolute left-[1102px] top-[370px] w-[342px]">
+        <ConversationsPanel />
+      </div>
+      <div className="pointer-events-auto absolute left-[1102px] top-[748px] w-[342px]">
+        <QuickActionsPanel />
+      </div>
+
+      <div className="absolute bottom-[38px] left-1/2 -translate-x-1/2">
+        <p className="text-xl font-light tracking-[0.02em] text-white/90">
+          Clara est prête à vous accompagner
+        </p>
+      </div>
+    </div>
   );
 }

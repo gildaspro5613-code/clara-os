@@ -16,21 +16,14 @@ import Image from "next/image";
 export default function ClaraLayer() {
   return (
     <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden">
-      <div
-        className="absolute bottom-0 left-1/2"
-        style={{
-          transform: "translateX(-30%)",
-        }}
-      >
-        <Image
-          src="/clara/master/Clara_Master.png"
-          alt="Clara"
-          width={790}
-          height={1020}
-          priority
-          className="select-none object-contain"
-        />
-      </div>
+      <Image
+        src="/clara/master/Clara_Master.png"
+        alt="Clara"
+        width={1536}
+        height={1024}
+        priority
+        className="h-[1024px] w-[1536px] select-none object-none"
+      />
     </div>
   );
 }
