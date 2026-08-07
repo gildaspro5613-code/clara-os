@@ -25,8 +25,8 @@ export default function HeroBackground() {
         alt=""
         fill
         priority
-        className="select-none object-cover object-center"
-        sizes="100vw"
+        className="select-none object-none object-top-left"
+        sizes="1536px"
       />
     </div>
   );
