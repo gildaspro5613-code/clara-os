@@ -27,27 +27,27 @@ const CLARA_READY_LABEL = "Clara est prête à vous accompagner";
 export default function Stage() {
   return (
     <div className="pointer-events-none absolute inset-0 z-30">
-      <div className="pointer-events-auto absolute left-[92px] top-[84px] w-[342px]">
+      <div className="pointer-events-auto absolute left-[92px] top-[98px] w-[342px]">
         <AttentionPanel />
       </div>
-      <div className="pointer-events-auto absolute left-[92px] top-[338px] w-[342px]">
+      <div className="pointer-events-auto absolute left-[92px] top-[352px] w-[342px]">
         <TodayPanel />
       </div>
-      <div className="pointer-events-auto absolute left-[92px] top-[686px] w-[342px]">
+      <div className="pointer-events-auto absolute left-[92px] top-[700px] w-[342px]">
         <TasksPanel />
       </div>
 
-      <div className="pointer-events-auto absolute left-[1102px] top-[84px] w-[342px]">
+      <div className="pointer-events-auto absolute left-[1102px] top-[98px] w-[342px]">
         <SummaryPanel />
       </div>
-      <div className="pointer-events-auto absolute left-[1102px] top-[370px] w-[342px]">
+      <div className="pointer-events-auto absolute left-[1102px] top-[384px] w-[342px]">
         <ConversationsPanel />
       </div>
-      <div className="pointer-events-auto absolute left-[1102px] top-[748px] w-[342px]">
+      <div className="pointer-events-auto absolute left-[1102px] top-[762px] w-[342px]">
         <QuickActionsPanel />
       </div>
 
-      <div className="absolute bottom-[38px] left-1/2 -translate-x-1/2">
+      <div className="absolute bottom-[-20px] left-1/2 -translate-x-1/2 z-40">
         <p className="text-xl font-light tracking-[0.02em] text-white/90">
           {CLARA_READY_LABEL}
         </p>
