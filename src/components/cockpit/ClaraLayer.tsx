@@ -40,7 +40,7 @@ export default function ClaraLayer() {
       />
 
       {/* Clara's figure */}
-      <div className="clara-enter pointer-events-none absolute bottom-0 left-0 w-[42%] h-full flex items-end">
+      <div className="clara-enter pointer-events-none absolute bottom-0 left-0 w-[47%] h-full flex items-end">
         <div className="relative w-full h-full">
           <Image
             src="/images/clara/summer/Clara.png"
@@ -48,7 +48,7 @@ export default function ClaraLayer() {
             fill
             priority
             className="object-contain object-bottom"
-            sizes="42vw"
+            sizes="47vw"
           />
         </div>
       </div>
