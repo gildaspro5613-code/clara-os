@@ -9,7 +9,7 @@
  * ============================================
  */
 export type { BrainContext } from "./brain-context";
-export { runBrain } from "./brain";
+export { runBrain, runBrainDashboard } from "./brain";
 
 export { buildContext } from "./context";
 export { loadMemory } from "./memory";

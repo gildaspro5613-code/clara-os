@@ -26,7 +26,7 @@ const menu = [
   { name: "Automatisations", href: "/automatisations", icon: Workflow },
   { name: "Documents", href: "/documents", icon: FileText },
   { name: "Agenda", href: "/agenda", icon: CalendarDays },
-  { name: "Mémoire", href: "/memoire", icon: Brain },
+  { name: "Brain", href: "/brain", icon: Brain },
 ];
 
 export default function Sidebar() {
@@ -42,7 +42,6 @@ export default function Sidebar() {
         </h1>
 
         <p className="mt-1 text-sm text-slate-400">
-          Collaboratrice IA
         </p>
       </div>
 
