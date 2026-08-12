@@ -24,9 +24,9 @@ import { recommend } from "./recommendations";
 /**
  * Execute one complete cognitive cycle.
  */
-export function runBrain(
+export async function runBrain(
   event: Event,
-): Recommendation {
+): Promise<Recommendation> {
 
   /*
    * Decide whether this event
@@ -38,7 +38,7 @@ export function runBrain(
    * Build Clara's complete
    * cognitive context.
    */
-  const brainContext = buildBrainContext(
+  const brainContext = await buildBrainContext(
     event,
   );
 
