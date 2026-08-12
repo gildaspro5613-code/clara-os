@@ -35,16 +35,22 @@ export class BrevoEngine {
     options?: RequestInit,
   ): Promise<T> {
 
+    const headers = new Headers();
+    headers.set("api-key", brevoConfig.apiKey);
+    headers.set("Content-Type", "application/json");
+    headers.set("Accept", "application/json");
+
+    if (options?.headers) {
+      new Headers(options.headers as HeadersInit).forEach(
+        (value, key) => headers.set(key, value),
+      );
+    }
+
     const response = await fetch(
       `${BREVO_API_BASE}${path}`,
       {
         ...options,
-        headers: {
-          "api-key": brevoConfig.apiKey,
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-          ...(options?.headers ?? {}),
-        },
+        headers,
       },
     );
 

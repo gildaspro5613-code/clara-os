@@ -70,7 +70,8 @@ export function isBrevoRelevant(event: Event): boolean {
   const request = brevo as BrevoContextRequest;
 
   return (
-    typeof request.contactEmail === "string" ||
+    (typeof request.contactEmail === "string" &&
+      request.contactEmail.trim().length > 0) ||
     request.loadCampaigns === true
   );
 
@@ -99,13 +100,14 @@ export async function loadBrevoContext(
   /*
    * Targeted contact fetch — only when an email is known.
    */
-  if (typeof request.contactEmail === "string") {
+  if (typeof request.contactEmail === "string" &&
+      request.contactEmail.trim().length > 0) {
 
     try {
 
       const contactResult = await engine.getContact({
         operation: "get-contact",
-        email: request.contactEmail,
+        email: request.contactEmail.trim(),
       });
 
       result["contact"] = contactResult.contact ?? null;
