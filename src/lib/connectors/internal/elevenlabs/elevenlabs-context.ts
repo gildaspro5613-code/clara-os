@@ -68,6 +68,12 @@ export interface ElevenLabsContext {
   useSpeakerBoost?: boolean;
 
   /**
+   * Speech speed (0.7–1.2). Controls how fast the voice speaks.
+   * Defaults to 1.0 when not provided.
+   */
+  speed?: number;
+
+  /**
    * Output audio format.
    * Defaults to "mp3_44100_128" when not provided.
    */

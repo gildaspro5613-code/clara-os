@@ -172,6 +172,7 @@ export class ElevenLabsEngine {
               similarity_boost: context.similarityBoost ?? 0.75,
               style: context.style ?? 0,
               use_speaker_boost: context.useSpeakerBoost ?? true,
+              speed: context.speed ?? 1.0,
             },
           }),
         },
