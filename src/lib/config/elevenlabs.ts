@@ -19,6 +19,6 @@ export const elevenLabsConfig = {
    * Must remain server-side only.
    */
   apiKey:
-    process.env.ELEVENLABS_API_KEY ?? "",
+    process.env.ELEVENLABS_API_KEY,
 
 } as const;

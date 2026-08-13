@@ -56,12 +56,13 @@ export class ElevenLabsEngine {
   }
 
   /**
-   * Sends an authenticated request to the ElevenLabs API.
+   * Sends an authenticated fetch to the ElevenLabs API
+   * and returns the raw Response.
    */
-  private async request<T>(
+  private async fetchRaw(
     path: string,
     options?: RequestInit,
-  ): Promise<T> {
+  ): Promise<Response> {
 
     const apiKey = this.getApiKey();
 
@@ -94,6 +95,21 @@ export class ElevenLabsEngine {
 
     }
 
+    return response;
+
+  }
+
+  /**
+   * Sends an authenticated request to the ElevenLabs API
+   * and returns a parsed JSON response.
+   */
+  private async request<T>(
+    path: string,
+    options?: RequestInit,
+  ): Promise<T> {
+
+    const response = await this.fetchRaw(path, options);
+
     return response.json() as Promise<T>;
 
   }
@@ -107,35 +123,7 @@ export class ElevenLabsEngine {
     options?: RequestInit,
   ): Promise<ArrayBuffer> {
 
-    const apiKey = this.getApiKey();
-
-    const headers = new Headers();
-    headers.set("xi-api-key", apiKey);
-    headers.set("Content-Type", "application/json");
-
-    if (options?.headers) {
-      new Headers(options.headers as HeadersInit).forEach(
-        (value, key) => headers.set(key, value),
-      );
-    }
-
-    const response = await fetch(
-      `${ELEVENLABS_API_BASE}${path}`,
-      {
-        ...options,
-        headers,
-      },
-    );
-
-    if (!response.ok) {
-
-      const text = await response.text();
-
-      throw new Error(
-        `ElevenLabs API error ${response.status}: ${text}`,
-      );
-
-    }
+    const response = await this.fetchRaw(path, options);
 
     return response.arrayBuffer();
 
@@ -216,9 +204,7 @@ export class ElevenLabsEngine {
   /**
    * Lists all available voices from ElevenLabs.
    */
-  public async listVoices(
-    context: ElevenLabsContext,
-  ): Promise<ElevenLabsResult> {
+  public async listVoices(): Promise<ElevenLabsResult> {
 
     try {
 
@@ -341,9 +327,7 @@ export class ElevenLabsEngine {
   /**
    * Lists all available models from ElevenLabs.
    */
-  public async getModels(
-    context: ElevenLabsContext,
-  ): Promise<ElevenLabsResult> {
+  public async getModels(): Promise<ElevenLabsResult> {
 
     try {
 
@@ -408,13 +392,13 @@ export class ElevenLabsEngine {
         return this.textToSpeech(context);
 
       case "list-voices":
-        return this.listVoices(context);
+        return this.listVoices();
 
       case "get-voice":
         return this.getVoice(context);
 
       case "get-models":
-        return this.getModels(context);
+        return this.getModels();
 
       default: {
         const exhaustive: never = context.operation;

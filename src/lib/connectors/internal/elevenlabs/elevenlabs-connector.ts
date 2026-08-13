@@ -31,7 +31,7 @@ export interface ElevenLabsConnector extends Connector {
   /**
    * Lists all available voices.
    */
-  listVoices(context: ElevenLabsContext): Promise<ElevenLabsResult>;
+  listVoices(): Promise<ElevenLabsResult>;
 
   /**
    * Retrieves a single voice by its identifier.
@@ -41,6 +41,6 @@ export interface ElevenLabsConnector extends Connector {
   /**
    * Lists all available models.
    */
-  getModels(context: ElevenLabsContext): Promise<ElevenLabsResult>;
+  getModels(): Promise<ElevenLabsResult>;
 
 }
