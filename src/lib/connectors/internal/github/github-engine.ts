@@ -10,6 +10,7 @@
  */
 
 import { githubConfig } from "@/lib/config/github";
+import type { GitHubConnector } from "./github-connector";
 import type { GitHubContext, GitHubOperation } from "./github-context";
 import type {
   GitHubCommit,
@@ -107,13 +108,26 @@ interface GitHubCommitResponse {
       email?: string;
       date?: string;
     } | null;
+    committer: {
+      date?: string;
+    } | null;
   };
 }
+
+type GitHubEngineContract = Pick<
+  GitHubConnector,
+  | "execute"
+  | "listRepositories"
+  | "getRepository"
+  | "getFile"
+  | "listIssues"
+  | "getCommits"
+>;
 
 /**
  * Engine that coordinates GitHub API operations.
  */
-export class GitHubEngine {
+export class GitHubEngine implements GitHubEngineContract {
 
   /**
    * Returns the configured GitHub token or throws when absent.
@@ -228,6 +242,21 @@ export class GitHubEngine {
   }
 
   /**
+   * Decodes GitHub base64 file content into UTF-8 text.
+   */
+  private decodeBase64Content(content: string): string {
+
+    const binary = atob(content.replace(/\s+/g, ""));
+    const bytes = Uint8Array.from(
+      binary,
+      (character) => character.charCodeAt(0),
+    );
+
+    return new TextDecoder().decode(bytes);
+
+  }
+
+  /**
    * Maps a GitHub repository payload into Clara's typed model.
    */
   private mapRepository(
@@ -288,10 +317,10 @@ export class GitHubEngine {
 
     return {
       sha: commit.sha,
-      message: commit.commit.message,
+      message: commit.commit.message.split("\n")[0],
       authorName: commit.commit.author?.name,
       authorEmail: commit.commit.author?.email,
-      committedAt: commit.commit.author?.date,
+      committedAt: commit.commit.committer?.date,
       htmlUrl: commit.html_url,
       apiUrl: commit.url,
     };
@@ -326,7 +355,7 @@ export class GitHubEngine {
         success: true,
         operation: "list-repositories",
         repositories,
-        message: `${repositories.length} repositor${repositories.length > 1 ? "ies" : "y"} retrieved.`,
+        message: `${repositories.length} repositor${repositories.length === 1 ? "y" : "ies"} retrieved.`,
         completedAt: new Date(),
       };
 
@@ -398,11 +427,11 @@ export class GitHubEngine {
 
     try {
 
-      const query = new URLSearchParams();
-
-      if (context.ref) {
-        query.set("ref", context.ref);
-      }
+      const query = context.ref
+        ? new URLSearchParams({
+            ref: context.ref,
+          })
+        : undefined;
 
       const data = await this.request<GitHubFileResponse>(
         `${this.buildRepositoryPath(context.owner, context.repository)}/contents/${this.encodeRepositoryPath(context.path)}`,
@@ -423,13 +452,20 @@ export class GitHubEngine {
         );
       }
 
+      if (data.encoding !== "base64") {
+        return this.createErrorResult(
+          "get-file",
+          `Unsupported file encoding "${data.encoding}" for path ${context.path}.`,
+        );
+      }
+
       const file: GitHubFile = {
         name: data.name,
         path: data.path,
         sha: data.sha,
         size: data.size,
         encoding: data.encoding,
-        content: Buffer.from(data.content, "base64").toString("utf-8"),
+        content: this.decodeBase64Content(data.content),
         htmlUrl: data.html_url,
         downloadUrl: data.download_url ?? undefined,
       };
@@ -455,6 +491,8 @@ export class GitHubEngine {
 
   /**
    * Lists open issues for a repository.
+   * GitHub includes pull requests in this endpoint, so the returned
+   * issue count can be lower than the requested perPage value.
    */
   public async listIssues(
     context: GitHubContext,
@@ -488,7 +526,10 @@ export class GitHubEngine {
         success: true,
         operation: "list-issues",
         issues,
-        message: `${issues.length} open issue(s) retrieved.`,
+        message:
+          `${issues.length} open issue(s) retrieved ` +
+          "from the current page after excluding pull requests; " +
+          "the count may be lower than perPage because GitHub mixes pull requests into this endpoint.",
         completedAt: new Date(),
       };
 
