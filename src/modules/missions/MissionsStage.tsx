@@ -19,8 +19,19 @@ import type { Mission } from "./types/Mission";
 
 const STORAGE_KEY = "clara-os-missions-v1";
 
-export default function MissionsStage() {
-  const [missions, setMissions] = useState<Mission[]>(missionsMock);
+interface MissionsStageProps {
+  initialMission?: Mission;
+}
+
+export default function MissionsStage({
+  initialMission,
+}: MissionsStageProps) {
+  const [missions, setMissions] =
+  useState<Mission[]>(
+    initialMission
+      ? [initialMission, ...missionsMock]
+      : missionsMock
+  );
   const [selectedMissionId, setSelectedMissionId] = useState<string | null>(
     null
   );
@@ -178,7 +189,13 @@ export default function MissionsStage() {
                     </span>
 
                     <span className="text-[10px] uppercase tracking-[0.18em] text-white/35">
-                      Haute priorité
+                      {activeMission.priority === "critical"
+                        ? "Priorité critique"
+                        : activeMission.priority === "high"
+                          ? "Haute priorité"
+                          : activeMission.priority === "medium"
+                            ? "Priorité moyenne"
+                            : "Faible priorité"}
                     </span>
                   </div>
 

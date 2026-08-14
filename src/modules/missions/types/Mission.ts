@@ -20,10 +20,16 @@ export type MissionPriority =
   | "high"
   | "critical";
 
+export interface MissionTaskExecution {
+  capabilityId: string;
+  context: unknown;
+}
+
 export interface MissionTask {
   id: string;
   title: string;
   completed: boolean;
+  execution?: MissionTaskExecution;
 }
 
 export interface Mission {

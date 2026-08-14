@@ -55,6 +55,16 @@ export interface CapabilityExecutionResult {
   readonly content?: string;
 
   /**
+   * Generated document identifier.
+   */
+  readonly documentId?: string;
+
+  /**
+   * Generated document URL.
+   */
+  readonly documentUrl?: string;
+
+  /**
    * Completion timestamp.
    */
   readonly completedAt: Date;
@@ -125,6 +135,10 @@ export class CapabilityEngine {
           message: result.message,
 
           content: result.content,
+
+          documentId: result.documentId,
+
+          documentUrl: result.documentUrl,
 
           completedAt: result.completedAt,
 

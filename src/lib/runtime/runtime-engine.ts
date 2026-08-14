@@ -50,6 +50,14 @@ export class RuntimeEngine {
 
       message: result.message,
 
+      outputs: result.content
+        ? [result.content]
+        : undefined,
+
+      documentId: result.documentId,
+
+      documentUrl: result.documentUrl,
+
       completedAt: result.completedAt,
 
     };

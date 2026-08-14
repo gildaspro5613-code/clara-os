@@ -33,7 +33,7 @@ export class GoogleDocsEngine {
     context: GoogleDocsContext,
   ): Promise<GoogleDocsResult> {
 
-    const documentId =
+    const document =
       await this.docs.createDocument(
         context.title,
       );
@@ -42,9 +42,11 @@ export class GoogleDocsEngine {
 
       success: true,
 
-      documentId,
+      documentId: document.documentId,
 
       title: context.title,
+
+      url: document.documentUrl,
 
       message: "Document created successfully.",
 

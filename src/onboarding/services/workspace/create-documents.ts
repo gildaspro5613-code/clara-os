@@ -42,10 +42,10 @@ export class CreateDocuments {
 
     for (const title of documents) {
 
-      const id =
+      const document =
         await docs.createDocument(title);
 
-      documentIds.push(id);
+      documentIds.push(document.documentId);
 
     }
 

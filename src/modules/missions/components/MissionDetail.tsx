@@ -74,6 +74,7 @@ export default function MissionDetail({
   onUpdate,
 }: MissionDetailProps) {
   const [tasks, setTasks] = useState(mission.tasks);
+  const [executingTaskId, setExecutingTaskId] = useState<string | null>(null);
 
   const completedTasks = tasks.filter(
     (task) => task.completed
@@ -123,6 +124,41 @@ export default function MissionDetail({
     });
   }
 
+  async function executeTask(taskId: string) {
+    if (executingTaskId) return;
+
+    setExecutingTaskId(taskId);
+
+    try {
+      const response = await fetch("/api/missions/execute", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          mission: {
+            ...mission,
+            tasks,
+          },
+          taskId,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.mission) {
+        return;
+      }
+
+      setTasks(data.mission.tasks);
+      onUpdate(data.mission);
+    } catch {
+      // Keep the current Mission state when execution fails.
+    } finally {
+      setExecutingTaskId(null);
+    }
+  }
+
   return (
     <main className="min-h-full bg-[#05070b] px-6 py-10 text-white lg:px-10">
       <div className="mx-auto max-w-7xl">
@@ -150,7 +186,7 @@ export default function MissionDetail({
                     : mission.priority === "high"
                       ? "Haute priorité"
                       : mission.priority === "medium"
-                        ? "Priorité normale"
+                        ? "Priorité moyenne"
                         : "Faible priorité"}
                 </span>
               </div>
@@ -198,8 +234,13 @@ export default function MissionDetail({
                     <button
                       key={task.id}
                       type="button"
-                      onClick={() => toggleTask(task.id)}
-                      className="group flex w-full items-center gap-4 rounded-xl border border-white/5 bg-white/[0.025] px-4 py-4 text-left transition-all hover:border-cyan-400/20 hover:bg-white/[0.045]"
+                      disabled={executingTaskId === task.id}
+                      onClick={() =>
+                        task.execution
+                          ? executeTask(task.id)
+                          : toggleTask(task.id)
+                      }
+                      className="group flex w-full items-center gap-4 rounded-xl border border-white/5 bg-white/[0.025] px-4 py-4 text-left transition-all hover:border-cyan-400/20 hover:bg-white/[0.045] disabled:cursor-wait disabled:opacity-60"
                     >
                       <span
                         className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs transition-all ${
@@ -208,18 +249,30 @@ export default function MissionDetail({
                             : "border-white/15 text-white/20 group-hover:border-cyan-400/40"
                         }`}
                       >
-                        {task.completed ? "✓" : ""}
+                        {task.completed
+                          ? "✓"
+                          : executingTaskId === task.id
+                            ? "…"
+                            : ""}
                       </span>
 
                       <span
                         className={
                           task.completed
-                            ? "text-sm text-white/45 line-through"
-                            : "text-sm text-white/80"
+                            ? "flex-1 text-sm text-white/45 line-through"
+                            : "flex-1 text-sm text-white/80"
                         }
                       >
                         {task.title}
                       </span>
+
+                      {task.execution && !task.completed && (
+                        <span className="text-[10px] uppercase tracking-[0.16em] text-cyan-400/60">
+                          {executingTaskId === task.id
+                            ? "Exécution"
+                            : "Exécuter"}
+                        </span>
+                      )}
                     </button>
                   ))}
                 </div>

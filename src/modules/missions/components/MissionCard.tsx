@@ -24,7 +24,7 @@ const statusLabels = {
 
 const priorityLabels = {
   low: "Faible",
-  medium: "Normale",
+  medium: "Moyenne",
   high: "Haute",
   critical: "Critique",
 };

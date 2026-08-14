@@ -38,6 +38,16 @@ export interface RuntimeResult {
   outputs?: unknown[];
 
   /**
+   * Generated document identifier.
+   */
+  documentId?: string;
+
+  /**
+   * Generated document URL.
+   */
+  documentUrl?: string;
+
+  /**
    * Runtime completion date.
    */
   completedAt: Date;

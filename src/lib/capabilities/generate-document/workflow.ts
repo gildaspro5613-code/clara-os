@@ -11,6 +11,7 @@
  */
 
 import { OpenAIResponsesEngine } from "@/lib/connectors/internal/openai/responses/openai-responses-engine";
+import { GoogleDocsEngine } from "@/lib/connectors/internal/google/docs/google-docs-engine";
 
 import { GenerateDocumentContext } from "./context";
 import { GenerateDocumentResult } from "./result";
@@ -95,19 +96,122 @@ export class GenerateDocumentWorkflow {
     const response =
       await this.openAI.generate({
 
-        prompt: context.objective,
+        prompt: [
+          `Titre : ${context.title}`,
+          `Objectif : ${context.objective}`,
+          `Public cible : ${context.audience}`,
+          `Langue : ${context.language}`,
+          `Ton : ${context.tone}`,
+          context.template
+            ? `Modèle : ${context.template}`
+            : "",
+          context.data
+            ? `Données métier : ${JSON.stringify(context.data)}`
+            : "",
+          "",
+          "Rédige le contenu complet du document.",
+        ]
+          .filter(Boolean)
+          .join("\n"),
 
         model: "gpt-5.5",
 
       });
 
+    if (!response.success || !response.content) {
+
+      return {
+
+        success: false,
+
+        title: context.title,
+
+        content: response.content,
+
+        message: response.message,
+
+        completedAt: new Date(),
+
+      };
+
+    }
+
+    const docs =
+      new GoogleDocsEngine();
+
+    const created =
+      await docs.create({
+
+        title: context.title,
+
+        content: "",
+
+      });
+
+    if (!created.success) {
+
+      return {
+
+        success: false,
+
+        title: context.title,
+
+        content: response.content,
+
+        message: created.message ?? "Impossible de créer le document Google Docs.",
+
+        completedAt: new Date(),
+
+      };
+
+    }
+
+    const updated =
+      await docs.update({
+
+        documentId: created.documentId,
+
+        title: context.title,
+
+        content: response.content,
+
+      });
+
+    if (!updated.success) {
+
+      return {
+
+        success: false,
+
+        title: context.title,
+
+        content: response.content,
+
+        documentId: created.documentId,
+
+        documentUrl: created.url,
+
+        message: updated.message ?? "Impossible d'insérer le contenu dans le document Google Docs.",
+
+        completedAt: new Date(),
+
+      };
+
+    }
+
     return {
 
-      success: response.success,
+      success: true,
 
       title: context.title,
 
-      message: response.message,
+      content: response.content,
+
+      documentId: created.documentId,
+
+      documentUrl: created.url,
+
+      message: "Document generated and created successfully.",
 
       completedAt: new Date(),
 

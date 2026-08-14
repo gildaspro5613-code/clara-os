@@ -26,11 +26,17 @@ export class GoogleDocsIntegration {
    */
   public async createDocument(
     title: string,
-  ): Promise<string> {
+  ): Promise<{
+    documentId: string;
+    documentUrl: string;
+  }> {
 
     const document = await createGoogleDocument({ title });
 
-    return document.documentId;
+    return {
+      documentId: document.documentId,
+      documentUrl: document.documentUrl,
+    };
 
   }
 
