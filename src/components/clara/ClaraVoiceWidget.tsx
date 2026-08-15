@@ -8,43 +8,78 @@
  * File : ClaraVoiceWidget.tsx
  * Responsibility :
  * Voice interaction experience with Clara.
- * Displays the voice state and passes the active
- * locale to the voice layer when available.
- * All UI labels are resolved through the i18n system.
+ * Resolves the active locale and wires it to an
+ * ElevenLabs Conversational AI session so Clara
+ * speaks in the correct language from the first
+ * utterance. All UI labels are resolved through
+ * the i18n system.
  *
- * Note: The ElevenLabs integration is managed separately.
- * This widget exposes the locale so the voice layer can
- * consume it without modifying the validated connector.
+ * Locale flow:
+ *   NEXT_LOCALE / locale active
+ *         ↓
+ *   ClaraVoiceWidget (useLocale)
+ *         ↓
+ *   /api/voice/session?locale=...
+ *         ↓
+ *   ElevenLabs signed URL (system prompt override)
+ *         ↓
+ *   ElevenLabs WebSocket session
  * ============================================
  */
 
 import { useState, useCallback } from "react";
 import { useTranslations, useLocale } from "next-intl";
+import { ConversationProvider, useConversation } from "@elevenlabs/react";
 import { Mic, MicOff, Loader2 } from "lucide-react";
 import type { Locale } from "@/i18n/types";
 
-type VoiceStatus = "idle" | "listening" | "processing" | "speaking" | "error";
-
 export interface ClaraVoiceWidgetProps {
-  /** Optional callback invoked when the active locale changes externally. */
+  /** Optional callback invoked with the active locale when a session starts. */
   onLocaleReady?: (locale: Locale) => void;
 }
 
 /**
- * Standalone voice widget for Clara.
- * Resolves the active locale and exposes it to the voice layer
- * via the onLocaleReady callback.
+ * Fetches a signed ElevenLabs WebSocket URL for the given locale.
  */
-export default function ClaraVoiceWidget({
-  onLocaleReady,
-}: ClaraVoiceWidgetProps) {
+async function fetchSignedUrl(locale: Locale): Promise<string> {
+  const response = await fetch(`/api/voice/session?locale=${locale}`);
+
+  if (!response.ok) {
+    throw new Error(`Voice session request failed: ${response.status}`);
+  }
+
+  const data = (await response.json()) as { signedUrl?: string };
+
+  if (!data.signedUrl) {
+    throw new Error("Voice session response is missing signedUrl.");
+  }
+
+  return data.signedUrl;
+}
+
+/**
+ * Inner widget body — must be used within ConversationProvider.
+ */
+function ClaraVoiceWidgetInner({ onLocaleReady }: ClaraVoiceWidgetProps) {
   const t = useTranslations("voice");
   const locale = useLocale() as Locale;
 
-  const [status, setStatus] = useState<VoiceStatus>("idle");
+  const { startSession, endSession, status, isSpeaking } = useConversation();
+
+  const [starting, setStarting] = useState(false);
+
+  const isActive =
+    status === "connected" || status === "connecting" || starting;
+
+  const displayStatus = (() => {
+    if (status === "error") return "error" as const;
+    if (status === "connecting" || starting) return "processing" as const;
+    if (status === "connected") return isSpeaking ? "speaking" as const : "listening" as const;
+    return "idle" as const;
+  })();
 
   const statusLabel = (() => {
-    switch (status) {
+    switch (displayStatus) {
       case "listening":
         return t("listening");
       case "processing":
@@ -58,17 +93,27 @@ export default function ClaraVoiceWidget({
     }
   })();
 
-  const isActive = status !== "idle" && status !== "error";
-
-  const handleToggle = useCallback(() => {
-    if (isActive) {
-      setStatus("idle");
+  const handleToggle = useCallback(async () => {
+    if (status === "connected" || status === "connecting") {
+      endSession();
       return;
     }
 
-    setStatus("listening");
-    onLocaleReady?.(locale);
-  }, [isActive, locale, onLocaleReady]);
+    if (status === "error" || status === "disconnected") {
+      setStarting(true);
+      try {
+        const signedUrl = await fetchSignedUrl(locale);
+        onLocaleReady?.(locale);
+        startSession({ signedUrl });
+      } catch {
+        // error state will be reflected via ElevenLabs status
+      } finally {
+        setStarting(false);
+      }
+    }
+  }, [status, locale, onLocaleReady, startSession, endSession]);
+
+  const isTransitioning = displayStatus === "processing";
 
   return (
     <section
@@ -79,11 +124,11 @@ export default function ClaraVoiceWidget({
       <div className="flex items-center gap-2">
         <span
           className={`h-2.5 w-2.5 rounded-full ${
-            status === "listening" || status === "speaking"
+            displayStatus === "listening" || displayStatus === "speaking"
               ? "bg-cyan-400 animate-pulse"
-              : status === "processing"
+              : displayStatus === "processing"
                 ? "bg-amber-400 animate-pulse"
-                : status === "error"
+                : displayStatus === "error"
                   ? "bg-red-500"
                   : "bg-slate-600"
           }`}
@@ -96,18 +141,18 @@ export default function ClaraVoiceWidget({
 
       {/* Microphone button */}
       <button
-        onClick={handleToggle}
+        onClick={() => void handleToggle()}
         aria-pressed={isActive}
         aria-label={isActive ? t("stop") : t("start")}
         className={`flex h-20 w-20 items-center justify-center rounded-full border-2 transition-all duration-300 ${
           isActive
             ? "border-cyan-400 bg-cyan-500/20 text-cyan-300 shadow-[0_0_24px_4px_rgba(6,182,212,0.3)]"
-            : status === "error"
+            : displayStatus === "error"
               ? "border-red-500/50 bg-red-500/10 text-red-400"
               : "border-white/10 bg-white/5 text-slate-400 hover:border-cyan-500/50 hover:bg-cyan-500/10 hover:text-cyan-300"
         }`}
       >
-        {status === "processing" ? (
+        {isTransitioning ? (
           <Loader2 size={28} className="animate-spin" />
         ) : isActive ? (
           <MicOff size={28} />
@@ -126,5 +171,18 @@ export default function ClaraVoiceWidget({
         {locale}
       </div>
     </section>
+  );
+}
+
+/**
+ * Standalone voice widget for Clara.
+ * Provides an ElevenLabs ConversationProvider context and resolves
+ * the active locale so Clara speaks in the correct language.
+ */
+export default function ClaraVoiceWidget(props: ClaraVoiceWidgetProps) {
+  return (
+    <ConversationProvider>
+      <ClaraVoiceWidgetInner {...props} />
+    </ConversationProvider>
   );
 }
