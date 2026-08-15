@@ -55,16 +55,28 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   const engine = new OpenAIResponsesEngine();
 
-  const result = await engine.generate({
-    prompt: message,
-    instructions,
-    model: "gpt-5.5",
-  });
+  try {
+    const result = await engine.generate({
+      prompt: message,
+      instructions,
+      model: "gpt-5.5",
+    });
 
-  return NextResponse.json({
-    success: result.success,
-    content: result.content,
-    locale,
-    error: result.success ? undefined : result.message,
-  });
+    return NextResponse.json({
+      success: result.success,
+      content: result.content,
+      locale,
+      error: result.success ? undefined : result.message,
+    });
+  } catch (err) {
+    return NextResponse.json(
+      {
+        success: false,
+        content: "",
+        locale,
+        error: err instanceof Error ? err.message : "Unexpected error.",
+      },
+      { status: 500 },
+    );
+  }
 }

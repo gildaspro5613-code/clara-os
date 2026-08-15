@@ -15,6 +15,13 @@ import type { Locale } from "@/i18n/types";
 
 /** Locale-aware greeting lines keyed by state and locale. */
 const GREETINGS: Record<string, Partial<Record<Locale, string[]>>> = {
+  GREETING: {
+    fr: ["Bonjour."],
+    en: ["Hello."],
+    es: ["Buenos días."],
+    de: ["Guten Tag."],
+    it: ["Buongiorno."],
+  },
   STARTING: {
     fr: ["Bonjour.", "", "Je démarre mon environnement.", "J'initialise mon Brain et mes services."],
     en: ["Hello.", "", "Starting my environment.", "Initialising Brain and services."],
@@ -81,7 +88,7 @@ export function buildGreeting(
     case "WORKING":
       if (session.recommendation) {
         return [
-          resolveLines("STARTING", locale).split("\n")[0],
+          resolveLines("GREETING", locale),
           "",
           session.recommendation.summary,
           "",
