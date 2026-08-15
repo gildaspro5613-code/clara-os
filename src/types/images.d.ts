@@ -40,6 +40,6 @@ declare module "*.avif" {
 }
 
 declare module "*.svg" {
-  const content: import("next/dist/shared/lib/image-external").StaticImageData;
+  const content: string;
   export default content;
 }
