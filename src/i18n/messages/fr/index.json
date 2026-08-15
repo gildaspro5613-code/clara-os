@@ -147,6 +147,35 @@
     "empty": "Aucune notification",
     "markAllRead": "Tout marquer comme lu"
   },
+  "chat": {
+    "placeholder": "Écrire un message à Clara…",
+    "send": "Envoyer",
+    "welcome": "Bonjour. Je suis Clara, votre assistante IA. Comment puis-je vous aider ?",
+    "thinking": "Clara réfléchit…",
+    "error": "Une erreur est survenue. Veuillez réessayer.",
+    "networkError": "Connexion perdue. Vérifiez votre réseau.",
+    "retry": "Réessayer",
+    "clearHistory": "Effacer la conversation",
+    "statusConnected": "Clara connectée",
+    "statusThinking": "Clara réfléchit",
+    "statusReady": "Clara prête",
+    "you": "Vous",
+    "clara": "Clara",
+    "emptyState": "Posez une question à Clara pour commencer.",
+    "ariaLabel": "Conversation avec Clara"
+  },
+  "voice": {
+    "start": "Démarrer la voix",
+    "stop": "Arrêter",
+    "listening": "Clara vous écoute…",
+    "processing": "Clara traite votre demande…",
+    "speaking": "Clara vous répond…",
+    "idle": "Appuyez pour parler",
+    "error": "Erreur vocale. Réessayez.",
+    "micPermission": "Microphone requis pour cette fonctionnalité.",
+    "ariaLabel": "Interface vocale Clara",
+    "statusLabel": "État vocal"
+  },
   "brain": {
     "title": "Brain",
     "description": "Ce que Clara comprend, ce qu'elle décide et ce qu'elle recommande.",

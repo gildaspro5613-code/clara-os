@@ -41,6 +41,8 @@ export class OpenAIResponsesEngine {
 
         input: context.prompt,
 
+        ...(context.instructions ? { instructions: context.instructions } : {}),
+
       });
 
       return {
