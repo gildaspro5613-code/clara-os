@@ -1,0 +1,74 @@
+{
+  "common": {
+    "appName": "Clara OS",
+    "loading": "Chargement…",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "close": "Fermer",
+    "back": "Retour",
+    "next": "Suivant",
+    "search": "Rechercher",
+    "settings": "Paramètres",
+    "logout": "Déconnexion",
+    "yes": "Oui",
+    "no": "Non"
+  },
+  "navigation": {
+    "cockpit": "Cockpit",
+    "clara": "Clara",
+    "missions": "Missions",
+    "conversations": "Conversations",
+    "contacts": "Contacts",
+    "telephonie": "Téléphonie",
+    "automatisations": "Automatisations",
+    "documents": "Documents",
+    "agenda": "Agenda",
+    "memoire": "Mémoire"
+  },
+  "cockpit": {
+    "title": "Cockpit",
+    "subtitle": "Vue d'ensemble de votre journée"
+  },
+  "clara": {
+    "status": "Clara prépare votre journée…",
+    "ready": "Clara est prête",
+    "thinking": "Clara réfléchit…",
+    "title": "Clara"
+  },
+  "onboarding": {
+    "welcome": "Bienvenue sur Clara OS",
+    "step": "Étape {current} sur {total}",
+    "start": "Commencer",
+    "complete": "Terminer la configuration"
+  },
+  "missions": {
+    "title": "Missions",
+    "new": "Nouvelle mission",
+    "empty": "Aucune mission en cours",
+    "status": {
+      "pending": "En attente",
+      "running": "En cours",
+      "completed": "Terminée",
+      "failed": "Échouée"
+    }
+  },
+  "runtime": {
+    "executing": "Exécution en cours…",
+    "completed": "Exécution terminée",
+    "failed": "Exécution échouée"
+  },
+  "errors": {
+    "generic": "Une erreur est survenue.",
+    "notFound": "Page introuvable.",
+    "unauthorized": "Accès non autorisé.",
+    "networkError": "Erreur réseau. Veuillez réessayer."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "Aucune notification",
+    "markAllRead": "Tout marquer comme lu"
+  }
+}
