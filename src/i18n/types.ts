@@ -22,6 +22,8 @@ export type MessageNamespace =
   | "navigation"
   | "cockpit"
   | "clara"
+  | "chat"
+  | "voice"
   | "onboarding"
   | "missions"
   | "runtime"

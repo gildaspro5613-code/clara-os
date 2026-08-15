@@ -147,6 +147,35 @@
     "empty": "Keine Benachrichtigungen",
     "markAllRead": "Alle als gelesen markieren"
   },
+  "chat": {
+    "placeholder": "Nachricht an Clara schreiben…",
+    "send": "Senden",
+    "welcome": "Guten Tag. Ich bin Clara, Ihre KI-Assistentin. Wie kann ich Ihnen helfen?",
+    "thinking": "Clara denkt nach…",
+    "error": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+    "networkError": "Verbindung verloren. Überprüfen Sie Ihr Netzwerk.",
+    "retry": "Erneut versuchen",
+    "clearHistory": "Gespräch löschen",
+    "statusConnected": "Clara verbunden",
+    "statusThinking": "Clara denkt",
+    "statusReady": "Clara bereit",
+    "you": "Sie",
+    "clara": "Clara",
+    "emptyState": "Stellen Sie Clara eine Frage, um zu beginnen.",
+    "ariaLabel": "Gespräch mit Clara"
+  },
+  "voice": {
+    "start": "Sprache starten",
+    "stop": "Stoppen",
+    "listening": "Clara hört zu…",
+    "processing": "Clara verarbeitet Ihre Anfrage…",
+    "speaking": "Clara antwortet…",
+    "idle": "Drücken zum Sprechen",
+    "error": "Sprachfehler. Bitte erneut versuchen.",
+    "micPermission": "Mikrofonzugriff für diese Funktion erforderlich.",
+    "ariaLabel": "Clara Sprachoberfläche",
+    "statusLabel": "Sprachstatus"
+  },
   "brain": {
     "title": "Brain",
     "description": "Was Clara versteht, entscheidet und empfiehlt.",
