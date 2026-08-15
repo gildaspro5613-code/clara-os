@@ -10,9 +10,17 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+type CockpitActionKey =
+  | "shortcutNewMission"
+  | "shortcutAgenda"
+  | "shortcutMissions"
+  | "shortcutConversations"
+  | "shortcutAutomations"
+  | "shortcutDocuments";
+
 interface CockpitAction {
   id: string;
-  labelKey: string;
+  labelKey: CockpitActionKey;
   icon: React.ComponentType<{
     size?: number;
     strokeWidth?: number;
@@ -53,7 +61,7 @@ export default function CockpitActionBar() {
                 className="text-white/55 transition group-hover:text-white"
               />
 
-              <span>{t(action.labelKey as Parameters<typeof t>[0])}</span>
+              <span>{t(action.labelKey)}</span>
             </button>
           );
         })}

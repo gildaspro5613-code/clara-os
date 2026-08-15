@@ -35,9 +35,6 @@ export default function MissionCard({
         )
       : 0;
 
-  const statusKey = mission.status as keyof typeof statusMap;
-  const priorityKey = mission.priority;
-
   const statusMap = {
     planned: t("status.planned"),
     active: t("status.active"),
@@ -61,11 +58,11 @@ export default function MissionCard({
     >
       <div className="mb-5 flex items-start justify-between gap-4">
         <span className="rounded-full border border-white/10 px-3 py-1 text-xs uppercase tracking-[0.18em] text-white/55">
-          {statusMap[statusKey] ?? mission.status}
+          {statusMap[mission.status] ?? mission.status}
         </span>
 
         <span className="text-xs uppercase tracking-[0.16em] text-white/40">
-          {priorityMap[priorityKey] ?? mission.priority}
+          {priorityMap[mission.priority] ?? mission.priority}
         </span>
       </div>
 
