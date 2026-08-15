@@ -116,16 +116,16 @@ function ClaraVoiceWidgetInner({ onLocaleReady }: ClaraVoiceWidgetProps) {
   })();
 
   const handleToggle = useCallback(async () => {
+    if (starting) {
+      return;
+    }
+
     if (status === "connected" || status === "connecting") {
       endSession();
       return;
     }
 
-    if (
-      status === "error" ||
-      status === "disconnected" ||
-      status === "idle"
-    ) {
+    if (status === "error" || status === "disconnected") {
       setStartFailed(false);
       setStarting(true);
       try {
@@ -144,7 +144,7 @@ function ClaraVoiceWidgetInner({ onLocaleReady }: ClaraVoiceWidgetProps) {
         setStarting(false);
       }
     }
-  }, [status, locale, onLocaleReady, startSession, endSession]);
+  }, [starting, status, locale, onLocaleReady, startSession, endSession]);
 
   const isTransitioning = displayStatus === "processing";
 
@@ -177,6 +177,7 @@ function ClaraVoiceWidgetInner({ onLocaleReady }: ClaraVoiceWidgetProps) {
         onClick={() => void handleToggle()}
         aria-pressed={isActive}
         aria-label={isActive ? t("stop") : t("start")}
+        disabled={starting}
         className={`flex h-20 w-20 items-center justify-center rounded-full border-2 transition-all duration-300 ${
           isActive
             ? "border-cyan-400 bg-cyan-500/20 text-cyan-300 shadow-[0_0_24px_4px_rgba(6,182,212,0.3)]"
