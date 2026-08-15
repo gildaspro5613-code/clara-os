@@ -67,12 +67,13 @@ function ClaraVoiceWidgetInner({ onLocaleReady }: ClaraVoiceWidgetProps) {
   const { startSession, endSession, status, isSpeaking } = useConversation();
 
   const [starting, setStarting] = useState(false);
+  const [startFailed, setStartFailed] = useState(false);
 
   const isActive =
     status === "connected" || status === "connecting" || starting;
 
   const displayStatus = (() => {
-    if (status === "error") return "error" as const;
+    if (status === "error" || startFailed) return "error" as const;
     if (status === "connecting" || starting) return "processing" as const;
     if (status === "connected") return isSpeaking ? "speaking" as const : "listening" as const;
     return "idle" as const;
@@ -99,14 +100,19 @@ function ClaraVoiceWidgetInner({ onLocaleReady }: ClaraVoiceWidgetProps) {
       return;
     }
 
-    if (status === "error" || status === "disconnected") {
+    if (
+      status === "error" ||
+      status === "disconnected" ||
+      status === "idle"
+    ) {
+      setStartFailed(false);
       setStarting(true);
       try {
         const signedUrl = await fetchSignedUrl(locale);
         onLocaleReady?.(locale);
         startSession({ signedUrl });
       } catch {
-        // error state will be reflected via ElevenLabs status
+        setStartFailed(true);
       } finally {
         setStarting(false);
       }

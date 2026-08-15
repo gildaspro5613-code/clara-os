@@ -33,11 +33,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json({ signedUrl, locale });
   } catch (err) {
+    console.error("[voice/session] Failed to obtain ElevenLabs signed URL:", err);
+
     return NextResponse.json(
-      {
-        success: false,
-        error: err instanceof Error ? err.message : "Unexpected error.",
-      },
+      { success: false, error: "Voice session unavailable." },
       { status: 500 },
     );
   }
