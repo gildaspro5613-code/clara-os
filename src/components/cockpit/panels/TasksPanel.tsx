@@ -11,11 +11,15 @@
  * ============================================
  */
 
+import { getTranslations } from "next-intl/server";
 import GlassPanel from "@/components/ui/GlassPanel";
 
-export default function TasksPanel() {
+export default async function TasksPanel() {
+  const t = await getTranslations("cockpit");
+  const tCommon = await getTranslations("common");
+
   return (
-    <GlassPanel title="À faire maintenant">
+    <GlassPanel title={t("toDoNow")}>
       <div className="space-y-6">
 
         <div>
@@ -31,7 +35,7 @@ export default function TasksPanel() {
         <div>
           <div className="mb-2 flex items-center justify-between">
             <span className="text-sm text-white/60">
-              Progression
+              {tCommon("progress")}
             </span>
 
             <span className="text-sm font-semibold">
@@ -47,7 +51,7 @@ export default function TasksPanel() {
         <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
 
           <p className="text-xs uppercase tracking-[0.20em] text-white/50">
-            Étape suivante
+            {t("nextStep")}
           </p>
 
           <p className="mt-2 font-medium">

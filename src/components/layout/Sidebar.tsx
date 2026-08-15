@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import {
   LayoutDashboard,
@@ -16,21 +17,24 @@ import {
   Brain,
 } from "lucide-react";
 
-const menu = [
-  { name: "Cockpit", href: "/", icon: LayoutDashboard },
-  { name: "Clara", href: "/clara", icon: Bot },
-  { name: "Missions", href: "/missions", icon: ClipboardList },
-  { name: "Conversations", href: "/conversations", icon: MessageCircle },
-  { name: "Contacts", href: "/contacts", icon: Users },
-  { name: "Téléphonie", href: "/telephonie", icon: Phone },
-  { name: "Automatisations", href: "/automatisations", icon: Workflow },
-  { name: "Documents", href: "/documents", icon: FileText },
-  { name: "Agenda", href: "/agenda", icon: CalendarDays },
-  { name: "Brain", href: "/brain", icon: Brain },
-];
-
 export default function Sidebar() {
   const pathname = usePathname();
+  const t = useTranslations("navigation");
+  const tClara = useTranslations("clara");
+  const tCommon = useTranslations("common");
+
+  const menu = [
+    { name: t("cockpit"), href: "/", icon: LayoutDashboard },
+    { name: t("clara"), href: "/clara", icon: Bot },
+    { name: t("missions"), href: "/missions", icon: ClipboardList },
+    { name: t("conversations"), href: "/conversations", icon: MessageCircle },
+    { name: t("contacts"), href: "/contacts", icon: Users },
+    { name: t("telephonie"), href: "/telephonie", icon: Phone },
+    { name: t("automatisations"), href: "/automatisations", icon: Workflow },
+    { name: t("documents"), href: "/documents", icon: FileText },
+    { name: t("agenda"), href: "/agenda", icon: CalendarDays },
+    { name: t("brain"), href: "/brain", icon: Brain },
+  ];
 
   return (
     <aside className="fixed left-0 top-0 flex h-screen w-72 flex-col overflow-y-auto border-r border-white/10 bg-[#08111F]">
@@ -38,7 +42,7 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="border-b border-white/10 px-8 py-8">
         <h1 className="text-2xl font-semibold tracking-tight text-white">
-          Clara OS
+          {tCommon("appName")}
         </h1>
 
         <p className="mt-1 text-sm text-slate-400">
@@ -102,7 +106,7 @@ export default function Sidebar() {
           <span className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse" />
 
           <span className="text-sm text-slate-300">
-            Clara connectée
+            {tClara("connected")}
           </span>
 
         </div>

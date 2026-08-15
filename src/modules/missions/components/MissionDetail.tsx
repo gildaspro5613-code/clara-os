@@ -11,6 +11,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import type { Mission } from "../types/Mission";
 
 interface MissionDetailProps {
@@ -73,6 +74,9 @@ export default function MissionDetail({
   onBack,
   onUpdate,
 }: MissionDetailProps) {
+  const t = useTranslations("missions");
+  const tCommon = useTranslations("common");
+
   const [tasks, setTasks] = useState(mission.tasks);
 
   const completedTasks = tasks.filter(
@@ -96,6 +100,18 @@ export default function MissionDetail({
       ),
     [mission, nextTask?.title]
   );
+
+  const statusLabel =
+    mission.status === "active" ? t("status.active") : t("status.planned");
+
+  const priorityLabel =
+    mission.priority === "critical"
+      ? tCommon("priority.critical")
+      : mission.priority === "high"
+        ? tCommon("priority.high")
+        : mission.priority === "medium"
+          ? tCommon("priority.medium")
+          : tCommon("priority.low");
 
   function toggleTask(taskId: string) {
     const updatedTasks = tasks.map((task) =>
@@ -131,7 +147,7 @@ export default function MissionDetail({
           onClick={onBack}
           className="mb-8 text-xs uppercase tracking-[0.18em] text-white/40 transition-colors hover:text-cyan-400"
         >
-          ← Retour aux missions
+          ← {t("backToMissions")}
         </button>
 
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
@@ -139,19 +155,11 @@ export default function MissionDetail({
             <header className="mb-10">
               <div className="flex flex-wrap items-center gap-3">
                 <span className="rounded-full border border-cyan-400/20 bg-cyan-400/5 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-cyan-300/80">
-                  {mission.status === "active"
-                    ? "Active"
-                    : "Planifiée"}
+                  {statusLabel}
                 </span>
 
                 <span className="text-[10px] uppercase tracking-[0.18em] text-white/35">
-                  {mission.priority === "critical"
-                    ? "Priorité critique"
-                    : mission.priority === "high"
-                      ? "Haute priorité"
-                      : mission.priority === "medium"
-                        ? "Priorité normale"
-                        : "Faible priorité"}
+                  {priorityLabel}
                 </span>
               </div>
 
@@ -168,7 +176,7 @@ export default function MissionDetail({
               <div className="flex items-end justify-between gap-6">
                 <div>
                   <span className="text-[10px] uppercase tracking-[0.2em] text-white/35">
-                    Progression
+                    {tCommon("progress")}
                   </span>
 
                   <strong className="mt-2 block text-4xl font-medium">
@@ -177,7 +185,10 @@ export default function MissionDetail({
                 </div>
 
                 <span className="text-sm text-white/35">
-                  {completedTasks} / {tasks.length} actions
+                  {t("actionsCompleted", {
+                    completed: completedTasks,
+                    total: tasks.length,
+                  })}
                 </span>
               </div>
 
@@ -190,7 +201,7 @@ export default function MissionDetail({
 
               <div className="mt-10 border-t border-white/10 pt-8">
                 <span className="text-[10px] uppercase tracking-[0.2em] text-white/35">
-                  Actions
+                  {t("actions")}
                 </span>
 
                 <div className="mt-5 space-y-3">
@@ -228,23 +239,21 @@ export default function MissionDetail({
               <div className="mt-10 grid gap-6 border-t border-white/10 pt-8 lg:grid-cols-2">
                 <div>
                   <span className="text-[10px] uppercase tracking-[0.2em] text-cyan-400/70">
-                    Prochaine action
+                    {t("nextAction")}
                   </span>
 
                   <p className="mt-2 text-sm leading-6 text-white/80">
-                    {nextTask?.title ??
-                      "Toutes les actions sont terminées."}
+                    {nextTask?.title ?? t("allActionsCompleted")}
                   </p>
                 </div>
 
                 <div>
                   <span className="text-[10px] uppercase tracking-[0.2em] text-white/30">
-                    Dernière action
+                    {t("lastAction")}
                   </span>
 
                   <p className="mt-2 text-sm leading-6 text-white/55">
-                    {mission.lastAction ??
-                      "Aucune action enregistrée."}
+                    {mission.lastAction ?? t("noActionRecorded")}
                   </p>
                 </div>
               </div>
@@ -253,12 +262,12 @@ export default function MissionDetail({
 
           <aside className="self-start rounded-3xl border border-white/10 bg-white/[0.025] p-7 lg:sticky lg:top-8">
             <span className="text-[10px] uppercase tracking-[0.22em] text-cyan-400/70">
-              Contexte
+              {t("context")}
             </span>
 
             <div className="mt-10">
               <span className="text-[10px] uppercase tracking-[0.2em] text-white/30">
-                État
+                {t("state")}
               </span>
 
               <p className="mt-4 text-sm leading-7 text-white/70">
@@ -268,7 +277,7 @@ export default function MissionDetail({
 
             <div className="mt-8 border-t border-white/10 pt-8">
               <span className="text-[10px] uppercase tracking-[0.2em] text-white/30">
-                Objectif
+                {t("objective")}
               </span>
 
               <p className="mt-4 text-sm leading-7 text-white/70">
@@ -278,7 +287,7 @@ export default function MissionDetail({
 
             <div className="mt-8 border-t border-white/10 pt-8">
               <span className="text-[10px] uppercase tracking-[0.2em] text-cyan-400/70">
-                Clara
+                {t("claraLabel")}
               </span>
 
               <p className="mt-4 text-sm leading-7 text-white/75">

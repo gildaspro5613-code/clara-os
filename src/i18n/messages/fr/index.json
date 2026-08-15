@@ -14,7 +14,22 @@
     "settings": "Paramètres",
     "logout": "Déconnexion",
     "yes": "Oui",
-    "no": "Non"
+    "no": "Non",
+    "progress": "Progression",
+    "actions": "Actions",
+    "priority": {
+      "label": "Priorité",
+      "low": "Faible",
+      "medium": "Normale",
+      "high": "Haute",
+      "critical": "Critique"
+    },
+    "confidence": {
+      "label": "Confiance",
+      "low": "Faible",
+      "medium": "Moyenne",
+      "high": "Élevée"
+    }
   },
   "navigation": {
     "cockpit": "Cockpit",
@@ -26,17 +41,58 @@
     "automatisations": "Automatisations",
     "documents": "Documents",
     "agenda": "Agenda",
-    "memoire": "Mémoire"
+    "memoire": "Mémoire",
+    "brain": "Brain"
   },
   "cockpit": {
     "title": "Cockpit",
-    "subtitle": "Vue d'ensemble de votre journée"
+    "subtitle": "Vue d'ensemble de votre journée",
+    "today": "Aujourd'hui",
+    "toDoNow": "À faire maintenant",
+    "nextStep": "Étape suivante",
+    "startBrief": "Démarrer le brief",
+    "viewAgenda": "Voir l'agenda",
+    "openMissions": "Ouvrir les missions",
+    "quickActions": "Raccourcis rapides",
+    "shortcutNewMission": "Nouvelle mission",
+    "shortcutAgenda": "Agenda",
+    "shortcutMissions": "Missions",
+    "shortcutConversations": "Conversations",
+    "shortcutAutomations": "Automatisations",
+    "shortcutDocuments": "Documents",
+    "shortcutCall": "Appeler",
+    "shortcutNotes": "Notes",
+    "shortcutBrain": "Brain",
+    "dailySummary": "Résumé du jour",
+    "tasksCompleted": "Tâches terminées",
+    "lastConversations": "Dernières conversations",
+    "attention": "Attention",
+    "attentionCount": "{count, plural, one {# élément demande votre attention.} other {# éléments demandent votre attention.}}",
+    "attentionDescription": "Clara a identifié des actions prioritaires pour bien démarrer votre journée.",
+    "priorityLevel": "Priorité",
+    "priorityHigh": "Élevée",
+    "actionsBarLabel": "Actions Clara OS",
+    "widgetsLabel": "Widgets du Cockpit",
+    "agendaLoading": "Clara consulte votre agenda…",
+    "agendaError": "Agenda momentanément indisponible.",
+    "noEvents": "Aucun rendez-vous prévu aujourd'hui.",
+    "freeDay": "Votre journée semble dégagée.",
+    "allDay": "Toute la journée",
+    "eventCount": "{count, plural, one {# événement} other {# événements}}",
+    "heroImageAlt": "Clara OS Cockpit"
   },
   "clara": {
     "status": "Clara prépare votre journée…",
     "ready": "Clara est prête",
     "thinking": "Clara réfléchit…",
-    "title": "Clara"
+    "title": "Clara",
+    "briefReady": "J'ai préparé votre journée.",
+    "attentionSubjects": "Deux sujets méritent votre attention.",
+    "startQuestion": "Souhaitez-vous commencer ?",
+    "collaborator": "Clara — votre collaboratrice IA",
+    "connected": "Clara connectée",
+    "recommendation": "Recommandation de Clara",
+    "myRecommendation": "Ma recommandation"
   },
   "onboarding": {
     "welcome": "Bienvenue sur Clara OS",
@@ -48,11 +104,31 @@
     "title": "Missions",
     "new": "Nouvelle mission",
     "empty": "Aucune mission en cours",
+    "description": "Les objectifs que Clara conduit jusqu'à leur résultat.",
+    "activeMission": "Mission active",
+    "nextAction": "Prochaine action",
+    "lastAction": "Dernière action",
+    "allActionsCompleted": "Toutes les actions sont terminées.",
+    "noActionRecorded": "Aucune action enregistrée.",
+    "actionsCompleted": "{completed} / {total} actions terminées",
+    "openMission": "Ouvrir la mission",
+    "backToMissions": "Retour aux missions",
+    "upcoming": "À venir",
+    "plannedMissions": "Missions planifiées",
+    "actions": "Actions",
+    "context": "Contexte",
+    "state": "État",
+    "objective": "Objectif",
+    "claraLabel": "Clara",
     "status": {
       "pending": "En attente",
       "running": "En cours",
       "completed": "Terminée",
-      "failed": "Échouée"
+      "failed": "Échouée",
+      "active": "Active",
+      "planned": "Planifiée",
+      "blocked": "Bloquée",
+      "cancelled": "Annulée"
     }
   },
   "runtime": {
@@ -70,5 +146,24 @@
     "title": "Notifications",
     "empty": "Aucune notification",
     "markAllRead": "Tout marquer comme lu"
+  },
+  "brain": {
+    "title": "Brain",
+    "description": "Ce que Clara comprend, ce qu'elle décide et ce qu'elle recommande.",
+    "understanding": "Compréhension",
+    "decision": "Décision",
+    "recommendation": "Recommandation de Clara",
+    "confidenceLevel": "Niveau de confiance",
+    "confidence": "Confiance",
+    "nextStep": "Prochaine étape",
+    "plan": "Plan",
+    "context": "Contexte",
+    "event": "Événement",
+    "origin": "Origine",
+    "memory": "Mémoire",
+    "claraLabel": "Clara",
+    "memoryItems": "{count, plural, one {# élément connu} other {# éléments connus}}",
+    "noFacts": "Aucun fait pertinent",
+    "claraAnalysis": "Le Brain analyse le contexte et prépare la prochaine décision."
   }
 }

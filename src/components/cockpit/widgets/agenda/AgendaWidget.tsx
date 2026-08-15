@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { CalendarDays, ChevronRight, Clock } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
 
 interface CalendarEvent {
   id?: string;
@@ -23,25 +24,28 @@ interface CalendarResponse {
   message?: string;
 }
 
-function formatTime(event: CalendarEvent) {
-  if (event.start?.date) {
-    return "Toute la journée";
-  }
-
-  if (!event.start?.dateTime) {
-    return "";
-  }
-
-  return new Intl.DateTimeFormat("fr-FR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(event.start.dateTime));
-}
-
 export default function AgendaWidget() {
+  const t = useTranslations("cockpit");
+  const locale = useLocale();
+
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+
+  function formatTime(event: CalendarEvent) {
+    if (event.start?.date) {
+      return t("allDay");
+    }
+
+    if (!event.start?.dateTime) {
+      return "";
+    }
+
+    return new Intl.DateTimeFormat(locale, {
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(event.start.dateTime));
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -106,36 +110,36 @@ export default function AgendaWidget() {
             </p>
 
             <p className="mt-1 text-sm text-white/75">
-              Aujourd'hui
+              {t("today")}
             </p>
           </div>
         </div>
 
         <span className="text-xs text-white/35">
-          {events.length} événement{events.length > 1 ? "s" : ""}
+          {t("eventCount", { count: events.length })}
         </span>
       </div>
 
       {loading && (
         <div className="py-6 text-sm text-white/45">
-          Clara consulte votre agenda…
+          {t("agendaLoading")}
         </div>
       )}
 
       {!loading && error && (
         <div className="py-6 text-sm text-white/45">
-          Agenda momentanément indisponible.
+          {t("agendaError")}
         </div>
       )}
 
       {!loading && !error && events.length === 0 && (
         <div className="py-6">
           <p className="text-sm text-white/65">
-            Aucun rendez-vous prévu aujourd'hui.
+            {t("noEvents")}
           </p>
 
           <p className="mt-1 text-xs text-white/35">
-            Votre journée semble dégagée.
+            {t("freeDay")}
           </p>
         </div>
       )}
@@ -191,7 +195,7 @@ export default function AgendaWidget() {
           hover:text-white/75
         "
       >
-        Voir l'agenda
+        {t("viewAgenda")}
         <ChevronRight size={14} strokeWidth={1.7} />
       </button>
     </article>

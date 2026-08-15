@@ -1,10 +1,13 @@
+import { getTranslations } from "next-intl/server";
 import CockpitActionBar from "./CockpitActionBar";
 import AgendaWidget from "./agenda/AgendaWidget";
 
-export default function CockpitWidgets() {
+export default async function CockpitWidgets() {
+  const t = await getTranslations("cockpit");
+
   return (
     <section
-      aria-label="Widgets du Cockpit"
+      aria-label={t("widgetsLabel")}
       className="w-full bg-[#050505]"
     >
       <CockpitActionBar />

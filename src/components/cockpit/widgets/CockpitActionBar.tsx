@@ -8,10 +8,11 @@ import {
   Plus,
   Workflow,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface CockpitAction {
   id: string;
-  label: string;
+  labelKey: string;
   icon: React.ComponentType<{
     size?: number;
     strokeWidth?: number;
@@ -19,47 +20,25 @@ interface CockpitAction {
   }>;
 }
 
-const ACTIONS: CockpitAction[] = [
-  {
-    id: "mission",
-    label: "Nouvelle mission",
-    icon: Plus,
-  },
-  {
-    id: "agenda",
-    label: "Agenda",
-    icon: CalendarDays,
-  },
-  {
-    id: "missions",
-    label: "Missions",
-    icon: CheckSquare,
-  },
-  {
-    id: "conversations",
-    label: "Conversations",
-    icon: MessageSquare,
-  },
-  {
-    id: "automations",
-    label: "Automatisations",
-    icon: Workflow,
-  },
-  {
-    id: "documents",
-    label: "Documents",
-    icon: FileText,
-  },
+const ACTION_DEFS: CockpitAction[] = [
+  { id: "mission", labelKey: "shortcutNewMission", icon: Plus },
+  { id: "agenda", labelKey: "shortcutAgenda", icon: CalendarDays },
+  { id: "missions", labelKey: "shortcutMissions", icon: CheckSquare },
+  { id: "conversations", labelKey: "shortcutConversations", icon: MessageSquare },
+  { id: "automations", labelKey: "shortcutAutomations", icon: Workflow },
+  { id: "documents", labelKey: "shortcutDocuments", icon: FileText },
 ];
 
 export default function CockpitActionBar() {
+  const t = useTranslations("cockpit");
+
   return (
     <nav
-      aria-label="Actions Clara OS"
+      aria-label={t("actionsBarLabel")}
       className="w-full border-y border-white/10 bg-black/20 px-4 py-3 backdrop-blur-md"
     >
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-2">
-        {ACTIONS.map((action) => {
+        {ACTION_DEFS.map((action) => {
           const Icon = action.icon;
 
           return (
@@ -74,7 +53,7 @@ export default function CockpitActionBar() {
                 className="text-white/55 transition group-hover:text-white"
               />
 
-              <span>{action.label}</span>
+              <span>{t(action.labelKey as Parameters<typeof t>[0])}</span>
             </button>
           );
         })}

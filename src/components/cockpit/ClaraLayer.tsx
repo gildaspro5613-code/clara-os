@@ -11,6 +11,7 @@
  */
 
 import Image from "next/image";
+import { getTranslations } from "next-intl/server";
 
 const claraStyles = `
   @keyframes clara-rise {
@@ -27,7 +28,9 @@ const claraStyles = `
  * Positioned at the bottom-left, she emerges from below
  * with a soft entrance animation.
  */
-export default function ClaraLayer() {
+export default async function ClaraLayer() {
+  const t = await getTranslations("clara");
+
   return (
     <>
       <style>{claraStyles}</style>
@@ -44,7 +47,7 @@ export default function ClaraLayer() {
         <div className="relative w-full h-full">
           <Image
             src="/images/clara/summer/Clara.png"
-            alt="Clara — votre collaboratrice IA"
+            alt={t("collaborator")}
             fill
             priority
             className="object-contain object-bottom"

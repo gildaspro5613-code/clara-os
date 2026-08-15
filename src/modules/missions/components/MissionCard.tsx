@@ -7,6 +7,9 @@
 // Official secondary mission presentation.
 // ============================================
 
+"use client";
+
+import { useTranslations } from "next-intl";
 import type { Mission } from "../types/Mission";
 
 interface MissionCardProps {
@@ -14,25 +17,13 @@ interface MissionCardProps {
   onSelect: (mission: Mission) => void;
 }
 
-const statusLabels = {
-  planned: "Planifiée",
-  active: "Active",
-  blocked: "Bloquée",
-  completed: "Terminée",
-  cancelled: "Annulée",
-};
-
-const priorityLabels = {
-  low: "Faible",
-  medium: "Normale",
-  high: "Haute",
-  critical: "Critique",
-};
-
 export default function MissionCard({
   mission,
   onSelect,
 }: MissionCardProps) {
+  const t = useTranslations("missions");
+  const tCommon = useTranslations("common");
+
   const completedTasks = mission.tasks.filter(
     (task) => task.completed
   ).length;
@@ -44,6 +35,24 @@ export default function MissionCard({
         )
       : 0;
 
+  const statusKey = mission.status as keyof typeof statusMap;
+  const priorityKey = mission.priority;
+
+  const statusMap = {
+    planned: t("status.planned"),
+    active: t("status.active"),
+    blocked: t("status.blocked"),
+    completed: t("status.completed"),
+    cancelled: t("status.cancelled"),
+  } as const;
+
+  const priorityMap = {
+    low: tCommon("priority.low"),
+    medium: tCommon("priority.medium"),
+    high: tCommon("priority.high"),
+    critical: tCommon("priority.critical"),
+  } as const;
+
   return (
     <button
       type="button"
@@ -52,11 +61,11 @@ export default function MissionCard({
     >
       <div className="mb-5 flex items-start justify-between gap-4">
         <span className="rounded-full border border-white/10 px-3 py-1 text-xs uppercase tracking-[0.18em] text-white/55">
-          {statusLabels[mission.status]}
+          {statusMap[statusKey] ?? mission.status}
         </span>
 
         <span className="text-xs uppercase tracking-[0.16em] text-white/40">
-          {priorityLabels[mission.priority]}
+          {priorityMap[priorityKey] ?? mission.priority}
         </span>
       </div>
 
@@ -71,7 +80,7 @@ export default function MissionCard({
       <div className="mt-6">
         <div className="mb-2 flex items-center justify-between text-xs">
           <span className="uppercase tracking-[0.16em] text-white/40">
-            Progression
+            {tCommon("progress")}
           </span>
 
           <strong className="text-white/80">
@@ -88,13 +97,16 @@ export default function MissionCard({
       </div>
 
       <div className="mt-5 text-xs text-white/40">
-        {completedTasks} / {mission.tasks.length} actions terminées
+        {t("actionsCompleted", {
+          completed: completedTasks,
+          total: mission.tasks.length,
+        })}
       </div>
 
       {mission.nextAction && (
         <div className="mt-6 border-t border-white/10 pt-5">
           <span className="text-[10px] uppercase tracking-[0.2em] text-white/35">
-            Prochaine action
+            {t("nextAction")}
           </span>
 
           <p className="mt-2 text-sm leading-5 text-white/75">
@@ -104,7 +116,7 @@ export default function MissionCard({
       )}
 
       <div className="mt-5 text-[10px] uppercase tracking-[0.18em] text-cyan-400/50 opacity-0 transition-opacity group-hover:opacity-100">
-        Ouvrir la mission →
+        {t("openMission")} →
       </div>
     </button>
   );

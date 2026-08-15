@@ -11,6 +11,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import MissionCard from "./components/MissionCard";
 import MissionDetail from "./components/MissionDetail";
@@ -20,6 +21,9 @@ import type { Mission } from "./types/Mission";
 const STORAGE_KEY = "clara-os-missions-v1";
 
 export default function MissionsStage() {
+  const t = useTranslations("missions");
+  const tCommon = useTranslations("common");
+
   const [missions, setMissions] = useState<Mission[]>(missionsMock);
   const [selectedMissionId, setSelectedMissionId] = useState<string | null>(
     null
@@ -120,15 +124,15 @@ export default function MissionsStage() {
         <header className="mb-10 flex flex-col gap-6 border-b border-white/10 pb-8 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <span className="text-[11px] uppercase tracking-[0.28em] text-cyan-400/70">
-              CLARA OS
+              {tCommon("appName")}
             </span>
 
             <h1 className="mt-3 text-4xl font-medium tracking-tight">
-              Missions
+              {t("title")}
             </h1>
 
             <p className="mt-3 max-w-xl text-sm leading-6 text-white/50">
-              Les objectifs que Clara conduit jusqu&apos;à leur résultat.
+              {t("description")}
             </p>
           </div>
 
@@ -139,7 +143,7 @@ export default function MissionsStage() {
               </strong>
 
               <span className="text-xs uppercase tracking-[0.16em] text-white/35">
-                Active
+                {t("status.active")}
               </span>
             </div>
 
@@ -149,7 +153,7 @@ export default function MissionsStage() {
               </strong>
 
               <span className="text-xs uppercase tracking-[0.16em] text-white/35">
-                Planifiées
+                {t("status.planned")}
               </span>
             </div>
           </div>
@@ -161,7 +165,7 @@ export default function MissionsStage() {
               <span className="h-2 w-2 rounded-full bg-cyan-400" />
 
               <span className="text-[11px] uppercase tracking-[0.25em] text-white/45">
-                Mission active
+                {t("activeMission")}
               </span>
             </div>
 
@@ -174,11 +178,11 @@ export default function MissionsStage() {
                 <div className="max-w-2xl">
                   <div className="flex flex-wrap items-center gap-3">
                     <span className="rounded-full border border-cyan-400/20 bg-cyan-400/5 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-cyan-300/80">
-                      Active
+                      {t("status.active")}
                     </span>
 
                     <span className="text-[10px] uppercase tracking-[0.18em] text-white/35">
-                      Haute priorité
+                      {tCommon("priority.high")}
                     </span>
                   </div>
 
@@ -199,7 +203,7 @@ export default function MissionsStage() {
 
                 <div className="min-w-[220px] lg:text-right">
                   <span className="text-[10px] uppercase tracking-[0.2em] text-white/35">
-                    Progression
+                    {tCommon("progress")}
                   </span>
 
                   <strong className="mt-2 block text-4xl font-medium">
@@ -217,37 +221,37 @@ export default function MissionsStage() {
                 </div>
 
                 <p className="mt-3 text-xs text-white/35">
-                  {completedTasks} / {activeMission.tasks.length} actions
-                  terminées
+                  {t("actionsCompleted", {
+                    completed: completedTasks,
+                    total: activeMission.tasks.length,
+                  })}
                 </p>
               </div>
 
               <div className="mt-8 grid gap-6 border-t border-white/10 pt-7 lg:grid-cols-2">
                 <div>
                   <span className="text-[10px] uppercase tracking-[0.2em] text-cyan-400/70">
-                    Prochaine action
+                    {t("nextAction")}
                   </span>
 
                   <p className="mt-2 text-sm leading-6 text-white/80">
-                    {nextTask?.title ??
-                      "Toutes les actions sont terminées."}
+                    {nextTask?.title ?? t("allActionsCompleted")}
                   </p>
                 </div>
 
                 <div>
                   <span className="text-[10px] uppercase tracking-[0.2em] text-white/30">
-                    Dernière action
+                    {t("lastAction")}
                   </span>
 
                   <p className="mt-2 text-sm leading-6 text-white/55">
-                    {activeMission.lastAction ??
-                      "Aucune action enregistrée."}
+                    {activeMission.lastAction ?? t("noActionRecorded")}
                   </p>
                 </div>
               </div>
 
               <div className="mt-7 text-[10px] uppercase tracking-[0.18em] text-cyan-400/50 opacity-0 transition-opacity group-hover:opacity-100">
-                Ouvrir la mission →
+                {t("openMission")} →
               </div>
             </button>
           </section>
@@ -256,11 +260,11 @@ export default function MissionsStage() {
         <section>
           <div className="mb-5">
             <span className="text-[11px] uppercase tracking-[0.25em] text-white/40">
-              À venir
+              {t("upcoming")}
             </span>
 
             <h2 className="mt-2 text-xl font-medium">
-              Missions planifiées
+              {t("plannedMissions")}
             </h2>
           </div>
 
