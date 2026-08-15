@@ -11,11 +11,14 @@
  * ============================================
  */
 
+import { getTranslations } from "next-intl/server";
 import GlassPanel from "@/components/ui/GlassPanel";
 
-export default function TodayPanel() {
+export default async function TodayPanel() {
+  const t = await getTranslations("cockpit");
+
   return (
-    <GlassPanel title="Aujourd'hui">
+    <GlassPanel title={t("today")}>
       <div className="space-y-5">
 
         <div className="flex items-start gap-3">

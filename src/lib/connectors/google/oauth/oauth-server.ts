@@ -238,15 +238,16 @@ export class GoogleOAuthServer {
     }
 
     if (
-      redirectUri.protocol !==
-      "http:"
-    ) {
+  redirectUri.protocol !== "http:" &&
+  redirectUri.protocol !== "https:"
+) {
 
-      throw new InvalidRedirectUriError(
-        "Only HTTP callbacks are supported.",
-      );
+  throw new InvalidRedirectUriError(
+    "Only HTTP or HTTPS callbacks are supported.",
+  );
 
-    }
+}
+    
 
     this.redirectUri =
       redirectUri;
@@ -259,7 +260,7 @@ export class GoogleOAuthServer {
         ? Number(
             redirectUri.port,
           )
-        : 80;
+        : 3000;
 
     this.callbackPath =
       redirectUri.pathname;
@@ -406,7 +407,8 @@ export class GoogleOAuthServer {
 
             cleanup();
 
-            reject(
+            console.error("OAUTH SERVER ERROR:", error);
+    reject(
 
               new ServerError(
                 "Unable to start HTTP server.",
@@ -422,13 +424,7 @@ export class GoogleOAuthServer {
           onError,
         );
 
-        server.listen(
-
-          this.port,
-
-          this.hostname,
-
-        );
+        server.listen(this.port, "0.0.0.0");
 
         const timer =
           setTimeout(

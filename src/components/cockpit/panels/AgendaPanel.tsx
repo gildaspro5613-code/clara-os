@@ -10,17 +10,20 @@
  * ============================================
  */
 
+import { getTranslations } from "next-intl/server";
 import GlassPanel from "@/components/ui/GlassPanel";
 
 /**
  * AgendaPanel displays today's schedule inside
  * the shared glass surface.
  */
-export default function AgendaPanel() {
+export default async function AgendaPanel() {
+  const t = await getTranslations("cockpit");
+
   return (
     <GlassPanel className="mt-7 ml-2 w-[13.5rem] px-5 py-4 bg-white/[0.03] border-white/[0.07] shadow-[0_2px_16px_rgba(0,0,0,0.16)]">
       <h3 className="mb-3 text-sm font-medium tracking-[0.08em] uppercase text-white/74">
-        Aujourd&apos;hui
+        {t("today")}
       </h3>
 
       <ul className="space-y-2">

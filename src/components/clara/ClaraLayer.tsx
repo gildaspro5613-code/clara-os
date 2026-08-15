@@ -1,28 +1,22 @@
-/**
- * ============================================
- * CLARA OS
- * Clara Module
- * --------------------------------------------
- * File : ClaraLayer.tsx
- * Responsibility :
- * Renders Clara independently from the cockpit.
- * Clara remains a separate visual layer so she
- * can later be animated by the Life Engine.
- * ============================================
- */
-
 import Image from "next/image";
 
 export default function ClaraLayer() {
   return (
-    <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden">
+    <div
+      className="pointer-events-none absolute z-40"
+      style={{
+        left: "35%",
+        bottom: "0",
+        width: "40%",
+      }}
+    >
       <Image
-        src="/clara/master/Clara_Master.png"
+        src="/cockpit/clara-chair-transparent.png"
         alt="Clara"
         width={1536}
         height={1024}
         priority
-        className="h-[1024px] w-[1536px] select-none object-none"
+        className="block h-auto w-full"
       />
     </div>
   );

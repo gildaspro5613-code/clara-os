@@ -11,11 +11,14 @@
  * ============================================
  */
 
+import { getTranslations } from "next-intl/server";
 import GlassPanel from "@/components/ui/GlassPanel";
 
-export default function AttentionPanel() {
+export default async function AttentionPanel() {
+  const t = await getTranslations("cockpit");
+
   return (
-    <GlassPanel title="Attention">
+    <GlassPanel title={t("attention")}>
       <div className="space-y-5">
 
         <div className="flex items-start gap-3">
@@ -24,12 +27,11 @@ export default function AttentionPanel() {
 
           <div>
             <p className="text-lg font-semibold">
-              Deux éléments demandent ton attention.
+              {t("attentionCount", { count: 2 })}
             </p>
 
             <p className="mt-2 text-sm leading-relaxed text-white/70">
-              Clara a identifié deux actions prioritaires pour bien démarrer
-              ta journée.
+              {t("attentionDescription")}
             </p>
           </div>
 
@@ -40,11 +42,11 @@ export default function AttentionPanel() {
           <div className="flex justify-between">
 
             <span className="text-sm text-white/60">
-              Priorité
+              {t("priorityLevel")}
             </span>
 
             <span className="text-sm font-medium text-amber-300">
-              Élevée
+              {t("priorityHigh")}
             </span>
 
           </div>

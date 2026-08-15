@@ -1,16 +1,3 @@
-/**
- * ============================================
- * CLARA OS
- * UI Module
- * --------------------------------------------
- * File : GlassPanel.tsx
- * Responsibility :
- * Official premium glass container.
- * Every cockpit panel inherits from this
- * component.
- * ============================================
- */
-
 import { ReactNode } from "react";
 
 interface GlassPanelProps {
@@ -27,29 +14,19 @@ export default function GlassPanel({
   return (
     <section
       className={`
-        rounded-[30px]
-
-        border
-        border-white/10
-
+        rounded-[24px]
+        border border-white/[0.12]
         bg-black/30
-
-        backdrop-blur-[28px]
-
-        shadow-[0_20px_60px_rgba(0,0,0,0.30)]
-
-        p-6
-
+        backdrop-blur-[24px]
+        shadow-[0_12px_40px_rgba(0,0,0,0.18)]
+        p-5
         text-white
-
-        transition-all
-        duration-300
-
+        transition-all duration-300
         ${className}
       `}
     >
       {title && (
-        <h2 className="mb-5 text-xs uppercase tracking-[0.30em] text-white/80">
+        <h2 className="mb-4 text-xs uppercase tracking-[0.28em] text-white/75">
           {title}
         </h2>
       )}

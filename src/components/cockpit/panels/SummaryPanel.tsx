@@ -11,15 +11,18 @@
  * ============================================
  */
 
+import { getTranslations } from "next-intl/server";
 import GlassPanel from "@/components/ui/GlassPanel";
 
-export default function SummaryPanel() {
+export default async function SummaryPanel() {
+  const t = await getTranslations("cockpit");
+
   return (
-    <GlassPanel title="Résumé du jour">
+    <GlassPanel title={t("dailySummary")}>
       <div className="space-y-5">
 
         <div className="flex items-center justify-between">
-          <span className="text-white/70">Tâches terminées</span>
+          <span className="text-white/70">{t("tasksCompleted")}</span>
           <span className="font-semibold">12</span>
         </div>
 
@@ -40,7 +43,7 @@ export default function SummaryPanel() {
         <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
 
           <p className="text-xs uppercase tracking-[0.20em] text-white/50">
-            Aujourd'hui
+            {t("today")}
           </p>
 
           <p className="mt-2 text-sm leading-relaxed text-white/75">

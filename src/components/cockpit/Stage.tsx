@@ -1,57 +1,95 @@
-/**
- * ============================================
- * CLARA OS
- * Cockpit Module
- * --------------------------------------------
- * File : Stage.tsx
- * Responsibility :
- * Visual stage composition for the Hero.
- * Positions overlay panels above the cockpit.
- * ============================================
- */
-
-import AttentionPanel from "@/components/cockpit/panels/AttentionPanel";
-import TodayPanel from "@/components/cockpit/panels/TodayPanel";
+import BriefPanel from "@/components/cockpit/panels/BriefPanel";
 import TasksPanel from "@/components/cockpit/panels/TasksPanel";
-import SummaryPanel from "@/components/cockpit/panels/SummaryPanel";
-import ConversationsPanel from "@/components/cockpit/panels/ConversationsPanel";
-import QuickActionsPanel from "@/components/cockpit/panels/QuickActionsPanel";
 
-const CLARA_READY_LABEL = "Clara est prête à vous accompagner";
-
-/**
- * Fixed-artboard cockpit stage.
- * All floating panels and the bottom line are absolutely positioned
- * in a single shared 1536x1024 coordinate system.
- */
 export default function Stage() {
   return (
-    <div className="pointer-events-none absolute inset-0 z-30">
-      <div className="pointer-events-auto absolute left-[92px] top-[98px] w-[342px]">
-        <AttentionPanel />
+    <>
+      {/* ============================================
+          DESKTOP / LAPTOP
+          Hero intentionally kept light.
+          Clara remains the visual focal point.
+          ============================================ */}
+
+      {/* Clara's briefing */}
+      <div
+        className="
+          pointer-events-auto
+          absolute
+          left-[5%]
+          top-[12%]
+          z-20
+          hidden
+          w-[25%]
+          max-w-[360px]
+          lg:block
+        "
+      >
+        <BriefPanel />
       </div>
-      <div className="pointer-events-auto absolute left-[92px] top-[352px] w-[342px]">
-        <TodayPanel />
-      </div>
-      <div className="pointer-events-auto absolute left-[92px] top-[700px] w-[342px]">
+
+      {/* Main action — deliberately the only
+          operational glass panel in the Hero */}
+      <div
+        className="
+          pointer-events-auto
+          absolute
+          right-[5%]
+          top-[18%]
+          z-20
+          hidden
+          w-[25%]
+          max-w-[360px]
+          lg:block
+        "
+      >
         <TasksPanel />
       </div>
 
-      <div className="pointer-events-auto absolute left-[1102px] top-[98px] w-[342px]">
-        <SummaryPanel />
-      </div>
-      <div className="pointer-events-auto absolute left-[1102px] top-[384px] w-[342px]">
-        <ConversationsPanel />
-      </div>
-      <div className="pointer-events-auto absolute left-[1102px] top-[762px] w-[342px]">
-        <QuickActionsPanel />
+      {/* Context zone reserved for:
+          date / weather / next agenda item.
+          Kept visually discreet. */}
+
+      {/* ============================================
+          MOBILE
+          ============================================ */}
+
+      <div
+        className="
+          pointer-events-none
+          absolute
+          left-4
+          right-4
+          top-[12%]
+          z-20
+          flex
+          flex-col
+          gap-3
+          lg:hidden
+        "
+      >
+        <div className="pointer-events-auto">
+          <BriefPanel />
+        </div>
       </div>
 
-      <div className="absolute bottom-[-20px] left-1/2 -translate-x-1/2 z-40">
-        <p className="text-xl font-light tracking-[0.02em] text-white/90">
-          {CLARA_READY_LABEL}
-        </p>
+      <div
+        className="
+          pointer-events-none
+          absolute
+          left-4
+          right-4
+          top-[58%]
+          z-20
+          flex
+          flex-col
+          gap-3
+          lg:hidden
+        "
+      >
+        <div className="pointer-events-auto">
+          <TasksPanel />
+        </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -11,11 +11,14 @@
  * ============================================
  */
 
+import { getTranslations } from "next-intl/server";
 import GlassPanel from "@/components/ui/GlassPanel";
 
-export default function ConversationsPanel() {
+export default async function ConversationsPanel() {
+  const t = await getTranslations("cockpit");
+
   return (
-    <GlassPanel title="Dernières conversations">
+    <GlassPanel title={t("lastConversations")}>
       <div className="space-y-4">
 
         <div className="rounded-2xl border border-white/10 bg-white/5 p-4">

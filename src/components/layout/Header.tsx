@@ -1,15 +1,21 @@
 "use client";
 
 import { Bell, Search } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
+import LocaleSwitcher from "@/components/ui/LocaleSwitcher";
+import type { Locale } from "@/i18n/types";
 
 export default function Header() {
+  const t = useTranslations();
+  const locale = useLocale() as Locale;
+
   return (
     <header className="sticky top-0 z-30 flex h-12 items-center justify-between border-b border-white/10 bg-[#08111F]/95 px-8 backdrop-blur">
 
       {/* Page */}
       <div className="w-40 flex-shrink-0">
         <h2 className="text-lg font-semibold tracking-tight text-white">
-          Cockpit
+          {t("cockpit.title")}
         </h2>
       </div>
 
@@ -25,7 +31,7 @@ export default function Header() {
 
           <input
             type="text"
-            placeholder="Rechercher..."
+            placeholder={t("common.search")}
             className="ml-3 flex-1 bg-transparent text-sm text-white placeholder:text-slate-500 focus:outline-none"
           />
 
@@ -38,17 +44,19 @@ export default function Header() {
       </div>
 
       {/* Actions */}
-      <div className="flex w-72 items-center justify-end gap-6">
+      <div className="flex w-72 items-center justify-end gap-4">
 
         <div className="hidden xl:flex items-center gap-2">
 
           <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
 
           <span className="text-sm text-slate-400">
-            Clara prépare votre journée...
+            {t("clara.status")}
           </span>
 
         </div>
+
+        <LocaleSwitcher currentLocale={locale} />
 
         <button className="rounded-lg p-2 text-slate-400 transition hover:bg-white/10 hover:text-white">
 

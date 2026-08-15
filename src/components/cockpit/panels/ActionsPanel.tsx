@@ -1,4 +1,3 @@
-
 /**
  * ============================================
  * CLARA OS
@@ -11,17 +10,20 @@
  * ============================================
  */
 
+import { getTranslations } from "next-intl/server";
 import GlassPanel from "@/components/ui/GlassPanel";
 
 /**
  * ActionsPanel displays the primary quick-action
  * buttons inside the shared glass surface.
  */
-export default function ActionsPanel() {
+export default async function ActionsPanel() {
+  const t = await getTranslations("cockpit");
+
   return (
     <GlassPanel className="mt-5 ml-4 w-[13rem] px-5 py-4 bg-white/[0.025] border-white/[0.06] shadow-[0_2px_14px_rgba(0,0,0,0.14)]">
       <h3 className="mb-3 text-sm font-medium tracking-[0.08em] uppercase text-white/74">
-        Actions
+        {t("quickActions")}
       </h3>
 
       <ul className="space-y-2">
@@ -30,7 +32,7 @@ export default function ActionsPanel() {
             type="button"
             className="w-full text-left text-sm text-white/80 hover:text-white/95 transition-colors"
           >
-            Démarrer le brief
+            {t("startBrief")}
           </button>
         </li>
         <li>
@@ -38,7 +40,7 @@ export default function ActionsPanel() {
             type="button"
             className="w-full text-left text-sm text-white/80 hover:text-white/95 transition-colors"
           >
-            Voir l&rsquo;agenda
+            {t("viewAgenda")}
           </button>
         </li>
         <li>
@@ -46,7 +48,7 @@ export default function ActionsPanel() {
             type="button"
             className="w-full text-left text-sm text-white/80 hover:text-white/95 transition-colors"
           >
-            Ouvrir les missions
+            {t("openMissions")}
           </button>
         </li>
       </ul>

@@ -1,28 +1,20 @@
-/**
- * ============================================
- * CLARA OS
- * Cockpit Module
- * --------------------------------------------
- * File : Hero.tsx
- * Responsibility :
- * Main Hero section of Clara OS.
- * Composes the official cockpit:
- *  - Background
- *  - Clara
- *  - Glass interface
- * ============================================
- */
-
-import HeroBackground from "./HeroBackground";
+import Image from "next/image";
+import Stage from "../Stage";
 
 export default function Hero() {
   return (
-    <section className="relative h-full w-full overflow-hidden bg-black">
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute left-1/2 top-1/2 aspect-[1536/1024] h-full min-w-full -translate-x-1/2 -translate-y-1/2 overflow-hidden">
-          <HeroBackground />
-        </div>
+    <section className="relative min-h-screen w-full overflow-hidden">
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/cockpit/cockpit-hero-final.png"
+          alt="Clara OS Cockpit"
+          fill
+          priority
+          className="object-cover"
+        />
       </div>
+
+      <Stage />
     </section>
   );
 }
