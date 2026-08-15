@@ -22,6 +22,7 @@ export const dynamic = "force-dynamic";
 
 const VOICE_SESSION_WINDOW_MS = 60_000;
 const VOICE_SESSION_LIMIT = 5;
+const MAX_TRACKED_VOICE_SESSION_KEYS = 256;
 const NO_STORE_HEADERS = {
   "Cache-Control": "no-store, max-age=0",
 } as const;
@@ -65,6 +66,31 @@ function isVoiceSessionRateLimited(request: NextRequest): boolean {
   const key = getVoiceSessionRateLimitKey(request);
   const now = Date.now();
   const windowStart = now - VOICE_SESSION_WINDOW_MS;
+
+  for (const [trackedKey, timestamps] of voiceSessionRequests.entries()) {
+    const activeTimestamps = timestamps.filter(
+      (timestamp) => timestamp > windowStart,
+    );
+
+    if (activeTimestamps.length === 0) {
+      voiceSessionRequests.delete(trackedKey);
+      continue;
+    }
+
+    voiceSessionRequests.set(trackedKey, activeTimestamps);
+  }
+
+  if (
+    !voiceSessionRequests.has(key) &&
+    voiceSessionRequests.size >= MAX_TRACKED_VOICE_SESSION_KEYS
+  ) {
+    const oldestTrackedKey = voiceSessionRequests.keys().next().value;
+
+    if (oldestTrackedKey) {
+      voiceSessionRequests.delete(oldestTrackedKey);
+    }
+  }
+
   const recentRequests = (voiceSessionRequests.get(key) ?? []).filter(
     (timestamp) => timestamp > windowStart,
   );
