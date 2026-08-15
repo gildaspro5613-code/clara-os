@@ -15,11 +15,17 @@ import { OpenAIResponsesContext } from "./openai-responses-context";
 import { OpenAIResponsesResult } from "./openai-responses-result";
 
 /**
- * OpenAI client.
+ * Returns the OpenAI client when the API key is configured.
  */
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+function getOpenAIClient(): OpenAI {
+  const apiKey = process.env.OPENAI_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY is not configured.");
+  }
+
+  return new OpenAI({ apiKey });
+}
 
 /**
  * OpenAI Responses engine.
@@ -34,6 +40,7 @@ export class OpenAIResponsesEngine {
   ): Promise<OpenAIResponsesResult> {
 
     try {
+      const client = getOpenAIClient();
 
       const response = await client.responses.create({
 
