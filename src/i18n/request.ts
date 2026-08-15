@@ -10,6 +10,7 @@
  */
 
 import { getRequestConfig } from "next-intl/server";
+import type { IntlError } from "next-intl";
 import { cookies } from "next/headers";
 import { LOCALE_COOKIE, resolveLocale } from "./config";
 
@@ -26,13 +27,13 @@ export default getRequestConfig(async () => {
     messages,
     // next-intl will silently fall back to the key name when a message
     // is missing — no exception thrown, no empty UI.
-    onError(error) {
+    onError(error: IntlError) {
       if (process.env.NODE_ENV !== "production") {
         console.warn("[next-intl]", error.message);
       }
     },
-    getMessageFallback({ key, namespace }) {
-      return `${namespace}.${key}`;
+    getMessageFallback({ key, namespace }: { error: IntlError; key: string; namespace?: string }) {
+      return namespace != null ? `${namespace}.${key}` : key;
     },
   };
 });
