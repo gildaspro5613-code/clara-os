@@ -1,5 +1,6 @@
 import BriefPanel from "@/components/cockpit/panels/BriefPanel";
 import TasksPanel from "@/components/cockpit/panels/TasksPanel";
+import ClaraVoiceWidget from "@/components/clara/ClaraVoiceWidget";
 
 export default function Stage() {
   return (
@@ -89,6 +90,23 @@ export default function Stage() {
         <div className="pointer-events-auto">
           <TasksPanel />
         </div>
+      </div>
+
+      {/* Voice widget — bottom-centre, desktop only */}
+      <div
+        className="
+          pointer-events-auto
+          absolute
+          bottom-[6%]
+          left-1/2
+          z-20
+          hidden
+          w-[260px]
+          -translate-x-1/2
+          lg:block
+        "
+      >
+        <ClaraVoiceWidget />
       </div>
     </>
   );
