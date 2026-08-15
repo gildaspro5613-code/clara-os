@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "google:refresh-token": "tsx src/lib/connectors/google/oauth/generate-refresh-token.ts",
+    "google:refresh-token": "tsx src/scripts/generate-google-refresh-token.ts",
     "google:install": "tsx src/lib/connectors/google/installer/google-installer.ts"
   },
   "dependencies": {

@@ -29,7 +29,7 @@ export async function orchestrate(
   /*
    * Execute one Brain cycle.
    */
-  const recommendation = await runBrain(
+  const recommendation = runBrain(
     event,
   );
 
