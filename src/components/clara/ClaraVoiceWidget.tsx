@@ -32,6 +32,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { ConversationProvider, useConversation } from "@elevenlabs/react";
 import { Mic, MicOff, Loader2 } from "lucide-react";
 import type { Locale } from "@/i18n/types";
+import type { ElevenLabsConversationOverrides } from "@/lib/connectors/internal/elevenlabs";
 
 export interface ClaraVoiceWidgetProps {
   /** Optional callback invoked with the active locale when a session starts. */
@@ -39,22 +40,42 @@ export interface ClaraVoiceWidgetProps {
 }
 
 /**
- * Fetches a signed ElevenLabs WebSocket URL for the given locale.
+ * Session payload returned by the voice session route.
  */
-async function fetchSignedUrl(locale: Locale): Promise<string> {
-  const response = await fetch(`/api/voice/session?locale=${locale}`);
+interface VoiceSessionResponse {
+  signedUrl: string;
+  locale: Locale;
+  overrides: ElevenLabsConversationOverrides;
+}
+
+/**
+ * Fetches a signed ElevenLabs WebSocket URL and supported overrides.
+ */
+async function fetchVoiceSession(locale: Locale): Promise<VoiceSessionResponse> {
+  const response = await fetch(
+    `/api/voice/session?locale=${encodeURIComponent(locale)}`,
+    {
+      cache: "no-store",
+    },
+  );
 
   if (!response.ok) {
     throw new Error(`Voice session request failed: ${response.status}`);
   }
 
-  const data = (await response.json()) as { signedUrl?: string };
+  const data = (await response.json()) as Partial<VoiceSessionResponse>;
 
-  if (!data.signedUrl) {
-    throw new Error("Voice session response is missing signedUrl.");
+  if (!data.signedUrl || !data.locale || !data.overrides) {
+    throw new Error("Voice session response is incomplete.");
   }
 
-  return data.signedUrl;
+  if (data.locale !== locale) {
+    throw new Error(
+      `Voice session locale mismatch: expected ${locale}, received ${data.locale}.`,
+    );
+  }
+
+  return data as VoiceSessionResponse;
 }
 
 /**
@@ -108,9 +129,15 @@ function ClaraVoiceWidgetInner({ onLocaleReady }: ClaraVoiceWidgetProps) {
       setStartFailed(false);
       setStarting(true);
       try {
-        const signedUrl = await fetchSignedUrl(locale);
-        onLocaleReady?.(locale);
-        startSession({ signedUrl });
+        const session = await fetchVoiceSession(locale);
+        onLocaleReady?.(session.locale);
+        startSession({
+          signedUrl: session.signedUrl,
+          overrides: session.overrides,
+          onError: () => {
+            setStartFailed(true);
+          },
+        });
       } catch {
         setStartFailed(true);
       } finally {
