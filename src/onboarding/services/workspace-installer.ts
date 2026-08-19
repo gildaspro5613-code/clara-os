@@ -11,6 +11,7 @@
 import { Application } from "@/business/models/application";
 
 import { WorkspaceInstallationResult } from "../models/workspace-installation-result";
+import { saveWorkspace } from "@/lib/core/workspace/workspace-store";
 
 import { CreateCalendar } from "./workspace/create-calendar";
 import { CreateCompanyFolder } from "./workspace/create-company-folder";
@@ -82,9 +83,10 @@ export class WorkspaceInstaller {
 
     });
 
-    await this.sheets.execute(
-      application.branding.companyName,
-    );
+    const spreadsheets =
+      await this.sheets.execute(
+        application.branding.companyName,
+      );
 
     steps.push({
 
@@ -116,6 +118,15 @@ export class WorkspaceInstaller {
 
     });
 
+    saveWorkspace({
+      companyName:
+        application.branding.companyName,
+
+      companyFolderId,
+
+      spreadsheets,
+    });
+
     return {
 
       success: true,
@@ -124,6 +135,8 @@ export class WorkspaceInstaller {
 
       foldersCreated:
         application.workspace.folders.length,
+
+      spreadsheets,
 
       steps,
 

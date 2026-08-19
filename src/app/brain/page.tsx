@@ -7,6 +7,9 @@
 // Build and present one Brain dashboard snapshot.
 // ============================================
 
+import MainLayout from "@/components/layout/MainLayout";
+
+export const dynamic = "force-dynamic";
 import BrainStage from "@/modules/brain/BrainStage";
 
 import { runBrainDashboard } from "@/lib/brain";
@@ -16,7 +19,7 @@ import {
   type Event,
 } from "@/types";
 
-export default function BrainPage() {
+export default async function BrainPage() {
   const event: Event = {
     id: "brain-dashboard-preview",
     type: EventType.SYSTEM,
@@ -27,11 +30,13 @@ export default function BrainPage() {
     },
   };
 
-  const dashboard = runBrainDashboard(event);
+  const dashboard = await runBrainDashboard(event);
 
   return (
-    <BrainStage
-      dashboard={dashboard}
-    />
+    <MainLayout>
+      <BrainStage
+        dashboard={dashboard}
+      />
+    </MainLayout>
   );
 }

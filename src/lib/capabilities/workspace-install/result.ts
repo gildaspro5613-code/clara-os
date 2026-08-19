@@ -9,6 +9,8 @@
  * ============================================
  */
 
+import type { WorkspaceSpreadsheet } from "@/onboarding/models/workspace-spreadsheet";
+
 export interface WorkspaceInstallResult {
 
   success: boolean;
@@ -16,6 +18,8 @@ export interface WorkspaceInstallResult {
   message: string;
 
   companyFolderId: string;
+
+  spreadsheets: WorkspaceSpreadsheet[];
 
   completedAt: Date;
 

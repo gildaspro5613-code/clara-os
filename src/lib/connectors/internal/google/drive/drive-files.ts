@@ -75,6 +75,23 @@ export interface DriveFileRecord {
 }
 
 /**
+ * Options for listing Google Drive files.
+ */
+export interface DriveFileListOptions {
+  pageSize?: number;
+  pageToken?: string;
+  query?: string;
+}
+
+/**
+ * Result of a Google Drive file listing.
+ */
+export interface DriveFileListResult {
+  files: DriveFileRecord[];
+  nextPageToken?: string;
+}
+
+/**
  * Google Drive files service.
  */
 export class DriveFiles {
@@ -85,6 +102,49 @@ export class DriveFiles {
   constructor(
     private readonly drive: drive_v3.Drive,
   ) {}
+
+  /**
+   * Lists files stored in Google Drive.
+   */
+  public async list(
+    options: DriveFileListOptions = {},
+  ): Promise<DriveFileListResult> {
+
+    const response = await this.drive.files.list({
+      fields:
+        "nextPageToken,files(id,name,mimeType,webViewLink)",
+      includeItemsFromAllDrives: true,
+      supportsAllDrives: true,
+      pageSize: options.pageSize,
+      pageToken: options.pageToken,
+      q: options.query,
+    });
+
+    const rawFiles =
+      response.data.files ?? [];
+
+    const files: DriveFileRecord[] =
+      rawFiles
+        .filter(
+          (file) =>
+            typeof file.id === "string" &&
+            typeof file.name === "string",
+        )
+        .map((file) => ({
+          fileId: file.id as string,
+          fileName: file.name as string,
+          mimeType:
+            file.mimeType ?? undefined,
+          url:
+            file.webViewLink ?? undefined,
+        }));
+
+    return {
+      files,
+      nextPageToken:
+        response.data.nextPageToken ?? undefined,
+    };
+  }
 
   /**
    * Uploads a file.

@@ -13,8 +13,11 @@ import { RuntimeEngine } from "@/lib/runtime/runtime-engine";
 import { RuntimeFactory } from "@/lib/runtime/runtime-factory";
 
 import type {
+  Mission,
   MissionTask,
 } from "./types/Mission";
+
+import { canExecuteAutonomously } from "./autonomy-gate";
 
 import type {
   RuntimeResult,
@@ -26,6 +29,7 @@ import type {
  */
 export async function executeMissionTask(
   task: MissionTask,
+  mission: Mission,
 ): Promise<RuntimeResult> {
 
   if (!task.execution) {
@@ -36,6 +40,21 @@ export async function executeMissionTask(
 
       message:
         "Cette tâche ne possède aucune capacité d'exécution définie.",
+
+      completedAt: new Date(),
+
+    };
+
+  }
+
+  if (!canExecuteAutonomously(task)) {
+
+    return {
+
+      success: false,
+
+      message:
+        "Cette tâche n'est pas autorisée pour une exécution autonome.",
 
       completedAt: new Date(),
 
@@ -56,9 +75,11 @@ export async function executeMissionTask(
   const engine =
     new RuntimeEngine();
 
-  return engine.run(
+  const result = await engine.run(
     runtime,
     event,
   );
+
+  return result;
 
 }

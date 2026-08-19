@@ -14,6 +14,8 @@ export default function GlassPanel({
   return (
     <section
       className={`
+        relative
+        overflow-hidden
         rounded-[24px]
         border border-white/[0.12]
         bg-black/30
@@ -25,6 +27,10 @@ export default function GlassPanel({
         ${className}
       `}
     >
+      <span
+        aria-hidden="true"
+        className="absolute inset-y-0 left-0 w-[2px] bg-cyan-400/70"
+      />
       {title && (
         <h2 className="mb-4 text-xs uppercase tracking-[0.28em] text-white/75">
           {title}

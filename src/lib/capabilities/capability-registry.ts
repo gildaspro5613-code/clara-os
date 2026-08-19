@@ -19,12 +19,48 @@ import {
   WorkspaceInstallCapabilityDefinition,
 } from "./workspace-install/capability";
 
+import {
+  OrganizeDriveCapability,
+  OrganizeDriveCapabilityDefinition,
+} from "./organize-drive/capability";
+
+import {
+  UpdateSheetRowCapability,
+  UpdateSheetRowCapabilityDefinition,
+} from "./update-sheet-row/capability";
+
+import {
+  AppendSheetRowCapability,
+  AppendSheetRowCapabilityDefinition,
+} from "./append-sheet-row/capability";
+
+import {
+  ReadSheetCapability,
+  ReadSheetCapabilityDefinition,
+} from "./read-sheet/capability";
+
+import {
+  FindSheetRowCapability,
+  FindSheetRowCapabilityDefinition,
+} from "./find-sheet-row/capability";
+
+import {
+  DeleteSheetRowCapability,
+  DeleteSheetRowCapabilityDefinition,
+} from "./delete-sheet-row/capability";
+
 /**
  * Capability definition.
  */
 export type CapabilityDefinition =
   | GenerateDocumentCapability
-  | WorkspaceInstallCapability;
+  | WorkspaceInstallCapability
+  | OrganizeDriveCapability
+  | UpdateSheetRowCapability
+  | AppendSheetRowCapability
+  | ReadSheetCapability
+  | FindSheetRowCapability
+  | DeleteSheetRowCapability;
 
 /**
  * Capability Registry.
@@ -39,6 +75,18 @@ export class CapabilityRegistry {
     GenerateDocumentCapabilityDefinition,
 
     WorkspaceInstallCapabilityDefinition,
+
+    OrganizeDriveCapabilityDefinition,
+
+    UpdateSheetRowCapabilityDefinition,
+
+    AppendSheetRowCapabilityDefinition,
+
+    ReadSheetCapabilityDefinition,
+
+    FindSheetRowCapabilityDefinition,
+
+    DeleteSheetRowCapabilityDefinition,
 
   ];
 

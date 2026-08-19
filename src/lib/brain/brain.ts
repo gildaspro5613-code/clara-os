@@ -19,17 +19,22 @@ import { prioritize } from "./priorities";
 import { plan } from "./planners";
 import { recommend } from "./recommendations";
 import { buildDashboard, type BrainDashboard } from "./dashboard";
+import type { Mission } from "@/modules/missions/types/Mission";
 
 /**
  * Execute one complete cognitive cycle
  * and return the recommendation produced
  * by Clara's Brain.
  */
-export function runBrain(
+export async function runBrain(
   event: Event,
-): Recommendation {
+  mission?: Mission,
+): Promise<Recommendation> {
 
-  const dashboard = runBrainDashboard(event);
+  const dashboard = await runBrainDashboard(
+    event,
+    mission,
+  );
 
   return dashboard.recommendation;
 }
@@ -41,9 +46,10 @@ export function runBrain(
  * This is the single source of truth for
  * the Brain execution pipeline.
  */
-export function runBrainDashboard(
+export async function runBrainDashboard(
   event: Event,
-): BrainDashboard {
+  mission?: Mission,
+): Promise<BrainDashboard> {
 
   /**
    * Decide whether this event
@@ -55,14 +61,19 @@ export function runBrainDashboard(
    * Build Clara's complete
    * cognitive context.
    */
-  const brainContext = buildBrainContext(event);
+  const brainContext = await buildBrainContext(
+    event,
+    mission,
+  );
 
   /**
    * Understand the situation.
    */
-  const understanding = reasoning(
+  const understanding = await reasoning(
     brainContext.context,
     brainContext.memory,
+    brainContext.sources,
+    brainContext.mission,
   );
 
   /**
@@ -90,6 +101,7 @@ export function runBrainDashboard(
   return buildDashboard(
     brainContext.context,
     brainContext.memory,
+    brainContext.sources,
     understanding,
     decision,
     tasks,

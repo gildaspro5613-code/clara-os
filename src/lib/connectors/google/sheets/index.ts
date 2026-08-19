@@ -53,3 +53,5 @@ export type {
 export { createSheet } from "./create-sheet";
 export type { DeleteSheetOptions } from "./delete-sheet";
 export { deleteSheet } from "./delete-sheet";
+export type { DeleteRowOptions } from "./delete-row";
+export { deleteRow } from "./delete-row";

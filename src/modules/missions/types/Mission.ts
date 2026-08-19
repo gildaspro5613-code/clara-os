@@ -23,6 +23,7 @@ export type MissionPriority =
 export interface MissionTaskExecution {
   capabilityId: string;
   context: unknown;
+  autonomous: boolean;
 }
 
 export interface MissionTask {

@@ -25,6 +25,18 @@ export enum TaskStatus {
 /**
  * Représente une tâche créée par Clara.
  */
+export interface TaskExecution {
+  /**
+   * Capability selected for this task.
+   */
+  capabilityId: string;
+
+  /**
+   * Context passed to the capability.
+   */
+  context: unknown;
+}
+
 export interface Task {
   /**
    * Identifiant unique.
@@ -45,6 +57,11 @@ export interface Task {
    * Description détaillée.
    */
   description?: string;
+
+  /**
+   * Optional execution contract selected by Clara.
+   */
+  execution?: TaskExecution;
 
   /**
    * État actuel.

@@ -27,6 +27,12 @@ export enum DecisionPriority {
  */
 export interface Decision {
   /**
+   * Identifiant de la mission poursuivie lorsque
+   * cette compréhension provient d'une exécution précédente.
+   */
+  missionId?: string;
+
+  /**
    * Identifiant unique.
    */
   id: string;
@@ -45,6 +51,18 @@ export interface Decision {
    * Niveau de priorité.
    */
   priority: DecisionPriority;
+
+  /**
+   * Plan d'actions ordonné issu du raisonnement de Clara.
+   */
+  actions: string[];
+
+  /**
+   * Prochaine action issue du raisonnement de Clara.
+   *
+   * Correspond à la première action du plan.
+   */
+  nextAction?: string;
 
   /**
    * Date de création.

@@ -55,7 +55,7 @@ export async function POST(request: Request) {
     }
 
     const result =
-      await executeMissionTask(task);
+      await executeMissionTask(task, mission);
 
     const updatedMission =
       completeMissionTask(

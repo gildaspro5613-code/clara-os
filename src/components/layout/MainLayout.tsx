@@ -34,7 +34,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         <Header />
 
         {/* Workspace */}
-        <main className="relative flex min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
+        <main className="clara-workspace-scroll relative flex min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
           {children}
         </main>
       </div>

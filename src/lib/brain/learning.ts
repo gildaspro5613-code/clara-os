@@ -11,6 +11,7 @@
  */
 
 import { Event } from "@/types";
+import { rememberEvent } from "./memory-store";
 
 /**
  * Determines whether an event
@@ -20,7 +21,8 @@ export function shouldRemember(
   event: Event,
 ): boolean {
 
-  switch (event.type) {
+  const shouldRetain = (() => {
+    switch (event.type) {
 
     case "USER_MESSAGE":
     case "EMAIL_RECEIVED":
@@ -29,9 +31,14 @@ export function shouldRemember(
     case "DOCUMENT_RECEIVED":
       return true;
 
-    default:
-      return false;
+      default:
+        return false;
+    }
+  })();
 
+  if (shouldRetain) {
+    rememberEvent(event);
   }
 
+  return shouldRetain;
 }

@@ -1,15 +1,15 @@
-/**
- * ============================================
- * CLARA OS
- * Core Module
- * --------------------------------------------
- * File : session.ts
- * Responsibility :
- * Represents Clara's current working session.
- * ============================================
- */
+// ============================================
+// CLARA OS
+// Core Module
+//
+// File : session.ts
+// Responsibility :
+// Represents Clara's current working session.
+// ============================================
 
-import { Recommendation } from "@/types";
+import type { Recommendation } from "@/types";
+import type { BrainSourceContext } from "@/lib/brain/brain-source";
+import type { Mission } from "@/modules/missions/types/Mission";
 import { ClaraState } from "./state";
 
 export interface ClaraSession {
@@ -23,6 +23,17 @@ export interface ClaraSession {
    * by Clara's Brain.
    */
   recommendation: Recommendation | null;
+
+  /**
+   * Current operational mission produced
+   * by Clara's Brain.
+   */
+  mission: Mission | null;
+
+  /**
+   * External information sources available during the current cycle.
+   */
+  sources: BrainSourceContext[];
 
   /**
    * Session creation date.
@@ -44,6 +55,8 @@ export function createSession(): ClaraSession {
   return {
     state: ClaraState.STARTING,
     recommendation: null,
+    mission: null,
+    sources: [],
     startedAt: now,
     updatedAt: now,
   };

@@ -1,20 +1,26 @@
+import type { ClaraSession } from "@/lib/core/session";
+
 import Image from "next/image";
 import Stage from "../Stage";
 
-export default function Hero() {
-  return (
-    <section className="relative min-h-screen w-full overflow-hidden">
-      <div className="absolute inset-0 z-0">
-        <Image
-          src="/cockpit/cockpit-hero-final.png"
-          alt="Clara OS Cockpit"
-          fill
-          priority
-          className="object-cover"
-        />
-      </div>
+interface HeroProps {
+  session: ClaraSession;
+}
 
-      <Stage />
+export default function Hero({
+  session,
+}: HeroProps) {
+  return (
+    <section className="relative h-full min-h-[720px] overflow-hidden">
+      <Image
+        src="/cockpit/cockpit-hero-final.png"
+        alt="Clara OS"
+        fill
+        priority
+        className="object-cover object-center"
+      />
+
+      <Stage session={session} />
     </section>
   );
 }

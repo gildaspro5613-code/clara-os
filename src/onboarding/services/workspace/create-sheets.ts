@@ -11,6 +11,7 @@
  */
 
 import { GoogleWorkspace } from "@/lib/integrations/google/workspace";
+import type { WorkspaceSpreadsheet } from "../../models/workspace-spreadsheet";
 
 /**
  * Creates workspace spreadsheets.
@@ -22,37 +23,49 @@ export class CreateSheets {
    */
   public async execute(
     companyName: string,
-  ): Promise<string[]> {
+  ): Promise<WorkspaceSpreadsheet[]> {
 
     const sheets =
       GoogleWorkspace.sheets();
 
-    const spreadsheetIds: string[] = [];
+    const spreadsheets: WorkspaceSpreadsheet[] = [
 
-    const documents = [
+      {
+        role: "crm",
+        title: `${companyName} - CRM`,
+        spreadsheetId: "",
+      },
 
-      `${companyName} - CRM`,
+      {
+        role: "prospects",
+        title: `${companyName} - Prospects`,
+        spreadsheetId: "",
+      },
 
-      `${companyName} - Prospects`,
+      {
+        role: "clients",
+        title: `${companyName} - Clients`,
+        spreadsheetId: "",
+      },
 
-      `${companyName} - Clients`,
-
-      `${companyName} - Production`,
+      {
+        role: "production",
+        title: `${companyName} - Production`,
+        spreadsheetId: "",
+      },
 
     ];
 
-    for (const title of documents) {
+    for (const spreadsheet of spreadsheets) {
 
-      const id =
+      spreadsheet.spreadsheetId =
         await sheets.createSpreadsheet(
-          title,
+          spreadsheet.title,
         );
-
-      spreadsheetIds.push(id);
 
     }
 
-    return spreadsheetIds;
+    return spreadsheets;
 
   }
 

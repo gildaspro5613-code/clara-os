@@ -11,6 +11,7 @@
 
 import {
   Decision,
+  DecisionPriority,
   Recommendation,
   RecommendationConfidence,
 } from "@/types";
@@ -21,11 +22,28 @@ import {
 export function recommend(
   decision: Decision
 ): Recommendation {
+  const nextAction = decision.nextAction?.trim();
+
+  const priorityLabel = {
+    [DecisionPriority.LOW]: "faible",
+    [DecisionPriority.MEDIUM]: "moyenne",
+    [DecisionPriority.HIGH]: "haute",
+    [DecisionPriority.CRITICAL]: "critique",
+  }[decision.priority];
+
+  const summary = nextAction
+    ? `Priorité ${priorityLabel}. Commencer par : ${nextAction}`
+    : decision.summary;
+
+  const rationale = decision.actions.length > 1
+    ? `La décision est classée en priorité ${priorityLabel} et comporte ${decision.actions.length} actions planifiées.`
+    : `La décision est classée en priorité ${priorityLabel}.`;
+
   return {
     id: crypto.randomUUID(),
     decision,
-    summary: decision.summary,
-    rationale: `Recommendation generated from decision "${decision.summary}".`,
+    summary,
+    rationale,
     confidence: RecommendationConfidence.HIGH,
     createdAt: new Date(),
   };

@@ -1,7 +1,19 @@
+import type { ClaraSession } from "@/lib/core/session";
+
 import BriefPanel from "@/components/cockpit/panels/BriefPanel";
 import TasksPanel from "@/components/cockpit/panels/TasksPanel";
+import AgendaPanel from "@/components/cockpit/panels/AgendaPanel";
+import ClaraVoiceWidget from "@/components/cockpit/widgets/voice/ClaraVoiceWidget";
 
-export default function Stage() {
+interface StageProps {
+  session: ClaraSession;
+}
+
+export default function Stage({
+  session,
+}: StageProps) {
+  const mission = session.mission;
+
   return (
     <>
       {/* ============================================
@@ -25,6 +37,10 @@ export default function Stage() {
         "
       >
         <BriefPanel />
+
+        <div className="mt-4 ml-3 w-[92%]">
+          <ClaraVoiceWidget />
+        </div>
       </div>
 
       {/* Main action — deliberately the only
@@ -42,7 +58,9 @@ export default function Stage() {
           lg:block
         "
       >
-        <TasksPanel />
+        <AgendaPanel />
+
+        {mission && <TasksPanel mission={mission} />}
       </div>
 
       {/* Context zone reserved for:
@@ -87,7 +105,7 @@ export default function Stage() {
         "
       >
         <div className="pointer-events-auto">
-          <TasksPanel />
+          {mission && <TasksPanel mission={mission} />}
         </div>
       </div>
     </>

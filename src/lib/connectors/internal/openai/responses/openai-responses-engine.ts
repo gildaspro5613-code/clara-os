@@ -15,13 +15,6 @@ import { OpenAIResponsesContext } from "./openai-responses-context";
 import { OpenAIResponsesResult } from "./openai-responses-result";
 
 /**
- * OpenAI client.
- */
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-/**
  * OpenAI Responses engine.
  */
 export class OpenAIResponsesEngine {
@@ -34,6 +27,10 @@ export class OpenAIResponsesEngine {
   ): Promise<OpenAIResponsesResult> {
 
     try {
+
+      const client = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+      });
 
       const response = await client.responses.create({
 

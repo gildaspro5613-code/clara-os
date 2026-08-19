@@ -19,9 +19,12 @@ import {
   Recommendation,
 } from "@/types";
 
+import type { BrainSourceContext } from "./brain-source";
+
 export interface BrainDashboard {
   context: Context;
   memory: Memory;
+  sources: BrainSourceContext[];
   understanding: Understanding;
   decision: Decision;
   tasks: Task[];
@@ -36,14 +39,16 @@ export interface BrainDashboard {
 export function buildDashboard(
   context: Context,
   memory: Memory,
+  sources: BrainSourceContext[],
   understanding: Understanding,
   decision: Decision,
   tasks: Task[],
-  recommendation: Recommendation
+  recommendation: Recommendation,
 ): BrainDashboard {
   return {
     context,
     memory,
+    sources,
     understanding,
     decision,
     tasks,

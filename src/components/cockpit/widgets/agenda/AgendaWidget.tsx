@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { CalendarDays, ChevronRight, Clock } from "lucide-react";
 
@@ -82,6 +83,8 @@ export default function AgendaWidget() {
   return (
     <article
       className="
+        relative
+        overflow-hidden
         rounded-[24px]
         border border-white/10
         bg-white/[0.045]
@@ -92,6 +95,11 @@ export default function AgendaWidget() {
         hover:bg-white/[0.065]
       "
     >
+      <span
+        aria-hidden="true"
+        className="absolute inset-y-0 left-0 w-[2px] bg-cyan-400/70"
+      />
+
       <div className="mb-5 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <CalendarDays
@@ -178,8 +186,8 @@ export default function AgendaWidget() {
         </div>
       )}
 
-      <button
-        type="button"
+      <Link
+        href="/agenda"
         className="
           mt-5
           flex
@@ -193,7 +201,7 @@ export default function AgendaWidget() {
       >
         Voir l'agenda
         <ChevronRight size={14} strokeWidth={1.7} />
-      </button>
+      </Link>
     </article>
   );
 }

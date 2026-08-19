@@ -1,0 +1,27 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 512 512"
+  role="img"
+  aria-labelledby="title desc"
+>
+  <title id="title">Clara OS</title>
+  <desc id="desc">Symbole double C de Clara OS</desc>
+
+  <path
+    d="M 386 139
+       A 175 175 0 1 0 386 373"
+    fill="none"
+    stroke="#FFFFFF"
+    stroke-width="58"
+    stroke-linecap="butt"
+  />
+
+  <path
+    d="M 350 184
+       A 104 104 0 1 0 350 328"
+    fill="none"
+    stroke="#647487"
+    stroke-width="30"
+    stroke-linecap="butt"
+  />
+</svg>

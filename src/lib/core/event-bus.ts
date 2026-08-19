@@ -20,10 +20,8 @@ import { getRuntime } from "./runtime";
  */
 export async function dispatchEvent(
   event: Event,
-): Promise<void> {
-
-  await getRuntime().processEvent(
+) {
+  return getRuntime().processEvent(
     event,
   );
-
 }

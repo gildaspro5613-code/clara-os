@@ -14,6 +14,7 @@ import {
   createDocument as createGoogleDocument,
   DocsClient,
   insertText as insertDocumentText,
+  insertTable as insertDocumentTable,
 } from "@/lib/connectors/google/docs";
 
 /**
@@ -70,6 +71,27 @@ export class GoogleDocsIntegration {
       documentId,
 
       text,
+
+    });
+
+  }
+
+  /**
+   * Inserts a table.
+   */
+  public async insertTable(
+    documentId: string,
+    rows: number,
+    columns: number,
+  ): Promise<void> {
+
+    await insertDocumentTable({
+
+      documentId,
+
+      rows,
+
+      columns,
 
     });
 

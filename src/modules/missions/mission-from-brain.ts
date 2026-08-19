@@ -8,6 +8,7 @@
 // ============================================
 
 import type { BrainDashboard } from "@/lib/brain/dashboard";
+import { resolveTaskExecution } from "@/lib/brain/task-execution";
 import {
   DecisionPriority,
   TaskStatus,
@@ -45,13 +46,52 @@ function mapPriority(
  * It only creates the Mission domain object.
  */
 export function missionFromBrain(
-  dashboard: BrainDashboard
+  dashboard: BrainDashboard,
+  previousMission?: Mission,
 ): Mission {
-  const tasks: MissionTask[] = dashboard.tasks.map((task) => ({
-    id: task.id,
-    title: task.title,
-    completed: task.status === TaskStatus.COMPLETED,
-  }));
+  const isContinuation =
+    Boolean(
+      previousMission &&
+      dashboard.decision.missionId === previousMission.id,
+    );
+
+  const plannedTasks: MissionTask[] =
+    dashboard.tasks.map((task) => ({
+      id: task.id,
+      title: task.title,
+      completed:
+        task.status === TaskStatus.COMPLETED,
+      execution: (() => {
+        const execution =
+          task.execution ??
+          resolveTaskExecution(
+            task.title,
+            dashboard.decision,
+            dashboard.sources,
+          );
+
+        return execution
+          ? {
+              ...execution,
+              autonomous: true,
+            }
+          : undefined;
+      })(),
+    }));
+
+  const tasks: MissionTask[] = isContinuation
+    ? [
+        ...previousMission!.tasks,
+        ...plannedTasks.filter(
+          (task) =>
+            !previousMission!.tasks.some(
+              (existingTask) =>
+                existingTask.title.trim().toLowerCase() ===
+                task.title.trim().toLowerCase(),
+            ),
+        ),
+      ]
+    : plannedTasks;
 
   const completedTasks = tasks.filter(
     (task) => task.completed
@@ -68,12 +108,20 @@ export function missionFromBrain(
     (task) => !task.completed
   );
 
+  const nextAction =
+    dashboard.decision.nextAction ??
+    nextTask?.title;
+
   const completedTask = [...tasks]
     .reverse()
     .find((task) => task.completed);
 
   return {
-    id: `mission-${dashboard.decision.id}`,
+    id:
+      isContinuation && previousMission
+        ? previousMission.id
+        : dashboard.decision.missionId ??
+          `mission-${dashboard.decision.id}`, 
 
     title: dashboard.decision.objective.title,
 

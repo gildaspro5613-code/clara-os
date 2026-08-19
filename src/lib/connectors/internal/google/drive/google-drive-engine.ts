@@ -13,8 +13,16 @@
 import { DriveClient } from "./drive-client";
 import { DriveFiles } from "./drive-files";
 import { DriveHealth } from "./drive-health";
+import { DriveFolders } from "./drive-folders";
 import { DrivePermissions } from "./drive-permissions";
-import type { GoogleDriveContext } from "./google-drive-context";
+import type {
+  GoogleDriveContext,
+} from "./google-drive-context";
+
+import type {
+  DriveFileListOptions,
+  DriveFileListResult,
+} from "./drive-files";
 import type { GoogleDriveResult } from "./google-drive-result";
 
 /**
@@ -38,6 +46,11 @@ export class GoogleDriveEngine {
   private readonly health: DriveHealth;
 
   /**
+   * Google Drive folders service.
+   */
+  private readonly folders: DriveFolders;
+
+  /**
    * Creates a Google Drive engine.
    */
   constructor(
@@ -53,6 +66,100 @@ export class GoogleDriveEngine {
     this.health =
       new DriveHealth(drive);
 
+    this.folders =
+      new DriveFolders(drive);
+
+  }
+
+  /**
+   * Lists files stored in Google Drive.
+   */
+  public async list(
+    options: DriveFileListOptions = {},
+  ): Promise<DriveFileListResult> {
+    await this.health.check();
+
+    return this.files.list(options);
+  }
+
+  /**
+   * Ensures a Google Drive folder exists.
+   */
+  public async ensureFolder(
+    name: string,
+    parentId?: string,
+  ) {
+    await this.health.check();
+
+    return this.folders.ensure(
+      name,
+      parentId,
+    );
+  }
+
+  /**
+   * Moves a file into a Google Drive folder.
+   */
+  public async move(
+    context: {
+      fileId: string;
+      destinationFolderId: string;
+    },
+  ): Promise<GoogleDriveResult> {
+    if (!context.fileId) {
+      throw new Error(
+        "Google Drive fileId is required for move.",
+      );
+    }
+
+    if (!context.destinationFolderId) {
+      throw new Error(
+        "Google Drive destinationFolderId is required for move.",
+      );
+    }
+
+    await this.health.check();
+
+    const drive =
+      new DriveClient().create();
+
+    const metadata =
+      await drive.files.get({
+        fileId: context.fileId,
+        fields: "parents",
+        supportsAllDrives: true,
+      });
+
+    const parents =
+      (metadata.data.parents ?? []).join(",");
+
+    const response =
+      await drive.files.update({
+        fileId: context.fileId,
+        addParents: context.destinationFolderId,
+        removeParents: parents,
+        fields:
+          "id,name,mimeType,webViewLink",
+        supportsAllDrives: true,
+        requestBody: {},
+      });
+
+    const file = response.data;
+
+    if (!file.id || !file.name) {
+      throw new Error(
+        "Google Drive did not return the moved file.",
+      );
+    }
+
+    return {
+      success: true,
+      fileId: file.id,
+      fileName: file.name,
+      url: file.webViewLink ?? undefined,
+      message: "File moved successfully.",
+      completedAt: new Date(),
+    };
   }
 
   /**

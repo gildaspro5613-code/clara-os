@@ -17,13 +17,16 @@ import { getKnowledge } from "@/lib/knowledge";
 import { buildContext } from "./context";
 import { loadMemory } from "./memory";
 import { BrainContext } from "./brain-context";
+import { buildBrainSources } from "./brain-source-registry";
+import type { Mission } from "@/modules/missions/types/Mission";
 
 /**
  * Builds the complete cognitive context.
  */
-export function buildBrainContext(
+export async function buildBrainContext(
   event: Event,
-): BrainContext {
+  mission?: Mission,
+): Promise<BrainContext> {
 
   /*
    * Build execution context.
@@ -43,6 +46,14 @@ export function buildBrainContext(
   );
 
   /*
+   * Load registered Brain sources only when relevant.
+   */
+  const sources = await buildBrainSources(
+    event,
+    context.now,
+  );
+
+  /*
    * Return the complete cognitive context.
    */
   return {
@@ -52,6 +63,10 @@ export function buildBrainContext(
     knowledge,
 
     memory,
+
+    sources,
+
+    mission,
 
   };
 

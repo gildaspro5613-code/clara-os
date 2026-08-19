@@ -34,6 +34,11 @@ export interface WorkspaceInstallationStep {
 /**
  * Workspace installation result.
  */
+import type { WorkspaceSpreadsheet } from "./workspace-spreadsheet";
+
+/**
+ * Workspace installation result.
+ */
 export interface WorkspaceInstallationResult {
 
   /**
@@ -50,6 +55,11 @@ export interface WorkspaceInstallationResult {
    * Number of folders created.
    */
   foldersCreated: number;
+
+  /**
+   * Real Google spreadsheets created for the workspace.
+   */
+  spreadsheets: WorkspaceSpreadsheet[];
 
   /**
    * Installation steps.

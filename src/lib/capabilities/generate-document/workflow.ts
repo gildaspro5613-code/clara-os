@@ -199,6 +199,54 @@ export class GenerateDocumentWorkflow {
 
     }
 
+    if (context.table) {
+
+      const table =
+        await docs.insertTable(
+
+          {
+
+            documentId:
+              created.documentId,
+
+            title:
+              context.title,
+
+          },
+
+          context.table.rows,
+
+          context.table.columns,
+
+        );
+
+      if (!table.success) {
+
+        return {
+
+          success: false,
+
+          title: context.title,
+
+          content: response.content,
+
+          documentId: created.documentId,
+
+          documentUrl: created.url,
+
+          message:
+            table.message ??
+            "Impossible d'insérer le tableau dans le document Google Docs.",
+
+          completedAt:
+            new Date(),
+
+        };
+
+      }
+
+    }
+
     return {
 
       success: true,

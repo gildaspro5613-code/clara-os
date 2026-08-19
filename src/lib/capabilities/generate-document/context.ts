@@ -46,6 +46,14 @@ export interface GenerateDocumentContext {
   readonly template?: string;
 
   /**
+   * Optional table to insert into the generated document.
+   */
+  readonly table?: {
+    readonly rows: number;
+    readonly columns: number;
+  };
+
+  /**
    * Optional business data.
    */
   readonly data?: Record<string, unknown>;

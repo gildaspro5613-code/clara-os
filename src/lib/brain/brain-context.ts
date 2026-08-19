@@ -19,6 +19,9 @@ import {
   KnowledgeEngine,
 } from "@/lib/knowledge";
 
+import { BrainSourceContext } from "./brain-source";
+import type { Mission } from "@/modules/missions/types/Mission";
+
 /**
  * Complete cognitive context used during
  * one execution cycle.
@@ -39,5 +42,15 @@ export interface BrainContext {
    * Relevant memory.
    */
   memory: Memory;
+
+  /**
+   * Information sources loaded for this cycle.
+   */
+  sources: BrainSourceContext[];
+
+  /**
+   * Current operational mission, when one exists.
+   */
+  mission?: Mission;
 
 }

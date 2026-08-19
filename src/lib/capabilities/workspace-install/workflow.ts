@@ -55,6 +55,8 @@ export class WorkspaceInstallWorkflow {
 
         companyFolderId: "",
 
+        spreadsheets: [],
+
         completedAt: new Date(),
 
       };
@@ -74,6 +76,9 @@ export class WorkspaceInstallWorkflow {
 
       companyFolderId:
         installation.companyFolderId,
+
+      spreadsheets:
+        installation.spreadsheets,
 
       completedAt:
         installation.completedAt,

@@ -115,6 +115,45 @@ export class GoogleDocsEngine {
   }
 
   /**
+   * Inserts a table into a document.
+   */
+  public async insertTable(
+    context: GoogleDocsContext,
+    rows: number,
+    columns: number,
+  ): Promise<GoogleDocsResult> {
+
+    await this.docs.insertTable(
+
+      context.documentId ?? "",
+
+      rows,
+
+      columns,
+
+    );
+
+    return {
+
+      success: true,
+
+      documentId:
+        context.documentId ?? "",
+
+      title:
+        context.title,
+
+      message:
+        "Table inserted successfully.",
+
+      completedAt:
+        new Date(),
+
+    };
+
+  }
+
+  /**
    * Deletes a document.
    */
   public async delete(
