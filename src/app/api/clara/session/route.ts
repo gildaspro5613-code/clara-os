@@ -11,7 +11,7 @@ import { NextResponse } from "next/server";
 import { loadSession } from "@/lib/core/store/session-store";
 
 export async function GET() {
-  const session = loadSession();
+  const session = await loadSession();
 
   return NextResponse.json({
     state: session.state,

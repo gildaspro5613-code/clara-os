@@ -58,14 +58,14 @@ export class Clara {
 
     this.session.state = ClaraState.STARTING;
     this.session.updatedAt = new Date();
-    saveSession(this.session);
+    await saveSession(this.session);
 
     this.runtime = RuntimeFactory.create();
     console.log("[CLARA] start: runtime created");
 
     this.session.state = ClaraState.WORKING;
     this.session.updatedAt = new Date();
-    saveSession(this.session);
+    await saveSession(this.session);
 
     return this.session;
 
@@ -78,7 +78,7 @@ export class Clara {
 
     this.session.state = ClaraState.STOPPING;
     this.session.updatedAt = new Date();
-    saveSession(this.session);
+    await saveSession(this.session);
 
     if (this.runtime) {
       this.runtime.active = false;
@@ -86,7 +86,7 @@ export class Clara {
 
     this.session.state = ClaraState.STOPPED;
     this.session.updatedAt = new Date();
-    saveSession(this.session);
+    await saveSession(this.session);
 
   }
 
@@ -145,7 +145,7 @@ export class Clara {
     }
 
     this.session.updatedAt = new Date();
-    saveSession(this.session);
+    await saveSession(this.session);
 
     if (this.session.recommendation) {
       this.journal.addEntry(

@@ -6,43 +6,60 @@
  * File : session-store.ts
  * Responsibility :
  * Persists Clara's current operational session.
- * Development storage adapter.
+ * Production storage adapter.
  * ============================================
  */
-
-import { mkdirSync, readFileSync, writeFileSync } from "fs";
-import { dirname, join } from "path";
 
 import type { ClaraSession } from "../session";
 import { createSession } from "../session";
 
-const SESSION_FILE = join(process.cwd(), ".clara", "session.json");
+import { sql } from "./database";
 
-function ensureDirectory(): void {
-  mkdirSync(dirname(SESSION_FILE), { recursive: true });
+const SESSION_ID = "default";
+
+export async function saveSession(
+  session: ClaraSession,
+): Promise<void> {
+
+  await sql`
+    INSERT INTO clara_sessions (
+      id,
+      data,
+      updated_at
+    )
+    VALUES (
+      ${SESSION_ID},
+      ${JSON.stringify(session)},
+      NOW()
+    )
+    ON CONFLICT (id)
+    DO UPDATE SET
+      data = EXCLUDED.data,
+      updated_at = NOW()
+  `;
+
 }
 
-export function saveSession(session: ClaraSession): void {
-  ensureDirectory();
+export async function loadSession(): Promise<ClaraSession> {
 
-  writeFileSync(
-    SESSION_FILE,
-    JSON.stringify(session, null, 2),
-    "utf8",
-  );
-}
+  const rows = await sql`
+    SELECT data
+    FROM clara_sessions
+    WHERE id = ${SESSION_ID}
+    LIMIT 1
+  `;
 
-export function loadSession(): ClaraSession {
-  try {
-    const raw = readFileSync(SESSION_FILE, "utf8");
-    const parsed = JSON.parse(raw) as ClaraSession;
-
-    return {
-      ...parsed,
-      startedAt: new Date(parsed.startedAt),
-      updatedAt: new Date(parsed.updatedAt),
-    };
-  } catch {
+  if (!rows.length) {
     return createSession();
   }
+
+  const parsed =
+    rows[0].data as ClaraSession;
+
+  return {
+    ...parsed,
+    startedAt: new Date(parsed.startedAt),
+    updatedAt: new Date(parsed.updatedAt),
+  };
+
 }

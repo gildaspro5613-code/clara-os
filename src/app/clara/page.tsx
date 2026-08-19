@@ -4,8 +4,8 @@ import { loadSession } from "@/lib/core/store/session-store";
 
 export const dynamic = "force-dynamic";
 
-export default function ClaraPage() {
-  const session = loadSession();
+export default async function ClaraPage() {
+  const session = await loadSession();
   const mission = session.mission;
 
   return (
