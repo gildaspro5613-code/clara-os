@@ -23,7 +23,9 @@ import type { ClaraWorkspace } from "./workspace";
 
 const WORKSPACE_FILE =
   join(
-    process.cwd(),
+    process.env.VERCEL
+      ? "/tmp"
+      : process.cwd(),
     ".clara",
     "workspace.json",
   );
