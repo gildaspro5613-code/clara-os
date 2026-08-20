@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import MainLayout from "@/components/layout/MainLayout";
 import MissionsStage from "@/modules/missions/MissionsStage";
 import { loadSession } from "@/lib/core/store/session-store";

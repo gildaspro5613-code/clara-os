@@ -49,12 +49,14 @@ export async function loadSession(): Promise<ClaraSession> {
     LIMIT 1
   `;
 
-  if (!rows.length) {
+  const sessionRows = rows as Array<{ data: ClaraSession }>;
+
+  if (!sessionRows.length) {
     return createSession();
   }
 
   const parsed =
-    rows[0].data as ClaraSession;
+    sessionRows[0].data as ClaraSession;
 
   return {
     ...parsed,

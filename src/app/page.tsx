@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import MainLayout from "@/components/layout/MainLayout";
 import Cockpit from "@/components/cockpit/Cockpit";
 import { loadSession } from "@/lib/core/store/session-store";
