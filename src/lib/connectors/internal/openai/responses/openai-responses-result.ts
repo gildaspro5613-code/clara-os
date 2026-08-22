@@ -11,6 +11,15 @@
  */
 
 /**
+ * Function tool call requested by the model.
+ */
+export interface OpenAIToolCall {
+  readonly callId: string;
+  readonly name: string;
+  readonly arguments: string;
+}
+
+/**
  * OpenAI Responses result.
  */
 export interface OpenAIResponsesResult {
@@ -26,6 +35,13 @@ export interface OpenAIResponsesResult {
   readonly content: string;
 
   /**
+   * Responses API response identifier.
+   *
+   * Required to continue a tool-enabled reasoning cycle.
+   */
+  readonly responseId?: string;
+
+  /**
    * Model used.
    */
   readonly model?: string;
@@ -34,6 +50,11 @@ export interface OpenAIResponsesResult {
    * Finish reason.
    */
   readonly finishReason?: string;
+
+  /**
+   * Function tool calls requested by the model.
+   */
+  readonly toolCalls?: OpenAIToolCall[];
 
   /**
    * Execution message.

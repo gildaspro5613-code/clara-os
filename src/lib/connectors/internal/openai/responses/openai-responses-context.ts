@@ -26,6 +26,22 @@ export interface OpenAIResponsesContext {
   instructions?: string;
 
   /**
+   * Previous Responses API response identifier.
+   *
+   * Used when continuing a tool-enabled reasoning cycle.
+   */
+  previousResponseId?: string;
+
+  /**
+   * Outputs produced by Clara after executing
+   * model-requested function calls.
+   */
+  toolOutputs?: Array<{
+    readonly callId: string;
+    readonly output: unknown;
+  }>;
+
+  /**
    * Requested model.
    */
   model?: string;
@@ -39,6 +55,16 @@ export interface OpenAIResponsesContext {
    * Temperature.
    */
   temperature?: number;
+
+  /**
+   * Generic tools exposed to the model.
+   */
+  tools?: Array<{
+    type: "function";
+    name: string;
+    description: string;
+    parameters: Record<string, unknown>;
+  }>;
 
   /**
    * Additional metadata.

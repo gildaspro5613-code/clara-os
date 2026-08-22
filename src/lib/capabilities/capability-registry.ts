@@ -100,6 +100,26 @@ export class CapabilityRegistry {
   }
 
   /**
+   * Returns a stable capability catalog
+   * for cognitive consumers such as the Brain.
+   */
+  public getAvailableCapabilities(): Array<{
+    id: string;
+    name: string;
+    description: string;
+  }> {
+
+    return this.capabilities.map(
+      capability => ({
+        id: capability.id,
+        name: capability.name,
+        description: capability.description,
+      }),
+    );
+
+  }
+
+  /**
    * Finds one capability.
    */
   public findById(

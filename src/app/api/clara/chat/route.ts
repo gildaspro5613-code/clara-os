@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { dispatchEvent } from "@/lib/core/event-bus";
 import { loadSession } from "@/lib/core/store/session-store";
 import { EventType } from "@/types";
-import { OpenAIResponsesEngine } from "@/lib/connectors/internal/openai/responses/openai-responses-engine";
+import { CognitiveToolLoop } from "@/lib/brain/cognitive-tool-loop";
 
 interface ChatRequest {
   message?: string;
@@ -87,11 +87,10 @@ export async function POST(request: Request) {
       message,
     ].join("\\n");
 
-    const engine = new OpenAIResponsesEngine();
+    const toolLoop = new CognitiveToolLoop();
 
-    const result = await engine.generate({
+    const result = await toolLoop.execute({
       prompt,
-      model: "gpt-5.5",
     });
 
     if (!result.success) {

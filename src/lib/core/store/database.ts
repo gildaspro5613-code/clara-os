@@ -11,15 +11,9 @@
 
 import { neon } from "@neondatabase/serverless";
 
-const databaseUrl = process.env.DATABASE_URL;
+function getDatabase() {
+  const databaseUrl = process.env.DATABASE_URL;
 
-/**
- * Neon PostgreSQL SQL client.
- *
- * The client is created lazily when the
- * database is actually used.
- */
-export function getDatabase() {
   if (!databaseUrl?.trim()) {
     throw new Error(
       "Database: DATABASE_URL is not configured.",
@@ -29,16 +23,13 @@ export function getDatabase() {
   return neon(databaseUrl);
 }
 
-export const sql = new Proxy(
-  {} as ReturnType<typeof neon>,
-  {
-    get(_target, property) {
-      const client = getDatabase();
-
-      return Reflect.get(
-        client as object,
-        property,
-      );
-    },
-  },
-);
+/**
+ * Lazy Neon PostgreSQL SQL client.
+ * Keeps the tagged-template API used by Clara OS.
+ */
+export const sql = (
+  strings: TemplateStringsArray,
+  ...values: unknown[]
+) => {
+  return (getDatabase() as any)(strings, ...values);
+};

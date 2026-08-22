@@ -32,13 +32,57 @@ export class OpenAIResponsesEngine {
         apiKey: process.env.OPENAI_API_KEY,
       });
 
+      const input =
+        context.toolOutputs && context.toolOutputs.length > 0
+          ? context.toolOutputs.map(
+              (toolOutput) => ({
+                type: "function_call_output" as const,
+                call_id: toolOutput.callId,
+                output:
+                  typeof toolOutput.output === "string"
+                    ? toolOutput.output
+                    : JSON.stringify(toolOutput.output),
+              }),
+            )
+          : context.prompt;
+
       const response = await client.responses.create({
 
         model: context.model ?? "gpt-5.5",
 
-        input: context.prompt,
+        ...(context.previousResponseId
+          ? {
+              previous_response_id:
+                context.previousResponseId,
+            }
+          : {}),
+
+        input,
+
+        tools: context.tools?.map(
+          (tool) => ({
+            type: "function" as const,
+            name: tool.name,
+            description: tool.description,
+            parameters: tool.parameters,
+            strict: false,
+          }),
+        ),
 
       });
+
+      const toolCalls =
+        response.output
+          .filter(
+            (item) => item.type === "function_call",
+          )
+          .map(
+            (item) => ({
+              callId: item.call_id,
+              name: item.name,
+              arguments: item.arguments,
+            }),
+          );
 
       return {
 
@@ -46,11 +90,24 @@ export class OpenAIResponsesEngine {
 
         content: response.output_text,
 
+        responseId: response.id,
+
         model: response.model,
 
-        finishReason: "completed",
+        finishReason:
+          toolCalls.length > 0
+            ? "tool_call"
+            : "completed",
 
-        message: "Response generated successfully.",
+        message:
+          toolCalls.length > 0
+            ? "Tool call requested successfully."
+            : "Response generated successfully.",
+
+        toolCalls:
+          toolCalls.length > 0
+            ? toolCalls
+            : undefined,
 
         completedAt: new Date(),
 

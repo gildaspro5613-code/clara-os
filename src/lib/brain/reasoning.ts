@@ -16,7 +16,7 @@ import {
   Understanding,
 } from "@/types";
 
-import { OpenAIResponsesEngine } from "@/lib/connectors/internal/openai/responses/openai-responses-engine";
+import { CognitiveToolLoop } from "./cognitive-tool-loop";
 import { BrainSourceContext } from "./brain-source";
 import type { Mission } from "@/modules/missions/types/Mission";
 
@@ -141,6 +141,11 @@ export async function reasoning(
   memory: Memory,
   sources: BrainSourceContext[] = [],
   mission?: Mission,
+  capabilities: Array<{
+    id: string;
+    name: string;
+    description: string;
+  }> = [],
 ): Promise<Understanding> {
 
   const eventType = context.event.type;
@@ -157,6 +162,15 @@ export async function reasoning(
   const memorySummary = memory.shortTerm.length > 0
     ? memory.shortTerm.join("\n")
     : "Aucune mémoire pertinente disponible.";
+
+  const capabilitiesSummary = capabilities.length > 0
+    ? capabilities
+        .map(
+          (capability) =>
+            `- ${capability.id}: ${capability.name} — ${capability.description}`,
+        )
+        .join("\n")
+    : "Aucune capacité opérationnelle enregistrée.";
 
   /*
    * Fallback understanding.
@@ -247,7 +261,7 @@ export async function reasoning(
     return fallback;
   }
 
-  const engine = new OpenAIResponsesEngine();
+  const toolLoop = new CognitiveToolLoop();
 
   const prompt = [
     "Tu es le moteur de raisonnement de Clara OS.",
@@ -293,6 +307,9 @@ export async function reasoning(
     "Sources disponibles :",
     sourceSummary,
     "",
+    "Capacités opérationnelles disponibles :",
+    capabilitiesSummary,
+    "",
     "Mémoires pertinentes :",
     memorySummary,
     "",
@@ -313,9 +330,8 @@ export async function reasoning(
     reasoningInput,
   ].join("\n");
 
-  const result = await engine.generate({
+  const result = await toolLoop.execute({
     prompt,
-    model: "gpt-5.5",
   });
 
   if (!result.success || !result.content.trim()) {

@@ -19,6 +19,7 @@ import { loadMemory } from "./memory";
 import { BrainContext } from "./brain-context";
 import { buildBrainSources } from "./brain-source-registry";
 import type { Mission } from "@/modules/missions/types/Mission";
+import { CapabilityRegistry } from "@/lib/capabilities/capability-registry";
 
 /**
  * Builds the complete cognitive context.
@@ -54,6 +55,12 @@ export async function buildBrainContext(
   );
 
   /*
+   * Load the capabilities available to Clara.
+   */
+  const capabilities =
+    new CapabilityRegistry().getAvailableCapabilities();
+
+  /*
    * Return the complete cognitive context.
    */
   return {
@@ -65,6 +72,8 @@ export async function buildBrainContext(
     memory,
 
     sources,
+
+    capabilities,
 
     mission,
 

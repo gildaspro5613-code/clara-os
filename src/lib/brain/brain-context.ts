@@ -49,6 +49,16 @@ export interface BrainContext {
   sources: BrainSourceContext[];
 
   /**
+   * Capabilities available to Clara during this
+   * cognitive cycle.
+   */
+  capabilities: Array<{
+    id: string;
+    name: string;
+    description: string;
+  }>;
+
+  /**
    * Current operational mission, when one exists.
    */
   mission?: Mission;

@@ -20,3 +20,4 @@ export { recommend } from "./recommendations";
 export { buildDashboard } from "./dashboard";
 
 export type { BrainDashboard } from "./dashboard";
+export { CognitiveToolLoop } from "./cognitive-tool-loop";
