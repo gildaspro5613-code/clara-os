@@ -147,7 +147,7 @@ const driveSource: BrainSource<BrainDriveContext> = {
     const message = extractMessage(event);
 
     const match = message.match(
-      /(?:dans|sur|chercher|cherche|trouve|retrouve|ouvre)\s+(?:mon|mes|le|les)?\s*(?:google drive|drive)?\s*(.*)$/i,
+      /(?:dans|sur|aller|va|chercher|cherche|trouve|retrouve|ouvre)\s+(?:mon|mes|le|les)?\s*(?:google drive|drive)?\s*(.*)$/i,
     );
 
     const query = (match?.[1] ?? "")

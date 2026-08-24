@@ -82,16 +82,44 @@ export async function buildDriveContext(
       query: driveQuery,
     });
 
+    const files = result.files.map((file) => ({
+      id: file.fileId,
+      name: file.fileName,
+      mimeType: file.mimeType,
+      url: file.url,
+    }));
+
+    const folder = files.find(
+      (file) =>
+        file.mimeType ===
+        "application/vnd.google-apps.folder",
+    );
+
+    if (folder) {
+      const contents = await engine.list({
+        pageSize: 50,
+        query:
+          `'${folder.id}' in parents and trashed = false`,
+      });
+
+      return {
+        available: true,
+        source: "google-drive",
+        query: normalizedQuery,
+        files: contents.files.map((file) => ({
+          id: file.fileId,
+          name: file.fileName,
+          mimeType: file.mimeType,
+          url: file.url,
+        })),
+      };
+    }
+
     return {
       available: true,
       source: "google-drive",
       query: normalizedQuery,
-      files: result.files.map((file) => ({
-        id: file.fileId,
-        name: file.fileName,
-        mimeType: file.mimeType,
-        url: file.url,
-      })),
+      files,
     };
   } catch (error) {
     return {
