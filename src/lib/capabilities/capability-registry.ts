@@ -49,6 +49,48 @@ import {
   DeleteSheetRowCapabilityDefinition,
 } from "./delete-sheet-row/capability";
 
+ import {
+  ReadDocumentCapability,
+} from "./read-document/capability";
+
+import {
+  FindDocumentCapability,
+} from "./find-document/capability";
+
+import {
+  ReadCalendarCapability,
+} from "./read-calendar/capability";
+
+import {
+  ReadGmailCapability,
+  ReadGmailCapabilityDefinition,
+} from "./read-gmail/capability";
+
+import {
+  DeleteCalendarEventCapability,
+  DeleteCalendarEventCapabilityDefinition,
+} from "./delete-calendar-event/capability";
+
+import {
+  SendGmailCapability,
+  SendGmailCapabilityDefinition,
+} from "./send-gmail/capability";
+
+
+import {
+  ReadCalendarCapabilityDefinition,
+} from "./read-calendar/capability";
+
+import {
+  CreateCalendarEventCapability,
+  CreateCalendarEventCapabilityDefinition,
+} from "./create-calendar-event/capability";
+
+import {
+  UpdateCalendarEventCapability,
+  UpdateCalendarEventCapabilityDefinition,
+} from "./update-calendar-event/capability";
+
 /**
  * Capability definition.
  */
@@ -60,7 +102,15 @@ export type CapabilityDefinition =
   | AppendSheetRowCapability
   | ReadSheetCapability
   | FindSheetRowCapability
-  | DeleteSheetRowCapability;
+  | DeleteSheetRowCapability
+  | ReadDocumentCapability
+  | FindDocumentCapability
+  | ReadCalendarCapability
+  | ReadGmailCapability
+  | CreateCalendarEventCapability
+  | UpdateCalendarEventCapability
+  | DeleteCalendarEventCapability
+  | SendGmailCapability;
 
 /**
  * Capability Registry.
@@ -87,6 +137,18 @@ export class CapabilityRegistry {
     FindSheetRowCapabilityDefinition,
 
     DeleteSheetRowCapabilityDefinition,
+
+    ReadCalendarCapabilityDefinition,
+
+    ReadGmailCapabilityDefinition,
+
+    CreateCalendarEventCapabilityDefinition,
+
+    UpdateCalendarEventCapabilityDefinition,
+
+    SendGmailCapabilityDefinition,
+
+    DeleteCalendarEventCapabilityDefinition,
 
   ];
 

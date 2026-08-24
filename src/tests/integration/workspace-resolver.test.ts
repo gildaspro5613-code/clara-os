@@ -14,7 +14,7 @@ async function main() {
   for (const role of roles) {
 
     const spreadsheet =
-      getWorkspaceSpreadsheet(role);
+      await getWorkspaceSpreadsheet(role);
 
     console.log(`\n=== ${role.toUpperCase()} ===`);
 

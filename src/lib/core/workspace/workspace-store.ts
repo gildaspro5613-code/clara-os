@@ -4,80 +4,62 @@
  * Core Workspace Store
  * --------------------------------------------
  * Persists Clara's workspace configuration.
- * Development storage adapter.
+ * Production storage adapter.
  * ============================================
  */
 
-import {
-  mkdirSync,
-  readFileSync,
-  writeFileSync,
-} from "fs";
-
-import {
-  dirname,
-  join,
-} from "path";
-
 import type { ClaraWorkspace } from "./workspace";
 
-const WORKSPACE_FILE =
-  join(
-    process.env.VERCEL
-      ? "/tmp"
-      : process.cwd(),
-    ".clara",
-    "workspace.json",
-  );
+import { sql } from "@/lib/core/store/database";
 
-function ensureDirectory(): void {
+const WORKSPACE_ID = "default";
 
-  mkdirSync(
-    dirname(WORKSPACE_FILE),
-    {
-      recursive: true,
-    },
-  );
-
-}
-
-export function saveWorkspace(
+/**
+ * Persists Clara's workspace configuration.
+ */
+export async function saveWorkspace(
   workspace: ClaraWorkspace,
-): void {
+): Promise<void> {
 
-  ensureDirectory();
-
-  writeFileSync(
-    WORKSPACE_FILE,
-    JSON.stringify(
-      workspace,
-      null,
-      2,
-    ),
-    "utf8",
-  );
+  await sql`
+    INSERT INTO clara_workspace (
+      id,
+      data,
+      updated_at
+    )
+    VALUES (
+      ${WORKSPACE_ID},
+      ${JSON.stringify(workspace)},
+      NOW()
+    )
+    ON CONFLICT (id)
+    DO UPDATE SET
+      data = EXCLUDED.data,
+      updated_at = NOW()
+  `;
 
 }
 
-export function loadWorkspace():
-  ClaraWorkspace | null {
+/**
+ * Loads Clara's persisted workspace configuration.
+ */
+export async function loadWorkspace():
+  Promise<ClaraWorkspace | null> {
 
-  try {
+  const rows = await sql`
+    SELECT data
+    FROM clara_workspace
+    WHERE id = ${WORKSPACE_ID}
+    LIMIT 1
+  `;
 
-    const raw =
-      readFileSync(
-        WORKSPACE_FILE,
-        "utf8",
-      );
+  const workspaceRows =
+    rows as Array<{ data: ClaraWorkspace }>;
 
-    return JSON.parse(
-      raw,
-    ) as ClaraWorkspace;
-
-  } catch {
-
+  if (!workspaceRows.length) {
     return null;
-
   }
+
+  return workspaceRows[0].data;
 
 }

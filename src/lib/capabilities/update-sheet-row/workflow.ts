@@ -69,7 +69,7 @@ export class UpdateSheetRowWorkflow {
     }
 
     const spreadsheet =
-      getWorkspaceSpreadsheet(
+      await getWorkspaceSpreadsheet(
         context.role,
       );
 

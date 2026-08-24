@@ -99,6 +99,21 @@ export function resolveTaskExecution(
     };
   }
 
+  const isGmailAnalysis =
+    /\b(analyser|analyse|lire|inventorier|examiner|identifier|classer|trier|prioriser)\b/.test(
+      normalized,
+    ) &&
+    /\b(gmail|email|emails|mail|mails)\b/.test(
+      normalized,
+    );
+
+  if (isGmailAnalysis) {
+    return {
+      capabilityId: "read-gmail",
+      context: {},
+    };
+  }
+
   const isDriveOrganization =
     /\b(organiser|organise|ranger|range|déplacer|déplace|classer|classe)\b/.test(
       normalized,

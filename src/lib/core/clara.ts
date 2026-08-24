@@ -29,8 +29,13 @@ import {
 import { dispatchEvent } from "./event-bus";
 import { Journal } from "./journal";
 import type { JournalEntry } from "./journal-entry";
-import { saveSession } from "./store/session-store";
+import {
+  loadSession,
+  saveSession,
+} from "./store/session-store";
+import { loadMission } from "@/modules/missions/mission-store";
 import { writeCognitiveEntry } from "./journal-writer";
+import { saveMission } from "@/modules/missions/mission-store";
 
 export class Clara {
 
@@ -54,7 +59,23 @@ export class Clara {
    */
   public async start(): Promise<ClaraSession> {
 
-    this.session = createSession();
+    const persistedSession =
+      await loadSession();
+
+    this.session =
+      persistedSession;
+
+    if (this.session.mission) {
+      const persistedMission =
+        await loadMission(
+          this.session.mission.id,
+        );
+
+      if (persistedMission) {
+        this.session.mission =
+          persistedMission;
+      }
+    }
 
     this.session.state = ClaraState.STARTING;
     this.session.updatedAt = new Date();
@@ -102,42 +123,95 @@ export class Clara {
       event,
     );
 
-    const nextExecutableTask =
-      this.session.mission?.tasks.find(
-        (task) => canExecuteAutonomously(task),
-      );
+    if (
+      event.type === EventType.MISSION_RESUMED &&
+      this.session.mission &&
+      this.session.mission.status === "blocked"
+    ) {
+      const payload =
+        typeof event.payload === "object" &&
+        event.payload !== null
+          ? event.payload as { missionId?: unknown }
+          : undefined;
 
-    if (this.session.mission && nextExecutableTask) {
+      if (
+        typeof payload?.missionId === "string" &&
+        payload.missionId === this.session.mission.id
+      ) {
+        this.session.mission = {
+          ...this.session.mission,
+          status: "active",
+          result: undefined,
+        };
+
+        await saveMission(this.session.mission);
+      }
+    }
+
+    const MAX_AUTONOMOUS_TASKS_PER_EVENT = 10;
+
+    let autonomousTasksExecuted = 0;
+
+    while (
+      this.session.mission &&
+      autonomousTasksExecuted <
+        MAX_AUTONOMOUS_TASKS_PER_EVENT
+    ) {
+      const nextPendingTask =
+        this.session.mission.tasks.find(
+          (task) => !task.completed,
+        );
+
+      if (!nextPendingTask) {
+        break;
+      }
+
+      if (!canExecuteAutonomously(nextPendingTask)) {
+        this.session.mission = {
+          ...this.session.mission,
+          status: "blocked",
+        };
+
+        await saveMission(this.session.mission);
+
+        break;
+      }
+
+      const nextExecutableTask =
+        nextPendingTask;
+
+      const missionBeforeExecution =
+        this.session.mission;
+
       const result =
         await executeMissionTask(
           nextExecutableTask,
-          this.session.mission,
+          missionBeforeExecution,
         );
 
       this.session.mission =
         completeMissionTask(
-          this.session.mission,
+          missionBeforeExecution,
           nextExecutableTask.id,
           result,
         );
 
-      await dispatchEvent({
-        id: crypto.randomUUID(),
-        type: EventType.TASK_COMPLETED,
-        source: "mission",
-        timestamp: new Date(),
-        payload: {
-          taskId: nextExecutableTask.id,
-          taskTitle: nextExecutableTask.title,
-          mission: {
-            id: this.session.mission.id,
-            title: this.session.mission.title,
-            objective: this.session.mission.objective,
-            context: this.session.mission.context,
-          },
-          result,
-        },
-      });
+      if (this.session.mission) {
+        await saveMission(this.session.mission);
+      }
+
+      autonomousTasksExecuted += 1;
+
+      if (!result.success) {
+        break;
+      }
+
+      if (
+        !this.session.mission ||
+        this.session.mission.status === "completed"
+      ) {
+        break;
+      }
     }
 
     if (this.session.state === ClaraState.STARTING) {

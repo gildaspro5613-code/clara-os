@@ -59,7 +59,7 @@ export class DeleteSheetRowWorkflow {
     }
 
     const spreadsheet =
-      getWorkspaceSpreadsheet(
+      await getWorkspaceSpreadsheet(
         context.role,
       );
 

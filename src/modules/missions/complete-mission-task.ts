@@ -27,7 +27,16 @@ export function completeMissionTask(
 ): Mission {
 
   if (result.success === false) {
-    return mission;
+    return {
+      ...mission,
+      status: "blocked",
+      lastAction:
+        mission.lastAction,
+      nextAction:
+        mission.nextAction,
+      result:
+        result.message,
+    };
   }
 
   const tasks = mission.tasks.map((task) =>

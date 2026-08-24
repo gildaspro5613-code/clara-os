@@ -1,0 +1,469 @@
+.
+├── .env.local
+├── .github
+│   └── copilot-instructions.md
+├── .gitignore
+├── AGENTS.md
+├── CLAUDE.md
+├── README.md
+├── arborescence.txt
+├── docs
+│   └── design
+│       ├── README.md
+│       └── cockpit_master.png
+├── eslint.config.mjs
+├── next-env.d.ts
+├── next.config.ts
+├── package-lock.json
+├── package.json
+├── postcss.config.mjs
+├── public
+│   ├── clara
+│   │   └── master
+│   │       └── Clara_Master.png
+│   ├── cockpit
+│   │   └── summer
+│   │       └── cockpit.png
+│   ├── file.svg
+│   ├── globe.svg
+│   ├── next.svg
+│   ├── vercel.svg
+│   └── window.svg
+├── src
+│   ├── app
+│   │   ├── api
+│   │   │   ├── openai
+│   │   │   │   └── test
+│   │   │   │       └── route.ts
+│   │   │   └── workspace
+│   │   │       └── install
+│   │   │           └── route.ts
+│   │   ├── favicon.ico
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   ├── business
+│   │   ├── applications
+│   │   │   └── clara-essentials.ts
+│   │   ├── business-engine.ts
+│   │   ├── business-factory.ts
+│   │   ├── index.ts
+│   │   ├── models
+│   │   │   ├── application.ts
+│   │   │   ├── branding.ts
+│   │   │   ├── company.ts
+│   │   │   ├── distribution-channel.ts
+│   │   │   ├── document-template.ts
+│   │   │   ├── offer.ts
+│   │   │   └── pricing.ts
+│   │   ├── registry
+│   │   │   └── business-registry.ts
+│   │   └── templates
+│   │       ├── workspace
+│   │       │   └── essentials-workspace-template.ts
+│   │       └── workspace-template.ts
+│   ├── components
+│   │   ├── clara
+│   │   │   ├── ClaraAvatar.tsx
+│   │   │   ├── ClaraLayer.tsx
+│   │   │   ├── ClaraRecommendation.tsx
+│   │   │   ├── ClaraStatus.tsx
+│   │   │   ├── Presence.tsx
+│   │   │   └── Weather.tsx
+│   │   ├── cockpit
+│   │   │   ├── Brief.tsx
+│   │   │   ├── ClaraLayer.tsx
+│   │   │   ├── Cockpit.tsx
+│   │   │   ├── CockpitLayout.tsx
+│   │   │   ├── InstrumentCard.tsx
+│   │   │   ├── Instruments.tsx
+│   │   │   ├── Journal.tsx
+│   │   │   ├── QuickActions.tsx
+│   │   │   ├── Stage.tsx
+│   │   │   ├── hero
+│   │   │   │   ├── Hero.tsx
+│   │   │   │   └── HeroBackground.tsx
+│   │   │   └── panels
+│   │   │       ├── ActionsPanel.tsx
+│   │   │       ├── AgendaPanel.tsx
+│   │   │       ├── AttentionPanel.tsx
+│   │   │       ├── BriefPanel.tsx
+│   │   │       ├── ConversationsPanel.tsx
+│   │   │       ├── QuickActionsPanel.tsx
+│   │   │       ├── SummaryPanel.tsx
+│   │   │       ├── TasksPanel.tsx
+│   │   │       └── TodayPanel.tsx
+│   │   ├── dashboard
+│   │   │   └── Dashboard.tsx
+│   │   ├── layout
+│   │   │   ├── Header.tsx
+│   │   │   ├── MainLayout.tsx
+│   │   │   └── Sidebar.tsx
+│   │   ├── life
+│   │   │   └── LifeLayer.tsx
+│   │   └── ui
+│   │       ├── Badge.tsx
+│   │       ├── Button.tsx
+│   │       ├── Card.tsx
+│   │       └── GlassPanel.tsx
+│   ├── lib
+│   │   ├── Academy
+│   │   │   ├── academy-engine.ts
+│   │   │   ├── competency.ts
+│   │   │   ├── curriculum.ts
+│   │   │   ├── knowledge-builder.ts
+│   │   │   ├── trainer.ts
+│   │   │   ├── training-source.ts
+│   │   │   └── training.ts
+│   │   ├── brain
+│   │   │   ├── brain-context-builder.ts
+│   │   │   ├── brain-context.ts
+│   │   │   ├── brain.ts
+│   │   │   ├── context.ts
+│   │   │   ├── dashboard.ts
+│   │   │   ├── index.ts
+│   │   │   ├── learning.ts
+│   │   │   ├── memory.ts
+│   │   │   ├── planners.ts
+│   │   │   ├── priorities.ts
+│   │   │   ├── reasoning.ts
+│   │   │   ├── recommendations.ts
+│   │   │   └── types.ts
+│   │   ├── capabilities
+│   │   │   ├── capability-engine.ts
+│   │   │   ├── capability-registry.ts
+│   │   │   ├── generate-document
+│   │   │   │   ├── capability.ts
+│   │   │   │   ├── context.ts
+│   │   │   │   ├── module.ts
+│   │   │   │   ├── result.ts
+│   │   │   │   └── workflow.ts
+│   │   │   └── workspace-install
+│   │   │       ├── capability.ts
+│   │   │       ├── context.ts
+│   │   │       ├── module.ts
+│   │   │       ├── result.ts
+│   │   │       └── workflow.ts
+│   │   ├── clara
+│   │   │   ├── actions.ts
+│   │   │   ├── brief.ts
+│   │   │   ├── communication.ts
+│   │   │   ├── greeting.ts
+│   │   │   ├── index.ts
+│   │   │   └── updates.ts
+│   │   ├── config
+│   │   │   ├── env.ts
+│   │   │   ├── google.ts
+│   │   │   ├── load-env.ts
+│   │   │   ├── openai.ts
+│   │   │   ├── stripe.ts
+│   │   │   └── twilio.ts
+│   │   ├── connectors
+│   │   │   ├── core
+│   │   │   │   ├── connector-context.ts
+│   │   │   │   ├── connector-engine.ts
+│   │   │   │   ├── connector-event.ts
+│   │   │   │   ├── connector-result.ts
+│   │   │   │   └── connector.ts
+│   │   │   ├── google
+│   │   │   │   ├── calendar
+│   │   │   │   │   ├── calendar-client.ts
+│   │   │   │   │   ├── create-event.ts
+│   │   │   │   │   ├── delete-event.ts
+│   │   │   │   │   ├── get-event.ts
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   ├── list-calendars.ts
+│   │   │   │   │   ├── list-events.ts
+│   │   │   │   │   └── update-event.ts
+│   │   │   │   ├── docs
+│   │   │   │   │   ├── create-document.ts
+│   │   │   │   │   ├── docs-client.ts
+│   │   │   │   │   ├── export-pdf.ts
+│   │   │   │   │   ├── get-document.ts
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   ├── insert-image.ts
+│   │   │   │   │   ├── insert-table.ts
+│   │   │   │   │   ├── insert-text.ts
+│   │   │   │   │   ├── replace-text.ts
+│   │   │   │   │   └── update-document.ts
+│   │   │   │   ├── drive
+│   │   │   │   │   ├── create-folder.ts
+│   │   │   │   │   ├── delete-file.ts
+│   │   │   │   │   ├── download-file.ts
+│   │   │   │   │   ├── drive-client.ts
+│   │   │   │   │   ├── export-google-doc.ts
+│   │   │   │   │   ├── get-file.ts
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   ├── list-files.ts
+│   │   │   │   │   ├── list-permissions.ts
+│   │   │   │   │   ├── move-file.ts
+│   │   │   │   │   ├── remove-permission.ts
+│   │   │   │   │   ├── share-file.ts
+│   │   │   │   │   ├── update-file.ts
+│   │   │   │   │   └── upload-file.ts
+│   │   │   │   ├── gmail
+│   │   │   │   │   ├── delete-message.ts
+│   │   │   │   │   ├── draft-message.ts
+│   │   │   │   │   ├── get-message.ts
+│   │   │   │   │   ├── gmail-client.ts
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   ├── list-labels.ts
+│   │   │   │   │   ├── list-messages.ts
+│   │   │   │   │   ├── modify-labels.ts
+│   │   │   │   │   └── send-message.ts
+│   │   │   │   ├── health
+│   │   │   │   │   └── index.ts
+│   │   │   │   ├── installer
+│   │   │   │   │   ├── browser.ts
+│   │   │   │   │   ├── env-writer.ts
+│   │   │   │   │   ├── environment-validator.ts
+│   │   │   │   │   ├── google-installer.ts
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   └── module.ts
+│   │   │   │   ├── oauth
+│   │   │   │   │   ├── module.ts
+│   │   │   │   │   ├── oauth-client.ts
+│   │   │   │   │   ├── oauth-refresh.ts
+│   │   │   │   │   ├── oauth-server.ts
+│   │   │   │   │   └── oauth-token.ts
+│   │   │   │   └── sheets
+│   │   │   │       ├── append-row.ts
+│   │   │   │       ├── clear-range.ts
+│   │   │   │       ├── create-sheet.ts
+│   │   │   │       ├── delete-sheet.ts
+│   │   │   │       ├── get-sheet.ts
+│   │   │   │       ├── index.ts
+│   │   │   │       ├── read-range.ts
+│   │   │   │       ├── sheets-client.ts
+│   │   │   │       ├── update-range.ts
+│   │   │   │       └── write-range.ts
+│   │   │   ├── internal
+│   │   │   │   ├── google
+│   │   │   │   │   ├── auth
+│   │   │   │   │   │   └── google-auth.ts
+│   │   │   │   │   ├── calendar
+│   │   │   │   │   │   ├── google-calendar-connector.ts
+│   │   │   │   │   │   ├── google-calendar-context.ts
+│   │   │   │   │   │   ├── google-calendar-engine.ts
+│   │   │   │   │   │   ├── google-calendar-result.ts
+│   │   │   │   │   │   └── module.ts
+│   │   │   │   │   ├── docs
+│   │   │   │   │   │   ├── google-docs-connector.ts
+│   │   │   │   │   │   ├── google-docs-context.ts
+│   │   │   │   │   │   ├── google-docs-engine.ts
+│   │   │   │   │   │   ├── google-docs-result.ts
+│   │   │   │   │   │   └── module.ts
+│   │   │   │   │   ├── drive
+│   │   │   │   │   │   ├── drive-client.ts
+│   │   │   │   │   │   ├── drive-files.ts
+│   │   │   │   │   │   ├── drive-folders.ts
+│   │   │   │   │   │   ├── drive-health.ts
+│   │   │   │   │   │   ├── drive-permissions.ts
+│   │   │   │   │   │   ├── google-drive-connector.ts
+│   │   │   │   │   │   ├── google-drive-context.ts
+│   │   │   │   │   │   ├── google-drive-engine.ts
+│   │   │   │   │   │   ├── google-drive-result.ts
+│   │   │   │   │   │   ├── index.ts
+│   │   │   │   │   │   └── module.ts
+│   │   │   │   │   ├── gmail
+│   │   │   │   │   │   ├── google-gmail-connector.ts
+│   │   │   │   │   │   ├── google-gmail-context.ts
+│   │   │   │   │   │   ├── google-gmail-engine.ts
+│   │   │   │   │   │   ├── google-gmail-result.ts
+│   │   │   │   │   │   └── module.ts
+│   │   │   │   │   ├── models
+│   │   │   │   │   │   └── google-drive-folder.ts
+│   │   │   │   │   ├── module.ts
+│   │   │   │   │   └── sheets
+│   │   │   │   │       ├── google-sheets-connector.ts
+│   │   │   │   │       ├── google-sheets-context.ts
+│   │   │   │   │       ├── google-sheets-engine.ts
+│   │   │   │   │       ├── google-sheets-result.ts
+│   │   │   │   │       └── module.ts
+│   │   │   │   └── openai
+│   │   │   │       ├── module.ts
+│   │   │   │       └── responses
+│   │   │   │           ├── module.ts
+│   │   │   │           ├── openai-responses-connector.ts
+│   │   │   │           ├── openai-responses-context.ts
+│   │   │   │           ├── openai-responses-engine.ts
+│   │   │   │           └── openai-responses-result.ts
+│   │   │   ├── module.ts
+│   │   │   └── shared
+│   │   │       ├── authentication.ts
+│   │   │       ├── connector-errors.ts
+│   │   │       ├── credentials.ts
+│   │   │       ├── rate-limit.ts
+│   │   │       └── retry-policy.ts
+│   │   ├── core
+│   │   │   ├── clara.ts
+│   │   │   ├── event-bus.ts
+│   │   │   ├── events.ts
+│   │   │   ├── index.ts
+│   │   │   ├── journal-entry.ts
+│   │   │   ├── journal-writer.ts
+│   │   │   ├── journal.ts
+│   │   │   ├── lifecycle.ts
+│   │   │   ├── monitor.ts
+│   │   │   ├── orchestrator.ts
+│   │   │   ├── runtime.ts
+│   │   │   ├── scheduler.ts
+│   │   │   ├── session.ts
+│   │   │   └── state.ts
+│   │   ├── experience
+│   │   │   ├── experience-engine.ts
+│   │   │   ├── experience-record.ts
+│   │   │   ├── experience.ts
+│   │   │   ├── feedback.ts
+│   │   │   ├── incident.ts
+│   │   │   ├── lesson.ts
+│   │   │   ├── success.ts
+│   │   │   └── timeline.ts
+│   │   ├── installation
+│   │   │   ├── installation-context.ts
+│   │   │   ├── installation-engine.ts
+│   │   │   ├── installation-event.ts
+│   │   │   ├── installation-result.ts
+│   │   │   ├── installer.ts
+│   │   │   └── module.ts
+│   │   ├── integrations
+│   │   │   └── google
+│   │   │       ├── auth.ts
+│   │   │       ├── calendar.ts
+│   │   │       ├── docs.ts
+│   │   │       ├── drive.ts
+│   │   │       ├── gmail.ts
+│   │   │       ├── models
+│   │   │       │   └── google-drive-folder.ts
+│   │   │       ├── sheets.ts
+│   │   │       └── workspace.ts
+│   │   ├── knowledge
+│   │   │   ├── assistant
+│   │   │   │   ├── capabilities.ts
+│   │   │   │   ├── communication.ts
+│   │   │   │   ├── ethics.ts
+│   │   │   │   ├── identity.ts
+│   │   │   │   ├── limitations.ts
+│   │   │   │   ├── module.ts
+│   │   │   │   └── personality.ts
+│   │   │   ├── engine.ts
+│   │   │   ├── foundation
+│   │   │   │   ├── communication.ts
+│   │   │   │   ├── module.ts
+│   │   │   │   ├── objectives.ts
+│   │   │   │   ├── principles.ts
+│   │   │   │   └── vocabulary.ts
+│   │   │   ├── index.ts
+│   │   │   ├── knowledge-map.ts
+│   │   │   ├── loader.ts
+│   │   │   ├── melodie-digital
+│   │   │   │   ├── identity.ts
+│   │   │   │   ├── module.ts
+│   │   │   │   ├── offers.ts
+│   │   │   │   ├── values.ts
+│   │   │   │   └── vision.ts
+│   │   │   ├── module.ts
+│   │   │   ├── registry.ts
+│   │   │   └── types.ts
+│   │   ├── publisher
+│   │   │   ├── document.ts
+│   │   │   ├── module.ts
+│   │   │   ├── output.ts
+│   │   │   ├── publication.ts
+│   │   │   ├── publisher-context.ts
+│   │   │   ├── publisher-engine.ts
+│   │   │   ├── publisher.ts
+│   │   │   └── template.ts
+│   │   ├── runtime
+│   │   │   ├── capability-router.ts
+│   │   │   ├── module.ts
+│   │   │   ├── runtime-context.ts
+│   │   │   ├── runtime-cycle.ts
+│   │   │   ├── runtime-engine.ts
+│   │   │   ├── runtime-event.ts
+│   │   │   ├── runtime-factory.ts
+│   │   │   ├── runtime-result.ts
+│   │   │   └── runtime.ts
+│   │   ├── templates
+│   │   │   ├── core
+│   │   │   │   ├── index.ts
+│   │   │   │   ├── publication-template.ts
+│   │   │   │   └── template-engine.ts
+│   │   │   └── module.ts
+│   │   └── wisdom
+│   │       ├── decision.ts
+│   │       ├── module.ts
+│   │       ├── priority.ts
+│   │       ├── recommendation.ts
+│   │       ├── wisdom-context.ts
+│   │       ├── wisdom-engine.ts
+│   │       └── wisdom.ts
+│   ├── life
+│   │   ├── engine
+│   │   │   └── LifeEngine.ts
+│   │   └── presence
+│   │       └── PresenceController.ts
+│   ├── onboarding
+│   │   ├── index.ts
+│   │   ├── install
+│   │   │   └── route.ts
+│   │   ├── models
+│   │   │   ├── installation.ts
+│   │   │   ├── onboarding-step.ts
+│   │   │   ├── onboarding.ts
+│   │   │   ├── workspace-installation-request.ts
+│   │   │   ├── workspace-installation-result.ts
+│   │   │   └── workspace-installation.ts
+│   │   ├── onboarding-engine.ts
+│   │   ├── onboarding-factory.ts
+│   │   ├── registry
+│   │   │   └── onboarding-registry.ts
+│   │   ├── services
+│   │   │   ├── workspace
+│   │   │   │   ├── create-calendar.ts
+│   │   │   │   ├── create-company-folder.ts
+│   │   │   │   ├── create-documents.ts
+│   │   │   │   ├── create-emails.ts
+│   │   │   │   ├── create-folders.ts
+│   │   │   │   ├── create-sheets.ts
+│   │   │   │   └── workspace-step.ts
+│   │   │   ├── workspace-installation-result.ts
+│   │   │   └── workspace-installer.ts
+│   │   ├── steps
+│   │   │   ├── applications-step.ts
+│   │   │   ├── branding-step.ts
+│   │   │   ├── company-step.ts
+│   │   │   ├── documents-step.ts
+│   │   │   ├── google-step.ts
+│   │   │   ├── phone-step.ts
+│   │   │   └── validation-step.ts
+│   │   └── templates
+│   │       ├── essentials-template.ts
+│   │       ├── event-template.ts
+│   │       ├── hospitality-template.ts
+│   │       └── stage-template.ts
+│   ├── scripts
+│   │   ├── generate-google-refresh-token.ts
+│   │   └── google-login.ts
+│   ├── styles
+│   │   └── animations.css
+│   ├── tests
+│   │   └── integration
+│   │       └── capability-engine.test.ts
+│   └── types
+│       ├── context.ts
+│       ├── decision.ts
+│       ├── event.ts
+│       ├── identity.ts
+│       ├── index.ts
+│       ├── memory.ts
+│       ├── objective.ts
+│       ├── recommendation.ts
+│       ├── state.ts
+│       ├── task.ts
+│       └── understanding.ts
+├── tsconfig.json
+├── tsconfig.tsbuildinfo
+└── ui.zip
+
+93 directories, 374 files

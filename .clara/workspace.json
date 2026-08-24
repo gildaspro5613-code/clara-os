@@ -1,0 +1,26 @@
+{
+  "companyName": "Melodie Digital",
+  "companyFolderId": "test-company-folder-id",
+  "spreadsheets": [
+    {
+      "role": "crm",
+      "title": "Melodie Digital - CRM",
+      "spreadsheetId": "1gEv7eAmEv_cca0jR-6d9c_vqY6_nwFNxgwsCJUmpFxQ"
+    },
+    {
+      "role": "prospects",
+      "title": "Melodie Digital - Prospects",
+      "spreadsheetId": "test-prospects-id"
+    },
+    {
+      "role": "clients",
+      "title": "Melodie Digital - Clients",
+      "spreadsheetId": "test-clients-id"
+    },
+    {
+      "role": "production",
+      "title": "Melodie Digital - Production",
+      "spreadsheetId": "test-production-id"
+    }
+  ]
+}

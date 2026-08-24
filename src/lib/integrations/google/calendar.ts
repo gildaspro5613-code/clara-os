@@ -13,6 +13,9 @@
 import { google } from "googleapis";
 
 import { GoogleIntegration } from "./auth";
+import {
+  listCalendars,
+} from "@/lib/connectors/google/calendar";
 
 /**
  * Google Calendar integration.
@@ -38,6 +41,15 @@ export class GoogleCalendarIntegration {
       auth,
 
     });
+
+  }
+
+  /**
+   * Lists accessible Google calendars.
+   */
+  public async listCalendars() {
+
+    return listCalendars();
 
   }
 

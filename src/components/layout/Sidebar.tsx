@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import {
   LayoutDashboard,
@@ -19,40 +20,42 @@ import {
 
 const sections = [
   {
-    label: "OPÉRER",
+    label: "operate",
     items: [
-      { name: "Cockpit", href: "/", icon: LayoutDashboard },
-      { name: "Missions", href: "/missions", icon: ClipboardList },
-      { name: "Conversations", href: "/conversations", icon: MessageCircle },
-      { name: "Contacts", href: "/contacts", icon: Users },
+      { key: "cockpit", href: "/", icon: LayoutDashboard },
+      { key: "missions", href: "/missions", icon: ClipboardList },
+      { key: "conversations", href: "/conversations", icon: MessageCircle },
+      { key: "contacts", href: "/contacts", icon: Users },
     ],
   },
   {
-    label: "CONNECTER",
+    label: "connect",
     items: [
-      { name: "Téléphonie", href: "/telephonie", icon: Phone },
-      { name: "Automatisations", href: "/automatisations", icon: Workflow },
-      { name: "Agenda", href: "/agenda", icon: CalendarDays },
+      { key: "telephonie", href: "/telephonie", icon: Phone },
+      { key: "automatisations", href: "/automatisations", icon: Workflow },
+      { key: "agenda", href: "/agenda", icon: CalendarDays },
     ],
   },
   {
-    label: "CONNAÎTRE",
+    label: "know",
     items: [
-      { name: "Documents", href: "/documents", icon: FileText },
-      { name: "Journal", href: "/journal", icon: BookOpen },
-      { name: "Brain", href: "/brain", icon: Brain },
+      { key: "documents", href: "/documents", icon: FileText },
+      { key: "memoire", href: "/journal", icon: BookOpen },
+      { key: "brain", href: "/brain", icon: Brain },
     ],
   },
   {
-    label: "CLARA",
+    label: "claraSection",
     items: [
-      { name: "Clara", href: "/clara", icon: Bot },
+      { key: "clara", href: "/clara", icon: Bot },
     ],
   },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const t = useTranslations("navigation");
+  const tc = useTranslations("clara");
 
   return (
     <aside className="fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-white/10 bg-[#050505]">
@@ -81,7 +84,13 @@ export default function Sidebar() {
           {sections.map((section) => (
             <div key={section.label}>
               <p className="mb-2 px-4 text-[10px] font-medium tracking-[0.2em] text-slate-600">
-                {section.label}
+                {section.label === "operate"
+                  ? "OPÉRER"
+                  : section.label === "connect"
+                    ? "CONNECTER"
+                    : section.label === "know"
+                      ? "CONNAÎTRE"
+                      : "CLARA"}
               </p>
 
               <div className="space-y-1">
@@ -91,7 +100,7 @@ export default function Sidebar() {
 
                   return (
                     <Link
-                      key={item.name}
+                      key={item.key}
                       href={item.href}
                       className={`
                         group
@@ -118,7 +127,7 @@ export default function Sidebar() {
                       <Icon size={18} strokeWidth={1.8} />
 
                       <span className="text-[14px] font-medium">
-                        {item.name}
+                        {t(item.key)}
                       </span>
                     </Link>
                   );
@@ -135,7 +144,7 @@ export default function Sidebar() {
           <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-green-500" />
 
           <span className="text-sm text-slate-300">
-            Clara connectée
+            {tc("ready")}
           </span>
         </div>
 

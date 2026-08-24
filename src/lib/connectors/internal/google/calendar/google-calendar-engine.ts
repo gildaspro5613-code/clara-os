@@ -22,17 +22,78 @@ export class GoogleCalendarEngine {
     context: GoogleCalendarContext,
   ): Promise<GoogleCalendarResult> {
 
+    const { createEvent } =
+      await import("@/lib/connectors/google/calendar/create-event");
+
+    const event =
+      await createEvent({
+
+        calendarId:
+          context.calendarId,
+
+        event: {
+
+          summary:
+            context.title,
+
+          description:
+            context.description,
+
+          location:
+            context.location,
+
+          start: {
+
+            dateTime:
+              context.start.toISOString(),
+
+          },
+
+          end: {
+
+            dateTime:
+              context.end.toISOString(),
+
+          },
+
+          attendees:
+            context.attendees?.map(
+              email => ({
+                email,
+              }),
+            ),
+
+        },
+
+        sendUpdates:
+          "all",
+
+      });
+
+    if (!event.id) {
+
+      throw new Error(
+        "Google Calendar did not return the created event.",
+      );
+
+    }
+
     return {
 
-      success: true,
+      success:
+        true,
 
-      eventId: crypto.randomUUID(),
+      eventId:
+        event.id,
 
-      url: undefined,
+      url:
+        event.htmlLink ?? undefined,
 
-      message: "Calendar event created successfully.",
+      message:
+        "Calendar event created successfully.",
 
-      completedAt: new Date(),
+      completedAt:
+        new Date(),
 
     };
 
@@ -42,17 +103,49 @@ export class GoogleCalendarEngine {
     context: GoogleCalendarContext,
   ): Promise<GoogleCalendarResult> {
 
+    const { listEvents } =
+      await import("@/lib/connectors/google/calendar/list-events");
+
+    const result =
+      await listEvents({
+
+        calendarId:
+          context.calendarId,
+
+        pageSize:
+          20,
+
+        timeMin:
+          context.start.toISOString(),
+
+        timeMax:
+          context.end.toISOString(),
+
+        singleEvents:
+          true,
+
+        orderBy:
+          "startTime",
+
+      });
+
     return {
 
       success: true,
 
-      eventId: context.eventId ?? "",
+      eventId:
+        context.eventId ?? "",
+
+      events:
+        result.events,
 
       url: undefined,
 
-      message: "Calendar events loaded successfully.",
+      message:
+        `${result.events.length} calendar event(s) loaded successfully.`,
 
-      completedAt: new Date(),
+      completedAt:
+        new Date(),
 
     };
 
@@ -62,17 +155,83 @@ export class GoogleCalendarEngine {
     context: GoogleCalendarContext,
   ): Promise<GoogleCalendarResult> {
 
+    const { updateEvent } =
+      await import("@/lib/connectors/google/calendar/update-event");
+
+    if (!context.eventId?.trim()) {
+
+      throw new Error(
+        "GoogleCalendarEngine.update: eventId is required.",
+      );
+
+    }
+
+    const result =
+      await updateEvent({
+
+        calendarId:
+          context.calendarId,
+
+        eventId:
+          context.eventId,
+
+        event: {
+
+          summary:
+            context.title,
+
+          description:
+            context.description,
+
+          location:
+            context.location,
+
+          start: {
+
+            dateTime:
+              context.start.toISOString(),
+
+          },
+
+          end: {
+
+            dateTime:
+              context.end.toISOString(),
+
+          },
+
+          attendees:
+            context.attendees?.map(
+              email => ({
+                email,
+              }),
+            ),
+
+        },
+
+        sendUpdates:
+          "none",
+
+      });
+
     return {
 
-      success: true,
+      success:
+        true,
 
-      eventId: context.eventId ?? "",
+      eventId:
+        result.id ??
+        context.eventId,
 
-      url: undefined,
+      url:
+        result.htmlLink ??
+        undefined,
 
-      message: "Calendar event updated successfully.",
+      message:
+        "Calendar event updated successfully.",
 
-      completedAt: new Date(),
+      completedAt:
+        new Date(),
 
     };
 
@@ -82,17 +241,46 @@ export class GoogleCalendarEngine {
     context: GoogleCalendarContext,
   ): Promise<GoogleCalendarResult> {
 
+    const { deleteEvent } =
+      await import("@/lib/connectors/google/calendar/delete-event");
+
+    if (!context.eventId?.trim()) {
+
+      throw new Error(
+        "GoogleCalendarEngine.delete: eventId is required.",
+      );
+
+    }
+
+    await deleteEvent({
+
+      calendarId:
+        context.calendarId,
+
+      eventId:
+        context.eventId,
+
+      sendUpdates:
+        "none",
+
+    });
+
     return {
 
-      success: true,
+      success:
+        true,
 
-      eventId: context.eventId ?? "",
+      eventId:
+        context.eventId,
 
-      url: undefined,
+      url:
+        undefined,
 
-      message: "Calendar event deleted successfully.",
+      message:
+        "Calendar event deleted successfully.",
 
-      completedAt: new Date(),
+      completedAt:
+        new Date(),
 
     };
 

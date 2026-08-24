@@ -17,6 +17,7 @@ import {
 } from "@/types";
 
 import { CognitiveToolLoop } from "./cognitive-tool-loop";
+import { KnowledgeEngine } from "@/lib/knowledge";
 import { BrainSourceContext } from "./brain-source";
 import type { Mission } from "@/modules/missions/types/Mission";
 
@@ -146,6 +147,7 @@ export async function reasoning(
     name: string;
     description: string;
   }> = [],
+  knowledge?: KnowledgeEngine,
 ): Promise<Understanding> {
 
   const eventType = context.event.type;
@@ -171,6 +173,19 @@ export async function reasoning(
         )
         .join("\n")
     : "Aucune capacité opérationnelle enregistrée.";
+
+  const learnedKnowledge =
+    knowledge?.getLearnedKnowledge() ?? [];
+
+  const learnedKnowledgeSummary =
+    learnedKnowledge.length > 0
+      ? learnedKnowledge
+          .map(
+            (item) =>
+              `- ${item.title}: ${item.description} → ${item.recommendation} (confiance: ${item.confidence})`,
+          )
+          .join("\n")
+      : "Aucune connaissance apprise disponible.";
 
   /*
    * Fallback understanding.
@@ -314,6 +329,13 @@ export async function reasoning(
     memorySummary,
     "",
     "Les mémoires fournies constituent du contexte disponible. Ne les considère pas automatiquement comme des faits certains : utilise-les seulement lorsqu'elles sont pertinentes pour comprendre la situation présente.",
+    "",
+    "Connaissances apprises par Clara :",
+    learnedKnowledgeSummary,
+    "",
+    "Les connaissances apprises proviennent d'expériences précédemment validées.",
+    "Utilise-les lorsqu'elles sont pertinentes pour la situation actuelle.",
+    "Ne les applique pas si elles ne sont pas pertinentes.",
     "",
     "État opérationnel de la mission :",
     activeMissionInput,

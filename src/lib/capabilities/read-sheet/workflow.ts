@@ -49,7 +49,7 @@ export class ReadSheetWorkflow {
     }
 
     const spreadsheet =
-      getWorkspaceSpreadsheet(
+      await getWorkspaceSpreadsheet(
         context.role,
       );
 

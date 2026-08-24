@@ -84,11 +84,198 @@ export class CognitiveToolLoop {
                   required: ["role", "range"],
                   additionalProperties: false,
                 }
-              : {
-                  type: "object",
-                  additionalProperties: true,
-                },
-          strict: capability.id === "read-sheet",
+              : capability.id === "read-calendar"
+                ? {
+                    type: "object",
+                    properties: {
+                      timeMin: {
+                        type: "string",
+                        description:
+                          "Optional lower time boundary in ISO 8601 format.",
+                      },
+                      timeMax: {
+                        type: "string",
+                        description:
+                          "Optional upper time boundary in ISO 8601 format.",
+                      },
+                    },
+                    additionalProperties: false,
+                  }
+                : capability.id === "create-calendar-event"
+                  ? {
+                      type: "object",
+                      properties: {
+                        title: {
+                          type: "string",
+                          description:
+                            "Calendar event title.",
+                        },
+                        description: {
+                          type: "string",
+                          description:
+                            "Optional calendar event description.",
+                        },
+                        location: {
+                          type: "string",
+                          description:
+                            "Optional event location.",
+                        },
+                        start: {
+                          type: "string",
+                          description:
+                            "Event start in ISO 8601 format.",
+                        },
+                        end: {
+                          type: "string",
+                          description:
+                            "Event end in ISO 8601 format.",
+                        },
+                        attendees: {
+                          type: "array",
+                          items: {
+                            type: "string",
+                          },
+                          description:
+                            "Optional attendee email addresses.",
+                        },
+                      },
+                      required: [
+                        "title",
+                        "start",
+                        "end",
+                      ],
+                      additionalProperties: false,
+                    }
+                  : capability.id === "update-calendar-event"
+                    ? {
+                        type: "object",
+                        properties: {
+                          eventId: {
+                            type: "string",
+                            description:
+                              "Google Calendar event identifier to update.",
+                          },
+                          title: {
+                            type: "string",
+                            description:
+                              "Updated event title.",
+                          },
+                          description: {
+                            type: "string",
+                            description:
+                              "Updated event description.",
+                          },
+                          location: {
+                            type: "string",
+                            description:
+                              "Updated event location.",
+                          },
+                          start: {
+                            type: "string",
+                            description:
+                              "Updated event start in ISO 8601 format.",
+                          },
+                          end: {
+                            type: "string",
+                            description:
+                              "Updated event end in ISO 8601 format.",
+                          },
+                          attendees: {
+                            type: "array",
+                            items: {
+                              type: "string",
+                            },
+                            description:
+                              "Updated attendee email addresses.",
+                          },
+                        },
+                        required: [
+                          "eventId",
+                        ],
+                        additionalProperties: false,
+                      }
+                    : capability.id === "delete-calendar-event"
+                      ? {
+                          type: "object",
+                          properties: {
+                            eventId: {
+                              type: "string",
+                              description:
+                                "Google Calendar event identifier to delete.",
+                            },
+                          },
+                          required: [
+                            "eventId",
+                          ],
+                          additionalProperties: false,
+                        }
+                      : capability.id === "send-gmail"
+                        ? {
+                            type: "object",
+                            properties: {
+                              to: {
+                                type: "string",
+                                description:
+                                  "Recipient email address.",
+                              },
+                              cc: {
+                                type: "array",
+                                items: {
+                                  type: "string",
+                                },
+                                description:
+                                  "Optional CC recipient email addresses.",
+                              },
+                              bcc: {
+                                type: "array",
+                                items: {
+                                  type: "string",
+                                },
+                                description:
+                                  "Optional BCC recipient email addresses.",
+                              },
+                              subject: {
+                                type: "string",
+                                description:
+                                  "Email subject.",
+                              },
+                              body: {
+                                type: "string",
+                                description:
+                                  "Plain-text email body.",
+                              },
+                            },
+                            required: [
+                              "to",
+                              "subject",
+                              "body",
+                            ],
+                            additionalProperties: false,
+                          }
+                      : capability.id === "read-gmail"
+                        ? {
+                            type: "object",
+                            properties: {
+                              query: {
+                                type: "string",
+                                description:
+                                  "Optional Gmail search query, for example is:unread or from:client@example.com.",
+                              },
+                            },
+                            additionalProperties: false,
+                          }
+                        : {
+                          type: "object",
+                          additionalProperties: true,
+                        },
+          strict:
+            capability.id === "read-sheet" ||
+            capability.id === "read-calendar" ||
+            capability.id === "create-calendar-event" ||
+            capability.id === "update-calendar-event" ||
+            capability.id === "delete-calendar-event" ||
+            capability.id === "read-gmail" ||
+            capability.id === "send-gmail",
         }),
       );
 

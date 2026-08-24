@@ -13,6 +13,9 @@
 import { google } from "googleapis";
 
 import { GoogleIntegration } from "./auth";
+import {
+  listFiles,
+} from "@/lib/connectors/google/drive";
 import { GoogleDriveFolder } from "./models/google-drive-folder";
 
 /**
@@ -37,6 +40,21 @@ export class GoogleDriveIntegration {
       version: "v3",
 
       auth,
+
+    });
+
+  }
+
+  /**
+   * Lists Google Drive files.
+   */
+  public async listFiles(
+    query?: string,
+  ) {
+
+    return listFiles({
+
+      query,
 
     });
 

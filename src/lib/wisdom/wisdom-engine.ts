@@ -28,17 +28,44 @@ export class WisdomEngine {
     context: WisdomContext,
   ): Wisdom {
 
+    const understanding =
+      context.understanding;
+
+    const learnedKnowledge =
+      context.brain.knowledge
+        .getLearnedKnowledge();
+
+    const reasons = [
+      `Intention identifiée : ${understanding.intent}.`,
+      `Résumé opérationnel : ${understanding.summary}.`,
+      `Confiance du Brain : ${understanding.confidence}.`,
+      `Importance : ${understanding.importance}.`,
+      `Urgence : ${understanding.urgency}.`,
+      `Impact : ${understanding.impact}.`,
+    ];
+
+    if (learnedKnowledge.length > 0) {
+      reasons.push(
+        `${learnedKnowledge.length} connaissance(s) apprise(s) disponible(s).`,
+      );
+    }
+
     return {
 
       id: crypto.randomUUID(),
 
-      situation: "",
+      situation:
+        understanding.summary,
 
-      recommendation: "",
+      recommendation:
+        understanding.nextAction ??
+        understanding.actions[0] ??
+        "Déterminer la prochaine action opérationnelle.",
 
-      confidence: 0,
+      confidence:
+        understanding.confidence,
 
-      reasons: [],
+      reasons,
 
       createdAt: new Date(),
 
@@ -57,15 +84,23 @@ export class WisdomEngine {
 
       id: crypto.randomUUID(),
 
-      title: "",
+      title:
+        wisdom.recommendation,
 
-      description: "",
+      description:
+        `Action recommandée pour la situation suivante : ${wisdom.situation}`,
 
-      benefits: [],
+      benefits: [
+        "Faire progresser concrètement la situation.",
+        "Transformer le raisonnement en action opérationnelle.",
+      ],
 
-      risks: [],
+      risks: [
+        "La recommandation doit être adaptée si le contexte évolue.",
+      ],
 
-      confidence: wisdom.confidence,
+      confidence:
+        wisdom.confidence,
 
     };
 
@@ -82,9 +117,11 @@ export class WisdomEngine {
 
       id: crypto.randomUUID(),
 
-      title: "",
+      title:
+        `Décision : ${recommendation.title}`,
 
-      description: "",
+      description:
+        recommendation.description,
 
       recommendation,
 
@@ -105,17 +142,39 @@ export class WisdomEngine {
     decision: Decision,
   ): Priority {
 
+    const confidence =
+      decision.recommendation.confidence;
+
+    const level =
+      confidence >= 0.9
+        ? "high"
+        : confidence >= 0.7
+          ? "medium"
+          : "low";
+
+    const reason =
+      confidence >= 0.9
+        ? "La recommandation présente un niveau de confiance élevé."
+        : confidence >= 0.7
+          ? "La recommandation présente un niveau de confiance suffisant pour une priorité opérationnelle normale."
+          : "La recommandation présente un niveau de confiance limité et doit être vérifiée avant une action importante.";
+
+    const impact =
+      decision.recommendation.benefits.length > 0
+        ? decision.recommendation.benefits.join(" ")
+        : "Impact opérationnel à évaluer avant exécution.";
+
     return {
 
       id: crypto.randomUUID(),
 
       decision,
 
-      level: "medium",
+      level,
 
-      reason: "",
+      reason,
 
-      impact: "",
+      impact,
 
       createdAt: new Date(),
 

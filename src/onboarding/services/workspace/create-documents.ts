@@ -11,6 +11,7 @@
  */
 
 import { GoogleWorkspace } from "@/lib/integrations/google/workspace";
+import type { WorkspaceDocument } from "../../models/workspace-document";
 
 /**
  * Creates workspace documents.
@@ -22,11 +23,11 @@ export class CreateDocuments {
    */
   public async execute(
     companyName: string,
-  ): Promise<string[]> {
+  ): Promise<WorkspaceDocument[]> {
 
     const docs = GoogleWorkspace.docs();
 
-    const documentIds: string[] = [];
+    const createdDocuments: WorkspaceDocument[] = [];
 
     const documents = [
 
@@ -45,11 +46,21 @@ export class CreateDocuments {
       const document =
         await docs.createDocument(title);
 
-      documentIds.push(document.documentId);
+      createdDocuments.push({
+
+        name: title,
+
+        documentId:
+          document.documentId,
+
+        documentUrl:
+          document.documentUrl,
+
+      });
 
     }
 
-    return documentIds;
+    return createdDocuments;
 
   }
 

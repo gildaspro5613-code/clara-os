@@ -13,6 +13,7 @@
 import { Experience } from "./experience";
 import { ExperienceRecord } from "./experience-record";
 import { Timeline } from "./timeline";
+import { getKnowledge } from "@/lib/knowledge";
 
 /**
  * Experience engine.
@@ -49,7 +50,46 @@ export class ExperienceEngine {
     record: ExperienceRecord,
   ): ExperienceRecord {
 
-    return record;
+    if (
+      record.experience.category !== "success" ||
+      record.lessons.length > 0
+    ) {
+
+      return record;
+
+    }
+
+    const lesson = {
+
+      id: crypto.randomUUID(),
+
+      title:
+        `Successful execution: ${record.experience.title}`,
+
+      description:
+        record.summary ||
+        record.experience.description,
+
+      recommendation:
+        "Reproduire cette méthode lorsque les mêmes conditions se présentent.",
+
+      confidence:
+        record.confidence,
+
+      validatedAt:
+        new Date(),
+
+    };
+
+    return {
+
+      ...record,
+
+      lessons: [
+        lesson,
+      ],
+
+    };
 
   }
 
@@ -61,7 +101,62 @@ export class ExperienceEngine {
     record: ExperienceRecord,
   ): ExperienceRecord {
 
-    return record;
+    const shouldPromote =
+      record.experience.category === "success" &&
+      record.lessons.length > 0 &&
+      record.confidence >= 0.8;
+
+    if (!shouldPromote) {
+
+      return {
+
+        ...record,
+
+        promoteToKnowledge: false,
+
+      };
+
+    }
+
+    const knowledge =
+      getKnowledge();
+
+    for (const lesson of record.lessons) {
+
+      knowledge.addLearnedKnowledge({
+
+        id:
+          crypto.randomUUID(),
+
+        title:
+          lesson.title,
+
+        description:
+          lesson.description,
+
+        recommendation:
+          lesson.recommendation,
+
+        confidence:
+          lesson.confidence,
+
+        sourceExperienceId:
+          record.experience.id,
+
+        createdAt:
+          lesson.validatedAt,
+
+      });
+
+    }
+
+    return {
+
+      ...record,
+
+      promoteToKnowledge: true,
+
+    };
 
   }
 

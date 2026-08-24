@@ -79,19 +79,10 @@ export function missionFromBrain(
       })(),
     }));
 
-  const tasks: MissionTask[] = isContinuation
-    ? [
-        ...previousMission!.tasks,
-        ...plannedTasks.filter(
-          (task) =>
-            !previousMission!.tasks.some(
-              (existingTask) =>
-                existingTask.title.trim().toLowerCase() ===
-                task.title.trim().toLowerCase(),
-            ),
-        ),
-      ]
-    : plannedTasks;
+  const tasks: MissionTask[] =
+    isContinuation
+      ? previousMission!.tasks
+      : plannedTasks;
 
   const completedTasks = tasks.filter(
     (task) => task.completed

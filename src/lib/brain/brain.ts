@@ -75,6 +75,7 @@ export async function runBrainDashboard(
     brainContext.sources,
     brainContext.mission,
     brainContext.capabilities,
+    brainContext.knowledge,
   );
 
   /**

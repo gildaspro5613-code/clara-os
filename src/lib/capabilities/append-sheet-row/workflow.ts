@@ -50,7 +50,7 @@ export class AppendSheetRowWorkflow {
     }
 
     const spreadsheet =
-      getWorkspaceSpreadsheet(
+      await getWorkspaceSpreadsheet(
         context.role,
       );
 

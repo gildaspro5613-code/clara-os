@@ -11,17 +11,17 @@
  */
 
 import { Event } from "@/types";
-
-import { getRuntime } from "./runtime";
+import type { Clara } from "./clara";
 
 /**
  * Dispatches an event through
  * Clara's Cognitive Engine.
  */
 export async function dispatchEvent(
+  clara: Clara,
   event: Event,
 ) {
-  return getRuntime().processEvent(
+  return clara.processEvent(
     event,
   );
 }

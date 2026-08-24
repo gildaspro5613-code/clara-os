@@ -11,6 +11,7 @@
  */
 
 import { Experience } from "./experience";
+import { Lesson } from "./lesson";
 
 /**
  * Persistent experience record.
@@ -30,7 +31,7 @@ export interface ExperienceRecord {
   /**
    * Lessons extracted.
    */
-  lessons: string[];
+  lessons: Lesson[];
 
   /**
    * Confidence score.

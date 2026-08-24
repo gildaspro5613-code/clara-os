@@ -59,9 +59,10 @@ export class WorkspaceInstaller {
 
     });
 
-    await this.folders.execute(
-      companyFolderId,
-    );
+    const folders =
+      await this.folders.execute(
+        companyFolderId,
+      );
 
     steps.push({
 
@@ -71,9 +72,10 @@ export class WorkspaceInstaller {
 
     });
 
-    await this.documents.execute(
-      application.branding.companyName,
-    );
+    const documents =
+      await this.documents.execute(
+        application.branding.companyName,
+      );
 
     steps.push({
 
@@ -96,9 +98,10 @@ export class WorkspaceInstaller {
 
     });
 
-    await this.calendar.execute(
-      application.branding.companyName,
-    );
+    const calendar =
+      await this.calendar.execute(
+        application.branding.companyName,
+      );
 
     steps.push({
 
@@ -118,13 +121,21 @@ export class WorkspaceInstaller {
 
     });
 
-    saveWorkspace({
+    await saveWorkspace({
+
       companyName:
         application.branding.companyName,
 
       companyFolderId,
 
+      folders,
+
+      documents,
+
+      calendar,
+
       spreadsheets,
+
     });
 
     return {

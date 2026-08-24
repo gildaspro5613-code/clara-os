@@ -13,6 +13,15 @@ async function main() {
     companyFolderId:
       "test-company-folder-id",
 
+    folders: [],
+
+    documents: [],
+
+    calendar: {
+      name: "Test Calendar",
+      calendarId: "test-calendar-id",
+    },
+
     spreadsheets: [
 
       {
@@ -45,14 +54,14 @@ async function main() {
 
   console.log("\n=== SAVE ===");
 
-  saveWorkspace(workspace);
+  await saveWorkspace(workspace);
 
   console.log("Workspace sauvegardé.");
 
   console.log("\n=== LOAD ===");
 
   const loaded =
-    loadWorkspace();
+    await loadWorkspace();
 
   console.log(
     JSON.stringify(

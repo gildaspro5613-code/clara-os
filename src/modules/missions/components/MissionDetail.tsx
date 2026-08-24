@@ -98,30 +98,94 @@ export default function MissionDetail({
     [mission, nextTask?.title]
   );
 
-  function toggleTask(taskId: string) {
-    const updatedTasks = tasks.map((task) =>
-      task.id === taskId
-        ? {
-            ...task,
-            completed: !task.completed,
-          }
-        : task
+  async function toggleTask(taskId: string) {
+    if (executingTaskId) return;
+
+    const task = tasks.find(
+      (candidate) => candidate.id === taskId,
     );
 
-    setTasks(updatedTasks);
+    if (!task) return;
 
-    onUpdate({
-      ...mission,
-      tasks: updatedTasks,
-      progress:
+    if (task.completed) {
+      const updatedTasks = tasks.map((candidate) =>
+        candidate.id === taskId
+          ? {
+              ...candidate,
+              completed: false,
+            }
+          : candidate
+      );
+
+      setTasks(updatedTasks);
+
+      const completedCount =
+        updatedTasks.filter(
+          (candidate) => candidate.completed,
+        ).length;
+
+      const updatedProgress =
         updatedTasks.length > 0
           ? Math.round(
-              (updatedTasks.filter((task) => task.completed).length /
+              (completedCount /
                 updatedTasks.length) *
-                100
+                100,
             )
-          : 0,
-    });
+          : 0;
+
+      const updatedNextTask =
+        updatedTasks.find(
+          (candidate) => !candidate.completed,
+        );
+
+      onUpdate({
+        ...mission,
+        tasks: updatedTasks,
+        progress: updatedProgress,
+        status:
+          updatedProgress === 100
+            ? "completed"
+            : mission.status,
+        nextAction:
+          updatedNextTask?.title,
+        result:
+          updatedProgress === 100
+            ? mission.result
+            : undefined,
+      });
+
+      return;
+    }
+
+    setExecutingTaskId(taskId);
+
+    try {
+      const response = await fetch(
+        "/api/missions/resume",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            missionId: mission.id,
+          }),
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.mission) {
+        return;
+      }
+
+      setTasks(data.mission.tasks);
+      onUpdate(data.mission);
+    } catch {
+      // Keep the current Mission state when resume fails.
+    } finally {
+      setExecutingTaskId(null);
+    }
   }
 
   async function executeTask(taskId: string) {

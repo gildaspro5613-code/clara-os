@@ -105,7 +105,7 @@ export class FindSheetRowWorkflow {
     }
 
     const spreadsheet =
-      getWorkspaceSpreadsheet(
+      await getWorkspaceSpreadsheet(
         context.role,
       );
 

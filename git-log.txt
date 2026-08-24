@@ -1,0 +1,5 @@
+c90f45f Merge pull request #38 from gildaspro5613-code/copilot/implement-sprint-09-cockpit-page
+5db9c78 Sprint 09E: shift panels down 14px, float bottom widget below Hero edge
+717b6dd Sprint 09D: scale Clara +12%, fix workspace height to fill viewport
+4896c93 Fix workspace flex chain so Hero fully renders below Header
+b9ff91c Fix Hero workspace height via rendering-chain container sizing

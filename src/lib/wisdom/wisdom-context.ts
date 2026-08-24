@@ -11,6 +11,7 @@
  */
 
 import { BrainContext } from "@/lib/brain";
+import { Understanding } from "@/types";
 import { ExperienceRecord } from "@/lib/experience/experience-record";
 import { Recommendation } from "./recommendation";
 
@@ -23,6 +24,11 @@ export interface WisdomContext {
    * Current reasoning context.
    */
   brain: BrainContext;
+
+  /**
+   * Current Brain understanding.
+   */
+  understanding: Understanding;
 
   /**
    * Previous professional experiences.

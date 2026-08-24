@@ -54,7 +54,7 @@ async function main() {
   );
 
   const workspace =
-    loadWorkspace();
+    await loadWorkspace();
 
   if (!workspace) {
     throw new Error(
@@ -90,7 +90,7 @@ async function main() {
   crm.spreadsheetId =
     TEST_SPREADSHEET_ID;
 
-  saveWorkspace(workspace);
+  await saveWorkspace(workspace);
 
   let originalValues: unknown[][] = [];
 
@@ -362,7 +362,7 @@ async function main() {
       "Contenu original restauré.",
     );
 
-    saveWorkspace(
+    await saveWorkspace(
       originalWorkspace,
     );
 

@@ -14,6 +14,7 @@ import { Event } from "@/types";
 
 import { runBrainDashboard } from "@/lib/brain";
 import { missionFromBrain } from "@/modules/missions";
+import { saveMission } from "@/modules/missions/mission-store";
 
 import {
   ClaraSession,
@@ -30,14 +31,21 @@ export async function orchestrate(
   /*
    * Execute one Brain cycle.
    */
+  const activeMission =
+    session.mission &&
+    session.mission.status !== "completed" &&
+    session.mission.status !== "cancelled"
+      ? session.mission
+      : undefined;
+
   const dashboard = await runBrainDashboard(
     event,
-    session.mission ?? undefined,
+    activeMission,
   );
   const recommendation = dashboard.recommendation;
   const mission = missionFromBrain(
     dashboard,
-    session.mission ?? undefined,
+    activeMission,
   );
 
   /*
@@ -45,6 +53,9 @@ export async function orchestrate(
    */
   session.recommendation = recommendation;
   session.mission = mission;
+
+  await saveMission(mission);
+
   session.sources = dashboard.sources;
   session.updatedAt = new Date();
 

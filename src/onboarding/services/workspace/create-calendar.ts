@@ -11,6 +11,7 @@
  */
 
 import { GoogleWorkspace } from "@/lib/integrations/google/workspace";
+import type { WorkspaceCalendar } from "../../models/workspace-calendar";
 
 /**
  * Creates workspace calendars.
@@ -22,16 +23,26 @@ export class CreateCalendar {
    */
   public async execute(
     companyName: string,
-  ): Promise<string> {
+  ): Promise<WorkspaceCalendar> {
 
     const calendar =
       GoogleWorkspace.calendar();
 
-    return calendar.createCalendar(
+    const name =
+      `${companyName} Calendar`;
 
-      `${companyName} Calendar`,
+    const calendarId =
+      await calendar.createCalendar(
+        name,
+      );
 
-    );
+    return {
+
+      name,
+
+      calendarId,
+
+    };
 
   }
 

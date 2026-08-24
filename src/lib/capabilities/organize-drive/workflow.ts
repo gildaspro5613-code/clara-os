@@ -10,6 +10,10 @@
 
 import { GoogleDriveEngine } from "@/lib/connectors/internal/google/drive/google-drive-engine";
 
+import {
+  getWorkspaceFolder,
+} from "@/lib/core/workspace/workspace-resolver";
+
 import type { OrganizeDriveContext } from "./context";
 import type { OrganizeDriveResult } from "./result";
 
@@ -41,11 +45,21 @@ export class OrganizeDriveWorkflow {
     }
 
     try {
-      const folder =
-        await this.drive.ensureFolder(
+      const workspaceFolder =
+        await getWorkspaceFolder(
           context.folderName.trim(),
-          context.parentFolderId,
         );
+
+      const folder =
+        workspaceFolder
+          ? {
+              id: workspaceFolder.folderId,
+              name: workspaceFolder.name,
+            }
+          : await this.drive.ensureFolder(
+              context.folderName.trim(),
+              context.parentFolderId,
+            );
 
       const moved =
         await this.drive.move({

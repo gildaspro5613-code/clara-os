@@ -41,6 +41,11 @@ export interface GoogleDocsResult {
   exportUrl?: string;
 
   /**
+   * Optional document text content.
+   */
+  readonly content?: string;
+
+  /**
    * Optional status message.
    */
   message?: string;

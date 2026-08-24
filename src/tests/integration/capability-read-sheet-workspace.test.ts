@@ -28,7 +28,7 @@ async function main() {
   );
 
   const workspace =
-    loadWorkspace();
+    await loadWorkspace();
 
   if (!workspace) {
     throw new Error(

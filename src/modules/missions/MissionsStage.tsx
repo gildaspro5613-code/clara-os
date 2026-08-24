@@ -10,72 +10,26 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import MissionCard from "./components/MissionCard";
 import MissionDetail from "./components/MissionDetail";
-import { missionsMock } from "./data/missions.mock";
 import type { Mission } from "./types/Mission";
 
 const STORAGE_KEY = "clara-os-missions-v1";
 
 interface MissionsStageProps {
-  initialMission?: Mission;
+  initialMissions?: Mission[];
 }
 
 export default function MissionsStage({
-  initialMission,
+  initialMissions = [],
 }: MissionsStageProps) {
   const [missions, setMissions] =
-  useState<Mission[]>(
-    initialMission
-      ? [initialMission, ...missionsMock]
-      : missionsMock
-  );
-  const [selectedMissionId, setSelectedMissionId] = useState<string | null>(
-    null
-  );
+    useState<Mission[]>(initialMissions);
 
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-
-      if (!stored) return;
-
-      const completedTasks = JSON.parse(stored) as Record<string, boolean>;
-
-      setMissions((currentMissions) =>
-        currentMissions.map((mission) => ({
-          ...mission,
-          tasks: mission.tasks.map((task) => ({
-            ...task,
-            completed:
-              completedTasks[task.id] !== undefined
-                ? completedTasks[task.id]
-                : task.completed,
-          })),
-        }))
-      );
-    } catch {
-      // Ignore invalid local persistence.
-    }
-  }, []);
-
-  useEffect(() => {
-    try {
-      const completedTasks: Record<string, boolean> = {};
-
-      missions.forEach((mission) => {
-        mission.tasks.forEach((task) => {
-          completedTasks[task.id] = task.completed;
-        });
-      });
-
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(completedTasks));
-    } catch {
-      // Ignore persistence errors.
-    }
-  }, [missions]);
+  const [selectedMissionId, setSelectedMissionId] =
+    useState<string | null>(null);
 
   const activeMissions = missions.filter(
     (mission) => mission.status === "active"
@@ -83,6 +37,10 @@ export default function MissionsStage({
 
   const plannedMissions = missions.filter(
     (mission) => mission.status === "planned"
+  );
+
+  const blockedMissions = missions.filter(
+    (mission) => mission.status === "blocked"
   );
 
   const activeMission = activeMissions[0];
@@ -128,7 +86,9 @@ export default function MissionsStage({
   return (
     <main className="min-h-full bg-[#05070b] px-6 py-10 text-white lg:px-10">
       <div className="mx-auto max-w-7xl">
-        <header className="mb-10 flex flex-col gap-6 border-b border-white/10 pb-8 lg:flex-row lg:items-end lg:justify-between">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
+          <div>
+            <header className="mb-10 flex flex-col gap-6 border-b border-white/10 pb-8 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <span className="text-[11px] uppercase tracking-[0.28em] text-cyan-400/70">
               CLARA OS
@@ -270,6 +230,36 @@ export default function MissionsStage({
           </section>
         )}
 
+        {blockedMissions.length > 0 && (
+          <section className="mb-12">
+            <div className="mb-5">
+              <span className="text-[11px] uppercase tracking-[0.25em] text-amber-400/70">
+                Intervention requise
+              </span>
+
+              <h2 className="mt-2 text-xl font-medium">
+                Missions bloquées
+              </h2>
+
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-white/40">
+                Ces missions attendent une intervention humaine avant de pouvoir continuer.
+              </p>
+            </div>
+
+            <div className="grid gap-5 lg:grid-cols-2">
+              {blockedMissions.map((mission) => (
+                <MissionCard
+                  key={mission.id}
+                  mission={mission}
+                  onSelect={(selected) =>
+                    setSelectedMissionId(selected.id)
+                  }
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
         <section>
           <div className="mb-5">
             <span className="text-[11px] uppercase tracking-[0.25em] text-white/40">
@@ -293,6 +283,76 @@ export default function MissionsStage({
             ))}
           </div>
         </section>
+          </div>
+
+          <aside className="self-start rounded-3xl border border-white/10 bg-white/[0.025] p-7 lg:sticky lg:top-8">
+            <span className="text-[10px] uppercase tracking-[0.22em] text-cyan-400/70">
+              Contexte
+            </span>
+
+            <div className="mt-7">
+              <div>
+                <span className="text-[10px] uppercase tracking-[0.18em] text-white/30">
+                  Missions
+                </span>
+
+                <p className="mt-2 text-sm leading-6 text-white/70">
+                  {missions.length} mission{missions.length > 1 ? "s" : ""} enregistrée{missions.length > 1 ? "s" : ""}
+                </p>
+              </div>
+
+              <div className="my-7 border-t border-white/10" />
+
+              <div>
+                <span className="text-[10px] uppercase tracking-[0.18em] text-white/30">
+                  Actives
+                </span>
+
+                <p className="mt-2 text-sm leading-6 text-white/70">
+                  {activeMissions.length} mission{activeMissions.length > 1 ? "s" : ""}
+                </p>
+              </div>
+
+              <div className="my-7 border-t border-white/10" />
+
+              <div>
+                <span className="text-[10px] uppercase tracking-[0.18em] text-white/30">
+                  Intervention
+                </span>
+
+                <p className="mt-2 text-sm leading-6 text-white/70">
+                  {blockedMissions.length > 0
+                    ? `${blockedMissions.length} mission${blockedMissions.length > 1 ? "s" : ""} en attente`
+                    : "Aucune intervention requise"}
+                </p>
+              </div>
+
+              <div className="my-7 border-t border-white/10" />
+
+              <div>
+                <span className="text-[10px] uppercase tracking-[0.18em] text-white/30">
+                  Planifiées
+                </span>
+
+                <p className="mt-2 text-sm leading-6 text-white/70">
+                  {plannedMissions.length} mission{plannedMissions.length > 1 ? "s" : ""}
+                </p>
+              </div>
+
+              <div className="my-7 border-t border-white/10" />
+
+              <div>
+                <span className="text-[10px] uppercase tracking-[0.18em] text-cyan-400/70">
+                  Clara
+                </span>
+
+                <p className="mt-2 text-sm leading-6 text-white/75">
+                  Clara conduit les missions jusqu'à leur résultat et attend une intervention humaine lorsque l'autonomie n'est pas autorisée.
+                </p>
+              </div>
+            </div>
+          </aside>
+        </div>
       </div>
     </main>
   );

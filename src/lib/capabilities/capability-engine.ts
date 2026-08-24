@@ -35,6 +35,47 @@ import { FindSheetRowWorkflow } from "./find-sheet-row/workflow";
 import { DeleteSheetRowContext } from "./delete-sheet-row/context";
 import { DeleteSheetRowWorkflow } from "./delete-sheet-row/workflow";
 
+import { ReadCalendarContext } from "./read-calendar/context";
+import { ReadCalendarWorkflow } from "./read-calendar/workflow";
+
+import { ReadGmailContext } from "./read-gmail/context";
+import { ReadGmailWorkflow } from "./read-gmail/workflow";
+
+import {
+  CreateCalendarEventContext,
+} from "./create-calendar-event/context";
+
+import {
+  CreateCalendarEventWorkflow,
+} from "./create-calendar-event/workflow";
+
+import {
+  UpdateCalendarEventContext,
+} from "./update-calendar-event/context";
+
+import {
+  UpdateCalendarEventWorkflow,
+} from "./update-calendar-event/workflow";
+
+import {
+  DeleteCalendarEventContext,
+} from "./delete-calendar-event/context";
+
+import {
+  DeleteCalendarEventWorkflow,
+} from "./delete-calendar-event/workflow";
+
+import { FindDocumentContext } from "./find-document/context";
+import { FindDocumentWorkflow } from "./find-document/workflow";
+
+
+
+import { ReadDocumentContext } from "./read-document/context";
+import { ReadDocumentWorkflow } from "./read-document/workflow";
+
+import { SendGmailContext } from "./send-gmail/context";
+import { SendGmailWorkflow } from "./send-gmail/workflow";
+
 /**
  * Capability execution request.
  */
@@ -126,6 +167,32 @@ export class CapabilityEngine {
 
   private readonly deleteSheetRow =
     new DeleteSheetRowWorkflow();
+
+  private readonly readCalendar =
+    new ReadCalendarWorkflow();
+
+  private readonly readGmail =
+    new ReadGmailWorkflow();
+
+  private readonly createCalendarEvent =
+    new CreateCalendarEventWorkflow();
+
+  private readonly updateCalendarEvent =
+    new UpdateCalendarEventWorkflow();
+
+  private readonly deleteCalendarEvent =
+    new DeleteCalendarEventWorkflow();
+
+  private readonly findDocument =
+    new FindDocumentWorkflow();
+
+
+
+  private readonly readDocument =
+    new ReadDocumentWorkflow();
+
+  private readonly sendGmail =
+    new SendGmailWorkflow();
 
   /**
    * Executes one capability.
@@ -272,6 +339,48 @@ export class CapabilityEngine {
 
       }
 
+      case "find-document": {
+
+        const result =
+          await this.findDocument.execute(
+
+            request.context as FindDocumentContext,
+
+          );
+
+        return {
+
+          success:
+            result.success,
+
+          message:
+            result.message,
+
+          content:
+            result.documentId
+              ? JSON.stringify({
+                  documentId:
+                    result.documentId,
+                  documentName:
+                    result.documentName,
+                  documentUrl:
+                    result.documentUrl,
+                })
+              : undefined,
+
+          documentId:
+            result.documentId,
+
+          documentUrl:
+            result.documentUrl,
+
+          completedAt:
+            result.completedAt,
+
+        };
+
+      }
+
       case "find-sheet-row": {
 
         const result =
@@ -301,6 +410,68 @@ export class CapabilityEngine {
 
       }
 
+      case "send-gmail": {
+
+        const result =
+          await this.sendGmail.execute(
+
+            request.context as SendGmailContext,
+
+          );
+
+        return {
+
+          success:
+            result.success,
+
+          message:
+            result.message,
+
+          content:
+            JSON.stringify({
+
+              messageId:
+                result.messageId,
+
+              threadId:
+                result.threadId,
+
+            }),
+
+          completedAt:
+            result.completedAt,
+
+        };
+
+      }
+
+      case "read-document": {
+
+        const result =
+          await this.readDocument.execute(
+
+            request.context as ReadDocumentContext,
+
+          );
+
+        return {
+
+          success:
+            result.success,
+
+          message:
+            result.message,
+
+          content:
+            result.content,
+
+          completedAt:
+            result.completedAt,
+
+        };
+
+      }
+
       case "append-sheet-row": {
 
         const result =
@@ -317,6 +488,170 @@ export class CapabilityEngine {
           message: result.message,
 
           completedAt: result.completedAt,
+
+        };
+
+      }
+
+      case "delete-calendar-event": {
+
+        const result =
+          await this.deleteCalendarEvent.execute(
+
+            request.context as DeleteCalendarEventContext,
+
+          );
+
+        return {
+
+          success: result.success,
+
+          message: result.message,
+
+          completedAt: result.completedAt,
+
+        };
+
+      }
+
+      case "update-calendar-event": {
+
+        const result =
+          await this.updateCalendarEvent.execute(
+
+            request.context as UpdateCalendarEventContext,
+
+          );
+
+        return {
+
+          success:
+            result.success,
+
+          message:
+            result.message,
+
+          documentUrl:
+            result.eventUrl,
+
+          content:
+            JSON.stringify({
+
+              eventId:
+                result.eventId,
+
+              calendarId:
+                result.calendarId,
+
+              eventUrl:
+                result.eventUrl,
+
+            }),
+
+          completedAt:
+            result.completedAt,
+
+        };
+
+      }
+
+      case "create-calendar-event": {
+
+        const result =
+          await this.createCalendarEvent.execute(
+
+            request.context as CreateCalendarEventContext,
+
+          );
+
+        return {
+
+          success:
+            result.success,
+
+          message:
+            result.message,
+
+          documentId:
+            undefined,
+
+          documentUrl:
+            result.eventUrl,
+
+          content:
+            JSON.stringify({
+
+              eventId:
+                result.eventId,
+
+              calendarId:
+                result.calendarId,
+
+              eventUrl:
+                result.eventUrl,
+
+            }),
+
+          completedAt:
+            result.completedAt,
+
+        };
+
+      }
+
+      case "read-gmail": {
+
+        const result =
+          await this.readGmail.execute(
+
+            request.context as ReadGmailContext,
+
+          );
+
+        return {
+
+          success:
+            result.success,
+
+          message:
+            result.message,
+
+          content:
+            JSON.stringify(
+              result.emails,
+            ),
+
+          completedAt:
+            result.completedAt,
+
+        };
+
+      }
+
+      case "read-calendar": {
+
+        const result =
+          await this.readCalendar.execute(
+
+            request.context as ReadCalendarContext,
+
+          );
+
+        return {
+
+          success:
+            result.success,
+
+          message:
+            result.message,
+
+          content:
+            JSON.stringify(
+              result.events,
+            ),
+
+          completedAt:
+            result.completedAt,
 
         };
 

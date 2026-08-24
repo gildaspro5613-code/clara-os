@@ -26,3 +26,4 @@ export function getKnowledge(): KnowledgeEngine {
 export * from "./engine";
 export * from "./types";
 export * from "./module";
+export * from "./learned-knowledge";

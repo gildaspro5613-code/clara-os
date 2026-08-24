@@ -1,0 +1,21 @@
+ M docs/design/cockpit_master.png
+ D public/clara/master/Clara_Master.png
+ D public/cockpit/summer/cockpit.png
+ M src/components/clara/ClaraLayer.tsx
+ D src/components/cockpit/ClaraLayer.tsx
+ M src/components/cockpit/Cockpit.tsx
+ M src/components/cockpit/hero/Hero.tsx
+ D src/components/cockpit/hero/HeroBackground.tsx
+ M tsconfig.json
+ D ui.zip
+?? arborescence-complete.txt
+?? arborescence.txt
+?? assets/
+?? build-error.txt
+?? clara-os-workspace.zip
+?? cockpit-debug/
+?? cockpit-final/
+?? cockpit-review/
+?? fichiers-typescript.txt
+?? git-status.txt
+?? public/cockpit/cockpit-hero-final.png

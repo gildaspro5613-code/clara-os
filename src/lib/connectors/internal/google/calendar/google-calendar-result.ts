@@ -1,6 +1,9 @@
 /**
  * Google Calendar result.
  */
+
+import type { calendar_v3 } from "googleapis";
+
 export interface GoogleCalendarResult {
 
   /**
@@ -12,6 +15,11 @@ export interface GoogleCalendarResult {
    * Event identifier.
    */
   eventId: string;
+
+  /**
+   * Calendar events.
+   */
+  events?: calendar_v3.Schema$Event[];
 
   /**
    * Event URL.

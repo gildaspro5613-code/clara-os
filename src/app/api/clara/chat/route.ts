@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { dispatchEvent } from "@/lib/core/event-bus";
+import { getRuntime } from "@/lib/core/runtime";
 import { loadSession } from "@/lib/core/store/session-store";
 import { EventType } from "@/types";
 import { CognitiveToolLoop } from "@/lib/brain/cognitive-tool-loop";
@@ -31,7 +32,10 @@ export async function POST(request: Request) {
       },
     };
 
-    const session = await dispatchEvent(event);
+    const session = await dispatchEvent(
+      getRuntime(),
+      event,
+    );
 
     const sourcesSummary = session.sources.length > 0
       ? session.sources

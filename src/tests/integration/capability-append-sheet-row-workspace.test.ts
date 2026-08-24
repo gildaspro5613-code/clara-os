@@ -38,7 +38,7 @@ async function main() {
   );
 
   const previousWorkspace =
-    loadWorkspace();
+    await loadWorkspace();
 
   if (!previousWorkspace) {
     throw new Error(
@@ -52,7 +52,7 @@ async function main() {
       "\n=== CONFIGURATION TEMPORAIRE ===",
     );
 
-    saveWorkspace({
+    await saveWorkspace({
 
       ...previousWorkspace,
 
@@ -163,7 +163,7 @@ async function main() {
 
   } finally {
 
-    saveWorkspace(
+    await saveWorkspace(
       previousWorkspace,
     );
 

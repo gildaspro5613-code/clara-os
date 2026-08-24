@@ -63,9 +63,22 @@ export class GoogleDocsEngine {
     context: GoogleDocsContext,
   ): Promise<GoogleDocsResult> {
 
-    await this.docs.getDocument(
-      context.documentId ?? "",
-    );
+    const document =
+      await this.docs.getDocument(
+        context.documentId ?? "",
+      );
+
+    const content =
+      (document.data.body?.content ?? [])
+        .flatMap(
+          (item) =>
+            item.paragraph?.elements ?? [],
+        )
+        .map(
+          (element) =>
+            element.textRun?.content ?? "",
+        )
+        .join("");
 
     return {
 
@@ -73,7 +86,11 @@ export class GoogleDocsEngine {
 
       documentId: context.documentId ?? "",
 
-      title: context.title,
+      title:
+        document.data.title ??
+        context.title,
+
+      content,
 
       message: "Document loaded successfully.",
 

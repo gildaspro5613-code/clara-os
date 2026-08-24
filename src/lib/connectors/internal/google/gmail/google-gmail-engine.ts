@@ -10,6 +10,8 @@
  */
 
 import { sendMessage } from "@/lib/connectors/google/gmail/send-message";
+import { listMessages } from "@/lib/connectors/google/gmail/list-messages";
+import { getMessage } from "@/lib/connectors/google/gmail/get-message";
 import { GoogleGmailContext } from "./google-gmail-context";
 import { GoogleGmailResult } from "./google-gmail-result";
 
@@ -47,12 +49,46 @@ export class GoogleGmailEngine {
   public async read(
     context: GoogleGmailContext,
   ): Promise<GoogleGmailResult> {
+
+    const listed =
+      await listMessages({
+        pageSize: 20,
+        query:
+          context.query,
+      });
+
+    const emails =
+      await Promise.all(
+        listed.messages
+          .filter(
+            message =>
+              Boolean(message.id),
+          )
+          .map(
+            message =>
+              getMessage({
+                messageId:
+                  message.id!,
+                format:
+                  "full",
+              }),
+          ),
+      );
+
     return {
+
       success: true,
-      emails: [],
-      message: "Emails loaded successfully.",
-      completedAt: new Date(),
+
+      emails,
+
+      message:
+        `${emails.length} email(s) loaded successfully.`,
+
+      completedAt:
+        new Date(),
+
     };
+
   }
 
   public async search(
