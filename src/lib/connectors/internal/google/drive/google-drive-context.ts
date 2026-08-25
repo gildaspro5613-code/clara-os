@@ -45,6 +45,17 @@ export interface GoogleDriveContext {
    */
   permissions?: GoogleDrivePermissionInput[];
 
+  /**
+   * Free-text search query.
+   * Used by search() to locate resources by name or content.
+   */
+  searchQuery?: string;
+
+  /**
+   * Destination folder for move operations.
+   */
+  destinationFolderId?: string;
+
 }
 
 /**
