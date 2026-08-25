@@ -66,7 +66,7 @@ export class DriveContextBuilder {
   }
 
   /**
-   * Serialises a DriveContext as a compact JSON string
+   * Serialises a DriveContext as a pretty-printed JSON string
    * suitable for injection into a system/user prompt.
    */
   public serialise(

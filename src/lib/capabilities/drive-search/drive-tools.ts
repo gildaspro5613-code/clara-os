@@ -89,6 +89,10 @@ export const DRIVE_TOOLS: FunctionTool[] = [
 
 ];
 
+/** Module-level singletons — shared across all agentic loop iterations. */
+const _workflow = new DriveSearchWorkflow();
+const _contextBuilder = new DriveContextBuilder();
+
 /**
  * Executes a Drive tool call and returns the result as a JSON string.
  *
@@ -101,8 +105,8 @@ export async function executeDriveTool(
   args: Record<string, unknown>,
 ): Promise<string> {
 
-  const workflow = new DriveSearchWorkflow();
-  const contextBuilder = new DriveContextBuilder();
+  const workflow = _workflow;
+  const contextBuilder = _contextBuilder;
 
   switch (name) {
 

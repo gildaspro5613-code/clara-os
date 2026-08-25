@@ -100,7 +100,7 @@ export class GoogleDriveEngine {
 
     const query = context.searchQuery ?? context.fileName;
 
-    if (!query.trim()) {
+    if (!query?.trim()) {
 
       throw new Error(
         "GoogleDriveEngine.search: searchQuery or fileName is required.",
