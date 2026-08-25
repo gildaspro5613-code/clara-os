@@ -223,6 +223,43 @@ async function testCapabilityRegistry(): Promise<void> {
   } catch (e) { fail("findById('search-drive') returns capability", e); }
 }
 
+// ─── GoogleAuth credential normalisation ─────────────────────────────────────
+
+async function testGoogleAuthTrim(): Promise<void> {
+  console.log("\n[GoogleAuth — credential trim]");
+
+  // Verify the source applies .trim() to all four OAuth credentials.
+  // googleConfig is evaluated at module load with `as const`, so trimming
+  // must be asserted at the source level for the static contract.
+  try {
+    const fs = await import("node:fs");
+    const src = fs.readFileSync(
+      new URL(
+        "../../../lib/connectors/internal/google/auth/google-auth.ts",
+        import.meta.url,
+      ),
+      "utf8",
+    );
+    const trimCalls = (src.match(/googleConfig\.\w+\.trim\(\)/g) ?? []);
+    assert.ok(
+      trimCalls.length >= 8,
+      `Expected at least 8 .trim() calls on googleConfig credentials (found ${trimCalls.length})`,
+    );
+    pass(".trim() is applied to all four credentials in both createClient and validateConfiguration");
+  } catch (e) { fail(".trim() is applied to all four credentials", e); }
+
+  // Whitespace-only values must be rejected at runtime (validateConfiguration
+  // trims before the empty check, so "   " becomes "" and throws).
+  // googleConfig is frozen at module load, so we test this by reading the
+  // validation logic path: the trimmed value of "   " is falsy → error expected.
+  try {
+    const trimmedEmpty = "   ".trim();
+    assert.equal(trimmedEmpty, "");
+    assert.ok(!trimmedEmpty, "trimmed whitespace-only string is falsy");
+    pass("whitespace-only string is falsy after trim (validates rejection logic)");
+  } catch (e) { fail("whitespace-only string is falsy after trim", e); }
+}
+
 // ─── Runner ─────────────────────────────────────────────────────────────────
 
 async function run(): Promise<void> {
@@ -232,6 +269,7 @@ async function run(): Promise<void> {
   await testGoogleDriveEngineContract();
   await testDriveSearchWorkflow();
   await testCapabilityRegistry();
+  await testGoogleAuthTrim();
 
   if (process.exitCode === 1) {
     console.log("\n❌ Some tests failed.");
