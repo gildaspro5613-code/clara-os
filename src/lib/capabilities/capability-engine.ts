@@ -17,6 +17,11 @@ import { GenerateDocumentWorkflow } from "./generate-document/workflow";
 import { WorkspaceInstallContext } from "./workspace-install/context";
 import { WorkspaceInstallWorkflow } from "./workspace-install/workflow";
 
+import { DriveSearchContext } from "./drive-search/context";
+import { DriveSearchWorkflow } from "./drive-search/workflow";
+import type { DriveResourceEntry } from "@/lib/connectors/internal/google/drive/google-drive-result";
+import type { DriveContext } from "./drive-search/result";
+
 /**
  * Capability execution request.
  */
@@ -50,9 +55,19 @@ export interface CapabilityExecutionResult {
   readonly message: string;
 
   /**
-   * Optional generated content.
+   * Optional generated content (text).
    */
   readonly content?: string;
+
+  /**
+   * Drive resources returned by search/list operations.
+   */
+  readonly driveEntries?: DriveResourceEntry[];
+
+  /**
+   * Structured Drive context for LLM injection.
+   */
+  readonly driveContext?: DriveContext;
 
   /**
    * Completion timestamp.
@@ -80,6 +95,9 @@ export class CapabilityEngine {
 
   private readonly workspaceInstall =
     new WorkspaceInstallWorkflow();
+
+  private readonly driveSearch =
+    new DriveSearchWorkflow();
 
   /**
    * Executes one capability.
@@ -146,6 +164,33 @@ export class CapabilityEngine {
           success: result.success,
 
           message: result.message,
+
+          completedAt: result.completedAt,
+
+        };
+
+      }
+
+      case "search-drive": {
+
+        const result =
+          await this.driveSearch.execute(
+
+            request.context as DriveSearchContext,
+
+          );
+
+        return {
+
+          success: result.success,
+
+          message: result.message,
+
+          driveEntries: result.entries,
+
+          driveContext: result.driveContext,
+
+          content: result.textContent,
 
           completedAt: result.completedAt,
 
