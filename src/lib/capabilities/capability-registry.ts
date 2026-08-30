@@ -9,6 +9,12 @@
  * ============================================
  */
 
+
+import {
+  DriveSearchCapability,
+  DriveSearchCapabilityDefinition,
+} from "./drive-search/capability";
+
 import {
   GenerateDocumentCapability,
   GenerateDocumentCapabilityDefinition,
@@ -95,6 +101,7 @@ import {
  * Capability definition.
  */
 export type CapabilityDefinition =
+  | DriveSearchCapability
   | GenerateDocumentCapability
   | WorkspaceInstallCapability
   | OrganizeDriveCapability
@@ -121,6 +128,8 @@ export class CapabilityRegistry {
    * Registered capabilities.
    */
   private readonly capabilities: CapabilityDefinition[] = [
+
+    DriveSearchCapabilityDefinition,
 
     GenerateDocumentCapabilityDefinition,
 

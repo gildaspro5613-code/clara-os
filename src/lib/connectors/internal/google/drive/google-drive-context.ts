@@ -41,6 +41,11 @@ export interface GoogleDriveContext {
   mimeType?: string;
 
   /**
+   * Free-text search query.
+   */
+  searchQuery?: string;
+
+  /**
    * Sharing permissions.
    */
   permissions?: GoogleDrivePermissionInput[];

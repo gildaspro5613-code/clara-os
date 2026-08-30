@@ -41,6 +41,11 @@ export interface DriveFileDownload {
   mimeType?: string;
 
   /**
+   * Parent folder identifiers.
+   */
+  parents?: string[];
+
+  /**
    * View URL.
    */
   url?: string;
@@ -68,6 +73,11 @@ export interface DriveFileRecord {
   mimeType?: string;
 
   /**
+   * Parent folder identifiers.
+   */
+  parents?: string[];
+
+  /**
    * View URL.
    */
   url?: string;
@@ -81,6 +91,8 @@ export interface DriveFileListOptions {
   pageSize?: number;
   pageToken?: string;
   query?: string;
+  fileName?: string;
+  folderId?: string;
 }
 
 /**
@@ -88,6 +100,7 @@ export interface DriveFileListOptions {
  */
 export interface DriveFileListResult {
   files: DriveFileRecord[];
+  entries?: import("./google-drive-result").DriveResourceEntry[];
   nextPageToken?: string;
 }
 
@@ -137,12 +150,66 @@ export class DriveFiles {
             file.mimeType ?? undefined,
           url:
             file.webViewLink ?? undefined,
+          parents:
+            file.parents ?? undefined,
         }));
 
     return {
       files,
       nextPageToken:
         response.data.nextPageToken ?? undefined,
+    };
+  }
+
+  /**
+   * Reads a Google Workspace document as plain text.
+   */
+  public async readContent(
+    fileId: string,
+    mimeType?: string,
+  ): Promise<{
+    textContent: string;
+    mimeType?: string;
+  }> {
+
+    const metadata = await this.drive.files.get({
+      fileId,
+      fields: "id,name,mimeType",
+      supportsAllDrives: true,
+    });
+
+    const actualMimeType =
+      metadata.data.mimeType ?? mimeType;
+
+    if (!actualMimeType) {
+      return { textContent: "" };
+    }
+
+    const exportable =
+      actualMimeType === "application/vnd.google-apps.document" ||
+      actualMimeType === "application/vnd.google-apps.spreadsheet" ||
+      actualMimeType === "application/vnd.google-apps.presentation";
+
+    if (exportable) {
+
+      const response = await this.drive.files.export({
+        fileId,
+        mimeType: "text/plain",
+      });
+
+      return {
+        textContent:
+          typeof response.data === "string"
+            ? response.data
+            : String(response.data ?? ""),
+        mimeType: actualMimeType,
+      };
+
+    }
+
+    return {
+      textContent: "",
+      mimeType: actualMimeType,
     };
   }
 

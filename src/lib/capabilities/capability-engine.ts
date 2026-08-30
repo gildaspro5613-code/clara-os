@@ -73,6 +73,9 @@ import { FindDocumentWorkflow } from "./find-document/workflow";
 import { ReadDocumentContext } from "./read-document/context";
 import { ReadDocumentWorkflow } from "./read-document/workflow";
 
+import { DriveSearchContext } from "./drive-search/context";
+import { DriveSearchWorkflow } from "./drive-search/workflow";
+
 import { SendGmailContext } from "./send-gmail/context";
 import { SendGmailWorkflow } from "./send-gmail/workflow";
 
@@ -194,6 +197,9 @@ export class CapabilityEngine {
   private readonly sendGmail =
     new SendGmailWorkflow();
 
+  private readonly driveSearch =
+    new DriveSearchWorkflow();
+
   /**
    * Executes one capability.
    */
@@ -221,6 +227,39 @@ export class CapabilityEngine {
     }
 
     switch (request.capabilityId) {
+
+      case "search-drive": {
+
+        const result =
+          await this.driveSearch.execute(
+            request.context as DriveSearchContext,
+          );
+
+        return {
+
+          success:
+            result.success,
+
+          message:
+            result.message,
+
+          content:
+            result.driveContext
+              ? JSON.stringify(
+                  result.driveContext,
+                )
+              : result.entries
+                ? JSON.stringify(
+                    result.entries,
+                  )
+                : undefined,
+
+          completedAt:
+            result.completedAt,
+
+        };
+
+      }
 
       case "generate-document": {
 

@@ -23,7 +23,10 @@ import type {
   DriveFileListOptions,
   DriveFileListResult,
 } from "./drive-files";
-import type { GoogleDriveResult } from "./google-drive-result";
+import type {
+  GoogleDriveResult,
+  DriveResourceEntry,
+} from "./google-drive-result";
 
 /**
  * Google Drive engine.
@@ -79,7 +82,104 @@ export class GoogleDriveEngine {
   ): Promise<DriveFileListResult> {
     await this.health.check();
 
-    return this.files.list(options);
+    const result = await this.files.list(options);
+
+    return {
+      ...result,
+      entries: result.files.map((file) => ({
+        id: file.fileId,
+        name: file.fileName,
+        mimeType: file.mimeType,
+        webViewLink: file.url,
+        parents: file.parents,
+      })),
+    };
+  }
+
+  /**
+   * Searches Google Drive resources by name.
+   */
+  public async search(
+    context: GoogleDriveContext,
+  ): Promise<GoogleDriveResult> {
+
+    const query = (
+      context.searchQuery ??
+      context.fileName
+    ).trim();
+
+    if (!query) {
+      throw new Error(
+        "GoogleDriveEngine.search: searchQuery or fileName is required.",
+      );
+    }
+
+    await this.health.check();
+
+    const escaped = query.replaceAll("'", "\\'");
+
+    const result = await this.files.list({
+      pageSize: 100,
+      query: `name contains '${escaped}' and trashed=false`,
+    });
+
+    const entries: DriveResourceEntry[] =
+      result.files.map((file) => ({
+        id: file.fileId,
+        name: file.fileName,
+        mimeType: file.mimeType,
+        webViewLink: file.url,
+        parents: file.parents,
+      }));
+
+    const primary = entries[0];
+
+    return {
+      success: true,
+      fileId: primary?.id ?? "",
+      fileName: primary?.name ?? "",
+      url: primary?.webViewLink,
+      mimeType: primary?.mimeType,
+      entries,
+      message:
+        entries.length === 0
+          ? `No Drive resource found matching "${query}".`
+          : `Found ${entries.length} resource(s) matching "${query}".`,
+      completedAt: new Date(),
+    };
+  }
+
+  /**
+   * Reads plain-text content from a Google Workspace document.
+   */
+  public async readContent(
+    context: GoogleDriveContext,
+  ): Promise<GoogleDriveResult> {
+
+    if (!context.fileId) {
+      throw new Error(
+        "Google Drive fileId is required for readContent.",
+      );
+    }
+
+    await this.health.check();
+
+    const file =
+      await this.files.readContent(
+        context.fileId,
+        context.mimeType,
+      );
+
+    return {
+      success: true,
+      fileId: context.fileId,
+      fileName: context.fileName,
+      content: undefined,
+      mimeType: file.mimeType,
+      textContent: file.textContent,
+      message: "File content read successfully.",
+      completedAt: new Date(),
+    };
   }
 
   /**
