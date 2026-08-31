@@ -95,7 +95,7 @@ export async function readRange(
 
   }
 
-  const sheets = new SheetsClient().create();
+  const sheets = await new SheetsClient().create();
 
   const params: sheets_v4.Params$Resource$Spreadsheets$Values$Get = {
 

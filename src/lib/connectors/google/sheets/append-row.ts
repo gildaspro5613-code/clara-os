@@ -116,7 +116,7 @@ export async function appendRow(
 
   }
 
-  const sheets = new SheetsClient().create();
+  const sheets = await new SheetsClient().create();
 
   const response = await sheets.spreadsheets.values.append({
 

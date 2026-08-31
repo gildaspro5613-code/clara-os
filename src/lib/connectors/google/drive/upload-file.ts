@@ -107,7 +107,7 @@ export async function uploadFile(
   options: UploadFileOptions,
 ): Promise<DriveUploadedFile> {
 
-  const drive = new DriveClient().create();
+  const drive = await new DriveClient().create();
 
   const response = await drive.files.create({
 

@@ -15,7 +15,7 @@ async function main() {
   try {
 
     const client =
-      GoogleAuth.createClient();
+      await new GoogleAuth().createClient();
 
     console.log(
       "GoogleAuth → configuration chargée",

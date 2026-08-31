@@ -58,7 +58,7 @@ export async function getDocument(
 
   const documentId = assertDocumentId(options.documentId, "getDocument");
 
-  const docs = new DocsClient().create();
+  const docs = await new DocsClient().create();
 
   const params: docs_v1.Params$Resource$Documents$Get = {
 

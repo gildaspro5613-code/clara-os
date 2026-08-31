@@ -94,7 +94,7 @@ export async function listMessages(
 
   }
 
-  const gmail = new GmailClient().create();
+  const gmail = await new GmailClient().create();
 
   const params: gmail_v1.Params$Resource$Users$Messages$List = {
 

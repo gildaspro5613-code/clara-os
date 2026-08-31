@@ -54,7 +54,7 @@ export async function deleteFile(
 
   }
 
-  const drive = new DriveClient().create();
+  const drive = await new DriveClient().create();
 
   await drive.files.delete({
     fileId,

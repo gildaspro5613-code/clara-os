@@ -68,7 +68,7 @@ export async function createDocument(
 
   const title = assertNonEmptyString(options.title, "title", "createDocument");
 
-  const docs = new DocsClient().create();
+  const docs = await new DocsClient().create();
 
   const response = await docs.documents.create({
 

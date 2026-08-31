@@ -89,7 +89,7 @@ export async function listEvents(
   options?: ListEventsOptions,
 ): Promise<ListEventsResult> {
 
-  const calendar = new CalendarClient().create();
+  const calendar = await new CalendarClient().create();
 
   const params: calendar_v3.Params$Resource$Events$List = {
 

@@ -46,13 +46,13 @@ export class DocsClient {
   /**
    * Creates an authenticated Google Docs client.
    */
-  public create(): docs_v1.Docs {
+  public async create(): Promise<docs_v1.Docs> {
 
     return google.docs({
 
       version: "v1",
 
-      auth: GoogleAuth.createClient(),
+      auth: await new GoogleAuth().createClient(),
 
     });
 

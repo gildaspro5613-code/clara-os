@@ -39,10 +39,4 @@ export const googleConfig = {
   redirectUri:
     process.env.GOOGLE_REDIRECT_URI ?? "",
 
-  /**
-   * OAuth Refresh Token.
-   */
-  refreshToken:
-    process.env.GOOGLE_REFRESH_TOKEN ?? "",
-
 } as const;

@@ -73,7 +73,7 @@ export async function clearRange(
 
   }
 
-  const sheets = new SheetsClient().create();
+  const sheets = await new SheetsClient().create();
 
   const response = await sheets.spreadsheets.values.clear({
 

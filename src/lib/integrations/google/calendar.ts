@@ -32,15 +32,9 @@ export class GoogleCalendarIntegration {
    */
   constructor() {
 
-    const auth = GoogleIntegration.createClient();
-
-    this.calendar = google.calendar({
-
-      version: "v3",
-
-      auth,
-
-    });
+    this.calendar = GoogleIntegration.createClient().then((auth) =>
+      google.calendar({ version: "v3", auth }),
+    );
 
   }
 
@@ -61,7 +55,7 @@ export class GoogleCalendarIntegration {
   ): Promise<string> {
 
     const response =
-      await this.calendar.calendars.insert({
+      await (await this.calendar).calendars.insert({
 
         requestBody: {
 
@@ -82,7 +76,7 @@ export class GoogleCalendarIntegration {
     calendarId: string,
   ) {
 
-    return this.calendar.calendars.get({
+    return (await this.calendar).calendars.get({
 
       calendarId,
 

@@ -103,7 +103,7 @@ export async function listFiles(
   options?: ListFilesOptions,
 ): Promise<ListFilesResult> {
 
-  const drive = new DriveClient().create();
+  const drive = await new DriveClient().create();
 
   const params: drive_v3.Params$Resource$Files$List = {
 

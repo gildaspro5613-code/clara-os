@@ -33,15 +33,9 @@ export class GoogleDriveIntegration {
    */
   constructor() {
 
-    const auth = GoogleIntegration.createClient();
-
-    this.drive = google.drive({
-
-      version: "v3",
-
-      auth,
-
-    });
+    this.drive = GoogleIntegration.createClient().then((auth) =>
+      google.drive({ version: "v3", auth }),
+    );
 
   }
 
@@ -69,7 +63,7 @@ export class GoogleDriveIntegration {
   ): Promise<string> {
 
     const response =
-      await this.drive.files.create({
+      await (await this.drive).files.create({
 
         requestBody: {
 
@@ -116,7 +110,7 @@ export class GoogleDriveIntegration {
       .join(" and ");
 
     const response =
-      await this.drive.files.list({
+      await (await this.drive).files.list({
 
         q: query,
 
@@ -168,7 +162,7 @@ export class GoogleDriveIntegration {
       .join(" and ");
 
     const response =
-      await this.drive.files.list({
+      await (await this.drive).files.list({
 
         q: query,
 

@@ -29,15 +29,9 @@ export class GoogleGmailIntegration {
    */
   constructor() {
 
-    const auth = GoogleIntegration.createClient();
-
-    this.gmail = google.gmail({
-
-      version: "v1",
-
-      auth,
-
-    });
+    this.gmail = GoogleIntegration.createClient().then((auth) =>
+      google.gmail({ version: "v1", auth }),
+    );
 
   }
 
@@ -46,7 +40,7 @@ export class GoogleGmailIntegration {
    */
   public async getProfile() {
 
-    return this.gmail.users.getProfile({
+    return (await this.gmail).users.getProfile({
 
       userId: "me",
 
@@ -59,7 +53,7 @@ export class GoogleGmailIntegration {
    */
   public async listLabels() {
 
-    return this.gmail.users.labels.list({
+    return (await this.gmail).users.labels.list({
 
       userId: "me",
 

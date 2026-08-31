@@ -51,7 +51,7 @@ export async function deleteMessage(
 
   }
 
-  const gmail = new GmailClient().create();
+  const gmail = await new GmailClient().create();
 
   await gmail.users.messages.delete({
 

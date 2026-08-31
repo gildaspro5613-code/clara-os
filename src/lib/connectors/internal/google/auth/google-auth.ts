@@ -1,82 +1,77 @@
-/**
- * ============================================
- * CLARA OS
- * Google Authentication
- * --------------------------------------------
- * File : google-auth.ts
- * Responsibility :
- * Creates and validates an
- * authenticated Google OAuth2 client.
- * ============================================
- */
+import type { Credentials, OAuth2Client } from "google-auth-library";
+import {
+  ConnectionStatus,
+} from "@/lib/connections/connection";
+import {
+  DatabaseConnectionRepository,
+  type ConnectionRepository,
+} from "@/lib/connections/connection-repository";
+import { CredentialStore } from "@/lib/connections/credential-store";
+import { CURRENT_WORKSPACE_ID } from "@/lib/connections/current-workspace";
+import {
+  GoogleReauthRequiredError,
+  isGoogleInvalidGrant,
+} from "@/lib/connectors/google/auth/google-auth-error";
+import {
+  createGoogleOAuthClient,
+  mergeGoogleCredentials,
+} from "@/lib/connectors/google/oauth/google-oauth";
 
-import { google } from "googleapis";
-
-import { googleConfig } from "@/lib/config/google";
-
-/**
- * Google authentication service.
- */
 export class GoogleAuth {
+  constructor(
+    private readonly connections: ConnectionRepository =
+      new DatabaseConnectionRepository(),
+    private readonly credentials = new CredentialStore(),
+    private readonly clientFactory: () => OAuth2Client = createGoogleOAuthClient,
+  ) {}
 
-  /**
-   * Creates an authenticated OAuth2 client.
-   */
-  public static createClient() {
+  async createClient(connectionId?: string): Promise<OAuth2Client> {
+    const connection = connectionId
+      ? await this.connections.findById(connectionId)
+      : await this.connections.findByWorkspaceAndProvider(
+          CURRENT_WORKSPACE_ID,
+          "google",
+        );
+    if (!connection || connection.status !== ConnectionStatus.ACTIVE) {
+      throw new GoogleReauthRequiredError();
+    }
+    const stored = await this.credentials.get<Credentials>(connection.id);
+    if (!stored?.refresh_token) throw new GoogleReauthRequiredError();
 
-    this.validateConfiguration();
-
-    const client = new google.auth.OAuth2(
-
-      googleConfig.clientId,
-
-      googleConfig.clientSecret,
-
-      googleConfig.redirectUri,
-
-    );
-
-    client.setCredentials({
-
-      refresh_token: googleConfig.refreshToken,
-
+    const client = this.clientFactory();
+    client.setCredentials(stored);
+    let pendingPersistence: Promise<void> = Promise.resolve();
+    client.on("tokens", (tokens) => {
+      pendingPersistence = this.persistRefresh(connection.id, stored, tokens);
     });
 
-    return client;
-
-  }
-
-  /**
-   * Validates Google configuration.
-   */
-  private static validateConfiguration(): void {
-
-    const required = [
-
-      ["GOOGLE_CLIENT_ID", googleConfig.clientId],
-
-      ["GOOGLE_CLIENT_SECRET", googleConfig.clientSecret],
-
-      ["GOOGLE_REDIRECT_URI", googleConfig.redirectUri],
-
-      ["GOOGLE_REFRESH_TOKEN", googleConfig.refreshToken],
-
-    ];
-
-    for (const [name, value] of required) {
-
-      if (!value) {
-
-        throw new Error(
-
-          `Missing Google configuration: ${name}`,
-
-        );
-
+    const request = client.request.bind(client);
+    client.request = (async (...args: Parameters<OAuth2Client["request"]>) => {
+      try {
+        const response = await request(...args);
+        await pendingPersistence;
+        return response;
+      } catch (error) {
+        if (isGoogleInvalidGrant(error)) {
+          await this.connections.updateStatus(
+            connection.id,
+            ConnectionStatus.RECONNECT_REQUIRED,
+          );
+          throw new GoogleReauthRequiredError();
+        }
+        throw error;
       }
-
-    }
-
+    }) as unknown as OAuth2Client["request"];
+    return client;
   }
 
+  private async persistRefresh(
+    connectionId: string,
+    previous: Credentials,
+    update: Credentials,
+  ): Promise<void> {
+    const current = await this.credentials.get<Credentials>(connectionId);
+    const merged = mergeGoogleCredentials(current ?? previous, update);
+    await this.credentials.set(connectionId, merged);
+  }
 }

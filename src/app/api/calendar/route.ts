@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { listEvents } from "@/lib/connectors/google/calendar/list-events";
+import { googleReauthResponse } from "@/lib/connectors/google/auth/google-api-error-response";
 
 export async function GET() {
   try {
@@ -26,6 +27,8 @@ export async function GET() {
       nextPageToken: result.nextPageToken ?? null,
     });
   } catch (error) {
+    const reauth = googleReauthResponse(error);
+    if (reauth) return reauth;
     console.error("[API /calendar]", error);
 
     return NextResponse.json(

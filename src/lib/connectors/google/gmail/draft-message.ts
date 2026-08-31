@@ -46,7 +46,7 @@ export async function draftMessage(
   options: DraftMessageOptions,
 ): Promise<gmail_v1.Schema$Draft> {
 
-  const gmail = new GmailClient().create();
+  const gmail = await new GmailClient().create();
 
   const response = await gmail.users.drafts.create({
 
