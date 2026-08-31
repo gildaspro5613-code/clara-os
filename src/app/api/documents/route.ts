@@ -13,6 +13,7 @@
 import { NextResponse } from "next/server";
 
 import { GoogleDriveEngine } from "@/lib/connectors/internal/google/drive/google-drive-engine";
+import { googleReauthResponse } from "@/lib/connectors/google/auth/google-api-error-response";
 
 export async function GET(request: Request) {
   try {
@@ -41,6 +42,8 @@ export async function GET(request: Request) {
       })),
     });
   } catch (error) {
+    const reauth = googleReauthResponse(error);
+    if (reauth) return reauth;
     return NextResponse.json(
       {
         success: false,

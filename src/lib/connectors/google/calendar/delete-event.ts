@@ -57,7 +57,7 @@ export async function deleteEvent(
 
   }
 
-  const calendar = new CalendarClient().create();
+  const calendar = await new CalendarClient().create();
 
   await calendar.events.delete({
 

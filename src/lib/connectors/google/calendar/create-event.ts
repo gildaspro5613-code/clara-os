@@ -52,7 +52,7 @@ export async function createEvent(
   options: CreateEventOptions,
 ): Promise<calendar_v3.Schema$Event> {
 
-  const calendar = new CalendarClient().create();
+  const calendar = await new CalendarClient().create();
 
   const response = await calendar.events.insert({
 

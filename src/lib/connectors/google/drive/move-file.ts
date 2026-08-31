@@ -92,7 +92,7 @@ export async function moveFile(
   options: MoveFileOptions,
 ): Promise<DriveMovedFile> {
 
-  const drive = new DriveClient().create();
+  const drive = await new DriveClient().create();
 
   const current = await drive.files.get({
     fileId: options.fileId,

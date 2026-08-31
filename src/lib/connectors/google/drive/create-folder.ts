@@ -84,7 +84,7 @@ export async function createFolder(
   options: CreateFolderOptions,
 ): Promise<DriveFolder> {
 
-  const drive = new DriveClient().create();
+  const drive = await new DriveClient().create();
 
   const response = await drive.files.create({
 

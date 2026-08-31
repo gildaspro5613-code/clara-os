@@ -28,7 +28,7 @@ import { DriveClient } from "./drive-client";
 export async function listPermissions(
   fileId: string,
 ): Promise<drive_v3.Schema$Permission[]> {
-  const drive = new DriveClient().create();
+  const drive = await new DriveClient().create();
 
   const response = await drive.permissions.list({
     fileId,

@@ -72,7 +72,7 @@ export interface DriveFileDetail {
  */
 export async function getFile(fileId: string): Promise<DriveFileDetail> {
 
-  const drive = new DriveClient().create();
+  const drive = await new DriveClient().create();
 
   const response = await drive.files.get({
 

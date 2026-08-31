@@ -23,13 +23,13 @@ export class CalendarClient {
   /**
    * Creates an authenticated Google Calendar client.
    */
-  public create(): calendar_v3.Calendar {
+  public async create(): Promise<calendar_v3.Calendar> {
 
     return google.calendar({
 
       version: "v3",
 
-      auth: GoogleAuth.createClient(),
+      auth: await new GoogleAuth().createClient(),
 
     });
 

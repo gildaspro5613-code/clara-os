@@ -66,7 +66,7 @@ export async function downloadFile(
 
   }
 
-  const drive = new DriveClient().create();
+  const drive = await new DriveClient().create();
 
   const response = await drive.files.get(
     {

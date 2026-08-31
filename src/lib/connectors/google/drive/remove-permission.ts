@@ -36,7 +36,7 @@ export async function removePermission(
   fileId: string,
   permissionId: string,
 ): Promise<void> {
-  const drive = new DriveClient().create();
+  const drive = await new DriveClient().create();
 
   await drive.permissions.delete({
     fileId,

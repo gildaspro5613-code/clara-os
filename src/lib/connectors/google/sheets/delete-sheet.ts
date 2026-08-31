@@ -56,7 +56,7 @@ export async function deleteSheet(
 
   }
 
-  const sheets = new SheetsClient().create();
+  const sheets = await new SheetsClient().create();
 
   await sheets.spreadsheets.batchUpdate({
 

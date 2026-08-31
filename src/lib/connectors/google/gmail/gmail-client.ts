@@ -28,13 +28,13 @@ export class GmailClient {
   /**
    * Creates an authenticated Google Gmail client.
    */
-  public create(): gmail_v1.Gmail {
+  public async create(): Promise<gmail_v1.Gmail> {
 
     return google.gmail({
 
       version: "v1",
 
-      auth: GoogleAuth.createClient(),
+      auth: await new GoogleAuth().createClient(),
 
     });
 

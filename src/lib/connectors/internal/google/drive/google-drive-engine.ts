@@ -27,6 +27,7 @@ import type {
   GoogleDriveResult,
   DriveResourceEntry,
 } from "./google-drive-result";
+import type { drive_v3 } from "googleapis";
 
 /**
  * Google Drive engine.
@@ -36,42 +37,28 @@ export class GoogleDriveEngine {
   /**
    * Google Drive files service.
    */
-  private readonly files: DriveFiles;
-
-  /**
-   * Google Drive permissions service.
-   */
-  private readonly permissions: DrivePermissions;
-
-  /**
-   * Google Drive health service.
-   */
-  private readonly health: DriveHealth;
-
-  /**
-   * Google Drive folders service.
-   */
-  private readonly folders: DriveFolders;
+  private readonly services: Promise<{
+    files: DriveFiles;
+    permissions: DrivePermissions;
+    health: DriveHealth;
+    folders: DriveFolders;
+  }>;
 
   /**
    * Creates a Google Drive engine.
    */
   constructor(
-    drive = new DriveClient().create(),
+    drive?: drive_v3.Drive,
   ) {
-
-    this.files =
-      new DriveFiles(drive);
-
-    this.permissions =
-      new DrivePermissions(drive);
-
-    this.health =
-      new DriveHealth(drive);
-
-    this.folders =
-      new DriveFolders(drive);
-
+    this.services = (drive
+      ? Promise.resolve(drive)
+      : new DriveClient().create()
+    ).then((client) => ({
+      files: new DriveFiles(client),
+      permissions: new DrivePermissions(client),
+      health: new DriveHealth(client),
+      folders: new DriveFolders(client),
+    }));
   }
 
   /**
@@ -80,9 +67,10 @@ export class GoogleDriveEngine {
   public async list(
     options: DriveFileListOptions = {},
   ): Promise<DriveFileListResult> {
-    await this.health.check();
+    const { health, files } = await this.services;
+    await health.check();
 
-    const result = await this.files.list(options);
+    const result = await files.list(options);
 
     return {
       ...result,
@@ -114,11 +102,12 @@ export class GoogleDriveEngine {
       );
     }
 
-    await this.health.check();
+    const { health, files } = await this.services;
+    await health.check();
 
     const escaped = query.replaceAll("'", "\\'");
 
-    const result = await this.files.list({
+    const result = await files.list({
       pageSize: 100,
       query: `name contains '${escaped}' and trashed=false`,
     });
@@ -162,10 +151,11 @@ export class GoogleDriveEngine {
       );
     }
 
-    await this.health.check();
+    const { health, files } = await this.services;
+    await health.check();
 
     const file =
-      await this.files.readContent(
+      await files.readContent(
         context.fileId,
         context.mimeType,
       );
@@ -189,9 +179,10 @@ export class GoogleDriveEngine {
     name: string,
     parentId?: string,
   ) {
-    await this.health.check();
+    const { health, folders } = await this.services;
+    await health.check();
 
-    return this.folders.ensure(
+    return folders.ensure(
       name,
       parentId,
     );
@@ -218,10 +209,11 @@ export class GoogleDriveEngine {
       );
     }
 
-    await this.health.check();
+    const { health } = await this.services;
+    await health.check();
 
     const drive =
-      new DriveClient().create();
+      await new DriveClient().create();
 
     const metadata =
       await drive.files.get({
@@ -269,10 +261,11 @@ export class GoogleDriveEngine {
     context: GoogleDriveContext,
   ): Promise<GoogleDriveResult> {
 
-    await this.health.check();
+    const { health, files } = await this.services;
+    await health.check();
 
     const file =
-      await this.files.upload(
+      await files.upload(
         context,
       );
 
@@ -309,10 +302,11 @@ export class GoogleDriveEngine {
 
     }
 
-    await this.health.check();
+    const { health, files } = await this.services;
+    await health.check();
 
     const file =
-      await this.files.download(
+      await files.download(
         context.fileId,
       );
 
@@ -353,9 +347,10 @@ export class GoogleDriveEngine {
 
     }
 
-    await this.health.check();
+    const { health, permissions } = await this.services;
+    await health.check();
 
-    await this.permissions.share(
+    await permissions.share(
       context.fileId,
       context.permissions ?? [],
     );
@@ -393,9 +388,10 @@ export class GoogleDriveEngine {
 
     }
 
-    await this.health.check();
+    const { health, files } = await this.services;
+    await health.check();
 
-    await this.files.delete(
+    await files.delete(
       context.fileId,
     );
 

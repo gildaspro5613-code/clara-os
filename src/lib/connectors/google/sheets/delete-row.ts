@@ -82,7 +82,7 @@ export async function deleteRow(
   }
 
   const sheets =
-    new SheetsClient().create();
+    await new SheetsClient().create();
 
   await sheets.spreadsheets.batchUpdate({
 

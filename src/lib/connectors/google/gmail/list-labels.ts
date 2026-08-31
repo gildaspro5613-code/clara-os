@@ -41,7 +41,7 @@ export async function listLabels(
   options?: ListLabelsOptions,
 ): Promise<gmail_v1.Schema$Label[]> {
 
-  const gmail = new GmailClient().create();
+  const gmail = await new GmailClient().create();
 
   const response = await gmail.users.labels.list({
 

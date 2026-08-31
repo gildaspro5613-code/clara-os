@@ -33,7 +33,7 @@ export async function shareFile(
   role: "reader" | "commenter" | "writer",
 ): Promise<drive_v3.Schema$Permission> {
 
-  const drive = new DriveClient().create();
+  const drive = await new DriveClient().create();
 
   const response = await drive.permissions.create({
 

@@ -118,7 +118,7 @@ export async function writeRange(
 
   }
 
-  const sheets = new SheetsClient().create();
+  const sheets = await new SheetsClient().create();
 
   const response = await sheets.spreadsheets.values.update({
 

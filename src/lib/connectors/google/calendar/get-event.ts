@@ -54,7 +54,7 @@ export async function getEvent(
 
   }
 
-  const calendar = new CalendarClient().create();
+  const calendar = await new CalendarClient().create();
 
   const response = await calendar.events.get({
 

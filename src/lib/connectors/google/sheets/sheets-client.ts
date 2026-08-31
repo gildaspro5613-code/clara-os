@@ -23,13 +23,13 @@ export class SheetsClient {
   /**
    * Creates an authenticated Google Sheets client.
    */
-  public create(): sheets_v4.Sheets {
+  public async create(): Promise<sheets_v4.Sheets> {
 
     return google.sheets({
 
       version: "v4",
 
-      auth: GoogleAuth.createClient(),
+      auth: await new GoogleAuth().createClient(),
 
     });
 

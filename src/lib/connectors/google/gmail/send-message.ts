@@ -92,7 +92,7 @@ export async function sendMessage(
   options: SendMessageOptions,
 ): Promise<gmail_v1.Schema$Message> {
 
-  const gmail = new GmailClient().create();
+  const gmail = await new GmailClient().create();
 
   const response = await gmail.users.messages.send({
 

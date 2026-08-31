@@ -75,7 +75,7 @@ export async function modifyLabels(
 
   }
 
-  const gmail = new GmailClient().create();
+  const gmail = await new GmailClient().create();
 
   const response = await gmail.users.messages.modify({
 

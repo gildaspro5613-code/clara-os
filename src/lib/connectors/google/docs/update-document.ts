@@ -59,7 +59,7 @@ export async function updateDocument(
 
   }
 
-  const docs = new DocsClient().create();
+  const docs = await new DocsClient().create();
 
   const response = await docs.documents.batchUpdate({
 

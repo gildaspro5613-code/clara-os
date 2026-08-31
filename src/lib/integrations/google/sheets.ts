@@ -29,15 +29,9 @@ export class GoogleSheetsIntegration {
    */
   constructor() {
 
-    const auth = GoogleIntegration.createClient();
-
-    this.sheets = google.sheets({
-
-      version: "v4",
-
-      auth,
-
-    });
+    this.sheets = GoogleIntegration.createClient().then((auth) =>
+      google.sheets({ version: "v4", auth }),
+    );
 
   }
 
@@ -49,7 +43,7 @@ export class GoogleSheetsIntegration {
   ): Promise<string> {
 
     const response =
-      await this.sheets.spreadsheets.create({
+      await (await this.sheets).spreadsheets.create({
 
         requestBody: {
 
@@ -74,7 +68,7 @@ export class GoogleSheetsIntegration {
     spreadsheetId: string,
   ) {
 
-    return this.sheets.spreadsheets.get({
+    return (await this.sheets).spreadsheets.get({
 
       spreadsheetId,
 

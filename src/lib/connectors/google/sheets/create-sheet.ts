@@ -125,7 +125,7 @@ export async function createSheet(
 
   }
 
-  const sheets = new SheetsClient().create();
+  const sheets = await new SheetsClient().create();
 
   const requestBody: sheets_v4.Schema$Spreadsheet = {
 

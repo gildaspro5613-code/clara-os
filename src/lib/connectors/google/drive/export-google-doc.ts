@@ -58,7 +58,7 @@ export async function exportGoogleDoc(
 
   }
 
-  const drive = new DriveClient().create();
+  const drive = await new DriveClient().create();
 
   const response = await drive.files.export(
     { fileId, mimeType },

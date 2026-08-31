@@ -64,7 +64,7 @@ export async function updateEvent(
 
   }
 
-  const calendar = new CalendarClient().create();
+  const calendar = await new CalendarClient().create();
 
   const response = await calendar.events.patch({
 

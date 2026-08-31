@@ -48,7 +48,7 @@ export class GoogleDocsIntegration {
     documentId: string,
   ) {
 
-    const docs = new DocsClient().create();
+    const docs = await new DocsClient().create();
 
     return docs.documents.get({
 

@@ -127,7 +127,7 @@ export async function updateRange(
 
   }
 
-  const sheets = new SheetsClient().create();
+  const sheets = await new SheetsClient().create();
 
   const response = await sheets.spreadsheets.values.batchUpdate({
 

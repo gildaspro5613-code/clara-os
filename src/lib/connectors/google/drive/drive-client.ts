@@ -23,13 +23,13 @@ export class DriveClient {
   /**
    * Creates an authenticated Drive client.
    */
-  public create(): drive_v3.Drive {
+  public async create(): Promise<drive_v3.Drive> {
 
     return google.drive({
 
       version: "v3",
 
-      auth: GoogleAuth.createClient(),
+      auth: await new GoogleAuth().createClient(),
 
     });
 
