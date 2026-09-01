@@ -14,7 +14,7 @@ const GOOGLE_OAUTH_COOKIE = "clara_google_oauth_nonce";
 export const dynamic = "force-dynamic";
 
 function finishRedirect(request: Request, status: string): NextResponse {
-  const response = NextResponse.redirect(new URL(`/?google=${status}`, request.url));
+  const response = NextResponse.redirect(new URL(`/?google=${status}`, process.env.GOOGLE_REDIRECT_URI));
   response.cookies.set(GOOGLE_OAUTH_COOKIE, "", {
     httpOnly: true,
     sameSite: "lax",
