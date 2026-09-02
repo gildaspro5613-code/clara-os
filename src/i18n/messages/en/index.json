@@ -14,7 +14,11 @@
     "settings": "Settings",
     "logout": "Logout",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "notifications": "Notifications",
+    "profile": "Profile",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
   },
   "navigation": {
     "cockpit": "Cockpit",
@@ -26,7 +30,14 @@
     "automatisations": "Automations",
     "documents": "Documents",
     "agenda": "Calendar",
-    "memoire": "Memory"
+    "memoire": "Memory",
+    "brain": "Brain",
+    "sections": {
+      "operate": "Operate",
+      "connect": "Connect",
+      "know": "Knowledge",
+      "claraSection": "Clara"
+    }
   },
   "cockpit": {
     "title": "Cockpit",

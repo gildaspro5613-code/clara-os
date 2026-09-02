@@ -21,7 +21,8 @@ export default function GlassPanel({
         bg-black/30
         backdrop-blur-[24px]
         shadow-[0_12px_40px_rgba(0,0,0,0.18)]
-        p-5
+        h-full
+        p-5 sm:p-6
         text-white
         transition-all duration-300
         ${className}

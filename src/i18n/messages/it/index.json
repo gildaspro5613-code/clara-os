@@ -14,7 +14,11 @@
     "settings": "Impostazioni",
     "logout": "Esci",
     "yes": "Sì",
-    "no": "No"
+    "no": "No",
+    "notifications": "Notifiche",
+    "profile": "Profilo",
+    "openMenu": "Apri menu",
+    "closeMenu": "Chiudi menu"
   },
   "navigation": {
     "cockpit": "Cockpit",
@@ -26,7 +30,14 @@
     "automatisations": "Automazioni",
     "documents": "Documenti",
     "agenda": "Agenda",
-    "memoire": "Memoria"
+    "memoire": "Memoria",
+    "brain": "Brain",
+    "sections": {
+      "operate": "Operare",
+      "connect": "Connettere",
+      "know": "Conoscere",
+      "claraSection": "Clara"
+    }
   },
   "cockpit": {
     "title": "Cockpit",

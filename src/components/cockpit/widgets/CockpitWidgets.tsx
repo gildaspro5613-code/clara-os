@@ -20,17 +20,17 @@ export default function CockpitWidgets({
   return (
     <section
       aria-label="Widgets du Cockpit"
-      className="w-full bg-[#070B12]"
+      className="w-full overflow-hidden bg-[#070B12]"
     >
-      <div className="mx-auto w-full max-w-[1600px] px-6 py-12 lg:px-8 lg:py-14">
+      <div className="mx-auto w-full max-w-[1600px] px-4 py-8 sm:px-6 sm:py-10 xl:px-8 xl:py-14">
 
         {/* ============================================
             OVERVIEW
             Trois cartes de même importance.
             ============================================ */}
 
-        <div className="grid items-start gap-5 lg:grid-cols-3">
-          <div className="min-w-0">
+        <div className="grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-3">
+          <div className="min-w-0 md:col-span-2 xl:col-span-1">
             <SummaryPanel />
           </div>
 
@@ -49,7 +49,7 @@ export default function CockpitWidgets({
             Aucun étirement artificiel.
             ============================================ */}
 
-        <div className="mt-5 grid items-start gap-5 lg:grid-cols-[1.35fr_1fr]">
+        <div className="mt-5 grid items-stretch gap-5 lg:grid-cols-[1.35fr_1fr]">
           <div className="min-w-0">
             <ConversationsPanel />
           </div>
@@ -64,8 +64,8 @@ export default function CockpitWidgets({
             Mission + widgets de confort Clara OS.
             ============================================ */}
 
-        <div className="mt-5 grid items-start gap-5 lg:grid-cols-[1.35fr_1fr_1fr]">
-          <div className="min-w-0">
+        <div className="mt-5 grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-[1.35fr_1fr_1fr]">
+          <div className="min-w-0 md:col-span-2 xl:col-span-1">
             <MissionWidget mission={mission} />
           </div>
 

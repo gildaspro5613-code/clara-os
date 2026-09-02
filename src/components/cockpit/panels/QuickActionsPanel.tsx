@@ -25,7 +25,7 @@ export default function QuickActionsPanel() {
 
   return (
     <GlassPanel title="Raccourcis rapides">
-      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3">
+      <div className="grid grid-cols-2 gap-3">
 
         {actions.map((action) => (
           <button
@@ -44,7 +44,7 @@ export default function QuickActionsPanel() {
               font-medium
               leading-tight
               text-white/90
-              break-words
+              whitespace-normal
               transition-all
               duration-200
               hover:bg-white/10

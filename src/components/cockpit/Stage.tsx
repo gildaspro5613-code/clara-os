@@ -50,11 +50,11 @@ export default function Stage({
           pointer-events-auto
           absolute
           right-[5%]
-          top-[18%]
+          top-[8%]
           z-20
           hidden
-          w-[25%]
-          max-w-[360px]
+          w-[28%]
+          max-w-[420px]
           lg:block
         "
       >
