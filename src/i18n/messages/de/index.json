@@ -14,7 +14,11 @@
     "settings": "Einstellungen",
     "logout": "Abmelden",
     "yes": "Ja",
-    "no": "Nein"
+    "no": "Nein",
+    "notifications": "Benachrichtigungen",
+    "profile": "Profil",
+    "openMenu": "Menü öffnen",
+    "closeMenu": "Menü schließen"
   },
   "navigation": {
     "cockpit": "Cockpit",
@@ -26,7 +30,14 @@
     "automatisations": "Automatisierungen",
     "documents": "Dokumente",
     "agenda": "Kalender",
-    "memoire": "Gedächtnis"
+    "memoire": "Gedächtnis",
+    "brain": "Brain",
+    "sections": {
+      "operate": "Arbeiten",
+      "connect": "Verbinden",
+      "know": "Wissen",
+      "claraSection": "Clara"
+    }
   },
   "cockpit": {
     "title": "Cockpit",

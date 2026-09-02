@@ -14,7 +14,6 @@ export default function MissionWidget({
     return (
       <GlassPanel
         title="Mission"
-        className="max-w-[520px]"
       >
         <p className="text-sm text-white/55">
           Aucune mission active.
@@ -33,7 +32,6 @@ export default function MissionWidget({
   return (
     <GlassPanel
       title="Mission actuelle"
-      className="max-w-[520px]"
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">

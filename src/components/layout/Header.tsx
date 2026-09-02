@@ -1,6 +1,7 @@
 "use client";
 
 import { Bell, Search } from "lucide-react";
+import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 
@@ -18,7 +19,7 @@ const pageTitleKeys: Record<string, string> = {
   "/documents": "documents",
   "/agenda": "agenda",
   "/journal": "memoire",
-  "/brain": "memoire",
+  "/brain": "brain",
 };
 
 export default function Header() {
@@ -39,19 +40,19 @@ export default function Header() {
         .join(" ");
 
   return (
-    <header className="flex h-[70px] flex-shrink-0 items-center border-b border-white/10 bg-[#08111F] px-8">
+    <header className="flex h-[64px] flex-shrink-0 items-center border-b border-white/10 bg-[#08111F]/95 px-4 pl-16 backdrop-blur-xl sm:h-[70px] sm:px-6 sm:pl-20 lg:px-8">
       {/* Page */}
-      <div className="w-40 min-w-0 flex-shrink-0">
-        <a
+      <div className="min-w-0 flex-1 sm:w-36 sm:flex-none xl:w-40">
+        <Link
           href="/"
           className="block truncate text-lg font-semibold tracking-tight text-white transition-opacity hover:opacity-80"
         >
           {pageTitle}
-        </a>
+        </Link>
       </div>
 
       {/* Recherche */}
-      <div className="mx-8 flex min-w-0 flex-1 justify-center">
+      <div className="mx-5 hidden min-w-0 flex-1 justify-center md:flex xl:mx-8">
         <div className="flex h-10 w-full max-w-2xl min-w-0 items-center rounded-2xl border border-white/5 bg-white/5 px-4 transition-colors duration-200 hover:bg-white/10">
           <Search
             size={18}
@@ -72,7 +73,7 @@ export default function Header() {
       </div>
 
       {/* Actions */}
-      <div className="flex w-72 flex-shrink-0 items-center justify-end gap-4 xl:gap-6">
+      <div className="flex shrink-0 items-center justify-end gap-2 sm:gap-3 xl:w-72 xl:gap-5">
         <div className="hidden min-w-0 items-center gap-2 xl:flex">
           <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-emerald-400" />
 
@@ -85,7 +86,7 @@ export default function Header() {
 
         <button
           type="button"
-          aria-label="Notifications"
+          aria-label={tc("notifications")}
           className="rounded-lg p-2 text-slate-400 transition hover:bg-white/10 hover:text-white"
         >
           <Bell size={19} />
@@ -93,7 +94,7 @@ export default function Header() {
 
         <button
           type="button"
-          aria-label="Profil"
+          aria-label={tc("profile")}
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cyan-500 text-sm font-semibold text-white transition-transform duration-200 hover:scale-105"
         >
           G
