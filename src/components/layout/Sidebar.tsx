@@ -173,7 +173,7 @@ export default function Sidebar() {
             Melodie Digital
           </p>
 
-          <p>Version 0.2</p>
+          <p>{tCommon("version", {version: "0.2"})}</p>
         </div>
       </div>
       </aside>

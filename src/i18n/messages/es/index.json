@@ -18,7 +18,9 @@
     "notifications": "Notificaciones",
     "profile": "Perfil",
     "openMenu": "Abrir el menú",
-    "closeMenu": "Cerrar el menú"
+    "closeMenu": "Cerrar el menú",
+    "language": "Idioma",
+    "version": "Version {version}"
   },
   "navigation": {
     "cockpit": "Cockpit",
@@ -81,5 +83,114 @@
     "title": "Notificaciones",
     "empty": "Sin notificaciones",
     "markAllRead": "Marcar todo como leído"
+  },
+  "contacts": {
+    "section": "Operar",
+    "title": "Contactos",
+    "subtitle": "El acceso a los contactos utilizados por Clara.",
+    "emptyTitle": "No hay ningún directorio de contactos disponible",
+    "emptyDescription": "No hay ninguna fuente de contactos conectada. Clara OS no muestra contactos hasta configurar un directorio real.",
+    "availability": "Disponibilidad",
+    "noDirectory": "Actualmente no hay ningún directorio ni CRM conectado.",
+    "backendRequired": "Añadir y sincronizar contactos requiere una fuente de datos real."
+  },
+  "automations": {
+    "section": "Conectar",
+    "title": "Automatizaciones",
+    "subtitle": "Las capacidades operativas realmente disponibles en Clara OS.",
+    "availableTitle": "Capacidades disponibles",
+    "connectorTitle": "Conector Make",
+    "connectorDescription": "No hay ninguna conexión Make configurada. No se simula ningún escenario externo.",
+    "notConnected": "Sin conectar",
+    "capabilities": {
+      "calendar": {
+        "title": "Agenda",
+        "description": "Leer, crear, modificar y eliminar eventos."
+      },
+      "documents": {
+        "title": "Documentos",
+        "description": "Buscar, leer, generar y organizar documentos de Drive."
+      },
+      "email": {
+        "title": "Correos",
+        "description": "Leer y enviar mensajes de Gmail cuando Google está conectado."
+      }
+    }
+  },
+  "pages": {
+    "sectionOperate": "Operar",
+    "sectionConnect": "Conectar",
+    "sectionKnow": "Conocer",
+    "back": "Volver",
+    "conversationsSubtitle": "Tu espacio de conversación con Clara, conectado a su contexto operativo.",
+    "claraEyebrow": "Inteligencia operativa",
+    "claraSubtitle": "La inteligencia operativa de Clara OS, conectada a su estado actual y misión activa.",
+    "state": "Estado",
+    "currentMission": "Misión actual",
+    "objective": "Objetivo",
+    "nextAction": "Próxima acción",
+    "noMission": "Ninguna misión activa",
+    "noObjective": "Ningún objetivo activo",
+    "noNextAction": "No hay una próxima acción definida"
+  },
+  "documents": {
+    "subtitle": "Acceso a los documentos de tu espacio de Google Drive.",
+    "searchPlaceholder": "Buscar un documento…",
+    "search": "Buscar",
+    "loading": "Cargando documentos…",
+    "loadError": "No se pueden cargar los documentos.",
+    "empty": "No se encontró ningún documento.",
+    "open": "Abrir",
+    "title": "Documentos"
+  },
+  "telephony": {
+    "subtitle": "La línea telefónica de Clara, directamente desde Clara OS.",
+    "office": "Clara Office",
+    "available": "Línea disponible",
+    "number": "Número al que llamar",
+    "calling": "Llamando…",
+    "call": "Llamar",
+    "callError": "No se puede iniciar la llamada de Clara.",
+    "callStarted": "Clara está iniciando la llamada.",
+    "context": "Contexto",
+    "mode": "Modo",
+    "outbound": "Llamada saliente",
+    "assistant": "Asistente",
+    "voice": "Clara Voice",
+    "provider": "Infraestructura",
+    "providerValue": "Twilio · ElevenLabs",
+    "notice": "Las llamadas solo se realizan cuando tú lo solicitas.",
+    "title": "Telefonía"
+  },
+  "chat": {
+    "greeting": "Hola. Ya estoy aquí. ¿Qué hacemos hoy?",
+    "unavailable": "Clara no está disponible temporalmente.",
+    "title": "Hablar con Clara",
+    "thinking": "Clara está pensando…",
+    "placeholder": "Escribir a Clara…",
+    "send": "Enviar a Clara"
+  },
+  "cockpitUi": {
+    "quickActions": "Acciones rápidas",
+    "attention": "Atención",
+    "today": "Hoy",
+    "dailySummary": "Resumen del día",
+    "completedTasks": "Tareas completadas",
+    "conversations": "Conversaciones",
+    "automations": "Automatizaciones",
+    "preparePriorities": "Preparación de prioridades",
+    "developClara": "Desarrollo de Clara OS",
+    "reviewMissions": "Revisión de misiones",
+    "newMission": "Nueva misión",
+    "agenda": "Agenda",
+    "call": "Llamar",
+    "notes": "Notas",
+    "brain": "Brain",
+    "attentionCount": "Dos elementos requieren tu atención.",
+    "attentionDescription": "Clara ha identificado dos acciones prioritarias para empezar bien el día.",
+    "greeting": "Hola.",
+    "dayReady": "He preparado tu día.",
+    "twoTopics": "Dos temas requieren tu atención.",
+    "startQuestion": "¿Quieres empezar?"
   }
 }

@@ -12,10 +12,12 @@
  */
 
 import GlassPanel from "@/components/ui/GlassPanel";
+import { useTranslations } from "next-intl";
 
 export default function AttentionPanel() {
+  const t = useTranslations("cockpitUi");
   return (
-    <GlassPanel title="Attention">
+    <GlassPanel title={t("attention")}>
       <div className="space-y-4">
 
         <div className="flex items-start gap-3 min-w-0">
@@ -24,12 +26,11 @@ export default function AttentionPanel() {
 
           <div className="min-w-0">
             <p className="text-base sm:text-lg font-semibold leading-snug">
-              Deux éléments demandent ton attention.
+              {t("attentionCount")}
             </p>
 
             <p className="mt-2 text-sm leading-relaxed text-white/70">
-              Clara a identifié deux actions prioritaires pour bien démarrer
-              ta journée.
+              {t("attentionDescription")}
             </p>
           </div>
 

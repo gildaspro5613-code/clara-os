@@ -13,6 +13,7 @@
 
 import { useState } from "react";
 import { locales, LOCALE_COOKIE } from "@/i18n/config";
+import { useTranslations } from "next-intl";
 import type { Locale } from "@/i18n/types";
 
 const LOCALE_LABELS: Record<Locale, string> = {
@@ -33,6 +34,7 @@ interface LocaleSwitcherProps {
  */
 export default function LocaleSwitcher({ currentLocale }: LocaleSwitcherProps) {
   const [isReloading, setIsReloading] = useState(false);
+  const t = useTranslations("common");
 
   function handleChange(event: React.ChangeEvent<HTMLSelectElement>) {
     const next = event.target.value as Locale;
@@ -46,7 +48,7 @@ export default function LocaleSwitcher({ currentLocale }: LocaleSwitcherProps) {
       value={currentLocale}
       onChange={handleChange}
       disabled={isReloading}
-      aria-label="Language"
+      aria-label={t("language")}
       className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[11px] text-slate-400 transition hover:bg-white/10 hover:text-white focus:outline-none disabled:opacity-50"
     >
       {locales.map((locale) => (

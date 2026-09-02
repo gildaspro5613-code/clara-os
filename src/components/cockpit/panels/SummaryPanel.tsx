@@ -12,28 +12,30 @@
  */
 
 import GlassPanel from "@/components/ui/GlassPanel";
+import { useTranslations } from "next-intl";
 
 export default function SummaryPanel() {
+  const t = useTranslations("cockpitUi");
   return (
-    <GlassPanel title="Résumé du jour">
+    <GlassPanel title={t("dailySummary")}>
       <div className="space-y-5">
 
         <div className="flex items-center justify-between">
-          <span className="text-white/70">Tâches terminées</span>
+          <span className="text-white/70">{t("completedTasks")}</span>
           <span className="font-semibold">12</span>
         </div>
 
         <div className="h-px bg-white/10" />
 
         <div className="flex items-center justify-between">
-          <span className="text-white/70">Conversations</span>
+          <span className="text-white/70">{t("conversations")}</span>
           <span className="font-semibold">18</span>
         </div>
 
         <div className="h-px bg-white/10" />
 
         <div className="flex items-center justify-between">
-          <span className="text-white/70">Automatisations</span>
+          <span className="text-white/70">{t("automations")}</span>
           <span className="font-semibold">7</span>
         </div>
 
