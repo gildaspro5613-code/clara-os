@@ -250,5 +250,52 @@
     "ready": "Clara est prête.",
     "stop": "Arrêter Clara",
     "startError": "Impossible de démarrer la conversation avec Clara."
+  },
+  "brainPage": {
+    "subtitle": "Ce que Clara comprend, ce qu’elle décide et ce qu’elle recommande.",
+    "understanding": "Compréhension",
+    "confidence": "Confiance",
+    "nextStep": "Prochaine étape",
+    "decision": "Décision",
+    "recommendation": "Recommandation de Clara",
+    "confidenceLevel": "Niveau de confiance",
+    "plan": "Plan",
+    "context": "Contexte",
+    "event": "Événement",
+    "origin": "Origine",
+    "memory": "Mémoire",
+    "knownFacts": "{count, plural, one {# élément connu} other {# éléments connus}}",
+    "noFacts": "Aucun fait pertinent",
+    "claraHelp": "Le Brain analyse le contexte et prépare la prochaine décision.",
+    "levels": {
+      "high": "Élevée",
+      "medium": "Moyenne",
+      "low": "Faible"
+    },
+    "priorities": {
+      "critical": "Critique",
+      "high": "Haute",
+      "low": "Faible",
+      "normal": "Normale"
+    }
+  },
+  "agendaPage": {
+    "title": "Agenda",
+    "subtitle": "La journée de travail de Clara, organisée autour de vos rendez-vous.",
+    "today": "Aujourd’hui",
+    "eventCount": "{count, plural, =0 {Aucun événement} one {# événement} other {# événements}}",
+    "loading": "Clara consulte votre agenda…",
+    "unavailable": "Agenda indisponible",
+    "temporarilyUnavailable": "Agenda momentanément indisponible.",
+    "empty": "Aucun rendez-vous prévu aujourd’hui.",
+    "emptyHelp": "Votre journée semble dégagée.",
+    "allDay": "Toute la journée",
+    "untitled": "Événement sans titre",
+    "context": "Contexte",
+    "events": "Événements",
+    "latestActivity": "Dernière activité",
+    "identified": "Clara a identifié {count, plural, one {# événement} other {# événements}} dans votre agenda.",
+    "noneRecorded": "Aucun rendez-vous enregistré aujourd’hui.",
+    "claraHelp": "L’agenda permet à Clara de tenir compte de votre journée dans ses actions et ses recommandations."
   }
 }

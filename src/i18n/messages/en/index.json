@@ -250,5 +250,52 @@
     "ready": "Clara is ready.",
     "stop": "Stop Clara",
     "startError": "Unable to start the conversation with Clara."
+  },
+  "brainPage": {
+    "subtitle": "What Clara understands, decides and recommends.",
+    "understanding": "Understanding",
+    "confidence": "Confidence",
+    "nextStep": "Next step",
+    "decision": "Decision",
+    "recommendation": "Clara’s recommendation",
+    "confidenceLevel": "Confidence level",
+    "plan": "Plan",
+    "context": "Context",
+    "event": "Event",
+    "origin": "Source",
+    "memory": "Memory",
+    "knownFacts": "{count, plural, one {# known item} other {# known items}}",
+    "noFacts": "No relevant facts",
+    "claraHelp": "The Brain analyzes context and prepares the next decision.",
+    "levels": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "priorities": {
+      "critical": "Critical",
+      "high": "High",
+      "low": "Low",
+      "normal": "Normal"
+    }
+  },
+  "agendaPage": {
+    "title": "Calendar",
+    "subtitle": "Clara’s workday, organized around your appointments.",
+    "today": "Today",
+    "eventCount": "{count, plural, =0 {No events} one {# event} other {# events}}",
+    "loading": "Clara is checking your calendar…",
+    "unavailable": "Calendar unavailable",
+    "temporarilyUnavailable": "The calendar is temporarily unavailable.",
+    "empty": "No appointments scheduled today.",
+    "emptyHelp": "Your day looks clear.",
+    "allDay": "All day",
+    "untitled": "Untitled event",
+    "context": "Context",
+    "events": "Events",
+    "latestActivity": "Latest activity",
+    "identified": "Clara found {count, plural, one {# event} other {# events}} in your calendar.",
+    "noneRecorded": "No appointments recorded today.",
+    "claraHelp": "The calendar lets Clara account for your day in her actions and recommendations."
   }
 }

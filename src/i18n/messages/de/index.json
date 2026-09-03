@@ -250,5 +250,52 @@
     "ready": "Clara ist bereit.",
     "stop": "Clara anhalten",
     "startError": "Das Gespräch mit Clara konnte nicht gestartet werden."
+  },
+  "brainPage": {
+    "subtitle": "Was Clara versteht, entscheidet und empfiehlt.",
+    "understanding": "Verständnis",
+    "confidence": "Vertrauen",
+    "nextStep": "Nächster Schritt",
+    "decision": "Entscheidung",
+    "recommendation": "Claras Empfehlung",
+    "confidenceLevel": "Vertrauensniveau",
+    "plan": "Plan",
+    "context": "Kontext",
+    "event": "Ereignis",
+    "origin": "Quelle",
+    "memory": "Gedächtnis",
+    "knownFacts": "{count, plural, one {# bekanntes Element} other {# bekannte Elemente}}",
+    "noFacts": "Keine relevanten Fakten",
+    "claraHelp": "Brain analysiert den Kontext und bereitet die nächste Entscheidung vor.",
+    "levels": {
+      "high": "Hoch",
+      "medium": "Mittel",
+      "low": "Niedrig"
+    },
+    "priorities": {
+      "critical": "Kritisch",
+      "high": "Hoch",
+      "low": "Niedrig",
+      "normal": "Normal"
+    }
+  },
+  "agendaPage": {
+    "title": "Kalender",
+    "subtitle": "Claras Arbeitstag, organisiert rund um Ihre Termine.",
+    "today": "Heute",
+    "eventCount": "{count, plural, =0 {Keine Termine} one {# Termin} other {# Termine}}",
+    "loading": "Clara prüft Ihren Kalender…",
+    "unavailable": "Kalender nicht verfügbar",
+    "temporarilyUnavailable": "Kalender vorübergehend nicht verfügbar.",
+    "empty": "Heute sind keine Termine geplant.",
+    "emptyHelp": "Ihr Tag scheint frei zu sein.",
+    "allDay": "Ganztägig",
+    "untitled": "Termin ohne Titel",
+    "context": "Kontext",
+    "events": "Termine",
+    "latestActivity": "Letzte Aktivität",
+    "identified": "Clara hat {count, plural, one {# Termin} other {# Termine}} in Ihrem Kalender gefunden.",
+    "noneRecorded": "Heute wurden keine Termine eingetragen.",
+    "claraHelp": "Der Kalender hilft Clara, Ihren Tag bei Aktionen und Empfehlungen zu berücksichtigen."
   }
 }

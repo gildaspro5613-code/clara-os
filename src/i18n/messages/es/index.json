@@ -250,5 +250,52 @@
     "ready": "Clara está lista.",
     "stop": "Detener a Clara",
     "startError": "No se puede iniciar la conversación con Clara."
+  },
+  "brainPage": {
+    "subtitle": "Lo que Clara comprende, decide y recomienda.",
+    "understanding": "Comprensión",
+    "confidence": "Confianza",
+    "nextStep": "Siguiente paso",
+    "decision": "Decisión",
+    "recommendation": "Recomendación de Clara",
+    "confidenceLevel": "Nivel de confianza",
+    "plan": "Plan",
+    "context": "Contexto",
+    "event": "Evento",
+    "origin": "Origen",
+    "memory": "Memoria",
+    "knownFacts": "{count, plural, one {# elemento conocido} other {# elementos conocidos}}",
+    "noFacts": "Ningún dato relevante",
+    "claraHelp": "Brain analiza el contexto y prepara la siguiente decisión.",
+    "levels": {
+      "high": "Alta",
+      "medium": "Media",
+      "low": "Baja"
+    },
+    "priorities": {
+      "critical": "Crítica",
+      "high": "Alta",
+      "low": "Baja",
+      "normal": "Normal"
+    }
+  },
+  "agendaPage": {
+    "title": "Agenda",
+    "subtitle": "La jornada de trabajo de Clara, organizada en torno a tus citas.",
+    "today": "Hoy",
+    "eventCount": "{count, plural, =0 {Ningún evento} one {# evento} other {# eventos}}",
+    "loading": "Clara está consultando tu agenda…",
+    "unavailable": "Agenda no disponible",
+    "temporarilyUnavailable": "Agenda temporalmente no disponible.",
+    "empty": "No hay citas previstas para hoy.",
+    "emptyHelp": "Tu día parece despejado.",
+    "allDay": "Todo el día",
+    "untitled": "Evento sin título",
+    "context": "Contexto",
+    "events": "Eventos",
+    "latestActivity": "Última actividad",
+    "identified": "Clara ha identificado {count, plural, one {# evento} other {# eventos}} en tu agenda.",
+    "noneRecorded": "No hay citas registradas hoy.",
+    "claraHelp": "La agenda permite que Clara tenga en cuenta tu día en sus acciones y recomendaciones."
   }
 }

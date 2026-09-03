@@ -34,3 +34,14 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+### Missions database prerequisite
+
+The `/missions` Server Component reads its data from Neon during rendering. Every
+Vercel environment that serves this route, including Preview environments, must
+define `DATABASE_URL` and expose the existing `clara_missions` table to that
+connection. The table is expected to contain `id`, `data` (the serialized mission)
+and `updated_at` columns. Clara OS deliberately fails with
+`Database: DATABASE_URL is not configured.` when the variable is absent; it does
+not replace unavailable database data with sample missions or an artificial empty
+state.
