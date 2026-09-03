@@ -9,17 +9,19 @@ import QuickActionsPanel from "../panels/QuickActionsPanel";
 import SummaryPanel from "../panels/SummaryPanel";
 import ConversationsPanel from "../panels/ConversationsPanel";
 import type { Mission } from "@/modules/missions/types/Mission";
+import { getTranslations } from "next-intl/server";
 
 interface CockpitWidgetsProps {
   mission: Mission | null;
 }
 
-export default function CockpitWidgets({
+export default async function CockpitWidgets({
   mission,
 }: CockpitWidgetsProps) {
+  const t = await getTranslations("cockpitUi");
   return (
     <section
-      aria-label="Widgets du Cockpit"
+      aria-label={t("widgets")}
       className="w-full overflow-hidden bg-[#070B12]"
     >
       <div className="mx-auto w-full max-w-[1600px] px-4 py-8 sm:px-6 sm:py-10 xl:px-8 xl:py-14">

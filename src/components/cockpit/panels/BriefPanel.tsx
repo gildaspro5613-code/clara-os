@@ -20,7 +20,7 @@ import { useTranslations } from "next-intl";
 export default function BriefPanel() {
   const t = useTranslations("cockpitUi");
   return (
-    <GlassPanel className="max-w-[15rem] px-6 py-5 bg-white/[0.035] border-white/[0.08] shadow-[0_2px_18px_rgba(0,0,0,0.18)]">
+    <GlassPanel className="max-w-[15rem] px-6 py-5 bg-[#07111f]/55 border-white/[0.08] shadow-[0_2px_18px_rgba(0,0,0,0.18)] backdrop-blur-[18px]">
       <h2 className="mb-2 text-[1.6rem] leading-snug font-light text-white/90">
         {t("greeting")}
       </h2>

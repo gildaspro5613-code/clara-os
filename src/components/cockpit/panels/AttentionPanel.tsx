@@ -41,11 +41,11 @@ export default function AttentionPanel() {
           <div className="flex items-center justify-between gap-3 min-w-0">
 
             <span className="text-sm text-white/60">
-              Priorité
+              {t("priority")}
             </span>
 
             <span className="shrink-0 text-sm font-medium text-amber-300">
-              Élevée
+              {t("high")}
             </span>
 
           </div>

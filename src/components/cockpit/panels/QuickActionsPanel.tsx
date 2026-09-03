@@ -34,7 +34,12 @@ export default function QuickActionsPanel() {
             key={action}
             className="
               min-w-0
+              w-full
               min-h-16
+              flex
+              items-center
+              justify-center
+              overflow-hidden
               rounded-2xl
               border
               border-white/10
@@ -47,6 +52,8 @@ export default function QuickActionsPanel() {
               leading-tight
               text-white/90
               whitespace-normal
+              break-words
+              hyphens-auto
               transition-all
               duration-200
               hover:bg-white/10
