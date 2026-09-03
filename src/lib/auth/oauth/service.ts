@@ -75,15 +75,29 @@ export function oauthCredentialsRequireRefresh(credentials: OAuthTokenSet, now =
 }
 
 export class OAuthRefreshService {
-  constructor(private readonly providers: OAuthProviderRegistry, private readonly credentials: CredentialStore) {}
+  constructor(
+    private readonly providers: OAuthProviderRegistry,
+    private readonly connections: ConnectionRepository,
+    private readonly credentials: CredentialStore,
+  ) {}
 
   async refreshIfNeeded(connectionId: string, providerId: string, options?: { now?: number; force?: boolean }): Promise<OAuthTokenSet> {
+    const connection = await this.connections.findById(connectionId);
+    if (!connection || connection.provider !== providerId) {
+      throw new OAuthError("CONNECTION_MISMATCH");
+    }
+    if (connection.status !== ConnectionStatus.ACTIVE) {
+      throw new OAuthError("CONNECTION_INACTIVE");
+    }
+
     const current = await this.credentials.get<OAuthTokenSet>(connectionId);
     if (!current?.accessToken) throw new OAuthError("CREDENTIALS_MISSING");
     if (!options?.force && !oauthCredentialsRequireRefresh(current, options?.now)) return current;
     if (!current.refreshToken) throw new OAuthError("REFRESH_UNAVAILABLE");
+
+    const provider = this.providers.get(providerId);
     try {
-      const update = await this.providers.get(providerId).refresh({ refreshToken: current.refreshToken });
+      const update = await provider.refresh({ refreshToken: current.refreshToken });
       const merged = mergeOAuthTokens(current, update);
       await this.credentials.set(connectionId, merged);
       return merged;
