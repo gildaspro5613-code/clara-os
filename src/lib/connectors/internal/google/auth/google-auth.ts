@@ -14,8 +14,10 @@ import {
 } from "@/lib/connectors/google/auth/google-auth-error";
 import {
   createGoogleOAuthClient,
-  mergeGoogleCredentials,
+  toGoogleCredentials,
 } from "@/lib/connectors/google/oauth/google-oauth";
+import type { OAuthTokenSet } from "@/lib/auth/oauth/types";
+import { mergeOAuthTokens } from "@/lib/auth/oauth/service";
 
 export class GoogleAuth {
   constructor(
@@ -35,14 +37,22 @@ export class GoogleAuth {
     if (!connection || connection.status !== ConnectionStatus.ACTIVE) {
       throw new GoogleReauthRequiredError();
     }
-    const stored = await this.credentials.get<Credentials>(connection.id);
-    if (!stored?.refresh_token) throw new GoogleReauthRequiredError();
+    const stored = await this.credentials.get<OAuthTokenSet & Credentials>(connection.id);
+    const usesLegacyShape = !stored?.accessToken;
+    const normalized: OAuthTokenSet = !usesLegacyShape ? stored : {
+      accessToken: stored?.access_token ?? "",
+      refreshToken: stored?.refresh_token ?? undefined,
+      tokenType: stored?.token_type ?? undefined,
+      expiresAt: stored?.expiry_date ?? undefined,
+      scope: stored?.scope?.split(" ").filter(Boolean),
+    };
+    if (!normalized.refreshToken) throw new GoogleReauthRequiredError();
 
     const client = this.clientFactory();
-    client.setCredentials(stored);
+    client.setCredentials(toGoogleCredentials(normalized));
     let pendingPersistence: Promise<void> = Promise.resolve();
     client.on("tokens", (tokens) => {
-      pendingPersistence = this.persistRefresh(connection.id, stored, tokens);
+      pendingPersistence = this.persistRefresh(connection.id, normalized, tokens, usesLegacyShape);
     });
 
     const request = client.request.bind(client);
@@ -67,11 +77,18 @@ export class GoogleAuth {
 
   private async persistRefresh(
     connectionId: string,
-    previous: Credentials,
+    previous: OAuthTokenSet,
     update: Credentials,
+    usesLegacyShape: boolean,
   ): Promise<void> {
-    const current = await this.credentials.get<Credentials>(connectionId);
-    const merged = mergeGoogleCredentials(current ?? previous, update);
-    await this.credentials.set(connectionId, merged);
+    const current = await this.credentials.get<OAuthTokenSet>(connectionId);
+    const merged = mergeOAuthTokens(current?.accessToken ? current : previous, {
+      accessToken: update.access_token ?? current?.accessToken ?? previous.accessToken,
+      refreshToken: update.refresh_token ?? undefined,
+      tokenType: update.token_type ?? undefined,
+      expiresAt: update.expiry_date ?? undefined,
+      scope: update.scope?.split(" ").filter(Boolean),
+    });
+    await this.credentials.set(connectionId, usesLegacyShape ? toGoogleCredentials(merged) : merged);
   }
 }
