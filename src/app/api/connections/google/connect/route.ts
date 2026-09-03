@@ -5,13 +5,14 @@ import {
   DatabaseConnectionRepository,
 } from "@/lib/connections/connection-repository";
 import { CURRENT_WORKSPACE_ID } from "@/lib/connections/current-workspace";
+import { OAuthAuthorizationService } from "@/lib/auth/oauth/service";
+import { oauthProviders } from "@/lib/auth/oauth/providers";
+import { googleConfig } from "@/lib/config/google";
 import {
   GOOGLE_OAUTH_SCOPES,
-  createGoogleOAuthClient,
 } from "@/lib/connectors/google/oauth/google-oauth";
 import {
   createGoogleOAuthNonce,
-  signGoogleOAuthState,
 } from "@/lib/connectors/google/oauth/google-oauth-state";
 
 export const dynamic = "force-dynamic";
@@ -41,18 +42,12 @@ export async function GET() {
   await repository.save(connection);
 
   const nonce = createGoogleOAuthNonce();
-  const state = signGoogleOAuthState({
-    connectionId: connection.id,
-    workspaceId: connection.workspaceId,
-    nonce,
-    expiresAt: Date.now() + 10 * 60 * 1000,
-  });
-  const url = createGoogleOAuthClient().generateAuthUrl({
-    access_type: "offline",
-    prompt: "consent",
-    scope: [...GOOGLE_OAUTH_SCOPES],
-    state,
-    include_granted_scopes: true,
+  const url = new OAuthAuthorizationService(oauthProviders).create({
+    provider: "google", connectionId: connection.id,
+    workspaceId: connection.workspaceId, nonce,
+    redirectUri: googleConfig.redirectUri,
+    redirectPath: "/?google=connected",
+    scopes: GOOGLE_OAUTH_SCOPES,
   });
   const response = NextResponse.redirect(url);
   response.cookies.set(GOOGLE_OAUTH_COOKIE, nonce, {

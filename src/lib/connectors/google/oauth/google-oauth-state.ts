@@ -1,8 +1,4 @@
-import {
-  createHmac,
-  randomBytes,
-  timingSafeEqual,
-} from "node:crypto";
+import { createOAuthNonce, signOAuthState, verifyOAuthState } from "@/lib/auth/oauth/state";
 
 export interface GoogleOAuthState {
   connectionId: string;
@@ -19,20 +15,15 @@ function stateSecret(): string {
   return secret;
 }
 
-function signature(payload: string, secret: string): Buffer {
-  return createHmac("sha256", secret).update(payload).digest();
-}
-
 export function createGoogleOAuthNonce(): string {
-  return randomBytes(32).toString("base64url");
+  return createOAuthNonce();
 }
 
 export function signGoogleOAuthState(
   state: GoogleOAuthState,
   secret = stateSecret(),
 ): string {
-  const payload = Buffer.from(JSON.stringify(state)).toString("base64url");
-  return `${payload}.${signature(payload, secret).toString("base64url")}`;
+  return signOAuthState({ ...state, provider: "google", redirectPath: "/?google=connected" }, secret);
 }
 
 export function verifyGoogleOAuthState(
@@ -41,27 +32,13 @@ export function verifyGoogleOAuthState(
   secret = stateSecret(),
   now = Date.now(),
 ): GoogleOAuthState | null {
-  const [payload, encodedSignature, extra] = value.split(".");
-  if (!payload || !encodedSignature || extra) return null;
-  const received = Buffer.from(encodedSignature, "base64url");
-  const expected = signature(payload, secret);
-  if (received.length !== expected.length || !timingSafeEqual(received, expected)) {
-    return null;
-  }
-  let state: GoogleOAuthState;
   try {
-    state = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+    const state = verifyOAuthState(value, { nonce: expectedNonce, provider: "google" }, secret, now);
+    return {
+      connectionId: state.connectionId, workspaceId: state.workspaceId,
+      nonce: state.nonce, expiresAt: state.expiresAt,
+    };
   } catch {
     return null;
   }
-  const nonceA = Buffer.from(state.nonce ?? "");
-  const nonceB = Buffer.from(expectedNonce);
-  if (
-    nonceA.length !== nonceB.length ||
-    !timingSafeEqual(nonceA, nonceB) ||
-    state.expiresAt < now
-  ) {
-    return null;
-  }
-  return state;
 }

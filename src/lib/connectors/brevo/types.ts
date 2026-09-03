@@ -1,9 +1,7 @@
-export interface BrevoOAuthCredentials {
-  accessToken: string;
-  refreshToken?: string;
-  expiresAt?: number;
-  tokenType?: "Bearer";
-}
+import type { OAuthTokenSet } from "@/lib/auth/oauth/types";
+
+/** Brevo uses the shared normalized OAuth credential shape. */
+export type BrevoOAuthCredentials = OAuthTokenSet;
 
 export interface BrevoContact {
   id: number;
