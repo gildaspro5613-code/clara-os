@@ -3,7 +3,7 @@ import {
   type Connection,
 } from "./connection";
 import type { ConnectionRepository } from "./connection-repository";
-import { CredentialStore } from "./credential-store";
+import type { CredentialStore } from "./credential-store";
 
 export class ConnectionResolutionError extends Error {
   constructor(
