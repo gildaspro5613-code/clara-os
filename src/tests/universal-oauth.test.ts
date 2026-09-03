@@ -29,6 +29,9 @@ const connection: Connection = {
   status: ConnectionStatus.PENDING_AUTHENTICATION, scopes: ["read"],
   createdAt: new Date(0), updatedAt: new Date(0),
 };
+function activeConnection(overrides: Partial<Connection> = {}): Connection {
+  return { ...connection, status: ConnectionStatus.ACTIVE, ...overrides };
+}
 function provider(overrides: Partial<OAuthProviderDefinition> = {}): OAuthProviderDefinition {
   return {
     id: "example", defaultScopes: ["read"],
@@ -94,14 +97,61 @@ test("callback state is bound to its provider and connection", async () => {
   );
 });
 
-test("on-demand refresh preserves refresh token and persists the update", async () => {
+test("on-demand refresh validates active provider binding, preserves refresh token, and persists the update", async () => {
   const store = new CredentialStore(new MemoryPersistence(), Buffer.alloc(32, 3));
+  const connections = new MemoryConnections(activeConnection());
   await store.set<OAuthTokenSet>(connection.id, { accessToken: "old", refreshToken: "durable", expiresAt: 1_000 });
   assert.equal(oauthCredentialsRequireRefresh({ accessToken: "old", expiresAt: 1_000 }, 1_000), true);
-  const refreshed = await new OAuthRefreshService(new OAuthProviderRegistry([provider()]), store)
+  const refreshed = await new OAuthRefreshService(new OAuthProviderRegistry([provider()]), connections, store)
     .refreshIfNeeded(connection.id, "example", { now: 1_000 });
   assert.deepEqual(refreshed, { accessToken: "new-access", refreshToken: "durable", expiresAt: 4_000 });
   assert.deepEqual(await store.get(connection.id), refreshed);
+});
+
+test("refresh rejects provider mismatch before credentials are read or wrong provider is invoked", async () => {
+  let credentialReads = 0;
+  let wrongProviderRefreshes = 0;
+  const store = {
+    async get() { credentialReads += 1; return { accessToken: "access-secret", refreshToken: "refresh-secret", expiresAt: 1_000 }; },
+    async set() { throw new Error("unexpected credential write"); },
+  } as unknown as CredentialStore;
+  const wrongProvider = provider({ id: "wrong", async refresh() { wrongProviderRefreshes += 1; return { accessToken: "never" }; } });
+  const service = new OAuthRefreshService(
+    new OAuthProviderRegistry([provider(), wrongProvider]),
+    new MemoryConnections(activeConnection()),
+    store,
+  );
+  await assert.rejects(
+    () => service.refreshIfNeeded(connection.id, "wrong", { force: true }),
+    (error) => error instanceof OAuthError && error.code === "CONNECTION_MISMATCH",
+  );
+  assert.equal(credentialReads, 0);
+  assert.equal(wrongProviderRefreshes, 0);
+});
+
+test("refresh rejects missing and inactive connections before credential access", async () => {
+  let credentialReads = 0;
+  const store = {
+    async get() { credentialReads += 1; return { accessToken: "access-secret", refreshToken: "refresh-secret", expiresAt: 1_000 }; },
+    async set() { throw new Error("unexpected credential write"); },
+  } as unknown as CredentialStore;
+
+  const missing = new OAuthRefreshService(new OAuthProviderRegistry([provider()]), new MemoryConnections(activeConnection()), store);
+  await assert.rejects(
+    () => missing.refreshIfNeeded("missing-connection", "example", { force: true }),
+    (error) => error instanceof OAuthError && error.code === "CONNECTION_MISMATCH",
+  );
+
+  const inactive = new OAuthRefreshService(
+    new OAuthProviderRegistry([provider()]),
+    new MemoryConnections(activeConnection({ status: ConnectionStatus.DISABLED })),
+    store,
+  );
+  await assert.rejects(
+    () => inactive.refreshIfNeeded(connection.id, "example", { force: true }),
+    (error) => error instanceof OAuthError && error.code === "CONNECTION_INACTIVE",
+  );
+  assert.equal(credentialReads, 0);
 });
 
 test("OAuth errors redact provider secrets and codes", () => {
