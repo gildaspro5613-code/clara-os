@@ -191,6 +191,23 @@
     "greeting": "Bonjour.",
     "dayReady": "J’ai préparé votre journée.",
     "twoTopics": "Deux sujets méritent votre attention.",
-    "startQuestion": "Souhaitez-vous commencer ?"
+    "startQuestion": "Souhaitez-vous commencer ?",
+    "progress": "Progression",
+    "nextStep": "Étape suivante",
+    "noNextStep": "Aucune étape suivante définie."
+  },
+  "voice": {
+    "connecting": "Connexion à Clara…",
+    "speaking": "Clara parle…",
+    "listening": "Clara écoute…",
+    "retry": "Réessayer Clara",
+    "talk": "Parler à Clara",
+    "initializing": "Initialisation de la conversation.",
+    "answering": "Clara vous répond.",
+    "speakNaturally": "Parlez naturellement.",
+    "failed": "La conversation n’a pas pu démarrer.",
+    "ready": "Clara est prête.",
+    "stop": "Arrêter Clara",
+    "startError": "Impossible de démarrer la conversation avec Clara."
   }
 }

@@ -12,7 +12,7 @@
  */
 
 import { useState } from "react";
-import { locales, LOCALE_COOKIE } from "@/i18n/config";
+import { locales, LOCALE_COOKIE, resolveLocale } from "@/i18n/config";
 import { useTranslations } from "next-intl";
 import type { Locale } from "@/i18n/types";
 
@@ -37,7 +37,7 @@ export default function LocaleSwitcher({ currentLocale }: LocaleSwitcherProps) {
   const t = useTranslations("common");
 
   function handleChange(event: React.ChangeEvent<HTMLSelectElement>) {
-    const next = event.target.value as Locale;
+    const next = resolveLocale(event.target.value);
     document.cookie = `${LOCALE_COOKIE}=${next}; path=/; SameSite=Lax`;
     setIsReloading(true);
     window.location.reload();
@@ -46,13 +46,15 @@ export default function LocaleSwitcher({ currentLocale }: LocaleSwitcherProps) {
   return (
     <select
       value={currentLocale}
+      lang="zxx"
+      translate="no"
       onChange={handleChange}
       disabled={isReloading}
       aria-label={t("language")}
-      className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[11px] text-slate-400 transition hover:bg-white/10 hover:text-white focus:outline-none disabled:opacity-50"
+      className="notranslate rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[11px] text-slate-400 transition hover:bg-white/10 hover:text-white focus:outline-none disabled:opacity-50"
     >
       {locales.map((locale) => (
-        <option key={locale} value={locale} className="bg-[#08111F] text-white">
+        <option key={locale} value={locale} lang="zxx" translate="no" className="notranslate bg-[#08111F] text-white">
           {LOCALE_LABELS[locale]}
         </option>
       ))}

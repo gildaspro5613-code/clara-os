@@ -191,6 +191,23 @@
     "greeting": "Guten Tag.",
     "dayReady": "Ich habe Ihren Tag vorbereitet.",
     "twoTopics": "Zwei Themen benötigen Ihre Aufmerksamkeit.",
-    "startQuestion": "Möchten Sie beginnen?"
+    "startQuestion": "Möchten Sie beginnen?",
+    "progress": "Fortschritt",
+    "nextStep": "Nächster Schritt",
+    "noNextStep": "Kein nächster Schritt definiert."
+  },
+  "voice": {
+    "connecting": "Verbindung mit Clara…",
+    "speaking": "Clara spricht…",
+    "listening": "Clara hört zu…",
+    "retry": "Clara erneut versuchen",
+    "talk": "Mit Clara sprechen",
+    "initializing": "Gespräch wird gestartet.",
+    "answering": "Clara antwortet Ihnen.",
+    "speakNaturally": "Sprechen Sie ganz natürlich.",
+    "failed": "Das Gespräch konnte nicht gestartet werden.",
+    "ready": "Clara ist bereit.",
+    "stop": "Clara anhalten",
+    "startError": "Das Gespräch mit Clara konnte nicht gestartet werden."
   }
 }
