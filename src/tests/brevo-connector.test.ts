@@ -36,6 +36,12 @@ test("Brevo definition declares only the V1 capability surface and operation typ
     BrevoConnectorDefinition.capabilities.find(({ id }) => id === "brevo.email.send")?.operationType,
     "EXECUTE",
   );
+  const emailPreparation = BrevoConnectorDefinition.capabilities.find(
+    ({ id }) => id === "brevo.email.prepare",
+  );
+  assert.equal(emailPreparation?.operationType, "PREPARE");
+  assert.notEqual(emailPreparation?.operationType, "WRITE");
+  assert.notEqual(emailPreparation?.operationType, "EXECUTE");
   assert.deepEqual(BrevoConnectorDefinition.authentication, {
     type: "oauth2",
     credentialReference: "connectionId",

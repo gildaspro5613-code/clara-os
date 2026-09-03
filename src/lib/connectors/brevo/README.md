@@ -3,7 +3,7 @@
 The adapter reuses `Connection`, `ConnectionRepository`, encrypted
 `CredentialStore`, and the provider-agnostic `ConnectionResolver`. A connection
 contains only public metadata; OAuth credentials are loaded by `connectionId`.
-The declarative definition carries autonomy-relevant READ/WRITE/EXECUTE metadata
+The declarative definition carries autonomy-relevant READ/PREPARE/WRITE/EXECUTE metadata
 but never grants permission or executes an operation. Runtime and Autonomy Gate
 remain the callers of the adapter.
 

@@ -29,7 +29,7 @@ export const BrevoConnectorDefinition: ConnectorDefinition = {
     capability(BREVO_CAPABILITIES.CONTACT_UPSERT, "WRITE", "Create or update a Brevo contact."),
     capability(BREVO_CAPABILITIES.CONTACT_LIST_MANAGE, "WRITE", "Manage Brevo contact list membership."),
     capability(BREVO_CAPABILITIES.TEMPLATE_SEARCH, "READ", "Search Brevo email templates."),
-    capability(BREVO_CAPABILITIES.EMAIL_PREPARE, "WRITE", "Prepare a typed transactional email request."),
+    capability(BREVO_CAPABILITIES.EMAIL_PREPARE, "PREPARE", "Prepare a typed transactional email request."),
     capability(BREVO_CAPABILITIES.EMAIL_SEND, "EXECUTE", "Send a transactional email through Brevo."),
     capability(BREVO_CAPABILITIES.CAMPAIGN_READ, "READ", "Read Brevo email campaigns."),
     capability(BREVO_CAPABILITIES.CAMPAIGN_PREPARE, "WRITE", "Prepare a typed Brevo campaign request."),

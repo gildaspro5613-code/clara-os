@@ -50,7 +50,7 @@ export interface Connector {
 }
 
 /** The autonomy-relevant class of an operation exposed by a connector. */
-export type ConnectorOperationType = "READ" | "WRITE" | "EXECUTE";
+export type ConnectorOperationType = "READ" | "PREPARE" | "WRITE" | "EXECUTE";
 
 /** A declarative capability advertised by a provider adapter. */
 export interface ConnectorCapabilityDefinition {
