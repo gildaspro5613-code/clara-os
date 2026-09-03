@@ -27,7 +27,7 @@ import { AppendSheetRowContext } from "./append-sheet-row/context";
 import { AppendSheetRowWorkflow } from "./append-sheet-row/workflow";
 
 import { ReadSheetContext } from "./read-sheet/context";
-import { ReadSheetWorkflow } from "./read-sheet-row/workflow";
+import { ReadSheetWorkflow } from "./read-sheet/workflow";
 
 import { FindSheetRowContext } from "./find-sheet-row/context";
 import { FindSheetRowWorkflow } from "./find-sheet-row/workflow";
