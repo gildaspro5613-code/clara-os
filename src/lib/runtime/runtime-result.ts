@@ -86,6 +86,9 @@ export interface RuntimeResult {
    */
   documentUrl?: string;
 
+  /** Normalized result returned by a connector-backed capability. */
+  operationalResult?: import("@/lib/capabilities/github-read/executor").OperationalCapabilityResult;
+
   /**
    * Runtime completion date.
    */
