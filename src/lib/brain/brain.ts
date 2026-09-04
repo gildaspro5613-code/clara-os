@@ -14,7 +14,7 @@ import {
 
 import { shouldRemember } from "./learning";
 import { buildBrainContext } from "./brain-context-builder";
-import { reasoning } from "./reasoning";
+import { localizedReasoning } from "./localized-reasoning";
 import { prioritize } from "./priorities";
 import { plan } from "./planners";
 import { recommend } from "./recommendations";
@@ -29,11 +29,13 @@ import type { Mission } from "@/modules/missions/types/Mission";
 export async function runBrain(
   event: Event,
   mission?: Mission,
+  locale = "fr",
 ): Promise<Recommendation> {
 
   const dashboard = await runBrainDashboard(
     event,
     mission,
+    locale,
   );
 
   return dashboard.recommendation;
@@ -49,6 +51,7 @@ export async function runBrain(
 export async function runBrainDashboard(
   event: Event,
   mission?: Mission,
+  locale = "fr",
 ): Promise<BrainDashboard> {
 
   /**
@@ -69,13 +72,14 @@ export async function runBrainDashboard(
   /**
    * Understand the situation.
    */
-  const understanding = await reasoning(
+  const understanding = await localizedReasoning(
     brainContext.context,
     brainContext.memory,
     brainContext.sources,
     brainContext.mission,
     brainContext.capabilities,
     brainContext.knowledge,
+    locale,
   );
 
   /**
@@ -88,13 +92,14 @@ export async function runBrainDashboard(
   /**
    * Build execution plan.
    */
-  const tasks = plan(decision);
+  const tasks = plan(decision, locale);
 
   /**
    * Produce recommendation.
    */
   const recommendation = recommend(
     decision,
+    locale,
   );
 
   /**

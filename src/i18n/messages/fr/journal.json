@@ -1,0 +1,19 @@
+{
+  "title": "Journal",
+  "subtitle": "Les traces de l’activité opérationnelle de Clara.",
+  "empty": "Aucune entrée dans le journal pour le moment.",
+  "context": "Contexte",
+  "entries": "Entrées",
+  "entryCount": "{count, plural, =0 {Aucune entrée} one {# entrée} other {# entrées}}",
+  "latestActivity": "Dernière activité",
+  "noActivityRecorded": "Aucune activité enregistrée",
+  "activities": "Activités",
+  "noActivity": "Aucune activité",
+  "claraHelp": "Le Journal conserve les traces de l’activité opérationnelle de Clara.",
+  "types": {
+    "system": "Système",
+    "cognitive": "Cognitive",
+    "action": "Action",
+    "learning": "Apprentissage"
+  }
+}
