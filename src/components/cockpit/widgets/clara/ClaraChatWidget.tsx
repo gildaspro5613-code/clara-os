@@ -11,7 +11,13 @@ interface Message {
   content: string;
 }
 
-export default function ClaraChatWidget() {
+interface ClaraChatWidgetProps {
+  autoFocus?: boolean;
+}
+
+export default function ClaraChatWidget({
+  autoFocus = false,
+}: ClaraChatWidgetProps) {
   const t = useTranslations("chat");
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -138,6 +144,7 @@ export default function ClaraChatWidget() {
           value={input}
           onChange={(event) => setInput(event.target.value)}
           disabled={loading}
+          autoFocus={autoFocus}
           placeholder={t("placeholder")}
           className="h-11 flex-1 rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-cyan-400/40"
         />
