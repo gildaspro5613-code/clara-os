@@ -27,10 +27,14 @@ function requireHttpsUrl(value: string, field: string): string {
   return url.toString();
 }
 
-function appendMetadata(params: URLSearchParams, metadata?: Readonly<Record<string, string>>) {
+function appendMetadata(
+  params: URLSearchParams,
+  metadata?: Readonly<Record<string, string>>,
+  prefix = "metadata",
+) {
   if (!metadata) return;
   for (const [key, value] of Object.entries(metadata)) {
-    params.set(`metadata[${key}]`, value);
+    params.set(`${prefix}[${key}]`, value);
   }
 }
 
@@ -86,7 +90,8 @@ export class StripeClient {
 
   async createCheckoutSession(priceId: string, input: StripeCheckoutInput): Promise<StripeCheckoutResult> {
     const params = new URLSearchParams();
-    params.set("mode", input.mode ?? "subscription");
+    const mode = input.mode ?? "subscription";
+    params.set("mode", mode);
     params.set("line_items[0][price]", priceId);
     params.set("line_items[0][quantity]", String(input.quantity ?? 1));
     params.set("success_url", requireHttpsUrl(input.successUrl, "successUrl"));
@@ -94,7 +99,12 @@ export class StripeClient {
     if (input.customerId) params.set("customer", input.customerId);
     else if (input.customerEmail) params.set("customer_email", input.customerEmail.trim().toLowerCase());
     if (input.clientReferenceId) params.set("client_reference_id", input.clientReferenceId);
+
     appendMetadata(params, input.metadata);
+    if (mode === "subscription") {
+      appendMetadata(params, input.metadata, "subscription_data[metadata]");
+    }
+
     return this.request<StripeCheckoutResult>("/checkout/sessions", { method: "POST", body: params.toString() });
   }
 
