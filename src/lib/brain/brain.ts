@@ -29,11 +29,13 @@ import type { Mission } from "@/modules/missions/types/Mission";
 export async function runBrain(
   event: Event,
   mission?: Mission,
+  locale = "fr",
 ): Promise<Recommendation> {
 
   const dashboard = await runBrainDashboard(
     event,
     mission,
+    locale,
   );
 
   return dashboard.recommendation;
@@ -49,6 +51,7 @@ export async function runBrain(
 export async function runBrainDashboard(
   event: Event,
   mission?: Mission,
+  locale = "fr",
 ): Promise<BrainDashboard> {
 
   /**
@@ -76,6 +79,7 @@ export async function runBrainDashboard(
     brainContext.mission,
     brainContext.capabilities,
     brainContext.knowledge,
+    locale,
   );
 
   /**
