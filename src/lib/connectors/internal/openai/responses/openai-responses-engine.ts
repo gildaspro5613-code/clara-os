@@ -59,13 +59,19 @@ export class OpenAIResponsesEngine {
 
         input,
 
+        instructions: context.instructions,
+
+        max_output_tokens: context.maxTokens,
+
+        metadata: context.metadata,
+
         tools: context.tools?.map(
           (tool) => ({
             type: "function" as const,
             name: tool.name,
             description: tool.description,
             parameters: tool.parameters,
-            strict: false,
+            strict: tool.strict ?? true,
           }),
         ),
 

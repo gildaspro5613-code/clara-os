@@ -26,11 +26,13 @@ import type {
 import { CapabilityToolBridge } from "@/lib/capabilities/capability-tool-bridge";
 import { CapabilityRegistry } from "@/lib/capabilities/capability-registry";
 import { toCapabilityTools } from "@/lib/capabilities/capability-tool-adapter";
+import type { CapabilityExecutionPrincipal } from "@/lib/capabilities/capability-policy";
 
 const MAX_TOOL_ROUNDS = 5;
 
 export interface CognitiveToolLoopInput {
   readonly prompt: string;
+  readonly principal?: CapabilityExecutionPrincipal;
 }
 
 export class CognitiveToolLoop {
@@ -51,8 +53,12 @@ export class CognitiveToolLoop {
     input: CognitiveToolLoopInput,
   ): Promise<OpenAIResponsesResult> {
 
-    const capabilities =
-      this.registry.getAvailableCapabilities();
+    const principal = input.principal ?? {
+      actorId: "system",
+      workspaceId: "default",
+      plan: "essential" as const,
+      approvedCapabilityIds: [],
+    };
 
     const capabilityTools =
       toCapabilityTools(
@@ -98,7 +104,7 @@ export class CognitiveToolLoop {
     let result =
       await this.engine.generate({
         prompt: input.prompt,
-        model: "gpt-5.5",
+        model: process.env.OPENAI_MODEL ?? "gpt-5.5",
         tools,
       });
 
@@ -116,17 +122,16 @@ export class CognitiveToolLoop {
         return result;
       }
 
-      const toolOutputs =
-        await Promise.all(
-          result.toolCalls.map(
-            async (toolCall: OpenAIToolCall) => {
+      const toolOutputs = [];
+      for (const toolCall of result.toolCalls as OpenAIToolCall[]) {
 
               const execution =
                 await this.bridge.execute(
                   toolCall,
+                  principal,
                 );
 
-              return {
+              toolOutputs.push({
                 callId: toolCall.callId,
                 output: {
                   success: execution.success,
@@ -136,11 +141,10 @@ export class CognitiveToolLoop {
                     execution.message,
                   content:
                     execution.content,
+                  code: execution.code,
                 },
-              };
-            },
-          ),
-        );
+              });
+      }
 
       if (!result.responseId) {
         return {
@@ -154,7 +158,7 @@ export class CognitiveToolLoop {
       result =
         await this.engine.generate({
           prompt: "",
-          model: "gpt-5.5",
+          model: process.env.OPENAI_MODEL ?? "gpt-5.5",
           previousResponseId:
             result.responseId,
           toolOutputs,

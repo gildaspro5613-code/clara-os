@@ -64,11 +64,12 @@ export interface OpenAIResponsesContext {
     name: string;
     description: string;
     parameters: Record<string, unknown>;
+    strict?: boolean;
   }>;
 
   /**
    * Additional metadata.
    */
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, string>;
 
 }

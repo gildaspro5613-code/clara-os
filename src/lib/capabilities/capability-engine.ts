@@ -79,6 +79,10 @@ import { DriveSearchWorkflow } from "./drive-search/workflow";
 import { SendGmailContext } from "./send-gmail/context";
 import { SendGmailWorkflow } from "./send-gmail/workflow";
 import { GitHubReadExecutor, type OperationalCapabilityResult } from "./github-read/executor";
+import { DatabaseConnectionRepository } from "@/lib/connections/connection-repository";
+import { ConnectionResolver } from "@/lib/connections/connection-resolver";
+import { CredentialStore } from "@/lib/connections/credential-store";
+import { MakeConnectorAdapter, MAKE_CAPABILITIES } from "@/lib/connectors/make";
 
 /**
  * Capability execution request.
@@ -94,6 +98,8 @@ export interface CapabilityExecutionRequest {
    * Capability execution context.
    */
   readonly context: unknown;
+
+  readonly workspaceId?: string;
 
 }
 
@@ -149,6 +155,12 @@ export class CapabilityEngine {
    */
   private readonly registry =
     new CapabilityRegistry();
+
+  private readonly connections = new DatabaseConnectionRepository();
+
+  private readonly make = new MakeConnectorAdapter(
+    new ConnectionResolver(this.connections, new CredentialStore()),
+  );
 
   /**
    * Workflows.
@@ -233,6 +245,29 @@ export class CapabilityEngine {
     }
 
     switch (request.capabilityId) {
+
+      case MAKE_CAPABILITIES.SCENARIO_PREPARE: {
+        const result = await this.make.execute("not-required", {
+          capability: MAKE_CAPABILITIES.SCENARIO_PREPARE,
+          input: request.context as { scenarioKey: string; payload?: Record<string, unknown> },
+        });
+        return { success: true, message: "Make scenario prepared.", content: JSON.stringify(result.data), completedAt: new Date() };
+      }
+
+      case MAKE_CAPABILITIES.SCENARIO_EXECUTE: {
+        if (!request.workspaceId) {
+          return { success: false, message: "Workspace identity is required for Make execution.", completedAt: new Date() };
+        }
+        const connection = await this.connections.findByWorkspaceAndProvider(request.workspaceId, "make");
+        if (!connection) {
+          return { success: false, message: "Make is not configured for this Clara OS workspace.", completedAt: new Date() };
+        }
+        const result = await this.make.execute(connection.id, {
+          capability: MAKE_CAPABILITIES.SCENARIO_EXECUTE,
+          input: request.context as { scenarioKey: string; payload?: Record<string, unknown> },
+        });
+        return { success: true, message: "Make scenario executed.", content: JSON.stringify(result.data), completedAt: new Date() };
+      }
 
       case "github.repository.list":
       case "github.repository.read":

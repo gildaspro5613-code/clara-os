@@ -4,6 +4,7 @@ import { CredentialStore } from "@/lib/connections/credential-store";
 import { StripeConnectorAdapter, type StripeCapabilityInput } from "@/lib/connectors/stripe/adapter";
 import { STRIPE_CAPABILITIES } from "@/lib/connectors/stripe/definition";
 import type { ExternalProductConfig } from "./config";
+import { MakeConnectorAdapter, MAKE_CAPABILITIES, type MakeCapabilityInput } from "@/lib/connectors/make";
 
 export interface ExternalCapabilityRequest {
   readonly capability: string;
@@ -33,6 +34,7 @@ export class ExternalCapabilityGatewayError extends Error {
 }
 
 const STRIPE_CAPABILITY_IDS = new Set<string>(Object.values(STRIPE_CAPABILITIES));
+const MAKE_CAPABILITY_IDS = new Set<string>(Object.values(MAKE_CAPABILITIES));
 
 export interface ExternalProviderExecutor {
   execute(
@@ -50,26 +52,29 @@ export class ClaraExternalProviderExecutor implements ExternalProviderExecutor {
     product: ExternalProductConfig,
     request: ExternalCapabilityRequest,
   ): Promise<unknown> {
-    if (!STRIPE_CAPABILITY_IDS.has(request.capability)) {
+    if (!STRIPE_CAPABILITY_IDS.has(request.capability) && !MAKE_CAPABILITY_IDS.has(request.capability)) {
       throw new ExternalCapabilityGatewayError(
         "CAPABILITY_NOT_SUPPORTED",
         `External capability is not supported yet: ${request.capability}`,
       );
     }
 
-    const connection = await this.connections.findByWorkspaceAndProvider(
-      product.workspaceId,
-      "stripe",
-    );
+    const provider = MAKE_CAPABILITY_IDS.has(request.capability) ? "make" : "stripe";
+    const connection = await this.connections.findByWorkspaceAndProvider(product.workspaceId, provider);
     if (!connection) {
       throw new ExternalCapabilityGatewayError(
         "CONNECTION_NOT_CONFIGURED",
-        "Stripe is not configured for this Clara OS workspace.",
+        `${provider === "make" ? "Make" : "Stripe"} is not configured for this Clara OS workspace.`,
       );
     }
 
-    const adapter = new StripeConnectorAdapter(this.resolver);
-    return adapter.execute(connection.id, {
+    if (provider === "make") {
+      return new MakeConnectorAdapter(this.resolver).execute(connection.id, {
+        capability: request.capability,
+        input: request.input,
+      } as MakeCapabilityInput);
+    }
+    return new StripeConnectorAdapter(this.resolver).execute(connection.id, {
       capability: request.capability,
       input: request.input,
     } as StripeCapabilityInput);

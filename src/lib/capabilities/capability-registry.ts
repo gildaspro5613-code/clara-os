@@ -98,6 +98,11 @@ import {
 } from "./update-calendar-event/capability";
 
 import { GitHubReadCapabilityDefinitions, type GitHubReadCapability } from "./github-read/capability";
+import {
+  MakeScenarioExecuteCapabilityDefinition,
+  MakeScenarioPrepareCapabilityDefinition,
+  type MakeScenarioCapability,
+} from "./make-scenario/capability";
 
 /**
  * Capability definition.
@@ -120,7 +125,8 @@ export type CapabilityDefinition =
   | UpdateCalendarEventCapability
   | DeleteCalendarEventCapability
   | SendGmailCapability
-  | GitHubReadCapability;
+  | GitHubReadCapability
+  | MakeScenarioCapability;
 
 /**
  * Capability Registry.
@@ -163,6 +169,10 @@ export class CapabilityRegistry {
     DeleteCalendarEventCapabilityDefinition,
 
     ...GitHubReadCapabilityDefinitions,
+
+    MakeScenarioPrepareCapabilityDefinition,
+
+    MakeScenarioExecuteCapabilityDefinition,
 
   ];
 
