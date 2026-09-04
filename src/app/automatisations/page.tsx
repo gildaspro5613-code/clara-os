@@ -1,12 +1,13 @@
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { CalendarDays, FileText, Mail, Workflow } from "lucide-react";
 
 import MainLayout from "@/components/layout/MainLayout";
 
 const capabilities = [
-  { key: "calendar", icon: CalendarDays },
-  { key: "documents", icon: FileText },
-  { key: "email", icon: Mail },
+  { key: "calendar", icon: CalendarDays, href: "/agenda" },
+  { key: "documents", icon: FileText, href: "/documents" },
+  { key: "email", icon: Mail, href: "/clara?intent=email" },
 ] as const;
 
 export default async function AutomatisationsPage() {
@@ -24,12 +25,16 @@ export default async function AutomatisationsPage() {
             <section>
               <h2 className="mb-5 text-[11px] uppercase tracking-[0.25em] text-white/45">{t("availableTitle")}</h2>
               <div className="grid gap-4 md:grid-cols-3">
-                {capabilities.map(({ key, icon: Icon }) => (
-                  <article key={key} className="rounded-2xl border border-white/10 bg-white/[0.025] p-6">
+                {capabilities.map(({ key, icon: Icon, href }) => (
+                  <Link
+                    key={key}
+                    href={href}
+                    className="group rounded-2xl border border-white/10 bg-white/[0.025] p-6 transition hover:border-white/20 hover:bg-white/[0.045] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/40"
+                  >
                     <Icon className="text-cyan-300" size={21} strokeWidth={1.6} />
                     <h3 className="mt-5 font-medium">{t(`capabilities.${key}.title`)}</h3>
                     <p className="mt-2 text-sm leading-6 text-white/45">{t(`capabilities.${key}.description`)}</p>
-                  </article>
+                  </Link>
                 ))}
               </div>
             </section>
