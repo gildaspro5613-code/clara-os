@@ -97,6 +97,8 @@ import {
   UpdateCalendarEventCapabilityDefinition,
 } from "./update-calendar-event/capability";
 
+import { GitHubReadCapabilityDefinitions, type GitHubReadCapability } from "./github-read/capability";
+
 /**
  * Capability definition.
  */
@@ -117,7 +119,8 @@ export type CapabilityDefinition =
   | CreateCalendarEventCapability
   | UpdateCalendarEventCapability
   | DeleteCalendarEventCapability
-  | SendGmailCapability;
+  | SendGmailCapability
+  | GitHubReadCapability;
 
 /**
  * Capability Registry.
@@ -158,6 +161,8 @@ export class CapabilityRegistry {
     SendGmailCapabilityDefinition,
 
     DeleteCalendarEventCapabilityDefinition,
+
+    ...GitHubReadCapabilityDefinitions,
 
   ];
 
