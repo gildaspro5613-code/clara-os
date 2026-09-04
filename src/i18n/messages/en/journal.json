@@ -1,0 +1,19 @@
+{
+  "title": "Journal",
+  "subtitle": "A record of Clara’s operational activity.",
+  "empty": "No journal entries yet.",
+  "context": "Context",
+  "entries": "Entries",
+  "entryCount": "{count, plural, =0 {No entries} one {# entry} other {# entries}}",
+  "latestActivity": "Latest activity",
+  "noActivityRecorded": "No activity recorded",
+  "activities": "Activities",
+  "noActivity": "No activity",
+  "claraHelp": "The Journal keeps a record of Clara’s operational activity.",
+  "types": {
+    "system": "System",
+    "cognitive": "Cognitive",
+    "action": "Action",
+    "learning": "Learning"
+  }
+}
