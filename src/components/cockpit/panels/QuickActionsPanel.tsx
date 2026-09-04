@@ -6,23 +6,47 @@
  * File : QuickActionsPanel.tsx
  * Responsibility :
  * Displays Clara's most frequently used actions.
- *
- * Presentation only.
  * ============================================
  */
 
-import GlassPanel from "@/components/ui/GlassPanel";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
+
+import GlassPanel from "@/components/ui/GlassPanel";
 
 export default function QuickActionsPanel() {
   const t = useTranslations("cockpitUi");
   const actions = [
-    t("newMission"),
-    t("agenda"),
-    t("call"),
-    t("notes"),
-    t("brain"),
-    t("automations"),
+    {
+      id: "new-mission",
+      label: t("newMission"),
+      href: "/clara?intent=new-mission",
+    },
+    {
+      id: "agenda",
+      label: t("agenda"),
+      href: "/agenda",
+    },
+    {
+      id: "call",
+      label: t("call"),
+      href: "/telephonie",
+    },
+    {
+      id: "notes",
+      label: t("notes"),
+      href: "/journal",
+    },
+    {
+      id: "brain",
+      label: t("brain"),
+      href: "/brain",
+    },
+    {
+      id: "automations",
+      label: t("automations"),
+      href: "/automatisations",
+    },
   ];
 
   return (
@@ -30,8 +54,9 @@ export default function QuickActionsPanel() {
       <div className="grid grid-cols-2 gap-3">
 
         {actions.map((action) => (
-          <button
-            key={action}
+          <Link
+            key={action.id}
+            href={action.href}
             className="
               min-w-0
               w-full
@@ -64,8 +89,8 @@ export default function QuickActionsPanel() {
               sm:py-4
             "
           >
-            {action}
-          </button>
+            {action.label}
+          </Link>
         ))}
 
       </div>
