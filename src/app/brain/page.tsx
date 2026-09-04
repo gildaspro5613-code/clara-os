@@ -8,6 +8,7 @@
 // ============================================
 
 import MainLayout from "@/components/layout/MainLayout";
+import { getLocale } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 import BrainStage from "@/modules/brain/BrainStage";
@@ -20,6 +21,8 @@ import {
 } from "@/types";
 
 export default async function BrainPage() {
+  const locale = await getLocale();
+
   const event: Event = {
     id: "brain-dashboard-preview",
     type: EventType.SYSTEM,
@@ -30,7 +33,7 @@ export default async function BrainPage() {
     },
   };
 
-  const dashboard = await runBrainDashboard(event);
+  const dashboard = await runBrainDashboard(event, undefined, locale);
 
   return (
     <MainLayout>
