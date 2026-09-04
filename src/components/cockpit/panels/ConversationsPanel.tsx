@@ -13,10 +13,12 @@
  */
 
 import GlassPanel from "@/components/ui/GlassPanel";
+import { useTranslations } from "next-intl";
 
 export default function ConversationsPanel() {
+  const t = useTranslations("cockpitUi");
   return (
-    <GlassPanel title="Dernières conversations">
+    <GlassPanel title={t("latestConversations")}>
       <div className="space-y-3">
 
         <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
@@ -31,7 +33,7 @@ export default function ConversationsPanel() {
           </div>
 
           <p className="mt-1 text-sm text-white/65">
-            Tu as reçu les derniers documents.
+            {t("conversationDocuments")}
           </p>
         </div>
 
@@ -47,7 +49,7 @@ export default function ConversationsPanel() {
           </div>
 
           <p className="mt-1 text-sm text-white/65">
-            Clara poursuit le développement du cockpit.
+            {t("conversationCockpit")}
           </p>
         </div>
 

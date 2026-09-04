@@ -2,28 +2,30 @@ import Link from "next/link";
 import type { Mission } from "@/modules/missions/types/Mission";
 
 import GlassPanel from "@/components/ui/GlassPanel";
+import { getTranslations } from "next-intl/server";
 
 interface MissionWidgetProps {
   mission: Mission | null;
 }
 
-export default function MissionWidget({
+export default async function MissionWidget({
   mission,
 }: MissionWidgetProps) {
+  const t = await getTranslations("cockpitUi");
   if (!mission) {
     return (
       <GlassPanel
-        title="Mission"
+        title={t("mission")}
       >
         <p className="text-sm text-white/55">
-          Aucune mission active.
+          {t("noMission")}
         </p>
 
         <Link
           href="/missions"
           className="mt-4 inline-flex text-xs text-cyan-400 transition hover:text-cyan-300"
         >
-          Ouvrir les missions →
+          {t("openMissions")}
         </Link>
       </GlassPanel>
     );
@@ -31,7 +33,7 @@ export default function MissionWidget({
 
   return (
     <GlassPanel
-      title="Mission actuelle"
+      title={t("currentMission")}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
@@ -40,7 +42,7 @@ export default function MissionWidget({
           </h2>
 
           <p className="mt-1 text-sm text-white/55">
-            {mission.nextAction ?? "Aucune prochaine action définie."}
+            {mission.nextAction ?? t("noNextAction")}
           </p>
         </div>
 
@@ -60,14 +62,14 @@ export default function MissionWidget({
 
       <div className="mt-4 flex items-center justify-between">
         <span className="text-xs text-white/35">
-          {mission.status}
+          {t(`missionStatus.${mission.status}`)}
         </span>
 
         <Link
           href="/missions"
           className="text-xs text-white/45 transition hover:text-white"
         >
-          Voir les missions →
+          {t("viewMissions")}
         </Link>
       </div>
     </GlassPanel>

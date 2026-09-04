@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ArrowLeft, Phone, PhoneCall, PhoneOff } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import MainLayout from "@/components/layout/MainLayout";
 
@@ -16,6 +17,8 @@ interface TelephonyResponse {
 
 export default function TelephoniePage() {
   const router = useRouter();
+  const t = useTranslations("telephony");
+  const tp = useTranslations("pages");
 
   const [number, setNumber] = useState("");
   const [calling, setCalling] = useState(false);
@@ -49,18 +52,18 @@ export default function TelephoniePage() {
 
       if (!response.ok || !data.success) {
         throw new Error(
-          data.error ?? "Impossible de lancer l'appel Clara.",
+          data.error ?? t("callError"),
         );
       }
 
       setStatus(
-        data.message ?? "Clara est en train de lancer l'appel.",
+        data.message ?? t("callStarted"),
       );
     } catch (err) {
       setError(
         err instanceof Error
           ? err.message
-          : "Impossible de lancer l'appel Clara.",
+          : t("callError"),
       );
     } finally {
       setCalling(false);
@@ -77,20 +80,20 @@ export default function TelephoniePage() {
             className="mb-6 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.035] px-3 py-2 text-sm text-white/60 transition hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
           >
             <ArrowLeft size={15} strokeWidth={1.8} />
-            Retour
+            {tp("back")}
           </button>
 
           <div className="mb-8">
             <p className="text-[11px] uppercase tracking-[0.22em] text-cyan-400">
-              Connecter
+              {tp("sectionConnect")}
             </p>
 
             <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-              Téléphonie
+              {t("title")}
             </h1>
 
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/45">
-              La ligne téléphonique de Clara, directement depuis Clara OS.
+              {t("subtitle")}
             </p>
           </div>
 
@@ -109,13 +112,13 @@ export default function TelephoniePage() {
 
                 <div>
                   <p className="text-sm font-semibold text-white/90">
-                    Clara Office
+                    {t("office")}
                   </p>
 
                   <div className="mt-1 flex items-center gap-2">
                     <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.45)]" />
                     <span className="text-xs text-white/40">
-                      Ligne disponible
+                      {t("available")}
                     </span>
                   </div>
                 </div>
@@ -123,7 +126,7 @@ export default function TelephoniePage() {
 
               <div className="mt-7">
                 <label className="mb-2 block text-[11px] uppercase tracking-[0.18em] text-white/35">
-                  Numéro à appeler
+                  {t("number")}
                 </label>
 
                 <div className="flex gap-2">
@@ -184,12 +187,12 @@ export default function TelephoniePage() {
                     {calling ? (
                       <>
                         <PhoneCall size={16} />
-                        Appel…
+                        {t("calling")}
                       </>
                     ) : (
                       <>
                         <Phone size={16} />
-                        Appeler
+                        {t("call")}
                       </>
                     )}
                   </button>

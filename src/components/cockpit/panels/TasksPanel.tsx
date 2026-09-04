@@ -12,6 +12,7 @@
 import type { Mission } from "@/modules/missions/types/Mission";
 
 import GlassPanel from "@/components/ui/GlassPanel";
+import { useTranslations } from "next-intl";
 
 interface TasksPanelProps {
   mission: Mission;
@@ -20,6 +21,7 @@ interface TasksPanelProps {
 export default function TasksPanel({
   mission,
 }: TasksPanelProps) {
+  const t = useTranslations("cockpitUi");
   return (
     <GlassPanel>
 
@@ -36,7 +38,7 @@ export default function TasksPanel({
       <div>
         <div className="mb-2 flex items-center justify-between">
           <span className="text-sm text-white/60">
-            Progression
+            {t("progress")}
           </span>
 
           <span className="text-sm font-semibold">
@@ -57,11 +59,11 @@ export default function TasksPanel({
       <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
 
         <p className="text-xs uppercase tracking-[0.20em] text-white/50">
-          Étape suivante
+          {t("nextStep")}
         </p>
 
         <p className="mt-2 font-medium">
-          {mission.nextAction ?? "Aucune étape suivante définie."}
+          {mission.nextAction ?? t("noNextStep")}
         </p>
 
       </div>
