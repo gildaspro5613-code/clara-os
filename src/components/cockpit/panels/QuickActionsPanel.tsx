@@ -12,19 +12,21 @@
  */
 
 import GlassPanel from "@/components/ui/GlassPanel";
+import { useTranslations } from "next-intl";
 
 export default function QuickActionsPanel() {
+  const t = useTranslations("cockpitUi");
   const actions = [
-    "Nouvelle mission",
-    "Agenda",
-    "Appeler",
-    "Notes",
-    "Brain",
-    "Automatisations",
+    t("newMission"),
+    t("agenda"),
+    t("call"),
+    t("notes"),
+    t("brain"),
+    t("automations"),
   ];
 
   return (
-    <GlassPanel title="Raccourcis rapides">
+    <GlassPanel title={t("quickActions")}>
       <div className="grid grid-cols-2 gap-3">
 
         {actions.map((action) => (
@@ -32,7 +34,12 @@ export default function QuickActionsPanel() {
             key={action}
             className="
               min-w-0
+              w-full
               min-h-16
+              flex
+              items-center
+              justify-center
+              overflow-hidden
               rounded-2xl
               border
               border-white/10
@@ -45,6 +52,8 @@ export default function QuickActionsPanel() {
               leading-tight
               text-white/90
               whitespace-normal
+              break-words
+              hyphens-auto
               transition-all
               duration-200
               hover:bg-white/10

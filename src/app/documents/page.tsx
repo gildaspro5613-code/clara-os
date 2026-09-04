@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { ArrowLeft, ExternalLink, FileText, Search } from "lucide-react";
 
 import MainLayout from "@/components/layout/MainLayout";
@@ -21,6 +22,9 @@ interface DocumentsResponse {
 
 export default function DocumentsPage() {
   const router = useRouter();
+  const t = useTranslations("documents");
+  const tc = useTranslations("common");
+  const tp = useTranslations("pages");
 
   const [query, setQuery] = useState("");
   const [files, setFiles] = useState<DocumentFile[]>([]);
@@ -43,7 +47,7 @@ export default function DocumentsPage() {
 
       if (!response.ok || !data.success) {
         throw new Error(
-          data.message ?? "Impossible de charger les documents.",
+          data.message ?? t("loadError"),
         );
       }
 
@@ -52,7 +56,7 @@ export default function DocumentsPage() {
       setError(
         err instanceof Error
           ? err.message
-          : "Impossible de charger les documents.",
+          : t("loadError"),
       );
     } finally {
       setLoading(false);
@@ -78,20 +82,20 @@ export default function DocumentsPage() {
             className="mb-6 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.035] px-3 py-2 text-sm text-white/60 transition hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
           >
             <ArrowLeft size={15} strokeWidth={1.8} />
-            Retour
+            {tp("back")}
           </button>
 
           <div className="mb-8">
             <p className="text-[11px] uppercase tracking-[0.22em] text-cyan-400">
-              Connaître
+              {tp("sectionKnow")}
             </p>
 
             <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-              Documents
+              {t("title")}
             </h1>
 
             <p className="mt-2 text-sm text-white/45">
-              Accès aux documents de ton espace Google Drive.
+              {t("subtitle")}
             </p>
           </div>
 
@@ -109,7 +113,7 @@ export default function DocumentsPage() {
                 type="text"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Rechercher un document..."
+                placeholder={t("searchPlaceholder")}
                 className="
                   h-12
                   w-full
@@ -143,13 +147,13 @@ export default function DocumentsPage() {
                 hover:text-white
               "
             >
-              Rechercher
+              {t("search")}
             </button>
           </form>
 
           {loading && (
             <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-8 text-sm text-white/40">
-              Chargement des documents…
+              {t("loading")}
             </div>
           )}
 
@@ -161,7 +165,7 @@ export default function DocumentsPage() {
 
           {!loading && !error && files.length === 0 && (
             <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-8 text-sm text-white/40">
-              Aucun document trouvé.
+              {t("empty")}
             </div>
           )}
 
@@ -230,7 +234,7 @@ export default function DocumentsPage() {
                         hover:text-white
                       "
                     >
-                      Ouvrir
+                      {t("open")}
                       <ExternalLink size={14} />
                     </a>
                   )}

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Navigation } from "lucide-react";
 
 import GlassPanel from "@/components/ui/GlassPanel";
+import { useTranslations } from "next-intl";
 
 interface WazeResponse {
   success: boolean;
@@ -13,6 +14,7 @@ interface WazeResponse {
 }
 
 export default function WazeWidget() {
+  const t = useTranslations("cockpitUi");
   const [destination, setDestination] = useState("");
   const [wazeUrl, setWazeUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -41,7 +43,7 @@ export default function WazeWidget() {
 
       if (!response.ok || !data.success || !data.url) {
         throw new Error(
-          data.message ?? "Navigation indisponible",
+          data.message ?? t("navigationUnavailable"),
         );
       }
 
@@ -65,11 +67,11 @@ export default function WazeWidget() {
 
         <div>
           <p className="text-[11px] uppercase tracking-[0.22em] text-white/45">
-            Navigation
+            {t("navigation")}
           </p>
 
           <p className="mt-1 text-sm text-white/75">
-            Où souhaitez-vous aller ?
+            {t("whereTo")}
           </p>
         </div>
       </div>
@@ -87,7 +89,7 @@ export default function WazeWidget() {
               void prepareNavigation();
             }
           }}
-          placeholder="Destination..."
+          placeholder={t("destination")}
           className="
             min-w-0
             flex-1
@@ -131,7 +133,7 @@ export default function WazeWidget() {
 
       {error && (
         <p className="mt-3 text-xs text-white/40">
-          Navigation momentanément indisponible.
+          {t("navigationTemporarilyUnavailable")}
         </p>
       )}
 
@@ -159,7 +161,7 @@ export default function WazeWidget() {
             hover:text-white
           "
         >
-          Ouvrir dans Waze →
+          {t("openWaze")}
         </a>
       )}
     </GlassPanel>

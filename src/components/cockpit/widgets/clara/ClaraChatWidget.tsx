@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Send } from "lucide-react";
 
 interface Message {
@@ -11,11 +12,12 @@ interface Message {
 }
 
 export default function ClaraChatWidget() {
+  const t = useTranslations("chat");
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
       role: "clara",
-      content: "Bonjour Gildas. Me voilà. Qu’est-ce qu’on fait aujourd’hui ?",
+      content: t("greeting"),
     },
   ]);
 
@@ -60,7 +62,7 @@ export default function ClaraChatWidget() {
       };
 
       if (!response.ok || !data.success) {
-        throw new Error(data.message ?? "Clara est momentanément indisponible.");
+        throw new Error(data.message ?? t("unavailable"));
       }
 
       setMessages((current) => [
@@ -82,7 +84,7 @@ export default function ClaraChatWidget() {
           content:
             error instanceof Error
               ? error.message
-              : "Clara est momentanément indisponible.",
+              : t("unavailable"),
         },
       ]);
     } finally {
@@ -103,7 +105,7 @@ export default function ClaraChatWidget() {
         </p>
 
         <h2 className="mt-2 text-lg font-semibold text-white">
-          Parler à Clara
+          {t("title")}
         </h2>
       </div>
 
@@ -123,7 +125,7 @@ export default function ClaraChatWidget() {
 
         {loading && (
           <div className="max-w-[80%] rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/45">
-            Clara réfléchit…
+            {t("thinking")}
           </div>
         )}
       </div>
@@ -136,14 +138,14 @@ export default function ClaraChatWidget() {
           value={input}
           onChange={(event) => setInput(event.target.value)}
           disabled={loading}
-          placeholder="Écrire à Clara…"
+          placeholder={t("placeholder")}
           className="h-11 flex-1 rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-cyan-400/40"
         />
 
         <button
           type="submit"
           disabled={loading || !input.trim()}
-          aria-label="Envoyer à Clara"
+          aria-label={t("send")}
           className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/60 transition hover:border-white/20 hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
         >
           <Send size={16} />
