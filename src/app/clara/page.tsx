@@ -5,10 +5,20 @@ import { loadSession } from "@/lib/core/store/session-store";
 
 export const dynamic = "force-dynamic";
 
-export default async function ClaraPage() {
+interface ClaraPageProps {
+  searchParams?: Promise<{
+    intent?: string | string[];
+  }>;
+}
+
+export default async function ClaraPage({
+  searchParams,
+}: ClaraPageProps) {
   const t = await getTranslations("pages");
+  const params = await searchParams;
   const session = await loadSession();
   const mission = session.mission;
+  const startNewMission = params?.intent === "new-mission";
 
   return (
     <MainLayout>
@@ -66,7 +76,7 @@ export default async function ClaraPage() {
         </section>
 
         <div className="max-w-4xl">
-          <ClaraChatWidget />
+          <ClaraChatWidget autoFocus={startNewMission} />
         </div>
       </div>
     </MainLayout>
