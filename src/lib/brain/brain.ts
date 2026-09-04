@@ -14,7 +14,7 @@ import {
 
 import { shouldRemember } from "./learning";
 import { buildBrainContext } from "./brain-context-builder";
-import { reasoning } from "./reasoning";
+import { localizedReasoning } from "./localized-reasoning";
 import { prioritize } from "./priorities";
 import { plan } from "./planners";
 import { recommend } from "./recommendations";
@@ -72,7 +72,7 @@ export async function runBrainDashboard(
   /**
    * Understand the situation.
    */
-  const understanding = await reasoning(
+  const understanding = await localizedReasoning(
     brainContext.context,
     brainContext.memory,
     brainContext.sources,
