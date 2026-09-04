@@ -2,12 +2,16 @@ import { NextResponse } from "next/server";
 
 import { dispatchEvent } from "@/lib/core/event-bus";
 import { getRuntime } from "@/lib/core/runtime";
-import { loadSession } from "@/lib/core/store/session-store";
 import { EventType } from "@/types";
 import { CognitiveToolLoop } from "@/lib/brain/cognitive-tool-loop";
 
 interface ChatRequest {
   message?: string;
+}
+
+function getPlan(): "essential" | "pro" | "premium" {
+  const plan = process.env.CLARA_PLAN;
+  return plan === "essential" || plan === "pro" ? plan : "premium";
 }
 
 export async function POST(request: Request) {
@@ -95,6 +99,14 @@ export async function POST(request: Request) {
 
     const result = await toolLoop.execute({
       prompt,
+      principal: {
+        actorId: process.env.CLARA_ACTOR_ID ?? "owner",
+        workspaceId: process.env.CLARA_WORKSPACE_ID ?? "melodie-digital",
+        plan: getPlan(),
+        // Fail closed until Clara's authenticated approval UI issues
+        // server-verified, single-use approvals.
+        approvedCapabilityIds: [],
+      },
     });
 
     if (!result.success) {

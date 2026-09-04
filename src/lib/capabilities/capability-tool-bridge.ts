@@ -27,6 +27,14 @@ import {
 import type {
   OpenAIToolCall,
 } from "@/lib/connectors/internal/openai/responses/openai-responses-result";
+import {
+  authorizeCapability,
+  type CapabilityExecutionPrincipal,
+} from "./capability-policy";
+import {
+  DatabaseToolAuditRepository,
+  type ToolAuditWriter,
+} from "./tool-audit-repository";
 
 export interface CapabilityToolBridgeResult {
   readonly success: boolean;
@@ -35,9 +43,14 @@ export interface CapabilityToolBridgeResult {
   readonly message: string;
   readonly content?: string;
   readonly completedAt: Date;
+  readonly code?: "PLAN_REQUIRED" | "APPROVAL_REQUIRED";
 }
 
 export class CapabilityToolBridge {
+
+  public constructor(
+    private readonly audit: ToolAuditWriter = new DatabaseToolAuditRepository(),
+  ) {}
 
   private readonly registry =
     new CapabilityRegistry();
@@ -50,6 +63,7 @@ export class CapabilityToolBridge {
    */
   public async execute(
     toolCall: OpenAIToolCall,
+    principal: CapabilityExecutionPrincipal,
   ): Promise<CapabilityToolBridgeResult> {
 
     const capabilityId =
@@ -72,6 +86,34 @@ export class CapabilityToolBridge {
         capabilityId,
         message:
           `Unknown Clara capability: "${capabilityId}".`,
+        completedAt: new Date(),
+      };
+    }
+
+    await this.audit.record({
+      callId: toolCall.callId,
+      capabilityId,
+      actorId: principal.actorId,
+      workspaceId: principal.workspaceId,
+      status: "REQUESTED",
+    });
+
+    const decision = authorizeCapability(capabilityId, principal);
+    if (!decision.allowed) {
+      await this.audit.record({
+        callId: toolCall.callId,
+        capabilityId,
+        actorId: principal.actorId,
+        workspaceId: principal.workspaceId,
+        status: "DENIED",
+        message: decision.message,
+      });
+      return {
+        success: false,
+        callId: toolCall.callId,
+        capabilityId,
+        code: decision.code,
+        message: decision.message,
         completedAt: new Date(),
       };
     }
@@ -111,7 +153,17 @@ export class CapabilityToolBridge {
       await this.engine.execute({
         capabilityId,
         context,
+        workspaceId: principal.workspaceId,
       });
+
+    await this.audit.record({
+      callId: toolCall.callId,
+      capabilityId,
+      actorId: principal.actorId,
+      workspaceId: principal.workspaceId,
+      status: result.success ? "SUCCEEDED" : "FAILED",
+      message: result.message,
+    });
 
     return {
       success: result.success,
