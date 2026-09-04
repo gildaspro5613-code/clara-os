@@ -1,0 +1,19 @@
+{
+  "title": "Journal",
+  "subtitle": "Das Protokoll von Claras operativer Aktivität.",
+  "empty": "Noch keine Journaleinträge.",
+  "context": "Kontext",
+  "entries": "Einträge",
+  "entryCount": "{count, plural, =0 {Keine Einträge} one {# Eintrag} other {# Einträge}}",
+  "latestActivity": "Letzte Aktivität",
+  "noActivityRecorded": "Keine Aktivität erfasst",
+  "activities": "Aktivitäten",
+  "noActivity": "Keine Aktivität",
+  "claraHelp": "Das Journal protokolliert Claras operative Aktivität.",
+  "types": {
+    "system": "System",
+    "cognitive": "Kognitiv",
+    "action": "Aktion",
+    "learning": "Lernen"
+  }
+}
