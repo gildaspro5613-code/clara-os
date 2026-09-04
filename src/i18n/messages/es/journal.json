@@ -1,0 +1,19 @@
+{
+  "title": "Diario",
+  "subtitle": "El registro de la actividad operativa de Clara.",
+  "empty": "Todavía no hay entradas en el diario.",
+  "context": "Contexto",
+  "entries": "Entradas",
+  "entryCount": "{count, plural, =0 {Ninguna entrada} one {# entrada} other {# entradas}}",
+  "latestActivity": "Última actividad",
+  "noActivityRecorded": "No hay actividad registrada",
+  "activities": "Actividades",
+  "noActivity": "Ninguna actividad",
+  "claraHelp": "El Diario conserva el registro de la actividad operativa de Clara.",
+  "types": {
+    "system": "Sistema",
+    "cognitive": "Cognitiva",
+    "action": "Acción",
+    "learning": "Aprendizaje"
+  }
+}
