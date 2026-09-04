@@ -46,7 +46,7 @@ test("Stripe definition exposes the focused billing V1 capability surface", () =
   );
 });
 
-test("checkout resolves a Clara offer key to a protected Stripe price id", async () => {
+test("checkout resolves a Clara offer key and propagates entitlement metadata to the Stripe subscription", async () => {
   const http = fakeHttp([json({ id: "cs_123", url: "https://checkout.stripe.com/c/pay/cs_123" })]);
   const resolver = {
     async resolve(connectionId: string, provider: string) {
@@ -69,6 +69,11 @@ test("checkout resolves a Clara offer key to a protected Stripe price id", async
       successUrl: "https://live.example.com/success",
       cancelUrl: "https://live.example.com/cancel",
       customerEmail: "client@example.com",
+      metadata: {
+        claraLiveUserId: "user_123",
+        claraOfferKey: "pro",
+        source: "clara-live",
+      },
     },
   });
 
@@ -76,7 +81,27 @@ test("checkout resolves a Clara offer key to a protected Stripe price id", async
   const body = new URLSearchParams(String(http.calls[0]?.init?.body));
   assert.equal(body.get("line_items[0][price]"), "price_pro_123");
   assert.equal(body.get("customer_email"), "client@example.com");
+  assert.equal(body.get("metadata[claraLiveUserId]"), "user_123");
+  assert.equal(body.get("metadata[claraOfferKey]"), "pro");
+  assert.equal(body.get("subscription_data[metadata][claraLiveUserId]"), "user_123");
+  assert.equal(body.get("subscription_data[metadata][claraOfferKey]"), "pro");
+  assert.equal(body.get("subscription_data[metadata][source]"), "clara-live");
   assert.equal(new Headers(http.calls[0]?.init?.headers).get("authorization"), "Bearer sk_test_secret");
+});
+
+test("payment-mode checkout does not send subscription_data metadata", async () => {
+  const http = fakeHttp([json({ id: "cs_pay", url: "https://checkout.stripe.com/c/pay/cs_pay" })]);
+  const client = new StripeClient("sk_test_secret", http.fetch);
+  await client.createCheckoutSession("price_once", {
+    offerKey: "one-off",
+    mode: "payment",
+    successUrl: "https://example.com/success",
+    cancelUrl: "https://example.com/cancel",
+    metadata: { source: "website" },
+  });
+  const body = new URLSearchParams(String(http.calls[0]?.init?.body));
+  assert.equal(body.get("metadata[source]"), "website");
+  assert.equal(body.get("subscription_data[metadata][source]"), null);
 });
 
 test("unknown Clara offer keys fail before contacting Stripe", async () => {
