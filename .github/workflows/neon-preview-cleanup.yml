@@ -1,0 +1,64 @@
+name: Cleanup Neon preview branch
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - clara-os-commercial-finish
+
+permissions:
+  contents: read
+
+jobs:
+  cleanup-neon-preview:
+    runs-on: ubuntu-latest
+    env:
+      NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+      NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
+      PREVIEW_BRANCH_NAME: preview/${{ github.event.pull_request.head.ref }}
+    steps:
+      - name: Validate configuration
+        id: config
+        shell: bash
+        run: |
+          if [[ -z "$NEON_API_KEY" || -z "$NEON_PROJECT_ID" ]]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "Neon cleanup skipped: NEON_API_KEY or NEON_PROJECT_ID is not configured."
+            exit 0
+          fi
+          echo "configured=true" >> "$GITHUB_OUTPUT"
+
+      - name: Delete exact Neon preview branch
+        if: steps.config.outputs.configured == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "$PREVIEW_BRANCH_NAME" != preview/* || "$PREVIEW_BRANCH_NAME" == "preview/" ]]; then
+            echo "Refusing unsafe branch name: $PREVIEW_BRANCH_NAME"
+            exit 1
+          fi
+
+          response="$(curl --fail-with-body --silent --show-error \
+            --get \
+            --header "Authorization: Bearer $NEON_API_KEY" \
+            --data-urlencode "search=$PREVIEW_BRANCH_NAME" \
+            --data-urlencode "limit=100" \
+            "https://console.neon.tech/api/v2/projects/$NEON_PROJECT_ID/branches")"
+
+          branch_id="$(jq -r --arg name "$PREVIEW_BRANCH_NAME" \
+            '.branches[] | select(.name == $name and .name != "main") | .id' \
+            <<< "$response" | head -n 1)"
+
+          if [[ -z "$branch_id" ]]; then
+            echo "No active Neon branch named $PREVIEW_BRANCH_NAME; nothing to delete."
+            exit 0
+          fi
+
+          echo "Deleting Neon branch $PREVIEW_BRANCH_NAME ($branch_id)."
+          curl --fail-with-body --silent --show-error \
+            --request DELETE \
+            --header "Authorization: Bearer $NEON_API_KEY" \
+            "https://console.neon.tech/api/v2/projects/$NEON_PROJECT_ID/branches/$branch_id"
+
+          echo "Neon preview branch deleted."
