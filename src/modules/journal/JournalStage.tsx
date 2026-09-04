@@ -1,32 +1,35 @@
 import type { JournalEntry } from "@/lib/core/journal-entry";
+import { getLocale, getTranslations } from "next-intl/server";
 
 interface JournalStageProps {
   entries: readonly JournalEntry[];
 }
 
-function typeLabel(type: JournalEntry["type"]) {
-  switch (type) {
-    case "SYSTEM":
-      return "Système";
-    case "COGNITIVE":
-      return "Cognitive";
-    case "ACTION":
-      return "Action";
-    case "LEARNING":
-      return "Apprentissage";
-    default:
-      return type;
-  }
-}
-
-export default function JournalStage({
+export default async function JournalStage({
   entries,
 }: JournalStageProps) {
+  const t = await getTranslations("journalPage");
+  const locale = await getLocale();
   const latestEntry = entries.at(-1);
 
   const entryTypes = Array.from(
     new Set(entries.map((entry) => entry.type)),
   );
+
+  function typeLabel(type: JournalEntry["type"]) {
+    switch (type) {
+      case "SYSTEM":
+        return t("types.system");
+      case "COGNITIVE":
+        return t("types.cognitive");
+      case "ACTION":
+        return t("types.action");
+      case "LEARNING":
+        return t("types.learning");
+      default:
+        return type;
+    }
+  }
 
   return (
     <main className="min-h-full bg-[#05070b] px-6 py-10 text-white lg:px-10">
@@ -37,11 +40,11 @@ export default function JournalStage({
           </span>
 
           <h1 className="mt-3 text-4xl font-medium tracking-tight">
-            Journal
+            {t("title")}
           </h1>
 
           <p className="mt-3 max-w-2xl text-sm leading-6 text-white/50">
-            Les traces de l&apos;activité opérationnelle de Clara.
+            {t("subtitle")}
           </p>
         </header>
 
@@ -50,11 +53,11 @@ export default function JournalStage({
             {entries.length === 0 ? (
               <article className="rounded-3xl border border-white/10 bg-white/[0.025] p-8">
                 <span className="text-[10px] uppercase tracking-[0.22em] text-white/30">
-                  Journal
+                  {t("title")}
                 </span>
 
                 <p className="mt-4 text-sm leading-6 text-white/50">
-                  Aucune entrée dans le journal pour le moment.
+                  {t("empty")}
                 </p>
               </article>
             ) : (
@@ -81,7 +84,7 @@ export default function JournalStage({
                         dateTime={entry.createdAt.toISOString()}
                         className="shrink-0 text-xs text-white/30"
                       >
-                        {new Intl.DateTimeFormat("fr-FR", {
+                        {new Intl.DateTimeFormat(locale, {
                           dateStyle: "medium",
                           timeStyle: "short",
                         }).format(entry.createdAt)}
@@ -100,19 +103,17 @@ export default function JournalStage({
 
           <aside className="self-start rounded-3xl border border-white/10 bg-white/[0.025] p-7 lg:sticky lg:top-8">
             <span className="text-[10px] uppercase tracking-[0.22em] text-cyan-400/70">
-              Contexte
+              {t("context")}
             </span>
 
             <div className="mt-7">
               <div>
                 <span className="text-[10px] uppercase tracking-[0.18em] text-white/30">
-                  Entrées
+                  {t("entries")}
                 </span>
 
                 <p className="mt-2 text-sm leading-6 text-white/70">
-                  {entries.length}
-                  {" "}
-                  entrée{entries.length > 1 ? "s" : ""}
+                  {t("entryCount", { count: entries.length })}
                 </p>
               </div>
 
@@ -120,13 +121,13 @@ export default function JournalStage({
 
               <div>
                 <span className="text-[10px] uppercase tracking-[0.18em] text-white/30">
-                  Dernière activité
+                  {t("latestActivity")}
                 </span>
 
                 <p className="mt-2 text-sm leading-6 text-white/70">
                   {latestEntry
                     ? latestEntry.summary
-                    : "Aucune activité enregistrée"}
+                    : t("noActivityRecorded")}
                 </p>
 
                 {latestEntry && (
@@ -140,7 +141,7 @@ export default function JournalStage({
 
               <div>
                 <span className="text-[10px] uppercase tracking-[0.18em] text-white/30">
-                  Activités
+                  {t("activities")}
                 </span>
 
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -155,7 +156,7 @@ export default function JournalStage({
                     ))
                   ) : (
                     <span className="text-sm text-white/35">
-                      Aucune activité
+                      {t("noActivity")}
                     </span>
                   )}
                 </div>
@@ -169,8 +170,7 @@ export default function JournalStage({
                 </span>
 
                 <p className="mt-2 text-sm leading-6 text-white/75">
-                  Le Journal conserve les traces de l&apos;activité
-                  opérationnelle de Clara.
+                  {t("claraHelp")}
                 </p>
               </div>
             </div>
