@@ -42,6 +42,7 @@ export interface StripeSubscriptionSummary {
   readonly status: string;
   readonly customer: string | null;
   readonly currentPeriodEnd?: number;
+  readonly metadata?: Readonly<Record<string, string>>;
 }
 
 export interface StripePaymentSummary {
