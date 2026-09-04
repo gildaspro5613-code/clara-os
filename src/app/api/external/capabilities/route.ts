@@ -24,6 +24,16 @@ function errorStatus(error: ExternalCapabilityGatewayError): number {
   }
 }
 
+function parseCapabilityRequest(value: unknown): ExternalCapabilityRequest | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const body = value as Record<string, unknown>;
+  if (typeof body.capability !== "string" || !body.capability.trim()) return null;
+  return {
+    capability: body.capability,
+    input: body.input,
+  };
+}
+
 export async function POST(request: Request) {
   try {
     const product = authenticateExternalProduct(
@@ -38,12 +48,20 @@ export async function POST(request: Request) {
       );
     }
 
-    let body: ExternalCapabilityRequest;
+    let rawBody: unknown;
     try {
-      body = (await request.json()) as ExternalCapabilityRequest;
+      rawBody = await request.json();
     } catch {
       return NextResponse.json(
         { success: false, error: "Invalid JSON request body." },
+        { status: 400 },
+      );
+    }
+
+    const body = parseCapabilityRequest(rawBody);
+    if (!body) {
+      return NextResponse.json(
+        { success: false, error: "A capability id is required." },
         { status: 400 },
       );
     }
