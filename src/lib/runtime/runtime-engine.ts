@@ -33,8 +33,9 @@ export class RuntimeEngine {
   /**
    * Capability Engine.
    */
-  private readonly capabilityEngine =
-    new CapabilityEngine();
+  public constructor(
+    private readonly capabilityEngine = new CapabilityEngine(),
+  ) {}
 
   /**
    * Experience Engine.
@@ -280,6 +281,9 @@ export class RuntimeEngine {
 
       documentUrl:
         result.documentUrl,
+
+      operationalResult:
+        result.operationalResult,
 
       completedAt:
         result.completedAt,

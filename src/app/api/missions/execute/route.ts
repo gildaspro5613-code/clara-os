@@ -69,6 +69,7 @@ export async function POST(request: Request) {
       message: result.message,
       mission: updatedMission,
       outputs: result.outputs,
+      operationalResult: result.operationalResult,
       completedAt: result.completedAt,
     });
   } catch (error) {

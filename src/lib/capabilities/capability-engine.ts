@@ -78,6 +78,7 @@ import { DriveSearchWorkflow } from "./drive-search/workflow";
 
 import { SendGmailContext } from "./send-gmail/context";
 import { SendGmailWorkflow } from "./send-gmail/workflow";
+import { GitHubReadExecutor, type OperationalCapabilityResult } from "./github-read/executor";
 
 /**
  * Capability execution request.
@@ -126,6 +127,9 @@ export interface CapabilityExecutionResult {
    */
   readonly documentUrl?: string;
 
+  /** Provider-neutral operational result for connector-backed capabilities. */
+  readonly operationalResult?: OperationalCapabilityResult;
+
   /**
    * Completion timestamp.
    */
@@ -137,6 +141,8 @@ export interface CapabilityExecutionResult {
  * Capability Engine.
  */
 export class CapabilityEngine {
+
+  public constructor(private readonly githubRead = new GitHubReadExecutor()) {}
 
   /**
    * Registry.
@@ -227,6 +233,28 @@ export class CapabilityEngine {
     }
 
     switch (request.capabilityId) {
+
+      case "github.repository.list":
+      case "github.repository.read":
+      case "github.branch.list":
+      case "github.file.read":
+      case "github.commit.list":
+      case "github.issue.list":
+      case "github.issue.read":
+      case "github.pull_request.list":
+      case "github.pull_request.read":
+      case "github.checks.read": {
+        const result = await this.githubRead.execute(request.capabilityId, request.context);
+        return {
+          success: result.success,
+          message: result.success
+            ? `GitHub READ capability completed: ${request.capabilityId}`
+            : result.error?.message ?? "GitHub READ capability failed.",
+          content: result.success ? JSON.stringify(result.data) : undefined,
+          operationalResult: result,
+          completedAt: new Date(),
+        };
+      }
 
       case "search-drive": {
 
