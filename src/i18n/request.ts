@@ -17,19 +17,22 @@ export default getRequestConfig(async () => {
   const cookieStore = await cookies();
   const locale = resolveLocale(cookieStore.get(LOCALE_COOKIE)?.value);
 
-  const [baseMessagesModule, journalMessagesModule] = await Promise.all([
+  const [baseMessagesModule, journalMessagesModule, automationsBrevoMessagesModule] = await Promise.all([
     import(`./messages/${locale}/index.json`),
     import(`./messages/${locale}/journal.json`),
+    import(`./messages/${locale}/automations-brevo.json`),
   ]);
 
   const baseMessages = baseMessagesModule.default as Record<string, unknown>;
   const journalMessages = journalMessagesModule.default as Record<string, unknown>;
+  const automationsBrevoMessages = automationsBrevoMessagesModule.default as Record<string, unknown>;
 
   return {
     locale,
     messages: {
       ...baseMessages,
       journalPage: journalMessages,
+      automationsBrevo: automationsBrevoMessages,
     },
     // next-intl will silently fall back to the key name when a message
     // is missing — no exception thrown, no empty UI.
