@@ -68,7 +68,7 @@ export interface ConnectorDefinition {
   readonly name: string;
   readonly version: string;
   readonly authentication: {
-    readonly type: "oauth2";
+    readonly type: "oauth2" | "webhook";
     readonly credentialReference: "connectionId";
   };
   readonly capabilities: readonly ConnectorCapabilityDefinition[];
