@@ -168,7 +168,13 @@
     "title": "Hablar con Clara",
     "thinking": "Clara está pensando…",
     "placeholder": "Escribir a Clara…",
-    "send": "Enviar a Clara"
+    "send": "Enviar a Clara",
+    "approvalRequired": "Validación requerida",
+    "approve": "Autorizar",
+    "reject": "Rechazar",
+    "approved": "Acción autorizada y ejecutada.",
+    "rejected": "Acción rechazada.",
+    "approvalError": "No se puede procesar esta autorización."
   },
   "cockpitUi": {
     "quickActions": "Acciones rápidas",

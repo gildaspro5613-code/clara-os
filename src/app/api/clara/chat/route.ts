@@ -122,6 +122,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       message: result.content,
+      approvals: result.approvalRequests ?? [],
     });
   } catch (error) {
     return NextResponse.json(

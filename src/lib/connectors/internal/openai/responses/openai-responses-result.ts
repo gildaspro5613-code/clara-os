@@ -19,6 +19,14 @@ export interface OpenAIToolCall {
   readonly arguments: string;
 }
 
+export interface OpenAIToolApprovalRequest {
+  readonly id: string;
+  readonly token: string;
+  readonly capabilityId: string;
+  readonly summary: string;
+  readonly expiresAt: string;
+}
+
 /**
  * OpenAI Responses result.
  */
@@ -55,6 +63,8 @@ export interface OpenAIResponsesResult {
    * Function tool calls requested by the model.
    */
   readonly toolCalls?: OpenAIToolCall[];
+
+  readonly approvalRequests?: OpenAIToolApprovalRequest[];
 
   /**
    * Execution message.

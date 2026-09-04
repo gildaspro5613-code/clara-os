@@ -35,6 +35,11 @@ import {
   DatabaseToolAuditRepository,
   type ToolAuditWriter,
 } from "./tool-audit-repository";
+import {
+  DatabaseToolApprovalRepository,
+  type ToolApprovalRequest,
+  type ToolApprovalWriter,
+} from "./tool-approval-repository";
 
 export interface CapabilityToolBridgeResult {
   readonly success: boolean;
@@ -44,19 +49,19 @@ export interface CapabilityToolBridgeResult {
   readonly content?: string;
   readonly completedAt: Date;
   readonly code?: "PLAN_REQUIRED" | "APPROVAL_REQUIRED";
+  readonly approvalRequest?: ToolApprovalRequest;
 }
 
 export class CapabilityToolBridge {
 
   public constructor(
     private readonly audit: ToolAuditWriter = new DatabaseToolAuditRepository(),
+    private readonly approvals: ToolApprovalWriter = new DatabaseToolApprovalRepository(),
+    private readonly engine: Pick<CapabilityEngine, "execute"> = new CapabilityEngine(),
   ) {}
 
   private readonly registry =
     new CapabilityRegistry();
-
-  private readonly engine =
-    new CapabilityEngine();
 
   /**
    * Executes one model-requested capability.
@@ -98,6 +103,30 @@ export class CapabilityToolBridge {
       status: "REQUESTED",
     });
 
+    let context: unknown;
+
+    try {
+      context = JSON.parse(toolCall.arguments);
+    } catch {
+      return {
+        success: false,
+        callId: toolCall.callId,
+        capabilityId,
+        message: "Tool call arguments are not valid JSON.",
+        completedAt: new Date(),
+      };
+    }
+
+    if (context === null || typeof context !== "object" || Array.isArray(context)) {
+      return {
+        success: false,
+        callId: toolCall.callId,
+        capabilityId,
+        message: "Tool call context must be a JSON object.",
+        completedAt: new Date(),
+      };
+    }
+
     const decision = authorizeCapability(capabilityId, principal);
     if (!decision.allowed) {
       await this.audit.record({
@@ -108,43 +137,21 @@ export class CapabilityToolBridge {
         status: "DENIED",
         message: decision.message,
       });
+      const approvalRequest = decision.code === "APPROVAL_REQUIRED"
+        ? await this.approvals.create({
+            callId: toolCall.callId,
+            capabilityId,
+            arguments: toolCall.arguments,
+            principal,
+          })
+        : undefined;
       return {
         success: false,
         callId: toolCall.callId,
         capabilityId,
         code: decision.code,
         message: decision.message,
-        completedAt: new Date(),
-      };
-    }
-
-    let context: unknown;
-
-    try {
-      context =
-        JSON.parse(toolCall.arguments);
-    } catch {
-      return {
-        success: false,
-        callId: toolCall.callId,
-        capabilityId,
-        message:
-          "Tool call arguments are not valid JSON.",
-        completedAt: new Date(),
-      };
-    }
-
-    if (
-      context === null ||
-      typeof context !== "object" ||
-      Array.isArray(context)
-    ) {
-      return {
-        success: false,
-        callId: toolCall.callId,
-        capabilityId,
-        message:
-          "Tool call context must be a JSON object.",
+        approvalRequest,
         completedAt: new Date(),
       };
     }

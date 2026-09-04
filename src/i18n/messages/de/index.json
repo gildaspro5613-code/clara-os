@@ -168,7 +168,13 @@
     "title": "Mit Clara sprechen",
     "thinking": "Clara denkt nach…",
     "placeholder": "Clara schreiben…",
-    "send": "An Clara senden"
+    "send": "An Clara senden",
+    "approvalRequired": "Bestätigung erforderlich",
+    "approve": "Genehmigen",
+    "reject": "Ablehnen",
+    "approved": "Aktion genehmigt und ausgeführt.",
+    "rejected": "Aktion abgelehnt.",
+    "approvalError": "Diese Genehmigung konnte nicht verarbeitet werden."
   },
   "cockpitUi": {
     "quickActions": "Schnellaktionen",
