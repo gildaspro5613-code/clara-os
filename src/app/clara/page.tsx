@@ -18,7 +18,8 @@ export default async function ClaraPage({
   const params = await searchParams;
   const session = await loadSession();
   const mission = session.mission;
-  const startNewMission = params?.intent === "new-mission";
+  const intent = typeof params?.intent === "string" ? params.intent : undefined;
+  const focusClaraInput = intent === "new-mission" || intent === "email";
 
   return (
     <MainLayout>
@@ -76,7 +77,7 @@ export default async function ClaraPage({
         </section>
 
         <div className="max-w-4xl">
-          <ClaraChatWidget autoFocus={startNewMission} />
+          <ClaraChatWidget autoFocus={focusClaraInput} />
         </div>
       </div>
     </MainLayout>
