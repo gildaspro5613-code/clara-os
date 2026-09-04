@@ -5,7 +5,7 @@ import MissionsStage from "@/modules/missions/MissionsStage";
 import { loadMissions } from "@/modules/missions/mission-store";
 
 export default async function MissionsPage() {
-  let missions = [];
+  let missions: Awaited<ReturnType<typeof loadMissions>> = [];
 
   try {
     missions = await loadMissions();
