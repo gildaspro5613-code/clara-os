@@ -168,7 +168,13 @@
     "title": "Parla con Clara",
     "thinking": "Clara sta pensando…",
     "placeholder": "Scrivi a Clara…",
-    "send": "Invia a Clara"
+    "send": "Invia a Clara",
+    "approvalRequired": "Conferma richiesta",
+    "approve": "Autorizza",
+    "reject": "Rifiuta",
+    "approved": "Azione autorizzata ed eseguita.",
+    "rejected": "Azione rifiutata.",
+    "approvalError": "Impossibile elaborare questa autorizzazione."
   },
   "cockpitUi": {
     "quickActions": "Azioni rapide",

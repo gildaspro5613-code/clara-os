@@ -168,7 +168,13 @@
     "title": "Parler à Clara",
     "thinking": "Clara réfléchit…",
     "placeholder": "Écrire à Clara…",
-    "send": "Envoyer à Clara"
+    "send": "Envoyer à Clara",
+    "approvalRequired": "Validation requise",
+    "approve": "Autoriser",
+    "reject": "Refuser",
+    "approved": "Action autorisée et exécutée.",
+    "rejected": "Action refusée.",
+    "approvalError": "Impossible de traiter cette autorisation."
   },
   "cockpitUi": {
     "quickActions": "Raccourcis rapides",

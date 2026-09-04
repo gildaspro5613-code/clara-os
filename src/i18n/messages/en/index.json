@@ -168,7 +168,13 @@
     "title": "Talk to Clara",
     "thinking": "Clara is thinking…",
     "placeholder": "Write to Clara…",
-    "send": "Send to Clara"
+    "send": "Send to Clara",
+    "approvalRequired": "Approval required",
+    "approve": "Approve",
+    "reject": "Reject",
+    "approved": "Action approved and completed.",
+    "rejected": "Action rejected.",
+    "approvalError": "Unable to process this approval."
   },
   "cockpitUi": {
     "quickActions": "Quick actions",

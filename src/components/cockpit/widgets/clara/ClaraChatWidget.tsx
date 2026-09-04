@@ -3,7 +3,15 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Send } from "lucide-react";
+import { Check, Send, X } from "lucide-react";
+
+interface PendingApproval {
+  id: string;
+  token: string;
+  capabilityId: string;
+  summary: string;
+  expiresAt: string;
+}
 
 interface Message {
   id: number;
@@ -29,6 +37,7 @@ export default function ClaraChatWidget({
 
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [approvals, setApprovals] = useState<PendingApproval[]>([]);
   const router = useRouter();
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -65,6 +74,7 @@ export default function ClaraChatWidget({
       const data = (await response.json()) as {
         success?: boolean;
         message?: string;
+        approvals?: PendingApproval[];
       };
 
       if (!response.ok || !data.success) {
@@ -79,6 +89,7 @@ export default function ClaraChatWidget({
           content: data.message ?? "",
         },
       ]);
+      setApprovals((current) => [...current, ...(data.approvals ?? [])]);
 
       router.refresh();
     } catch (error) {
@@ -93,6 +104,37 @@ export default function ClaraChatWidget({
               : t("unavailable"),
         },
       ]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function decideApproval(approval: PendingApproval, decision: "approve" | "reject") {
+    if (loading) return;
+    setLoading(true);
+    try {
+      const response = await fetch("/api/clara/approvals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: approval.id, token: approval.token, decision }),
+      });
+      const data = await response.json() as { success?: boolean; message?: string; content?: string };
+      if (response.status !== 500) {
+        setApprovals((current) => current.filter((item) => item.id !== approval.id));
+      }
+      if (!response.ok || !data.success) throw new Error(data.message ?? t("approvalError"));
+      setMessages((current) => [...current, {
+        id: Date.now(),
+        role: "clara",
+        content: data.content || data.message || (decision === "approve" ? t("approved") : t("rejected")),
+      }]);
+      router.refresh();
+    } catch (error) {
+      setMessages((current) => [...current, {
+        id: Date.now(),
+        role: "clara",
+        content: error instanceof Error ? error.message : t("approvalError"),
+      }]);
     } finally {
       setLoading(false);
     }
@@ -135,6 +177,38 @@ export default function ClaraChatWidget({
           </div>
         )}
       </div>
+
+      {approvals.length > 0 && (
+        <div className="mt-4 space-y-3" aria-live="polite">
+          {approvals.map((approval) => (
+            <section key={approval.id} className="rounded-2xl border border-cyan-400/25 bg-cyan-400/[0.06] p-4">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-cyan-300/80">
+                {t("approvalRequired")}
+              </p>
+              <p className="mt-2 text-sm text-white/80">{approval.summary}</p>
+              <p className="mt-1 text-xs text-white/35">{approval.capabilityId}</p>
+              <div className="mt-4 flex gap-2">
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={() => void decideApproval(approval, "approve")}
+                  className="inline-flex items-center gap-2 rounded-xl bg-cyan-400 px-3 py-2 text-xs font-semibold text-[#041016] transition hover:bg-cyan-300 disabled:opacity-40"
+                >
+                  <Check size={14} /> {t("approve")}
+                </button>
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={() => void decideApproval(approval, "reject")}
+                  className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-xs text-white/60 transition hover:bg-white/5 disabled:opacity-40"
+                >
+                  <X size={14} /> {t("reject")}
+                </button>
+              </div>
+            </section>
+          ))}
+        </div>
+      )}
 
       <form
         onSubmit={handleSubmit}

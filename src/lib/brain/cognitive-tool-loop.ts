@@ -53,6 +53,8 @@ export class CognitiveToolLoop {
     input: CognitiveToolLoopInput,
   ): Promise<OpenAIResponsesResult> {
 
+    const approvalRequests: NonNullable<OpenAIResponsesResult["approvalRequests"]> = [];
+
     const principal = input.principal ?? {
       actorId: "system",
       workspaceId: "default",
@@ -119,7 +121,7 @@ export class CognitiveToolLoop {
         !result.toolCalls ||
         result.toolCalls.length === 0
       ) {
-        return result;
+        return { ...result, approvalRequests };
       }
 
       const toolOutputs = [];
@@ -144,6 +146,9 @@ export class CognitiveToolLoop {
                   code: execution.code,
                 },
               });
+              if (execution.approvalRequest) {
+                approvalRequests.push(execution.approvalRequest);
+              }
       }
 
       if (!result.responseId) {
@@ -168,6 +173,7 @@ export class CognitiveToolLoop {
 
     return {
       ...result,
+      approvalRequests,
       message:
         result.toolCalls && result.toolCalls.length > 0
           ? `Maximum cognitive tool rounds (${MAX_TOOL_ROUNDS}) reached.`
