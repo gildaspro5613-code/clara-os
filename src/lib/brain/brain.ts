@@ -92,13 +92,14 @@ export async function runBrainDashboard(
   /**
    * Build execution plan.
    */
-  const tasks = plan(decision);
+  const tasks = plan(decision, locale);
 
   /**
    * Produce recommendation.
    */
   const recommendation = recommend(
     decision,
+    locale,
   );
 
   /**
