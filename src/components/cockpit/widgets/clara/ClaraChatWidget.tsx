@@ -93,7 +93,7 @@ export default function ClaraChatWidget({
     if (pendingMessage?.trim()) {
       void submitMessage(
         pendingMessage.trim(),
-        true,
+        false,
         storedHistory.length > 0 ? storedHistory : undefined,
       );
     }
