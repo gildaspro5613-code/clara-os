@@ -114,6 +114,7 @@ export async function POST(request: Request) {
         {
           success: false,
           message: result.message,
+          requiredConnections: result.requiredConnections ?? [],
         },
         { status: 500 },
       );
@@ -123,6 +124,7 @@ export async function POST(request: Request) {
       success: true,
       message: result.content,
       approvals: result.approvalRequests ?? [],
+      requiredConnections: result.requiredConnections ?? [],
     });
   } catch (error) {
     return NextResponse.json(
