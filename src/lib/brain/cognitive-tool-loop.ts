@@ -30,6 +30,8 @@ import type { CapabilityExecutionPrincipal } from "@/lib/capabilities/capability
 
 const MAX_TOOL_ROUNDS = 5;
 const OPENAI_TOOL_NAME_PATTERN = /^[a-zA-Z0-9_-]+$/;
+const GOOGLE_REAUTH_MESSAGE =
+  "Google authorization is no longer valid. Reconnect Google.";
 
 function toOpenAIToolName(capabilityId: string): string {
   return capabilityId.replace(/[^a-zA-Z0-9_-]/g, "_");
@@ -59,6 +61,7 @@ export class CognitiveToolLoop {
   ): Promise<OpenAIResponsesResult> {
 
     const approvalRequests: NonNullable<OpenAIResponsesResult["approvalRequests"]> = [];
+    const requiredConnections = new Set<string>();
 
     const principal = input.principal ?? {
       actorId: "system",
@@ -160,7 +163,11 @@ export class CognitiveToolLoop {
         !result.toolCalls ||
         result.toolCalls.length === 0
       ) {
-        return { ...result, approvalRequests };
+        return {
+          ...result,
+          approvalRequests,
+          requiredConnections: [...requiredConnections],
+        };
       }
 
       const toolOutputs = [];
@@ -178,6 +185,10 @@ export class CognitiveToolLoop {
             },
             principal,
           );
+
+        if (execution.message === GOOGLE_REAUTH_MESSAGE) {
+          requiredConnections.add("google");
+        }
 
         toolOutputs.push({
           callId: toolCall.callId,
@@ -201,6 +212,8 @@ export class CognitiveToolLoop {
         return {
           ...result,
           success: false,
+          approvalRequests,
+          requiredConnections: [...requiredConnections],
           message:
             "Tool calls were returned without a Responses API response identifier.",
         };
@@ -220,6 +233,7 @@ export class CognitiveToolLoop {
     return {
       ...result,
       approvalRequests,
+      requiredConnections: [...requiredConnections],
       message:
         result.toolCalls && result.toolCalls.length > 0
           ? `Maximum cognitive tool rounds (${MAX_TOOL_ROUNDS}) reached.`
