@@ -149,7 +149,7 @@ export async function POST(request: Request) {
       prompt,
       principal: {
         actorId: process.env.CLARA_ACTOR_ID ?? "owner",
-        workspaceId: process.env.CLARA_WORKSPACE_ID ?? "melodie-digital",
+        workspaceId: CURRENT_WORKSPACE_ID,
         plan: getPlan(),
         // Fail closed until Clara's authenticated approval UI issues
         // server-verified, single-use approvals.
