@@ -24,6 +24,32 @@ interface ClaraChatWidgetProps {
 }
 
 const GOOGLE_RETRY_STORAGE_KEY = "clara_google_retry_message";
+const CHAT_HISTORY_STORAGE_KEY = "clara_chat_history";
+
+function parseStoredHistory(value: string | null): Message[] {
+  if (!value) return [];
+
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed
+      .filter(
+        (item): item is Message =>
+          Boolean(item) &&
+          typeof item === "object" &&
+          "id" in item &&
+          typeof item.id === "number" &&
+          "role" in item &&
+          (item.role === "user" || item.role === "clara") &&
+          "content" in item &&
+          typeof item.content === "string",
+      )
+      .slice(-12);
+  } catch {
+    return [];
+  }
+}
 
 export default function ClaraChatWidget({
   autoFocus = false,
@@ -45,6 +71,14 @@ export default function ClaraChatWidget({
   const router = useRouter();
 
   useEffect(() => {
+    const storedHistory = parseStoredHistory(
+      sessionStorage.getItem(CHAT_HISTORY_STORAGE_KEY),
+    );
+
+    if (storedHistory.length > 0) {
+      setMessages(storedHistory);
+    }
+
     const params = new URLSearchParams(window.location.search);
     if (params.get("google") !== "connected") return;
 
@@ -57,14 +91,33 @@ export default function ClaraChatWidget({
     window.history.replaceState({}, "", cleanUrl);
 
     if (pendingMessage?.trim()) {
-      void submitMessage(pendingMessage.trim(), true);
+      void submitMessage(
+        pendingMessage.trim(),
+        true,
+        storedHistory.length > 0 ? storedHistory : undefined,
+      );
     }
-    // The retry is intentionally performed once, only after the OAuth callback.
+    // OAuth retry must run once on mount after the callback.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function submitMessage(message: string, appendUserMessage: boolean) {
+  useEffect(() => {
+    if (messages.length > 0) {
+      sessionStorage.setItem(
+        CHAT_HISTORY_STORAGE_KEY,
+        JSON.stringify(messages.slice(-12)),
+      );
+    }
+  }, [messages]);
+
+  async function submitMessage(
+    message: string,
+    appendUserMessage: boolean,
+    historyOverride?: Message[],
+  ) {
     if (!message || loading) return;
+
+    const conversationHistory = historyOverride ?? messages;
 
     if (appendUserMessage) {
       setMessages((current) => [
@@ -87,7 +140,13 @@ export default function ClaraChatWidget({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({
+          message,
+          history: conversationHistory.slice(-10).map(({ role, content }) => ({
+            role,
+            content,
+          })),
+        }),
       });
 
       const data = (await response.json()) as {
@@ -152,6 +211,10 @@ export default function ClaraChatWidget({
     if (retryMessage) {
       sessionStorage.setItem(GOOGLE_RETRY_STORAGE_KEY, retryMessage);
     }
+    sessionStorage.setItem(
+      CHAT_HISTORY_STORAGE_KEY,
+      JSON.stringify(messages.slice(-12)),
+    );
     window.location.assign("/api/connections/google/connect");
   }
 
