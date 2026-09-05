@@ -160,15 +160,15 @@ export async function POST(request: Request) {
     const requiredConnections = new Set(result.requiredConnections ?? []);
 
     // Some Google failures are discovered by runtime/source loading before a
-    // model tool call is executed. In that case the connection repository is
-    // the source of truth for the UI reconnect action.
+    // model tool call is executed. A missing connection is also a setup/reauth
+    // condition: only an ACTIVE Google connection can suppress the UI action.
     if (isGoogleIntent(message, history)) {
       const googleConnection = await new DatabaseConnectionRepository()
         .findByWorkspaceAndProvider(CURRENT_WORKSPACE_ID, "google");
 
       if (
-        googleConnection?.status === ConnectionStatus.RECONNECT_REQUIRED ||
-        googleConnection?.status === ConnectionStatus.PENDING_AUTHENTICATION
+        !googleConnection ||
+        googleConnection.status !== ConnectionStatus.ACTIVE
       ) {
         requiredConnections.add("google");
       }
