@@ -16,6 +16,8 @@ import {
 } from "@/lib/connectors/google/oauth/google-oauth-state";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 const GOOGLE_OAUTH_COOKIE = "clara_google_oauth_nonce";
 
 export async function GET() {
@@ -24,6 +26,7 @@ export async function GET() {
     CURRENT_WORKSPACE_ID,
     "google",
   );
+
   if (!connection) {
     connection = createPendingGoogleConnection(
       CURRENT_WORKSPACE_ID,
@@ -32,23 +35,28 @@ export async function GET() {
   } else {
     connection = {
       ...connection,
-      status: connection.status === ConnectionStatus.ACTIVE
-        ? ConnectionStatus.ACTIVE
-        : ConnectionStatus.PENDING_AUTHENTICATION,
+      status:
+        connection.status === ConnectionStatus.ACTIVE
+          ? ConnectionStatus.ACTIVE
+          : ConnectionStatus.PENDING_AUTHENTICATION,
       scopes: [...GOOGLE_OAUTH_SCOPES],
       updatedAt: new Date(),
     };
   }
+
   await repository.save(connection);
 
   const nonce = createGoogleOAuthNonce();
   const url = new OAuthAuthorizationService(oauthProviders).create({
-    provider: "google", connectionId: connection.id,
-    workspaceId: connection.workspaceId, nonce,
+    provider: "google",
+    connectionId: connection.id,
+    workspaceId: connection.workspaceId,
+    nonce,
     redirectUri: googleConfig.redirectUri,
     redirectPath: "/?google=connected",
     scopes: GOOGLE_OAUTH_SCOPES,
   });
+
   const response = NextResponse.redirect(url);
   response.cookies.set(GOOGLE_OAUTH_COOKIE, nonce, {
     httpOnly: true,
@@ -57,5 +65,6 @@ export async function GET() {
     maxAge: 10 * 60,
     path: "/api/connections/google/callback",
   });
+
   return response;
 }
