@@ -29,8 +29,9 @@ import { toCapabilityTools } from "@/lib/capabilities/capability-tool-adapter";
 import type { CapabilityExecutionPrincipal } from "@/lib/capabilities/capability-policy";
 
 const MAX_TOOL_ROUNDS = 5;
+const OPENAI_TOOL_NAME_PATTERN = /^[a-zA-Z0-9_-]+$/;
 
-function toModelToolName(capabilityId: string): string {
+function toOpenAIToolName(capabilityId: string): string {
   return capabilityId.replace(/[^a-zA-Z0-9_-]/g, "_");
 }
 
@@ -66,38 +67,44 @@ export class CognitiveToolLoop {
       approvedCapabilityIds: [],
     };
 
-    const capabilities = this.registry.getAll();
     const capabilityTools =
-      toCapabilityTools(capabilities);
+      toCapabilityTools(
+        this.registry.getAll(),
+      );
 
-    const capabilityIdByToolName = new Map<string, string>();
+    const toolNameToCapabilityId = new Map<string, string>();
 
     const tools =
       capabilityTools.map(
-        (tool, index) => {
-          const capabilityId = capabilities[index].id;
-          const modelToolName = toModelToolName(tool.name);
+        (tool) => {
+          const openAIToolName = toOpenAIToolName(tool.name);
 
-          const existingCapabilityId =
-            capabilityIdByToolName.get(modelToolName);
-
-          if (
-            existingCapabilityId &&
-            existingCapabilityId !== capabilityId
-          ) {
+          if (!OPENAI_TOOL_NAME_PATTERN.test(openAIToolName)) {
             throw new Error(
-              `Capability tool name collision: "${existingCapabilityId}" and "${capabilityId}" both map to "${modelToolName}".`,
+              `Unable to create an OpenAI-compatible tool name for capability "${tool.name}".`,
             );
           }
 
-          capabilityIdByToolName.set(
-            modelToolName,
-            capabilityId,
+          const existingCapabilityId =
+            toolNameToCapabilityId.get(openAIToolName);
+
+          if (
+            existingCapabilityId &&
+            existingCapabilityId !== tool.name
+          ) {
+            throw new Error(
+              `OpenAI tool name collision: "${existingCapabilityId}" and "${tool.name}" both normalize to "${openAIToolName}".`,
+            );
+          }
+
+          toolNameToCapabilityId.set(
+            openAIToolName,
+            tool.name,
           );
 
           return {
             type: "function" as const,
-            name: modelToolName,
+            name: openAIToolName,
             description: tool.description,
             parameters: {
               type: "object",
@@ -125,7 +132,12 @@ export class CognitiveToolLoop {
                 .map(([name]) => name),
               additionalProperties: false,
             },
-            strict: true,
+            // Clara capabilities intentionally support optional parameters.
+            // OpenAI strict function schemas require every property to appear
+            // in `required`, which would change Clara's capability contracts.
+            // CapabilityToolBridge and CapabilityEngine remain responsible for
+            // validating the model-provided execution context.
+            strict: false,
           };
         },
       );
@@ -155,7 +167,7 @@ export class CognitiveToolLoop {
       for (const toolCall of result.toolCalls as OpenAIToolCall[]) {
 
         const capabilityId =
-          capabilityIdByToolName.get(toolCall.name) ??
+          toolNameToCapabilityId.get(toolCall.name) ??
           toolCall.name;
 
         const execution =
