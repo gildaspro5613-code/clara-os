@@ -30,6 +30,10 @@ import type { CapabilityExecutionPrincipal } from "@/lib/capabilities/capability
 
 const MAX_TOOL_ROUNDS = 5;
 
+function toModelToolName(capabilityId: string): string {
+  return capabilityId.replace(/[^a-zA-Z0-9_-]/g, "_");
+}
+
 export interface CognitiveToolLoopInput {
   readonly prompt: string;
   readonly principal?: CapabilityExecutionPrincipal;
@@ -62,45 +66,68 @@ export class CognitiveToolLoop {
       approvedCapabilityIds: [],
     };
 
+    const capabilities = this.registry.getAll();
     const capabilityTools =
-      toCapabilityTools(
-        this.registry.getAll(),
-      );
+      toCapabilityTools(capabilities);
+
+    const capabilityIdByToolName = new Map<string, string>();
 
     const tools =
       capabilityTools.map(
-        (tool) => ({
-          type: "function" as const,
-          name: tool.name,
-          description: tool.description,
-          parameters: {
-            type: "object",
-            properties: Object.fromEntries(
-              Object.entries(
-                tool.parameters,
-              ).map(
-                ([name, parameter]) => [
-                  name,
-                  {
-                    type: parameter.type,
-                    description:
-                      parameter.description,
-                  },
-                ],
+        (tool, index) => {
+          const capabilityId = capabilities[index].id;
+          const modelToolName = toModelToolName(tool.name);
+
+          const existingCapabilityId =
+            capabilityIdByToolName.get(modelToolName);
+
+          if (
+            existingCapabilityId &&
+            existingCapabilityId !== capabilityId
+          ) {
+            throw new Error(
+              `Capability tool name collision: "${existingCapabilityId}" and "${capabilityId}" both map to "${modelToolName}".`,
+            );
+          }
+
+          capabilityIdByToolName.set(
+            modelToolName,
+            capabilityId,
+          );
+
+          return {
+            type: "function" as const,
+            name: modelToolName,
+            description: tool.description,
+            parameters: {
+              type: "object",
+              properties: Object.fromEntries(
+                Object.entries(
+                  tool.parameters,
+                ).map(
+                  ([name, parameter]) => [
+                    name,
+                    {
+                      type: parameter.type,
+                      description:
+                        parameter.description,
+                    },
+                  ],
+                ),
               ),
-            ),
-            required: Object.entries(
-              tool.parameters,
-            )
-              .filter(
-                ([, parameter]) =>
-                  parameter.required,
+              required: Object.entries(
+                tool.parameters,
               )
-              .map(([name]) => name),
-            additionalProperties: false,
-          },
-          strict: true,
-        }),
+                .filter(
+                  ([, parameter]) =>
+                    parameter.required,
+                )
+                .map(([name]) => name),
+              additionalProperties: false,
+            },
+            strict: true,
+          };
+        },
       );
 
     let result =
@@ -127,28 +154,35 @@ export class CognitiveToolLoop {
       const toolOutputs = [];
       for (const toolCall of result.toolCalls as OpenAIToolCall[]) {
 
-              const execution =
-                await this.bridge.execute(
-                  toolCall,
-                  principal,
-                );
+        const capabilityId =
+          capabilityIdByToolName.get(toolCall.name) ??
+          toolCall.name;
 
-              toolOutputs.push({
-                callId: toolCall.callId,
-                output: {
-                  success: execution.success,
-                  capabilityId:
-                    execution.capabilityId,
-                  message:
-                    execution.message,
-                  content:
-                    execution.content,
-                  code: execution.code,
-                },
-              });
-              if (execution.approvalRequest) {
-                approvalRequests.push(execution.approvalRequest);
-              }
+        const execution =
+          await this.bridge.execute(
+            {
+              ...toolCall,
+              name: capabilityId,
+            },
+            principal,
+          );
+
+        toolOutputs.push({
+          callId: toolCall.callId,
+          output: {
+            success: execution.success,
+            capabilityId:
+              execution.capabilityId,
+            message:
+              execution.message,
+            content:
+              execution.content,
+            code: execution.code,
+          },
+        });
+        if (execution.approvalRequest) {
+          approvalRequests.push(execution.approvalRequest);
+        }
       }
 
       if (!result.responseId) {
