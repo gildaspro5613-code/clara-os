@@ -4,9 +4,18 @@ import { dispatchEvent } from "@/lib/core/event-bus";
 import { getRuntime } from "@/lib/core/runtime";
 import { EventType } from "@/types";
 import { CognitiveToolLoop } from "@/lib/brain/cognitive-tool-loop";
+import { ConnectionStatus } from "@/lib/connections/connection";
+import { DatabaseConnectionRepository } from "@/lib/connections/connection-repository";
+import { CURRENT_WORKSPACE_ID } from "@/lib/connections/current-workspace";
+
+interface ChatHistoryMessage {
+  role: "user" | "clara";
+  content: string;
+}
 
 interface ChatRequest {
   message?: string;
+  history?: ChatHistoryMessage[];
 }
 
 function getPlan(): "essential" | "pro" | "premium" {
@@ -14,10 +23,38 @@ function getPlan(): "essential" | "pro" | "premium" {
   return plan === "essential" || plan === "pro" ? plan : "premium";
 }
 
+function normalizeHistory(history: ChatHistoryMessage[] | undefined): ChatHistoryMessage[] {
+  if (!Array.isArray(history)) return [];
+
+  return history
+    .filter(
+      (item): item is ChatHistoryMessage =>
+        Boolean(item) &&
+        (item.role === "user" || item.role === "clara") &&
+        typeof item.content === "string" &&
+        item.content.trim().length > 0,
+    )
+    .slice(-10)
+    .map((item) => ({
+      role: item.role,
+      content: item.content.trim().slice(0, 4000),
+    }));
+}
+
+function isGoogleIntent(message: string, history: ChatHistoryMessage[]): boolean {
+  const context = [
+    ...history.map((item) => item.content),
+    message,
+  ].join(" ");
+
+  return /\b(gmail|google|e-?mail|mail|drive|agenda|calendar|sheet|sheets|document|docs)\b/i.test(context);
+}
+
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as ChatRequest;
     const message = body.message?.trim();
+    const history = normalizeHistory(body.history);
 
     if (!message) {
       return NextResponse.json(
@@ -47,6 +84,12 @@ export async function POST(request: Request) {
           .join("\n\n")
       : "Aucune source externe chargée.";
 
+    const conversationSummary = history.length > 0
+      ? history
+          .map((item) => `${item.role === "user" ? "Gildas" : "Clara"} : ${item.content}`)
+          .join("\n")
+      : "Aucun échange précédent dans cette conversation.";
+
     const prompt = [
       "Tu es Clara.",
       "",
@@ -72,8 +115,13 @@ export async function POST(request: Request) {
       "",
       "Tu peux proposer directement la prochaine action utile lorsque le contexte le permet.",
       "Si une information manque réellement, pose une seule question ciblée.",
+      "Interprète toujours le message courant dans la continuité des échanges précédents.",
+      "Une adresse email donnée après une demande d'envoi complète naturellement le destinataire de cette demande.",
       "Ne prétends jamais avoir effectué une action qui ne l'a pas été.",
       "Si tu ne sais pas quelque chose, dis-le simplement.",
+      "",
+      "Conversation récente :",
+      conversationSummary,
       "",
       "Contexte opérationnel disponible :",
       `État actuel : ${session.state}`,
@@ -91,9 +139,9 @@ export async function POST(request: Request) {
       "- N'invente jamais une donnée absente des sources.",
       "- Si une source est indisponible, dis-le simplement et naturellement.",
       "",
-      "Message de Gildas :",
+      "Message courant de Gildas :",
       message,
-    ].join("\\n");
+    ].join("\n");
 
     const toolLoop = new CognitiveToolLoop();
 
@@ -109,12 +157,30 @@ export async function POST(request: Request) {
       },
     });
 
+    const requiredConnections = new Set(result.requiredConnections ?? []);
+
+    // Some Google failures are discovered by runtime/source loading before a
+    // model tool call is executed. In that case the connection repository is
+    // the source of truth for the UI reconnect action.
+    if (isGoogleIntent(message, history)) {
+      const googleConnection = await new DatabaseConnectionRepository()
+        .findByWorkspaceAndProvider(CURRENT_WORKSPACE_ID, "google");
+
+      if (
+        !googleConnection ||
+        googleConnection.status === ConnectionStatus.RECONNECT_REQUIRED ||
+        googleConnection.status === ConnectionStatus.PENDING_AUTHENTICATION
+      ) {
+        requiredConnections.add("google");
+      }
+    }
+
     if (!result.success) {
       return NextResponse.json(
         {
           success: false,
           message: result.message,
-          requiredConnections: result.requiredConnections ?? [],
+          requiredConnections: [...requiredConnections],
         },
         { status: 500 },
       );
@@ -124,7 +190,7 @@ export async function POST(request: Request) {
       success: true,
       message: result.content,
       approvals: result.approvalRequests ?? [],
-      requiredConnections: result.requiredConnections ?? [],
+      requiredConnections: [...requiredConnections],
     });
   } catch (error) {
     return NextResponse.json(
