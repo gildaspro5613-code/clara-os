@@ -167,9 +167,8 @@ export async function POST(request: Request) {
         .findByWorkspaceAndProvider(CURRENT_WORKSPACE_ID, "google");
 
       if (
-        !googleConnection ||
-        googleConnection.status === ConnectionStatus.RECONNECT_REQUIRED ||
-        googleConnection.status === ConnectionStatus.PENDING_AUTHENTICATION
+        googleConnection?.status === ConnectionStatus.RECONNECT_REQUIRED ||
+        googleConnection?.status === ConnectionStatus.PENDING_AUTHENTICATION
       ) {
         requiredConnections.add("google");
       }
