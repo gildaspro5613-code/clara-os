@@ -14,12 +14,42 @@ import type { Mission } from "./types/Mission";
 
 import { sql } from "@/lib/core/store/database";
 
+let schemaReady: Promise<void> | null = null;
+
+/**
+ * Ensures the Missions persistence schema exists before it is used.
+ *
+ * Clara OS already lazily provisions persistence tables owned by newer
+ * repositories (connections, credentials, approvals). Missions predates
+ * that convention, so a fresh Neon/Vercel environment could reach the
+ * mission store before clara_missions had ever been created.
+ */
+async function ensureMissionSchema(): Promise<void> {
+  if (!schemaReady) {
+    schemaReady = (async () => {
+      await sql`
+        CREATE TABLE IF NOT EXISTS clara_missions (
+          id TEXT PRIMARY KEY,
+          data JSONB NOT NULL,
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+      `;
+    })().catch((error) => {
+      schemaReady = null;
+      throw error;
+    });
+  }
+
+  await schemaReady;
+}
+
 /**
  * Persists one operational Mission.
  */
 export async function saveMission(
   mission: Mission,
 ): Promise<void> {
+  await ensureMissionSchema();
   await sql`
     INSERT INTO clara_missions (
       id,
@@ -42,6 +72,7 @@ export async function saveMission(
  * Loads all operational Missions.
  */
 export async function loadMissions(): Promise<Mission[]> {
+  await ensureMissionSchema();
   const rows = await sql`
     SELECT data
     FROM clara_missions
@@ -69,6 +100,7 @@ export async function loadMissions(): Promise<Mission[]> {
 export async function loadMission(
   missionId: string,
 ): Promise<Mission | null> {
+  await ensureMissionSchema();
   const rows = await sql`
     SELECT data
     FROM clara_missions
