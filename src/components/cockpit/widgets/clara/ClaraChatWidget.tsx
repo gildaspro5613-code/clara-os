@@ -1,9 +1,9 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Check, Send, X } from "lucide-react";
+import { Check, RefreshCw, Send, X } from "lucide-react";
 
 interface PendingApproval {
   id: string;
@@ -23,6 +23,8 @@ interface ClaraChatWidgetProps {
   autoFocus?: boolean;
 }
 
+const GOOGLE_RETRY_STORAGE_KEY = "clara_google_retry_message";
+
 export default function ClaraChatWidget({
   autoFocus = false,
 }: ClaraChatWidgetProps) {
@@ -38,28 +40,45 @@ export default function ClaraChatWidget({
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [approvals, setApprovals] = useState<PendingApproval[]>([]);
+  const [requiredConnections, setRequiredConnections] = useState<string[]>([]);
+  const [retryMessage, setRetryMessage] = useState<string | null>(null);
   const router = useRouter();
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("google") !== "connected") return;
 
-    const message = input.trim();
+    const pendingMessage = sessionStorage.getItem(GOOGLE_RETRY_STORAGE_KEY);
+    sessionStorage.removeItem(GOOGLE_RETRY_STORAGE_KEY);
 
-    if (!message || loading) {
-      return;
+    params.delete("google");
+    const nextQuery = params.toString();
+    const cleanUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ""}${window.location.hash}`;
+    window.history.replaceState({}, "", cleanUrl);
+
+    if (pendingMessage?.trim()) {
+      void submitMessage(pendingMessage.trim(), true);
+    }
+    // The retry is intentionally performed once, only after the OAuth callback.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function submitMessage(message: string, appendUserMessage: boolean) {
+    if (!message || loading) return;
+
+    if (appendUserMessage) {
+      setMessages((current) => [
+        ...current,
+        {
+          id: Date.now(),
+          role: "user",
+          content: message,
+        },
+      ]);
     }
 
-    setInput("");
-
-    setMessages((current) => [
-      ...current,
-      {
-        id: Date.now(),
-        role: "user",
-        content: message,
-      },
-    ]);
-
+    setRequiredConnections([]);
+    setRetryMessage(null);
     setLoading(true);
 
     try {
@@ -75,7 +94,14 @@ export default function ClaraChatWidget({
         success?: boolean;
         message?: string;
         approvals?: PendingApproval[];
+        requiredConnections?: string[];
       };
+
+      const connections = data.requiredConnections ?? [];
+      setRequiredConnections(connections);
+      if (connections.includes("google")) {
+        setRetryMessage(message);
+      }
 
       if (!response.ok || !data.success) {
         throw new Error(data.message ?? t("unavailable"));
@@ -107,6 +133,26 @@ export default function ClaraChatWidget({
     } finally {
       setLoading(false);
     }
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const message = input.trim();
+
+    if (!message || loading) {
+      return;
+    }
+
+    setInput("");
+    await submitMessage(message, true);
+  }
+
+  function reconnectGoogle() {
+    if (retryMessage) {
+      sessionStorage.setItem(GOOGLE_RETRY_STORAGE_KEY, retryMessage);
+    }
+    window.location.assign("/api/connections/google/connect");
   }
 
   async function decideApproval(approval: PendingApproval, decision: "approve" | "reject") {
@@ -177,6 +223,25 @@ export default function ClaraChatWidget({
           </div>
         )}
       </div>
+
+      {requiredConnections.includes("google") && (
+        <section className="mt-4 rounded-2xl border border-cyan-400/25 bg-cyan-400/[0.06] p-4" aria-live="polite">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-cyan-300/80">
+            Connexion Google requise
+          </p>
+          <p className="mt-2 text-sm text-white/70">
+            Clara peut reconnecter Google ici puis reprendre automatiquement ta demande.
+          </p>
+          <button
+            type="button"
+            disabled={loading}
+            onClick={reconnectGoogle}
+            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-cyan-400 px-3 py-2 text-xs font-semibold text-[#041016] transition hover:bg-cyan-300 disabled:opacity-40"
+          >
+            <RefreshCw size={14} /> Reconnecter Google
+          </button>
+        </section>
+      )}
 
       {approvals.length > 0 && (
         <div className="mt-4 space-y-3" aria-live="polite">
