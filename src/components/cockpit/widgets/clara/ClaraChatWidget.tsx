@@ -36,7 +36,7 @@ function parseStoredHistory(value: string | null): Message[] {
     return parsed
       .filter(
         (item): item is Message =>
-          Boolean(item) &&
+          item !== null &&
           typeof item === "object" &&
           "id" in item &&
           typeof item.id === "number" &&
