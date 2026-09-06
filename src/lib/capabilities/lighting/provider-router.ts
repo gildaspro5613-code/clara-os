@@ -1,8 +1,9 @@
 import type { ConnectionRepository } from "@/lib/connections/connection-repository";
-import { CHAMSYS_MAGICQ_CONNECTOR_ID } from "@/lib/connectors/internal/chamsys/magicq";
-import { MA_LIGHTING_GRANDMA3_CONNECTOR_ID } from "@/lib/connectors/internal/ma-lighting/grandma3";
+import { GRANDMA3_CONNECTOR_ID } from "@/lib/connectors/internal/ma-lighting/grandma3";
 import type { MagicQLightingExecutor } from "../magicq-lighting/executor";
 import type { GrandMA3LightingExecutor } from "../grandma3-lighting/executor";
+
+const MAGICQ_CONNECTOR_ID = "chamsys.magicq";
 
 export type LightingFixtureIntensityInput = {
   workspaceId: string;
@@ -15,10 +16,7 @@ export interface LightingFixtureIntensityExecutor {
   setFixtureIntensity(input: LightingFixtureIntensityInput): Promise<unknown>;
 }
 
-/**
- * Routes one provider-neutral Lighting capability by the Universal Connection.
- * The Clara capability never needs a provider-specific capability id.
- */
+/** Routes the provider-neutral Lighting capability by Universal Connection. */
 export class ProviderAwareLightingFixtureIntensityExecutor
 implements LightingFixtureIntensityExecutor {
   constructor(
@@ -35,9 +33,9 @@ implements LightingFixtureIntensityExecutor {
     }
 
     switch (connection.provider) {
-      case CHAMSYS_MAGICQ_CONNECTOR_ID:
+      case MAGICQ_CONNECTOR_ID:
         return this.magicq.setFixtureIntensity(input);
-      case MA_LIGHTING_GRANDMA3_CONNECTOR_ID:
+      case GRANDMA3_CONNECTOR_ID:
         return this.grandMA3.setFixtureIntensity(input);
       default:
         throw new Error(`LIGHTING_PROVIDER_NOT_EXECUTABLE:${connection.provider}`);
