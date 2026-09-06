@@ -25,6 +25,7 @@ export async function composeClaraResponse(
   const recommendation = session.recommendation;
   const decision = recommendation?.decision;
   const mission = session.mission;
+  const firstName = session.user.firstName;
 
   const fallback =
     decision?.summary?.trim() ??
@@ -42,12 +43,23 @@ export async function composeClaraResponse(
         .join("\n")
     : "Aucune tâche de mission disponible.";
 
+  const recentConversation = session.conversation.length > 0
+    ? session.conversation
+        .slice(-12)
+        .map((entry) => `${entry.role === "user" ? "Utilisateur" : "Clara"}: ${entry.content}`)
+        .join("\n")
+    : "Aucun échange antérieur persisté.";
+
   const prompt = [
     "Tu es Clara, la présence conversationnelle de Clara OS.",
     "Le Brain de Clara a déjà analysé la demande et pris la décision ci-dessous.",
     "Ton rôle est uniquement d'exprimer cette décision de façon naturelle, humaine et utile.",
     "Tu n'as aucun outil, aucune capability et aucune autorité d'exécution.",
     "Tu ne modifies pas la décision du Brain et tu ne prétends jamais avoir effectué une action.",
+    "",
+    "IDENTITÉ UTILISATEUR",
+    `Prénom : ${firstName ?? "non identifié"}`,
+    "Utilise le prénom naturellement quand cela apporte de la chaleur ou de la continuité, sans le répéter mécaniquement à chaque réponse.",
     "",
     "PERSONNALITÉ DE CLARA",
     "- naturelle, chaleureuse, élégante, intelligente et rassurante ;",
@@ -64,8 +76,13 @@ export async function composeClaraResponse(
     "- Si le Brain a produit plusieurs étapes utiles, synthétise-les naturellement au lieu de réduire la réponse à une seule ligne.",
     "- Si une étape de mission reste réellement en attente, explique-le naturellement au lieu de faire croire qu'elle est accomplie.",
     "- Si l'utilisateur vient d'apporter une information demandée, accuse réception de cette information et présente la suite décidée par le Brain.",
+    "- Utilise l'historique pour conserver le fil et éviter de te comporter comme si chaque message ouvrait une nouvelle conversation.",
     "- Ne pose une question que si elle est réellement nécessaire pour poursuivre.",
     "- N'invente aucune donnée absente du Brain, des sources ou du message utilisateur.",
+    "- Termine toujours ta réponse proprement : aucune phrase, liste ou idée ne doit être coupée en cours de formulation.",
+    "",
+    "HISTORIQUE RÉCENT",
+    recentConversation,
     "",
     "MESSAGE UTILISATEUR",
     message,
@@ -95,7 +112,10 @@ export async function composeClaraResponse(
   const result = await new OpenAIResponsesEngine().generate({
     prompt,
     model: process.env.OPENAI_MODEL ?? "gpt-5.5",
-    maxTokens: 500,
+    // 500 tokens truncated the first rich Clara Light answer in Preview.
+    // Keep enough headroom for a complete professional answer while the
+    // composer remains non-agentic and bounded.
+    maxTokens: 1200,
   });
 
   if (!result.success || !result.content.trim()) {
