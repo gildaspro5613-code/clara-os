@@ -11,6 +11,21 @@ export {
 } from "./crep";
 
 export {
+  MAGICQ_CAPABILITIES,
+  MagicQConnectorDefinition,
+  type MagicQConnectorDefinitionShape,
+} from "./definition";
+
+export { MagicQConnectorAdapter } from "./adapter";
+
+export type {
+  MagicQFixtureIntensityRequest,
+  MagicQFixtureIntensityResult,
+  MagicQFixtureTargetResolver,
+  ResolvedMagicQFixtureTarget,
+} from "./types";
+
+export {
   MagicQCrepTransport,
   type MagicQCrepTransportConfig,
   type MagicQIntensityOperation,
