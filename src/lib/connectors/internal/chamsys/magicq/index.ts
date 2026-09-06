@@ -15,8 +15,6 @@ export {
   MagicQConnectorDefinition,
 } from "./definition";
 
-export { MagicQConnectorAdapter } from "./adapter";
-
 export type {
   MagicQFixtureIntensityRequest,
   MagicQFixtureIntensityResult,
