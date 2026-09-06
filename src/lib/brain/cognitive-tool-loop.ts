@@ -29,6 +29,13 @@ import { toCapabilityTools } from "@/lib/capabilities/capability-tool-adapter";
 import type { CapabilityExecutionPrincipal } from "@/lib/capabilities/capability-policy";
 
 const MAX_TOOL_ROUNDS = 5;
+const OPENAI_TOOL_NAME_PATTERN = /^[a-zA-Z0-9_-]+$/;
+const GOOGLE_REAUTH_MESSAGE =
+  "Google authorization is no longer valid. Reconnect Google.";
+
+function toOpenAIToolName(capabilityId: string): string {
+  return capabilityId.replace(/[^a-zA-Z0-9_-]/g, "_");
+}
 
 export interface CognitiveToolLoopInput {
   readonly prompt: string;
@@ -54,6 +61,7 @@ export class CognitiveToolLoop {
   ): Promise<OpenAIResponsesResult> {
 
     const approvalRequests: NonNullable<OpenAIResponsesResult["approvalRequests"]> = [];
+    const requiredConnections = new Set<string>();
 
     const principal = input.principal ?? {
       actorId: "system",
@@ -67,40 +75,74 @@ export class CognitiveToolLoop {
         this.registry.getAll(),
       );
 
+    const toolNameToCapabilityId = new Map<string, string>();
+
     const tools =
       capabilityTools.map(
-        (tool) => ({
-          type: "function" as const,
-          name: tool.name,
-          description: tool.description,
-          parameters: {
-            type: "object",
-            properties: Object.fromEntries(
-              Object.entries(
-                tool.parameters,
-              ).map(
-                ([name, parameter]) => [
-                  name,
-                  {
-                    type: parameter.type,
-                    description:
-                      parameter.description,
-                  },
-                ],
+        (tool) => {
+          const openAIToolName = toOpenAIToolName(tool.name);
+
+          if (!OPENAI_TOOL_NAME_PATTERN.test(openAIToolName)) {
+            throw new Error(
+              `Unable to create an OpenAI-compatible tool name for capability "${tool.name}".`,
+            );
+          }
+
+          const existingCapabilityId =
+            toolNameToCapabilityId.get(openAIToolName);
+
+          if (
+            existingCapabilityId &&
+            existingCapabilityId !== tool.name
+          ) {
+            throw new Error(
+              `OpenAI tool name collision: "${existingCapabilityId}" and "${tool.name}" both normalize to "${openAIToolName}".`,
+            );
+          }
+
+          toolNameToCapabilityId.set(
+            openAIToolName,
+            tool.name,
+          );
+
+          return {
+            type: "function" as const,
+            name: openAIToolName,
+            description: tool.description,
+            parameters: {
+              type: "object",
+              properties: Object.fromEntries(
+                Object.entries(
+                  tool.parameters,
+                ).map(
+                  ([name, parameter]) => [
+                    name,
+                    {
+                      type: parameter.type,
+                      description:
+                        parameter.description,
+                    },
+                  ],
+                ),
               ),
-            ),
-            required: Object.entries(
-              tool.parameters,
-            )
-              .filter(
-                ([, parameter]) =>
-                  parameter.required,
+              required: Object.entries(
+                tool.parameters,
               )
-              .map(([name]) => name),
-            additionalProperties: false,
-          },
-          strict: true,
-        }),
+                .filter(
+                  ([, parameter]) =>
+                    parameter.required,
+                )
+                .map(([name]) => name),
+              additionalProperties: false,
+            },
+            // Clara capabilities intentionally support optional parameters.
+            // OpenAI strict function schemas require every property to appear
+            // in `required`, which would change Clara's capability contracts.
+            // CapabilityToolBridge and CapabilityEngine remain responsible for
+            // validating the model-provided execution context.
+            strict: false,
+          };
+        },
       );
 
     let result =
@@ -121,40 +163,57 @@ export class CognitiveToolLoop {
         !result.toolCalls ||
         result.toolCalls.length === 0
       ) {
-        return { ...result, approvalRequests };
+        return {
+          ...result,
+          approvalRequests,
+          requiredConnections: [...requiredConnections],
+        };
       }
 
       const toolOutputs = [];
       for (const toolCall of result.toolCalls as OpenAIToolCall[]) {
 
-              const execution =
-                await this.bridge.execute(
-                  toolCall,
-                  principal,
-                );
+        const capabilityId =
+          toolNameToCapabilityId.get(toolCall.name) ??
+          toolCall.name;
 
-              toolOutputs.push({
-                callId: toolCall.callId,
-                output: {
-                  success: execution.success,
-                  capabilityId:
-                    execution.capabilityId,
-                  message:
-                    execution.message,
-                  content:
-                    execution.content,
-                  code: execution.code,
-                },
-              });
-              if (execution.approvalRequest) {
-                approvalRequests.push(execution.approvalRequest);
-              }
+        const execution =
+          await this.bridge.execute(
+            {
+              ...toolCall,
+              name: capabilityId,
+            },
+            principal,
+          );
+
+        if (execution.message === GOOGLE_REAUTH_MESSAGE) {
+          requiredConnections.add("google");
+        }
+
+        toolOutputs.push({
+          callId: toolCall.callId,
+          output: {
+            success: execution.success,
+            capabilityId:
+              execution.capabilityId,
+            message:
+              execution.message,
+            content:
+              execution.content,
+            code: execution.code,
+          },
+        });
+        if (execution.approvalRequest) {
+          approvalRequests.push(execution.approvalRequest);
+        }
       }
 
       if (!result.responseId) {
         return {
           ...result,
           success: false,
+          approvalRequests,
+          requiredConnections: [...requiredConnections],
           message:
             "Tool calls were returned without a Responses API response identifier.",
         };
@@ -174,6 +233,7 @@ export class CognitiveToolLoop {
     return {
       ...result,
       approvalRequests,
+      requiredConnections: [...requiredConnections],
       message:
         result.toolCalls && result.toolCalls.length > 0
           ? `Maximum cognitive tool rounds (${MAX_TOOL_ROUNDS}) reached.`

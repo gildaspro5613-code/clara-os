@@ -67,6 +67,13 @@ export interface OpenAIResponsesResult {
   readonly approvalRequests?: OpenAIToolApprovalRequest[];
 
   /**
+   * Connector providers that must be reauthenticated before the
+   * interrupted request can continue. Reauthentication never grants
+   * approval for a WRITE/EXECUTE capability.
+   */
+  readonly requiredConnections?: string[];
+
+  /**
    * Execution message.
    */
   readonly message: string;
