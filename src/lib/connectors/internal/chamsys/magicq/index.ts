@@ -18,6 +18,14 @@ export {
 
 export { MagicQConnectorAdapter } from "./adapter";
 
+export {
+  MAGICQ_CONNECTION_PROVIDER,
+  MagicQConnectionResolutionError,
+  MagicQUniversalConnectionTargetResolver,
+  type MagicQConnectionConfiguration,
+  type MagicQConnectionConfigurationRepository,
+} from "./connection-target-resolver";
+
 export type {
   MagicQFixtureIntensityRequest,
   MagicQFixtureIntensityResult,

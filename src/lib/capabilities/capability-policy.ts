@@ -22,6 +22,11 @@ const PREPARE_CAPABILITIES = new Set([
   "generate-document", "make.scenario.prepare",
 ]);
 
+const EXECUTE_CAPABILITIES = new Set([
+  "make.scenario.execute",
+  "lighting.fixture.intensity.set",
+]);
+
 export function getCapabilityPolicy(capabilityId: string): CapabilityPolicy {
   if (READ_CAPABILITIES.has(capabilityId)) {
     return { accessMode: "read", requiredPlan: "essential", approvalPolicy: "never", sequential: false };
@@ -29,7 +34,7 @@ export function getCapabilityPolicy(capabilityId: string): CapabilityPolicy {
   if (PREPARE_CAPABILITIES.has(capabilityId)) {
     return { accessMode: "prepare", requiredPlan: "pro", approvalPolicy: "never", sequential: false };
   }
-  if (capabilityId === "make.scenario.execute") {
+  if (EXECUTE_CAPABILITIES.has(capabilityId)) {
     return { accessMode: "execute", requiredPlan: "premium", approvalPolicy: "required", sequential: true };
   }
   return { accessMode: "write", requiredPlan: "premium", approvalPolicy: "required", sequential: true };

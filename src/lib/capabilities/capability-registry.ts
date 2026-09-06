@@ -103,6 +103,10 @@ import {
   MakeScenarioPrepareCapabilityDefinition,
   type MakeScenarioCapability,
 } from "./make-scenario/capability";
+import {
+  MagicQFixtureIntensityCapabilityDefinition,
+  type MagicQLightingCapability,
+} from "./magicq-lighting/capability";
 
 /**
  * Capability definition.
@@ -126,7 +130,8 @@ export type CapabilityDefinition =
   | DeleteCalendarEventCapability
   | SendGmailCapability
   | GitHubReadCapability
-  | MakeScenarioCapability;
+  | MakeScenarioCapability
+  | MagicQLightingCapability;
 
 /**
  * Capability Registry.
@@ -173,6 +178,8 @@ export class CapabilityRegistry {
     MakeScenarioPrepareCapabilityDefinition,
 
     MakeScenarioExecuteCapabilityDefinition,
+
+    MagicQFixtureIntensityCapabilityDefinition,
 
   ];
 
