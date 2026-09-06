@@ -1,10 +1,20 @@
-import type { ConnectorDefinition } from "@/lib/connectors/core/connector";
+import type { ConnectorCapabilityDefinition } from "@/lib/connectors/core/connector";
 
 export const MAGICQ_CAPABILITIES = {
   FIXTURE_INTENSITY_SET: "lighting.fixture.intensity.set",
 } as const;
 
-export const MagicQConnectorDefinition: ConnectorDefinition = {
+export interface MagicQConnectorDefinitionShape {
+  readonly id: "chamsys.magicq";
+  readonly name: "ChamSys MagicQ";
+  readonly version: "1.0.0";
+  readonly authentication: {
+    readonly type: "none";
+  };
+  readonly capabilities: readonly ConnectorCapabilityDefinition[];
+}
+
+export const MagicQConnectorDefinition: MagicQConnectorDefinitionShape = {
   id: "chamsys.magicq",
   name: "ChamSys MagicQ",
   version: "1.0.0",
