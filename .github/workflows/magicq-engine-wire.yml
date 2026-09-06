@@ -1,0 +1,130 @@
+name: MagicQ Engine Wire
+
+on:
+  push:
+    branches:
+      - feat/magicq-capability-engine-v1
+
+permissions:
+  contents: write
+
+jobs:
+  wire-and-validate:
+    if: ${{ !contains(github.event.head_commit.message, '[magicq-wire]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/magicq-capability-engine-v1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Wire MagicQ into CapabilityEngine
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('src/lib/capabilities/capability-engine.ts')
+          s = p.read_text()
+
+          old_import = 'import { MakeConnectorAdapter, MAKE_CAPABILITIES } from "@/lib/connectors/make";\n'
+          new_import = old_import + 'import { MAGICQ_CAPABILITIES } from "@/lib/connectors/internal/chamsys/magicq";\nimport { DisabledMagicQLightingExecutor, type MagicQLightingExecutor } from "./magicq-lighting/executor";\n'
+          assert old_import in s
+          s = s.replace(old_import, new_import, 1)
+
+          old_ctor = '  public constructor(private readonly githubRead = new GitHubReadExecutor()) {}\n'
+          new_ctor = '''  public constructor(\n    private readonly githubRead = new GitHubReadExecutor(),\n    private readonly magicqLighting: MagicQLightingExecutor =\n      new DisabledMagicQLightingExecutor(),\n  ) {}\n'''
+          assert old_ctor in s
+          s = s.replace(old_ctor, new_ctor, 1)
+
+          marker = '      case "github.repository.list":\n'
+          assert marker in s
+          block = '''      case MAGICQ_CAPABILITIES.FIXTURE_INTENSITY_SET: {\n        if (!request.workspaceId) {\n          return {\n            success: false,\n            message: "Workspace identity is required for MagicQ Lighting execution.",\n            completedAt: new Date(),\n          };\n        }\n\n        const context = request.context as {\n          connectionId?: unknown;\n          fixtureId?: unknown;\n          intensityPercent?: unknown;\n        };\n\n        if (\n          typeof context?.connectionId !== "string" ||\n          typeof context?.fixtureId !== "string" ||\n          typeof context?.intensityPercent !== "number"\n        ) {\n          return {\n            success: false,\n            message: "Invalid MagicQ Lighting execution context.",\n            completedAt: new Date(),\n          };\n        }\n\n        try {\n          const result = await this.magicqLighting.setFixtureIntensity({\n            workspaceId: request.workspaceId,\n            connectionId: context.connectionId,\n            fixtureId: context.fixtureId,\n            intensityPercent: context.intensityPercent,\n          });\n          return {\n            success: true,\n            message: "MagicQ Lighting intensity execution completed.",\n            content: JSON.stringify(result),\n            completedAt: new Date(),\n          };\n        } catch (error) {\n          return {\n            success: false,\n            message: error instanceof Error\n              ? error.message\n              : "MagicQ Lighting execution failed.",\n            completedAt: new Date(),\n          };\n        }\n      }\n\n'''
+          s = s.replace(marker, block + marker, 1)
+          p.write_text(s)
+          PY
+      - name: Add execution integration test
+        run: |
+          cat > src/tests/integration/magicq-capability-engine.test.ts <<'EOF'
+          import assert from "node:assert/strict";
+          import test from "node:test";
+
+          import { CapabilityEngine } from "@/lib/capabilities/capability-engine";
+          import { getCapabilityPolicy } from "@/lib/capabilities/capability-policy";
+          import type { MagicQLightingExecutor } from "@/lib/capabilities/magicq-lighting/executor";
+          import type { MagicQFixtureIntensityRequest } from "@/lib/connectors/internal/chamsys/magicq";
+
+          class FakeMagicQLightingExecutor implements MagicQLightingExecutor {
+            public requests: MagicQFixtureIntensityRequest[] = [];
+
+            async setFixtureIntensity(request: MagicQFixtureIntensityRequest) {
+              this.requests.push(request);
+              return {
+                provider: "chamsys" as const,
+                connectorId: "chamsys.magicq" as const,
+                capability: "lighting.fixture.intensity.set" as const,
+                fixtureId: request.fixtureId,
+                requestedIntensityPercent: request.intensityPercent,
+                dispatched: true,
+              };
+            }
+          }
+
+          test("MagicQ Lighting remains Premium EXECUTE with explicit approval", () => {
+            assert.deepEqual(getCapabilityPolicy("lighting.fixture.intensity.set"), {
+              accessMode: "execute",
+              requiredPlan: "premium",
+              approvalPolicy: "required",
+              sequential: true,
+            });
+          });
+
+          test("CapabilityEngine routes an approved MagicQ-shaped request through injected executor", async () => {
+            const fake = new FakeMagicQLightingExecutor();
+            const engine = new CapabilityEngine(undefined, fake);
+            const result = await engine.execute({
+              capabilityId: "lighting.fixture.intensity.set",
+              workspaceId: "workspace-1",
+              context: {
+                connectionId: "connection-1",
+                fixtureId: "fixture-1",
+                intensityPercent: 50,
+              },
+            });
+
+            assert.equal(result.success, true);
+            assert.deepEqual(fake.requests, [{
+              workspaceId: "workspace-1",
+              connectionId: "connection-1",
+              fixtureId: "fixture-1",
+              intensityPercent: 50,
+            }]);
+          });
+
+          test("default CapabilityEngine fails closed because MagicQ network is disabled", async () => {
+            const engine = new CapabilityEngine();
+            const result = await engine.execute({
+              capabilityId: "lighting.fixture.intensity.set",
+              workspaceId: "workspace-1",
+              context: {
+                connectionId: "connection-1",
+                fixtureId: "fixture-1",
+                intensityPercent: 50,
+              },
+            });
+
+            assert.equal(result.success, false);
+            assert.equal(result.message, "MAGICQ_NETWORK_DISABLED");
+          });
+          EOF
+      - run: npx tsx --test src/tests/integration/magicq-capability-engine.test.ts src/tests/integration/magicq-crep.test.ts src/tests/integration/magicq-adapter-v1.test.ts src/tests/integration/magicq-universal-connections.test.ts
+      - run: npx tsc --noEmit --pretty false
+      - run: npm run build
+      - name: Commit wiring
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/lib/capabilities/capability-engine.ts src/tests/integration/magicq-capability-engine.test.ts
+          git commit -m "feat(magicq): wire approved Lighting capability into engine [magicq-wire]"
+          git push
