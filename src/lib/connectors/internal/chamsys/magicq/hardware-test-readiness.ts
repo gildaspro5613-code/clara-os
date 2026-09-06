@@ -1,12 +1,13 @@
 import type { ConnectionRepository } from "@/lib/connections/connection-repository";
-import type { MagicQConnectionConfigurationRepository } from "./connection-target-resolver";
+import {
+  MAGICQ_CONNECTION_PROVIDER,
+  type MagicQConnectionConfigurationRepository,
+} from "./connection-target-resolver";
 import {
   MAGICQ_CREP_DEFAULT_PORT,
   MAGICQ_INTENSITY_CHANNEL_MAX,
   MAGICQ_INTENSITY_CHANNEL_MIN,
 } from "./crep";
-
-export const MAGICQ_CONNECTOR_ID = "chamsys.magicq";
 
 export type MagicQHardwareTestPlan = {
   workspaceId: string;
@@ -60,7 +61,7 @@ export async function assertMagicQHardwareTestReady(
   const connection = await connections.findById(connectionId);
   if (!connection) throw new Error("MAGICQ_CONNECTION_NOT_FOUND");
   if (connection.workspaceId !== workspaceId) throw new Error("MAGICQ_WORKSPACE_MISMATCH");
-  if (connection.connectorId !== MAGICQ_CONNECTOR_ID) throw new Error("MAGICQ_CONNECTOR_MISMATCH");
+  if (connection.provider !== MAGICQ_CONNECTION_PROVIDER) throw new Error("MAGICQ_PROVIDER_MISMATCH");
   if (connection.status !== "ACTIVE") throw new Error("MAGICQ_CONNECTION_NOT_ACTIVE");
 
   const configuration = await configurations.findByConnectionId(connectionId);
