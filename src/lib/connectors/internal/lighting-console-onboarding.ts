@@ -1,6 +1,13 @@
 import { ConnectionStatus } from "@/lib/connections/connection";
 import type { ConnectionRepository } from "@/lib/connections/connection-repository";
 import {
+  MAGICQ_CONNECTION_PROVIDER,
+  type MagicQConnectionConfigurationRepository,
+} from "./chamsys/magicq/connection-target-resolver";
+import {
+  validateMagicQConnectionConfiguration,
+} from "./chamsys/magicq/configuration-repository";
+import {
   GRANDMA3_CONNECTOR_ID,
 } from "./ma-lighting/grandma3";
 import {
@@ -17,16 +24,33 @@ import {
 } from "./avolites/titan/connection";
 
 export type LightingConsoleOnboardingProvider =
+  | typeof MAGICQ_CONNECTION_PROVIDER
   | typeof GRANDMA3_CONNECTOR_ID
   | typeof AVOLITES_TITAN_CONNECTOR_ID;
 
 export type LightingConsoleOnboardingRequirement =
+  | "MAGICQ_CREP_RX_ENABLED"
+  | "MAGICQ_DESTINATION_CONFIRMED"
   | "OSC_INPUT_CONFIGURED"
   | "OSC_RECEIVE_COMMAND_ENABLED"
   | "OSC_TRANSPORT_AND_PORT_MATCH"
   | "TITAN_WEBAPI_REACHABLE";
 
 export type LightingConsoleOnboardingPlan =
+  | {
+      provider: typeof MAGICQ_CONNECTION_PROVIDER;
+      workspaceId: string;
+      connectionId: string;
+      host: string;
+      port: number;
+      mappedFixtureCount: number;
+      connectionTestAvailable: false;
+      writeCapabilitiesEnabled: false;
+      requirements: readonly [
+        "MAGICQ_CREP_RX_ENABLED",
+        "MAGICQ_DESTINATION_CONFIRMED",
+      ];
+    }
   | {
       provider: typeof GRANDMA3_CONNECTOR_ID;
       workspaceId: string;
@@ -72,6 +96,7 @@ export class LightingConsoleOnboardingReadinessError extends Error {
 export class LightingConsoleSelfServiceOnboardingPlanner {
   constructor(
     private readonly connections: ConnectionRepository,
+    private readonly magicQConfigurations: MagicQConnectionConfigurationRepository,
     private readonly grandMA3Configurations: GrandMA3ConnectionConfigurationRepository,
     private readonly titanConfigurations: TitanConnectionConfigurationRepository,
   ) {}
@@ -96,6 +121,27 @@ export class LightingConsoleSelfServiceOnboardingPlanner {
     }
 
     switch (connection.provider) {
+      case MAGICQ_CONNECTION_PROVIDER: {
+        const configuration = await this.magicQConfigurations.findByConnectionId(connectionId);
+        if (!configuration) {
+          throw new LightingConsoleOnboardingReadinessError("CONFIGURATION_NOT_FOUND");
+        }
+        const normalized = validateMagicQConnectionConfiguration(configuration);
+        return {
+          provider: MAGICQ_CONNECTION_PROVIDER,
+          workspaceId,
+          connectionId,
+          host: normalized.host,
+          port: normalized.port!,
+          mappedFixtureCount: Object.keys(normalized.fixtureChannels).length,
+          connectionTestAvailable: false,
+          writeCapabilitiesEnabled: false,
+          requirements: [
+            "MAGICQ_CREP_RX_ENABLED",
+            "MAGICQ_DESTINATION_CONFIRMED",
+          ],
+        };
+      }
       case GRANDMA3_CONNECTOR_ID: {
         const configuration = await this.grandMA3Configurations.findByConnectionId(connectionId);
         if (!configuration) {

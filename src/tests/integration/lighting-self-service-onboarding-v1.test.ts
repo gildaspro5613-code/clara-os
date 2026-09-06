@@ -30,6 +30,15 @@ function repository(input: {
   };
 }
 
+const magicQConfigurations = {
+  async findByConnectionId() {
+    return {
+      host: "192.0.2.255",
+      fixtureChannels: { "front-wash": 17, "back-wash": 18 },
+    };
+  },
+};
+
 const grandMA3Configurations = {
   async findByConnectionId() {
     return {
@@ -46,9 +55,34 @@ const titanConfigurations = {
   },
 };
 
+test("MagicQ self-service plan requires CREP readiness and keeps network test disabled", async () => {
+  const planner = new LightingConsoleSelfServiceOnboardingPlanner(
+    repository({ provider: "chamsys.magicq" }),
+    magicQConfigurations,
+    grandMA3Configurations,
+    titanConfigurations,
+  );
+
+  assert.deepEqual(await planner.plan({ workspaceId: "workspace-1", connectionId: "magicq-1" }), {
+    provider: "chamsys.magicq",
+    workspaceId: "workspace-1",
+    connectionId: "magicq-1",
+    host: "192.0.2.255",
+    port: 6553,
+    mappedFixtureCount: 2,
+    connectionTestAvailable: false,
+    writeCapabilitiesEnabled: false,
+    requirements: [
+      "MAGICQ_CREP_RX_ENABLED",
+      "MAGICQ_DESTINATION_CONFIRMED",
+    ],
+  });
+});
+
 test("grandMA3 self-service plan requires customer OSC readiness and does not claim connectivity", async () => {
   const planner = new LightingConsoleSelfServiceOnboardingPlanner(
     repository({ provider: "ma-lighting.grandma3" }),
+    magicQConfigurations,
     grandMA3Configurations,
     titanConfigurations,
   );
@@ -73,6 +107,7 @@ test("grandMA3 self-service plan requires customer OSC readiness and does not cl
 test("Titan self-service plan exposes certified read-only connection test and keeps writes disabled", async () => {
   const planner = new LightingConsoleSelfServiceOnboardingPlanner(
     repository({ provider: "avolites.titan" }),
+    magicQConfigurations,
     grandMA3Configurations,
     titanConfigurations,
   );
@@ -92,6 +127,7 @@ test("Titan self-service plan exposes certified read-only connection test and ke
 test("self-service planning fails closed on workspace mismatch and inactive connections", async () => {
   const wrongWorkspace = new LightingConsoleSelfServiceOnboardingPlanner(
     repository({ provider: "avolites.titan", workspaceId: "workspace-other" }),
+    magicQConfigurations,
     grandMA3Configurations,
     titanConfigurations,
   );
@@ -102,6 +138,7 @@ test("self-service planning fails closed on workspace mismatch and inactive conn
 
   const inactive = new LightingConsoleSelfServiceOnboardingPlanner(
     repository({ provider: "ma-lighting.grandma3", status: ConnectionStatus.DISABLED }),
+    magicQConfigurations,
     grandMA3Configurations,
     titanConfigurations,
   );
@@ -114,6 +151,7 @@ test("self-service planning fails closed on workspace mismatch and inactive conn
 test("self-service planning rejects unsupported providers and missing configuration", async () => {
   const unsupported = new LightingConsoleSelfServiceOnboardingPlanner(
     repository({ provider: "unknown.console" }),
+    magicQConfigurations,
     grandMA3Configurations,
     titanConfigurations,
   );
@@ -124,6 +162,7 @@ test("self-service planning rejects unsupported providers and missing configurat
 
   const missingConfig = new LightingConsoleSelfServiceOnboardingPlanner(
     repository({ provider: "avolites.titan" }),
+    magicQConfigurations,
     grandMA3Configurations,
     { async findByConnectionId() { return null; } },
   );
