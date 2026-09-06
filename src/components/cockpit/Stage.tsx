@@ -13,6 +13,7 @@ export default function Stage({
   session,
 }: StageProps) {
   const mission = session.mission;
+  const firstName = session.user.firstName;
 
   return (
     <>
@@ -36,7 +37,7 @@ export default function Stage({
           lg:block
         "
       >
-        <BriefPanel />
+        <BriefPanel firstName={firstName} />
 
         <div className="mt-4 ml-3 w-[92%]">
           <ClaraVoiceWidget />
@@ -86,7 +87,7 @@ export default function Stage({
         "
       >
         <div className="pointer-events-auto">
-          <BriefPanel />
+          <BriefPanel firstName={firstName} />
         </div>
       </div>
 
