@@ -71,7 +71,7 @@ export async function composeClaraResponse(
     message,
     "",
     "DÉCISION DU BRAIN",
-    `Intention : ${decision?.intent ?? "non disponible"}`,
+    `Intention : ${decision?.objective?.title ?? mission?.title ?? "non disponible"}`,
     `Objectif / synthèse : ${decision?.summary ?? recommendation?.summary ?? "non disponible"}`,
     `Prochaine action décidée : ${decision?.nextAction ?? mission?.nextAction ?? "non disponible"}`,
     `Actions proposées : ${decision?.actions?.join(" | ") ?? "non disponibles"}`,
