@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   GrandMA3UniversalConnectionFixtureResolver,
   validateGrandMA3ConnectionConfiguration,
+  type GrandMA3ConnectionConfiguration,
 } from "@/lib/connectors/internal/ma-lighting/grandma3/connection";
 import {
   TitanUniversalConnectionResolver,
@@ -32,22 +33,34 @@ function repository(value: ReturnType<typeof connection> | null) {
   } as any;
 }
 
-test("grandMA3 configuration defaults to OSC port 8000 and normalizes fixture mapping", () => {
+test("grandMA3 configuration requires explicit OSC port and normalizes fixture mapping", () => {
   assert.deepEqual(validateGrandMA3ConnectionConfiguration({
     host: " 10.0.0.25 ",
+    port: 9000,
     fixtureNumbers: { " front-wash ": 42 },
   }), {
     host: "10.0.0.25",
-    port: 8000,
+    port: 9000,
     fixtureNumbers: { "front-wash": 42 },
   });
+});
+
+test("grandMA3 configuration fails closed when OSC port is omitted", () => {
+  const invalid = {
+    host: "10.0.0.25",
+    fixtureNumbers: {},
+  } as unknown as GrandMA3ConnectionConfiguration;
+  assert.throws(
+    () => validateGrandMA3ConnectionConfiguration(invalid),
+    /explicitly configured/,
+  );
 });
 
 test("grandMA3 resolves fixture only through active workspace-owned Universal Connection", async () => {
   const resolver = new GrandMA3UniversalConnectionFixtureResolver(
     repository(connection("ma-lighting.grandma3")),
     { async findByConnectionId() {
-      return { host: "10.0.0.25", fixtureNumbers: { "front-wash": 42 } };
+      return { host: "10.0.0.25", port: 9000, fixtureNumbers: { "front-wash": 42 } };
     } },
   );
 
@@ -61,7 +74,7 @@ test("grandMA3 resolves fixture only through active workspace-owned Universal Co
 test("grandMA3 fails closed for wrong provider and missing fixture mapping", async () => {
   const wrongProvider = new GrandMA3UniversalConnectionFixtureResolver(
     repository(connection("chamsys.magicq")),
-    { async findByConnectionId() { return { host: "10.0.0.25", fixtureNumbers: {} }; } },
+    { async findByConnectionId() { return { host: "10.0.0.25", port: 9000, fixtureNumbers: {} }; } },
   );
   await assert.rejects(
     wrongProvider.resolveFixture({ workspaceId: "ws-1", connectionId: "conn-1", fixtureId: "x" }),
@@ -70,7 +83,7 @@ test("grandMA3 fails closed for wrong provider and missing fixture mapping", asy
 
   const noMapping = new GrandMA3UniversalConnectionFixtureResolver(
     repository(connection("ma-lighting.grandma3")),
-    { async findByConnectionId() { return { host: "10.0.0.25", fixtureNumbers: {} }; } },
+    { async findByConnectionId() { return { host: "10.0.0.25", port: 9000, fixtureNumbers: {} }; } },
   );
   await assert.rejects(
     noMapping.resolveFixture({ workspaceId: "ws-1", connectionId: "conn-1", fixtureId: "x" }),
