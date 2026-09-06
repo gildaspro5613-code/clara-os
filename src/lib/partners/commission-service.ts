@@ -64,13 +64,13 @@ export function calculateCommission(
 
   if (rule.model === "percentage") {
     const bps = rule.percentageBps;
-    if (!Number.isInteger(bps) || bps === undefined || bps < 0 || bps > 10_000) {
+    if (bps === undefined || !Number.isInteger(bps) || bps < 0 || bps > 10_000) {
       throw new Error("percentage commission requires percentageBps between 0 and 10000");
     }
     amountCents = Math.round((sourceAmountCents * bps) / 10_000);
   } else {
     const fixed = rule.fixedAmountCents;
-    if (!Number.isInteger(fixed) || fixed === undefined || fixed < 0) {
+    if (fixed === undefined || !Number.isInteger(fixed) || fixed < 0) {
       throw new Error("fixed commission requires a non-negative fixedAmountCents");
     }
     amountCents = fixed;
