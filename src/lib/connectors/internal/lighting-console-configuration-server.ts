@@ -1,7 +1,7 @@
 import { ConnectionStatus, type Connection } from "@/lib/connections/connection";
 import { DatabaseConnectionRepository } from "@/lib/connections/connection-repository";
 import { DatabaseMagicQConnectionConfigurationRepository } from "./chamsys/magicq/configuration-repository";
-import { CHAMSYS_MAGICQ_CONNECTOR_ID } from "./chamsys/magicq";
+import { MAGICQ_CONNECTION_PROVIDER } from "./chamsys/magicq";
 import { DatabaseGrandMA3ConnectionConfigurationRepository } from "./ma-lighting/grandma3/connection";
 import { GRANDMA3_CONNECTOR_ID } from "./ma-lighting/grandma3";
 import { DatabaseTitanConnectionConfigurationRepository } from "./avolites/titan/connection";
@@ -9,7 +9,7 @@ import { AVOLITES_TITAN_CONNECTOR_ID, AVOLITES_TITAN_WEBAPI_DEFAULT_PORT } from 
 import { MAGICQ_CREP_DEFAULT_PORT } from "./chamsys/magicq/crep";
 
 export type SupportedLightingConsoleProvider =
-  | typeof CHAMSYS_MAGICQ_CONNECTOR_ID
+  | typeof MAGICQ_CONNECTION_PROVIDER
   | typeof GRANDMA3_CONNECTOR_ID
   | typeof AVOLITES_TITAN_CONNECTOR_ID;
 
@@ -37,7 +37,7 @@ function normalizeHost(host: string): string {
 }
 
 function normalizePort(provider: SupportedLightingConsoleProvider, port?: number): number {
-  if (provider === CHAMSYS_MAGICQ_CONNECTOR_ID) return port ?? MAGICQ_CREP_DEFAULT_PORT;
+  if (provider === MAGICQ_CONNECTION_PROVIDER) return port ?? MAGICQ_CREP_DEFAULT_PORT;
   if (provider === AVOLITES_TITAN_CONNECTOR_ID) return port ?? AVOLITES_TITAN_WEBAPI_DEFAULT_PORT;
   if (port === undefined) {
     throw new TypeError("grandMA3 OSC port must be explicitly configured.");
@@ -86,7 +86,7 @@ export class ServerLightingConsoleConfigurationService {
     await this.connections.save(connection);
 
     switch (input.provider) {
-      case CHAMSYS_MAGICQ_CONNECTOR_ID:
+      case MAGICQ_CONNECTION_PROVIDER:
         await this.magicQ.save(connection.id, { host, port, fixtureChannels: {} });
         break;
       case GRANDMA3_CONNECTOR_ID:
