@@ -5,6 +5,10 @@ export interface MagicQFixtureIntensityRequest {
   readonly intensityPercent: number;
 }
 
+/**
+ * Installation-specific target resolved outside the provider adapter.
+ * The Clara fixture id must never be assumed to equal this MagicQ channel.
+ */
 export interface ResolvedMagicQFixtureTarget {
   readonly host: string;
   readonly port?: number;
