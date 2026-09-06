@@ -1,0 +1,19 @@
+name: Lighting Console Foundations Validate
+on:
+  push:
+    branches: [feat/grandma3-avolites-lighting-foundations]
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test src/tests/integration/grandma3-lighting-foundation.test.ts src/tests/integration/avolites-titan-foundation.test.ts
+      - run: npx tsc --noEmit --pretty false
+      - run: npm run build
