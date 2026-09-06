@@ -20,6 +20,11 @@ import { KnowledgeEngine } from "@/lib/knowledge";
 import { BrainSourceContext } from "./brain-source";
 import type { Mission } from "@/modules/missions/types/Mission";
 
+interface ConversationContext {
+  userFirstName?: string;
+  history: Array<{ role: "user" | "clara"; content: string }>;
+}
+
 function extractTaskCompletion(context: Context): {
   taskId?: string;
   taskTitle?: string;
@@ -82,6 +87,52 @@ function extractUserMessage(context: Context): string | null {
   return context.event.payload.message.trim() || null;
 }
 
+function extractConversationContext(context: Context): ConversationContext {
+  if (
+    context.event.type !== "USER_MESSAGE" ||
+    typeof context.event.payload !== "object" ||
+    context.event.payload === null
+  ) {
+    return { history: [] };
+  }
+
+  const payload = context.event.payload as {
+    userFirstName?: unknown;
+    conversationHistory?: unknown;
+  };
+
+  const history = Array.isArray(payload.conversationHistory)
+    ? payload.conversationHistory.flatMap((entry) => {
+        if (
+          typeof entry !== "object" ||
+          entry === null ||
+          !("role" in entry) ||
+          !("content" in entry)
+        ) return [];
+
+        const candidate = entry as { role?: unknown; content?: unknown };
+        if (
+          (candidate.role !== "user" && candidate.role !== "clara") ||
+          typeof candidate.content !== "string" ||
+          !candidate.content.trim()
+        ) return [];
+
+        return [{
+          role: candidate.role,
+          content: candidate.content.trim(),
+        }];
+      })
+    : [];
+
+  return {
+    userFirstName:
+      typeof payload.userFirstName === "string" && payload.userFirstName.trim()
+        ? payload.userFirstName.trim()
+        : undefined,
+    history,
+  };
+}
+
 export async function reasoning(
   context: Context,
   memory: Memory,
@@ -92,6 +143,7 @@ export async function reasoning(
 ): Promise<Understanding> {
   const eventType = context.event.type;
   const userMessage = extractUserMessage(context);
+  const conversation = extractConversationContext(context);
   const taskCompletion = extractTaskCompletion(context);
   const activeMission = mission ?? undefined;
 
@@ -102,6 +154,12 @@ export async function reasoning(
   const memorySummary = memory.shortTerm.length > 0
     ? memory.shortTerm.join("\n")
     : "Aucune mémoire pertinente disponible.";
+
+  const conversationSummary = conversation.history.length > 0
+    ? conversation.history
+        .map((entry) => `${entry.role === "user" ? "Utilisateur" : "Clara"}: ${entry.content}`)
+        .join("\n")
+    : "Aucun historique conversationnel antérieur disponible.";
 
   // Capabilities are context owned by Clara. They inform GPT about what Clara
   // can do, but they are deliberately not exposed as executable model tools.
@@ -212,9 +270,11 @@ export async function reasoning(
     "- actions doit former un plan de travail cohérent de bout en bout, généralement 3 à 7 étapes lorsque le sujet le justifie.",
     "- nextAction doit être l'action la plus utile à engager maintenant, pas une formalité générique.",
     "- Distingue les informations réellement bloquantes des simples préférences. Ne pose pas de question pour une préférence si tu peux avancer avec une hypothèse prudente ou proposer un cadre.",
+    "- Lorsqu'une mission active existe, pars du principe qu'un message de suivi concerne cette mission sauf si l'utilisateur change clairement de sujet ou demande explicitement une nouvelle mission.",
     "- Lorsqu'un utilisateur fournit une information qui répond manifestement à l'étape courante d'une mission, intègre-la comme acquise dans ton raisonnement et fais progresser le plan vers l'étape utile suivante.",
     "- Ne répète pas une tâche déjà marquée [TERMINÉE].",
     "- Si une tâche [À FAIRE] est déjà satisfaite par le nouveau message utilisateur, ne la repropose pas comme nextAction.",
+    "- Utilise l'historique conversationnel pour résoudre les pronoms, les demandes courtes de suivi et les références comme 'la suite', 'et maintenant', 'ce projet' ou 'cette mission'.",
     "- Utilise les sources, mémoires et connaissances disponibles lorsqu'elles sont pertinentes ; ne les ignore pas au profit de conseils génériques.",
     "- Les capabilities disponibles sont du contexte : ne prétends jamais les avoir exécutées.",
     "- Ne prétends jamais qu'une console, un fichier, un service ou un connecteur a été utilisé si aucune exécution n'a eu lieu.",
@@ -225,6 +285,10 @@ export async function reasoning(
     "",
     `État du système : ${context.event.type}`,
     `Source : ${context.event.source}`,
+    `Utilisateur : ${conversation.userFirstName ?? "non identifié"}`,
+    "",
+    "Historique récent de la conversation :",
+    conversationSummary,
     "",
     "Sources disponibles :",
     sourceSummary,
@@ -241,7 +305,7 @@ export async function reasoning(
     "État opérationnel de la mission :",
     activeMissionInput,
     "",
-    "Entrée à analyser :",
+    "Entrée à analyser maintenant :",
     reasoningInput,
   ].join("\n");
 
