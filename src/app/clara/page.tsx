@@ -77,7 +77,11 @@ export default async function ClaraPage({
         </section>
 
         <div className="max-w-4xl">
-          <ClaraChatWidget autoFocus={focusClaraInput} />
+          <ClaraChatWidget
+            autoFocus={focusClaraInput}
+            initialMessages={session.conversation}
+            userFirstName={session.user.firstName}
+          />
         </div>
       </div>
     </MainLayout>
