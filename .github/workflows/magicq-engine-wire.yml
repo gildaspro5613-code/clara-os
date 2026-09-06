@@ -38,6 +38,12 @@ jobs:
           assert old_ctor in s
           s = s.replace(old_ctor, new_ctor, 1)
 
+          old_make = '''  private readonly make = new MakeConnectorAdapter(\n    new ConnectionResolver(this.connections, new CredentialStore()),\n  );\n'''
+          new_make = '''  private makeAdapter?: MakeConnectorAdapter;\n\n  private getMakeAdapter(): MakeConnectorAdapter {\n    this.makeAdapter ??= new MakeConnectorAdapter(\n      new ConnectionResolver(this.connections, new CredentialStore()),\n    );\n    return this.makeAdapter;\n  }\n'''
+          assert old_make in s
+          s = s.replace(old_make, new_make, 1)
+          s = s.replace('this.make.execute(', 'this.getMakeAdapter().execute(')
+
           marker = '      case "github.repository.list":\n'
           assert marker in s
           block = '''      case MAGICQ_CAPABILITIES.FIXTURE_INTENSITY_SET: {\n        if (!request.workspaceId) {\n          return {\n            success: false,\n            message: "Workspace identity is required for MagicQ Lighting execution.",\n            completedAt: new Date(),\n          };\n        }\n\n        const context = request.context as {\n          connectionId?: unknown;\n          fixtureId?: unknown;\n          intensityPercent?: unknown;\n        };\n\n        if (\n          typeof context?.connectionId !== "string" ||\n          typeof context?.fixtureId !== "string" ||\n          typeof context?.intensityPercent !== "number"\n        ) {\n          return {\n            success: false,\n            message: "Invalid MagicQ Lighting execution context.",\n            completedAt: new Date(),\n          };\n        }\n\n        try {\n          const result = await this.magicqLighting.setFixtureIntensity({\n            workspaceId: request.workspaceId,\n            connectionId: context.connectionId,\n            fixtureId: context.fixtureId,\n            intensityPercent: context.intensityPercent,\n          });\n          return {\n            success: true,\n            message: "MagicQ Lighting intensity execution completed.",\n            content: JSON.stringify(result),\n            completedAt: new Date(),\n          };\n        } catch (error) {\n          return {\n            success: false,\n            message: error instanceof Error\n              ? error.message\n              : "MagicQ Lighting execution failed.",\n            completedAt: new Date(),\n          };\n        }\n      }\n\n'''
@@ -80,7 +86,7 @@ jobs:
             });
           });
 
-          test("CapabilityEngine routes an approved MagicQ-shaped request through injected executor", async () => {
+          test("CapabilityEngine routes a governed MagicQ-shaped request through injected executor", async () => {
             const fake = new FakeMagicQLightingExecutor();
             const engine = new CapabilityEngine(undefined, fake);
             const result = await engine.execute({
@@ -126,5 +132,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add src/lib/capabilities/capability-engine.ts src/tests/integration/magicq-capability-engine.test.ts
-          git commit -m "feat(magicq): wire approved Lighting capability into engine [magicq-wire]"
+          git commit -m "feat(magicq): wire governed Lighting capability into engine [magicq-wire]"
           git push
