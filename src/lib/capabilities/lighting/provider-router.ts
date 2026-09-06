@@ -1,7 +1,5 @@
 import type { ConnectionRepository } from "@/lib/connections/connection-repository";
 import { GRANDMA3_CONNECTOR_ID } from "@/lib/connectors/internal/ma-lighting/grandma3";
-import type { MagicQLightingExecutor } from "../magicq-lighting/executor";
-import type { GrandMA3LightingExecutor } from "../grandma3-lighting/executor";
 
 const MAGICQ_CONNECTOR_ID = "chamsys.magicq";
 
@@ -21,8 +19,8 @@ export class ProviderAwareLightingFixtureIntensityExecutor
 implements LightingFixtureIntensityExecutor {
   constructor(
     private readonly connections: ConnectionRepository,
-    private readonly magicq: MagicQLightingExecutor,
-    private readonly grandMA3: GrandMA3LightingExecutor,
+    private readonly magicq: LightingFixtureIntensityExecutor,
+    private readonly grandMA3: LightingFixtureIntensityExecutor,
   ) {}
 
   async setFixtureIntensity(input: LightingFixtureIntensityInput): Promise<unknown> {
