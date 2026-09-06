@@ -59,6 +59,15 @@ export interface ConnectorCapabilityDefinition {
   readonly description: string;
 }
 
+export type ConnectorAuthenticationDefinition =
+  | {
+      readonly type: "none";
+    }
+  | {
+      readonly type: "oauth2" | "webhook" | "api_key";
+      readonly credentialReference: "connectionId";
+    };
+
 /**
  * Static provider metadata. Execution remains owned by Runtime and the
  * Autonomy Gate; this definition intentionally contains no executor.
@@ -67,9 +76,6 @@ export interface ConnectorDefinition {
   readonly id: string;
   readonly name: string;
   readonly version: string;
-  readonly authentication: {
-    readonly type: "oauth2" | "webhook" | "api_key";
-    readonly credentialReference: "connectionId";
-  };
+  readonly authentication: ConnectorAuthenticationDefinition;
   readonly capabilities: readonly ConnectorCapabilityDefinition[];
 }
