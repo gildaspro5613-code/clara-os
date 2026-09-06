@@ -83,6 +83,8 @@ import { DatabaseConnectionRepository } from "@/lib/connections/connection-repos
 import { ConnectionResolver } from "@/lib/connections/connection-resolver";
 import { CredentialStore } from "@/lib/connections/credential-store";
 import { MakeConnectorAdapter, MAKE_CAPABILITIES } from "@/lib/connectors/make";
+import { MAGICQ_CAPABILITIES } from "@/lib/connectors/internal/chamsys/magicq";
+import { DisabledMagicQLightingExecutor, executeMagicQFixtureIntensityCapability, type MagicQLightingExecutor } from "./magicq-lighting/executor";
 
 /**
  * Capability execution request.
@@ -148,7 +150,11 @@ export interface CapabilityExecutionResult {
  */
 export class CapabilityEngine {
 
-  public constructor(private readonly githubRead = new GitHubReadExecutor()) {}
+  public constructor(
+    private readonly githubRead = new GitHubReadExecutor(),
+    private readonly magicqLighting: MagicQLightingExecutor =
+      new DisabledMagicQLightingExecutor(),
+  ) {}
 
   /**
    * Registry.
@@ -268,6 +274,13 @@ export class CapabilityEngine {
         });
         return { success: true, message: "Make scenario executed.", content: JSON.stringify(result.data), completedAt: new Date() };
       }
+
+      case MAGICQ_CAPABILITIES.FIXTURE_INTENSITY_SET:
+        return executeMagicQFixtureIntensityCapability(
+          this.magicqLighting,
+          request.workspaceId,
+          request.context,
+        );
 
       case "github.repository.list":
       case "github.repository.read":
