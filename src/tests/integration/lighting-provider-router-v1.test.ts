@@ -35,7 +35,7 @@ test("routes MagicQ by Universal Connection provider", async () => {
 
 test("routes grandMA3 by Universal Connection provider", async () => {
   const calls: string[] = [];
-  const router = new ProviderAwareLightingFixtureIntensityExecutor(repository("malighting.grandma3"), executor("magicq", calls), executor("grandma3", calls));
+  const router = new ProviderAwareLightingFixtureIntensityExecutor(repository("ma-lighting.grandma3"), executor("magicq", calls), executor("grandma3", calls));
   await router.setFixtureIntensity(input);
   assert.deepEqual(calls, ["grandma3"]);
 });
