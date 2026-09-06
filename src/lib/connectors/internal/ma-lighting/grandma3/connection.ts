@@ -7,11 +7,9 @@ import {
   type GrandMA3FixtureTarget,
 } from "./index";
 
-export const GRANDMA3_OSC_DEFAULT_PORT = 8000;
-
 export type GrandMA3ConnectionConfiguration = {
   host: string;
-  port?: number;
+  port: number;
   fixtureNumbers: Readonly<Record<string, number>>;
 };
 
@@ -38,9 +36,9 @@ export function validateGrandMA3ConnectionConfiguration(
   const host = configuration.host.trim();
   if (!host) throw new TypeError("grandMA3 configuration host must be non-empty.");
 
-  const port = configuration.port ?? GRANDMA3_OSC_DEFAULT_PORT;
+  const port = configuration.port;
   if (!Number.isInteger(port) || port < 1 || port > 65535) {
-    throw new RangeError("grandMA3 OSC port must be between 1 and 65535.");
+    throw new RangeError("grandMA3 OSC port must be explicitly configured between 1 and 65535.");
   }
 
   const fixtureNumbers: Record<string, number> = {};
@@ -110,11 +108,15 @@ implements GrandMA3ConnectionConfigurationRepository {
       CREATE TABLE IF NOT EXISTS clara_grandma3_connection_configuration (
         connection_id TEXT PRIMARY KEY REFERENCES clara_connections(id) ON DELETE CASCADE,
         host TEXT NOT NULL,
-        port INTEGER NOT NULL DEFAULT 8000,
+        port INTEGER NOT NULL,
         fixture_numbers JSONB NOT NULL DEFAULT '{}'::jsonb,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
+    `;
+    await sql`
+      ALTER TABLE clara_grandma3_connection_configuration
+      ALTER COLUMN port DROP DEFAULT
     `;
     this.initialized = true;
   }
