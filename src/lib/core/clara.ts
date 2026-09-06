@@ -70,6 +70,23 @@ export class Clara {
       );
 
       if (persistedMission) {
+        const nextPendingTask = persistedMission.tasks.find(
+          (task) => !task.completed,
+        );
+
+        // Legacy V1 behaviour marked any non-autonomous task as "blocked",
+        // including ordinary conversational/manual mission steps with no
+        // execution contract. Those steps are still active work and should not
+        // be presented as an execution/approval blockage.
+        if (
+          persistedMission.status === "blocked" &&
+          nextPendingTask &&
+          !nextPendingTask.execution
+        ) {
+          persistedMission.status = "active";
+          await saveMission(persistedMission);
+        }
+
         this.session.mission = persistedMission;
       }
     }
@@ -177,6 +194,23 @@ export class Clara {
         break;
       }
 
+      // A task with no execution contract is a normal conversational/manual
+      // step. Clara can keep conducting the mission without pretending that an
+      // execution approval or external intervention is required.
+      if (!nextPendingTask.execution) {
+        if (this.session.mission.status !== "active") {
+          this.session.mission = {
+            ...this.session.mission,
+            status: "active",
+          };
+          await saveMission(this.session.mission);
+        }
+
+        break;
+      }
+
+      // "blocked" is reserved for an actual execution task that exists but is
+      // not currently authorized for autonomous execution.
       if (!canExecuteAutonomously(nextPendingTask)) {
         this.session.mission = {
           ...this.session.mission,
