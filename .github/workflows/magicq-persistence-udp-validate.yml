@@ -1,0 +1,25 @@
+name: MagicQ Persistence UDP Validate
+
+on:
+  push:
+    branches:
+      - feat/magicq-persistence-udp-v1
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/magicq-persistence-udp-v1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsx --test src/tests/integration/magicq-persistence-udp.test.ts src/tests/integration/magicq-configured-executor.test.ts src/tests/integration/magicq-crep.test.ts src/tests/integration/magicq-adapter-v1.test.ts src/tests/integration/magicq-universal-connections.test.ts src/tests/integration/magicq-capability-engine.test.ts
+      - run: npx tsc --noEmit --pretty false
+      - run: npm run build
