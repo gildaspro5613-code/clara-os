@@ -101,7 +101,7 @@ function extractConversationContext(context: Context): ConversationContext {
     conversationHistory?: unknown;
   };
 
-  const history = Array.isArray(payload.conversationHistory)
+  const history: ConversationContext["history"] = Array.isArray(payload.conversationHistory)
     ? payload.conversationHistory.flatMap((entry) => {
         if (
           typeof entry !== "object" ||
