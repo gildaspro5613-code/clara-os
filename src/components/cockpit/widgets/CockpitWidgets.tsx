@@ -28,16 +28,16 @@ export default async function CockpitWidgets({
 
         {/* ============================================
             OVERVIEW
-            Trois cartes de même importance.
+            Clara session is the shared source of truth.
             ============================================ */}
 
         <div className="grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-3">
           <div className="min-w-0 md:col-span-2 xl:col-span-1">
-            <SummaryPanel />
+            <SummaryPanel session={session} />
           </div>
 
           <div className="min-w-0">
-            <AttentionPanel />
+            <AttentionPanel mission={session.mission} />
           </div>
 
           <div className="min-w-0">
@@ -47,13 +47,11 @@ export default async function CockpitWidgets({
 
         {/* ============================================
             ACTIVITY
-            Deux aperçus complémentaires.
-            Aucun étirement artificiel.
             ============================================ */}
 
         <div className="mt-5 grid items-stretch gap-5 lg:grid-cols-[1.35fr_1fr]">
           <div className="min-w-0">
-            <ConversationsPanel />
+            <ConversationsPanel session={session} />
           </div>
 
           <div className="min-w-0">
@@ -63,7 +61,6 @@ export default async function CockpitWidgets({
 
         {/* ============================================
             CONFORT & OPÉRATION
-            Mission + widgets de confort Clara OS.
             ============================================ */}
 
         <div className="mt-5 grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-[1.35fr_1fr_1fr]">
