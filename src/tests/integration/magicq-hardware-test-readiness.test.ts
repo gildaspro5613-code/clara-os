@@ -6,8 +6,9 @@ import { assertMagicQHardwareTestReady } from "@/lib/connectors/internal/chamsys
 const activeConnection = {
   id: "conn-mq50",
   workspaceId: "workspace-angers",
-  connectorId: "chamsys.magicq",
+  provider: "chamsys.magicq",
   status: "ACTIVE" as const,
+  scopes: [],
   createdAt: new Date(),
   updatedAt: new Date(),
 };
