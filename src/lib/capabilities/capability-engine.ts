@@ -68,8 +68,6 @@ import {
 import { FindDocumentContext } from "./find-document/context";
 import { FindDocumentWorkflow } from "./find-document/workflow";
 
-
-
 import { ReadDocumentContext } from "./read-document/context";
 import { ReadDocumentWorkflow } from "./read-document/workflow";
 
@@ -78,11 +76,10 @@ import { DriveSearchWorkflow } from "./drive-search/workflow";
 
 import { SendGmailContext } from "./send-gmail/context";
 import { SendGmailWorkflow } from "./send-gmail/workflow";
-import { GitHubReadExecutor, type OperationalCapabilityResult } from "./github-read/executor";
-import { DatabaseConnectionRepository } from "@/lib/connections/connection-repository";
-import { ConnectionResolver } from "@/lib/connections/connection-resolver";
-import { CredentialStore } from "@/lib/connections/credential-store";
-import { MakeConnectorAdapter, MAKE_CAPABILITIES } from "@/lib/connectors/make";
+import { GitHubReadExecutor } from "./github-read/executor";
+import type { OperationalCapabilityResult } from "./operational-result";
+import { MakeCapabilityExecutor } from "./make/executor";
+import { MAKE_CAPABILITIES } from "@/lib/connectors/make";
 import { MAGICQ_CAPABILITIES } from "@/lib/connectors/internal/chamsys/magicq";
 import { DisabledMagicQLightingExecutor, executeMagicQFixtureIntensityCapability, type MagicQLightingExecutor } from "./magicq-lighting/executor";
 
@@ -154,6 +151,7 @@ export class CapabilityEngine {
     private readonly githubRead = new GitHubReadExecutor(),
     private readonly magicqLighting: MagicQLightingExecutor =
       new DisabledMagicQLightingExecutor(),
+    private readonly makeCapability = new MakeCapabilityExecutor(),
   ) {}
 
   /**
@@ -161,12 +159,6 @@ export class CapabilityEngine {
    */
   private readonly registry =
     new CapabilityRegistry();
-
-  private readonly connections = new DatabaseConnectionRepository();
-
-  private readonly make = new MakeConnectorAdapter(
-    new ConnectionResolver(this.connections, new CredentialStore()),
-  );
 
   /**
    * Workflows.
@@ -213,8 +205,6 @@ export class CapabilityEngine {
   private readonly findDocument =
     new FindDocumentWorkflow();
 
-
-
   private readonly readDocument =
     new ReadDocumentWorkflow();
 
@@ -252,27 +242,22 @@ export class CapabilityEngine {
 
     switch (request.capabilityId) {
 
-      case MAKE_CAPABILITIES.SCENARIO_PREPARE: {
-        const result = await this.make.execute("not-required", {
-          capability: MAKE_CAPABILITIES.SCENARIO_PREPARE,
-          input: request.context as { scenarioKey: string; payload?: Record<string, unknown> },
-        });
-        return { success: true, message: "Make scenario prepared.", content: JSON.stringify(result.data), completedAt: new Date() };
-      }
-
+      case MAKE_CAPABILITIES.SCENARIO_PREPARE:
       case MAKE_CAPABILITIES.SCENARIO_EXECUTE: {
-        if (!request.workspaceId) {
-          return { success: false, message: "Workspace identity is required for Make execution.", completedAt: new Date() };
-        }
-        const connection = await this.connections.findByWorkspaceAndProvider(request.workspaceId, "make");
-        if (!connection) {
-          return { success: false, message: "Make is not configured for this Clara OS workspace.", completedAt: new Date() };
-        }
-        const result = await this.make.execute(connection.id, {
-          capability: MAKE_CAPABILITIES.SCENARIO_EXECUTE,
-          input: request.context as { scenarioKey: string; payload?: Record<string, unknown> },
-        });
-        return { success: true, message: "Make scenario executed.", content: JSON.stringify(result.data), completedAt: new Date() };
+        const result = await this.makeCapability.execute(
+          request.capabilityId,
+          request.workspaceId,
+          request.context,
+        );
+        return {
+          success: result.success,
+          message: result.success
+            ? `Make capability ${result.status ?? "completed"}.`
+            : result.error?.message ?? "Make capability failed.",
+          content: result.success ? JSON.stringify(result.data) : undefined,
+          operationalResult: result,
+          completedAt: new Date(),
+        };
       }
 
       case MAGICQ_CAPABILITIES.FIXTURE_INTENSITY_SET:
@@ -358,7 +343,8 @@ export class CapabilityEngine {
 
           documentUrl: result.documentUrl,
 
-          completedAt: result.completedAt,
+          completedAt:
+            result.completedAt,
 
         };
 
@@ -417,11 +403,14 @@ export class CapabilityEngine {
 
         return {
 
-          success: result.success,
+          success:
+            result.success,
 
-          message: result.message,
+          message:
+            result.message,
 
-          completedAt: result.completedAt,
+          completedAt:
+            result.completedAt,
 
         };
 
