@@ -8,5 +8,14 @@
   "types": { "referrer": "Empfehlungspartner", "reseller": "Wiederverkäufer", "integrator": "Integrator" },
   "statuses": { "pending": "Ausstehend", "active": "Aktiv", "paused": "Pausiert", "closed": "Archiviert" },
   "governance": "Clara kann Provisionen vorbereiten. Freigabe und Auszahlung bleiben genehmigungspflichtig.",
-  "referralCode": "Code"
+  "referralCode": "Code",
+  "detail": {
+    "back": "Zurück zu Partnern",
+    "section": "Partnerprofil",
+    "kpis": { "referrals": "Empfehlungen", "deals": "Geschäftschancen", "revenue": "Gewonnener Umsatz", "commission": "Offene Provision" },
+    "actions": { "title": "Status verwalten", "active": "Aktivieren", "paused": "Pausieren", "closed": "Archivieren", "updating": "Wird aktualisiert…", "error": "Status konnte nicht aktualisiert werden.", "archived": "Dieser Partner ist archiviert und sein Status kann nicht mehr geändert werden." },
+    "referrals": { "title": "Empfehlungen", "empty": "Keine zugeordneten Empfehlungen." },
+    "deals": { "title": "Geschäftschancen", "empty": "Keine zugeordneten Geschäftschancen." },
+    "commissions": { "title": "Provisionen", "empty": "Keine Provisionen berechnet.", "period": "Periode {period}" }
+  }
 }
