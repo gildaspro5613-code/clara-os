@@ -1,0 +1,12 @@
+{
+  "nav": "Partners",
+  "section": "Grow",
+  "title": "Partners",
+  "subtitle": "Manage the partner network, referrals, attributed sales and commissions from Clara OS.",
+  "kpis": { "active": "Active partners", "referrals": "Referrals", "wonRevenue": "Attributed revenue", "pendingCommissions": "Commissions to process" },
+  "table": { "title": "Partner network", "partner": "Partner", "type": "Type", "status": "Status", "referrals": "Referrals", "revenue": "Won revenue", "commission": "Pending commission", "empty": "No partners yet. The first partner you create will appear here." },
+  "types": { "referrer": "Referrer", "reseller": "Reseller", "integrator": "Integrator" },
+  "statuses": { "pending": "Pending", "active": "Active", "paused": "Paused", "closed": "Archived" },
+  "governance": "Clara can prepare commissions. Approval and payment remain subject to validation.",
+  "referralCode": "Code"
+}
