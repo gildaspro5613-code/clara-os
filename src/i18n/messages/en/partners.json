@@ -8,5 +8,14 @@
   "types": { "referrer": "Referrer", "reseller": "Reseller", "integrator": "Integrator" },
   "statuses": { "pending": "Pending", "active": "Active", "paused": "Paused", "closed": "Archived" },
   "governance": "Clara can prepare commissions. Approval and payment remain subject to validation.",
-  "referralCode": "Code"
+  "referralCode": "Code",
+  "detail": {
+    "back": "Back to partners",
+    "section": "Partner record",
+    "kpis": { "referrals": "Referrals", "deals": "Deals", "revenue": "Won revenue", "commission": "Pending commission" },
+    "actions": { "title": "Manage status", "active": "Activate", "paused": "Pause", "closed": "Archive", "updating": "Updating…", "error": "Unable to update status.", "archived": "This partner is archived and its status can no longer be changed." },
+    "referrals": { "title": "Referrals", "empty": "No attributed referrals." },
+    "deals": { "title": "Deals", "empty": "No attributed deals." },
+    "commissions": { "title": "Commissions", "empty": "No commissions calculated.", "period": "Period {period}" }
+  }
 }
