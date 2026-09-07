@@ -1,11 +1,5 @@
 import type { Partner, Referral } from "./types";
 
-export interface AttributionCandidate {
-  partnerId: string;
-  referralId: string;
-  capturedAt: string;
-}
-
 export interface AttributionResult {
   partnerId?: string;
   referralId?: string;
@@ -14,24 +8,31 @@ export interface AttributionResult {
 }
 
 export function attributeReferral(
+  workspaceId: string,
   referralCode: string,
   partners: Partner[],
   referrals: Referral[],
 ): AttributionResult {
+  const normalizedWorkspaceId = workspaceId.trim();
   const normalizedCode = referralCode.trim().toLowerCase();
-  if (!normalizedCode) {
+  if (!normalizedWorkspaceId || !normalizedCode) {
     return { attributed: false, reason: "invalid_referral" };
   }
 
   const referral = [...referrals]
-    .filter((item) => item.referralCode.trim().toLowerCase() === normalizedCode)
+    .filter((item) =>
+      item.workspaceId === normalizedWorkspaceId &&
+      item.referralCode.trim().toLowerCase() === normalizedCode,
+    )
     .sort((a, b) => b.capturedAt.localeCompare(a.capturedAt))[0];
 
   if (!referral) {
     return { attributed: false, reason: "referral_not_found" };
   }
 
-  const partner = partners.find((item) => item.id === referral.partnerId);
+  const partner = partners.find((item) =>
+    item.workspaceId === normalizedWorkspaceId && item.id === referral.partnerId,
+  );
   if (!partner || partner.status !== "active") {
     return {
       partnerId: referral.partnerId,
