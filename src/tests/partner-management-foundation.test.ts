@@ -61,7 +61,7 @@ test("referral attribution is case-insensitive and uses the latest matching capt
     referral({ id: "latest", partnerId: "partner-2", capturedAt: "2026-09-06T00:00:00.000Z" }),
   ];
 
-  assert.deepEqual(attributeReferral(" clara-p1 ", partners, referrals), {
+  assert.deepEqual(attributeReferral("workspace-a", " clara-p1 ", partners, referrals), {
     partnerId: "partner-2",
     referralId: "latest",
     attributed: true,
@@ -71,6 +71,7 @@ test("referral attribution is case-insensitive and uses the latest matching capt
 
 test("inactive partners cannot receive referral attribution", () => {
   const result = attributeReferral(
+    "workspace-a",
     "CLARA-P1",
     [partner({ status: "paused" })],
     [referral()],
@@ -78,6 +79,20 @@ test("inactive partners cannot receive referral attribution", () => {
 
   assert.equal(result.attributed, false);
   assert.equal(result.reason, "partner_inactive");
+});
+
+test("referral attribution never crosses workspace boundaries", () => {
+  const result = attributeReferral(
+    "workspace-a",
+    "CLARA-P1",
+    [partner({ workspaceId: "workspace-b" })],
+    [referral({ workspaceId: "workspace-b" })],
+  );
+
+  assert.deepEqual(result, {
+    attributed: false,
+    reason: "referral_not_found",
+  });
 });
 
 test("percentage commission calculates exact cents and respects recurrence limit", () => {
