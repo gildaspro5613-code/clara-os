@@ -30,7 +30,7 @@ export default function TasksPanel({
           {mission.title}
         </p>
 
-        <p className="mt-2 text-sm leading-relaxed text-white/70">
+        <p className="mt-2 line-clamp-4 text-sm leading-relaxed text-white/70">
           {mission.objective}
         </p>
       </div>
@@ -62,7 +62,7 @@ export default function TasksPanel({
           {t("nextStep")}
         </p>
 
-        <p className="mt-2 font-medium">
+        <p className="mt-2 line-clamp-3 font-medium">
           {mission.nextAction ?? t("noNextStep")}
         </p>
 
