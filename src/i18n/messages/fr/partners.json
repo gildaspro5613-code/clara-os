@@ -14,6 +14,15 @@
     "section": "Fiche partenaire",
     "kpis": { "referrals": "Recommandations", "deals": "Opportunités", "revenue": "CA gagné", "commission": "Commission en attente" },
     "actions": { "title": "Gérer le statut", "active": "Activer", "paused": "Mettre en pause", "closed": "Archiver", "updating": "Mise à jour…", "error": "Impossible de modifier le statut.", "archived": "Ce partenaire est archivé et son statut ne peut plus être modifié." },
+    "operations": {
+      "title": "Opérations partenaire",
+      "subtitle": "Ajoute une recommandation, enregistre une vente ou prépare une commission.",
+      "activeRequired": "Le partenaire doit être actif pour les nouvelles recommandations et ventes.",
+      "referralTitle": "Nouvelle recommandation", "email": "Email du prospect", "addReferral": "Ajouter la recommandation",
+      "dealTitle": "Nouvelle vente", "offer": "Offre Clara", "amount": "Montant", "currency": "Devise", "addDeal": "Enregistrer la vente",
+      "commissionTitle": "Préparer une commission", "selectDeal": "Choisir une vente gagnée", "selectRule": "Choisir une règle", "period": "Période", "prepareCommission": "Calculer la commission",
+      "referralSuccess": "Recommandation ajoutée.", "dealSuccess": "Vente enregistrée.", "commissionSuccess": "Commission préparée en brouillon.", "error": "L’opération n’a pas pu être effectuée."
+    },
     "referrals": { "title": "Recommandations", "empty": "Aucune recommandation attribuée." },
     "deals": { "title": "Opportunités", "empty": "Aucune opportunité attribuée." },
     "commissions": { "title": "Commissions", "empty": "Aucune commission calculée.", "period": "Période {period}" }
