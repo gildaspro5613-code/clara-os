@@ -93,6 +93,7 @@ test("execute resolves the webhook from the credential store rather than user in
   assert.equal(result.provider, "make");
   assert.equal(http.calls[0]?.url, "https://hook.eu2.make.com/secret-path");
   assert.equal(new Headers(http.calls[0]?.init?.headers).get("x-clara-secret"), "secret-header");
+  assert.ok(http.calls[0]?.init?.signal instanceof AbortSignal);
   assert.deepEqual(JSON.parse(String(http.calls[0]?.init?.body)), {
     scenarioKey: "crm-contact-sync",
     payload: { contactId: 7 },
@@ -129,6 +130,40 @@ test("webhook client rejects non-HTTPS destinations", async () => {
       { url: "http://localhost:3000/internal" },
       { scenarioKey: "unsafe" },
     ),
-    (error) => error instanceof MakeWebhookError && /HTTPS/.test(error.message),
+    (error) => error instanceof MakeWebhookError && error.code === "INVALID_URL" && /HTTPS/.test(error.message),
+  );
+});
+
+test("webhook client normalizes accepted asynchronous executions", async () => {
+  const client = new MakeWebhookClient(async () => new Response(
+    JSON.stringify({ executionId: "make-run-123", status: "pending" }),
+    { status: 202 },
+  ));
+
+  const result = await client.execute(
+    { url: "https://hook.eu2.make.com/secret-path" },
+    { scenarioKey: "notify-team", payload: { message: "Ready" } },
+  );
+
+  assert.equal(result.executionStatus, "pending");
+  assert.equal(result.executionId, "make-run-123");
+  assert.equal(result.status, 202);
+});
+
+test("webhook client normalizes provider network failures without leaking destination", async () => {
+  const client = new MakeWebhookClient(async () => {
+    throw new Error("connect ECONNREFUSED https://hook.eu2.make.com/secret-path");
+  });
+
+  await assert.rejects(
+    () => client.execute(
+      { url: "https://hook.eu2.make.com/secret-path" },
+      { scenarioKey: "notify-team" },
+    ),
+    (error) =>
+      error instanceof MakeWebhookError &&
+      error.code === "NETWORK_ERROR" &&
+      error.retryable === true &&
+      !error.message.includes("secret-path"),
   );
 });
