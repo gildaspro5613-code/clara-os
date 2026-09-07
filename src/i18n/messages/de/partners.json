@@ -14,6 +14,15 @@
     "section": "Partnerprofil",
     "kpis": { "referrals": "Empfehlungen", "deals": "Geschäftschancen", "revenue": "Gewonnener Umsatz", "commission": "Offene Provision" },
     "actions": { "title": "Status verwalten", "active": "Aktivieren", "paused": "Pausieren", "closed": "Archivieren", "updating": "Wird aktualisiert…", "error": "Status konnte nicht aktualisiert werden.", "archived": "Dieser Partner ist archiviert und sein Status kann nicht mehr geändert werden." },
+    "operations": {
+      "title": "Partneraktionen",
+      "subtitle": "Empfehlung hinzufügen, gewonnenen Deal erfassen oder Provision vorbereiten.",
+      "activeRequired": "Der Partner muss für neue Empfehlungen und Deals aktiv sein.",
+      "referralTitle": "Neue Empfehlung", "email": "E-Mail des Interessenten", "addReferral": "Empfehlung hinzufügen",
+      "dealTitle": "Neuer Verkauf", "offer": "Clara-Angebot", "amount": "Betrag", "currency": "Währung", "addDeal": "Verkauf erfassen",
+      "commissionTitle": "Provision vorbereiten", "selectDeal": "Gewonnenen Deal auswählen", "selectRule": "Regel auswählen", "period": "Periode", "prepareCommission": "Provision berechnen",
+      "referralSuccess": "Empfehlung hinzugefügt.", "dealSuccess": "Verkauf erfasst.", "commissionSuccess": "Provision als Entwurf vorbereitet.", "error": "Die Aktion konnte nicht abgeschlossen werden."
+    },
     "referrals": { "title": "Empfehlungen", "empty": "Keine zugeordneten Empfehlungen." },
     "deals": { "title": "Geschäftschancen", "empty": "Keine zugeordneten Geschäftschancen." },
     "commissions": { "title": "Provisionen", "empty": "Keine Provisionen berechnet.", "period": "Periode {period}" }
