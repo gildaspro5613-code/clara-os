@@ -8,5 +8,14 @@
   "types": { "referrer": "Prescriptor", "reseller": "Revendedor", "integrator": "Integrador" },
   "statuses": { "pending": "Pendiente", "active": "Activo", "paused": "En pausa", "closed": "Archivado" },
   "governance": "Clara puede preparar las comisiones. Su aprobación y pago siguen sujetos a validación.",
-  "referralCode": "Código"
+  "referralCode": "Código",
+  "detail": {
+    "back": "Volver a socios",
+    "section": "Ficha del socio",
+    "kpis": { "referrals": "Recomendaciones", "deals": "Oportunidades", "revenue": "Ingresos ganados", "commission": "Comisión pendiente" },
+    "actions": { "title": "Gestionar estado", "active": "Activar", "paused": "Pausar", "closed": "Archivar", "updating": "Actualizando…", "error": "No se pudo actualizar el estado.", "archived": "Este socio está archivado y su estado ya no puede modificarse." },
+    "referrals": { "title": "Recomendaciones", "empty": "No hay recomendaciones atribuidas." },
+    "deals": { "title": "Oportunidades", "empty": "No hay oportunidades atribuidas." },
+    "commissions": { "title": "Comisiones", "empty": "No hay comisiones calculadas.", "period": "Periodo {period}" }
+  }
 }
