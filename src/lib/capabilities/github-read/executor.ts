@@ -3,6 +3,7 @@ import { GitHubConnectorAdapter, type GitHubCapabilityInput } from "@/lib/connec
 import { GitHubConnectorDefinition } from "@/lib/connectors/github/definition";
 import { GitHubApiError } from "@/lib/connectors/github/errors";
 import type { OperationalCapabilityResult } from "../operational-result";
+export type { OperationalCapabilityResult } from "../operational-result";
 
 export interface GitHubReadContext { readonly connectionId: string; readonly input: unknown }
 export interface GitHubReadAdapter {
