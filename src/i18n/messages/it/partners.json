@@ -1,0 +1,12 @@
+{
+  "nav": "Partner",
+  "section": "Sviluppare",
+  "title": "Partner",
+  "subtitle": "Gestisci la rete partner, le segnalazioni, le vendite attribuite e le commissioni da Clara OS.",
+  "kpis": { "active": "Partner attivi", "referrals": "Segnalazioni", "wonRevenue": "Ricavi attribuiti", "pendingCommissions": "Commissioni da gestire" },
+  "table": { "title": "Rete partner", "partner": "Partner", "type": "Tipo", "status": "Stato", "referrals": "Segnalazioni", "revenue": "Ricavi acquisiti", "commission": "Commissione in sospeso", "empty": "Nessun partner al momento. Il primo partner creato apparirà qui." },
+  "types": { "referrer": "Segnalatore", "reseller": "Rivenditore", "integrator": "Integratore" },
+  "statuses": { "pending": "In attesa", "active": "Attivo", "paused": "In pausa", "closed": "Archiviato" },
+  "governance": "Clara può preparare le commissioni. Approvazione e pagamento restano soggetti a convalida.",
+  "referralCode": "Codice"
+}
