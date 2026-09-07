@@ -8,5 +8,14 @@
   "types": { "referrer": "Segnalatore", "reseller": "Rivenditore", "integrator": "Integratore" },
   "statuses": { "pending": "In attesa", "active": "Attivo", "paused": "In pausa", "closed": "Archiviato" },
   "governance": "Clara può preparare le commissioni. Approvazione e pagamento restano soggetti a convalida.",
-  "referralCode": "Codice"
+  "referralCode": "Codice",
+  "detail": {
+    "back": "Torna ai partner",
+    "section": "Scheda partner",
+    "kpis": { "referrals": "Segnalazioni", "deals": "Opportunità", "revenue": "Ricavi acquisiti", "commission": "Commissione in sospeso" },
+    "actions": { "title": "Gestisci stato", "active": "Attiva", "paused": "Metti in pausa", "closed": "Archivia", "updating": "Aggiornamento…", "error": "Impossibile aggiornare lo stato.", "archived": "Questo partner è archiviato e il suo stato non può più essere modificato." },
+    "referrals": { "title": "Segnalazioni", "empty": "Nessuna segnalazione attribuita." },
+    "deals": { "title": "Opportunità", "empty": "Nessuna opportunità attribuita." },
+    "commissions": { "title": "Commissioni", "empty": "Nessuna commissione calcolata.", "period": "Periodo {period}" }
+  }
 }
