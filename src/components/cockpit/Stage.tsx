@@ -4,9 +4,36 @@ import BriefPanel from "@/components/cockpit/panels/BriefPanel";
 import TasksPanel from "@/components/cockpit/panels/TasksPanel";
 import AgendaPanel from "@/components/cockpit/panels/AgendaPanel";
 import ClaraVoiceWidget from "@/components/cockpit/widgets/voice/ClaraVoiceWidget";
+import GlassPanel from "@/components/ui/GlassPanel";
 
 interface StageProps {
   session: ClaraSession;
+}
+
+function EmptyMissionPanel() {
+  return (
+    <GlassPanel>
+      <div>
+        <p className="text-xs uppercase tracking-[0.20em] text-white/50">
+          Mission actuelle
+        </p>
+        <p className="mt-2 text-lg font-semibold">
+          Aucune mission active
+        </p>
+        <p className="mt-2 text-sm leading-relaxed text-white/70">
+          Parlez à Clara pour définir un objectif et démarrer une mission.
+        </p>
+      </div>
+    </GlassPanel>
+  );
+}
+
+interface MissionPanelProps {
+  mission: ClaraSession["mission"];
+}
+
+function MissionPanel({ mission }: MissionPanelProps) {
+  return mission ? <TasksPanel mission={mission} /> : <EmptyMissionPanel />;
 }
 
 export default function Stage({
@@ -44,8 +71,7 @@ export default function Stage({
         </div>
       </div>
 
-      {/* Main action — deliberately the only
-          operational glass panel in the Hero */}
+      {/* Main action */}
       <div
         className="
           pointer-events-auto
@@ -60,13 +86,8 @@ export default function Stage({
         "
       >
         <AgendaPanel />
-
-        {mission && <TasksPanel mission={mission} />}
+        <MissionPanel mission={mission} />
       </div>
-
-      {/* Context zone reserved for:
-          date / weather / next agenda item.
-          Kept visually discreet. */}
 
       {/* ============================================
           MOBILE
@@ -106,7 +127,7 @@ export default function Stage({
         "
       >
         <div className="pointer-events-auto">
-          {mission && <TasksPanel mission={mission} />}
+          <MissionPanel mission={mission} />
         </div>
       </div>
     </>
