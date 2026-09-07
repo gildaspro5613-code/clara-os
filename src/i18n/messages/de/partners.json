@@ -1,0 +1,12 @@
+{
+  "nav": "Partner",
+  "section": "Wachstum",
+  "title": "Partner",
+  "subtitle": "Verwalte Partnernetzwerk, Empfehlungen, zugeordnete Umsätze und Provisionen direkt in Clara OS.",
+  "kpis": { "active": "Aktive Partner", "referrals": "Empfehlungen", "wonRevenue": "Zugeordneter Umsatz", "pendingCommissions": "Zu bearbeitende Provisionen" },
+  "table": { "title": "Partnernetzwerk", "partner": "Partner", "type": "Typ", "status": "Status", "referrals": "Empfehlungen", "revenue": "Gewonnener Umsatz", "commission": "Offene Provision", "empty": "Noch keine Partner. Der erste angelegte Partner erscheint hier." },
+  "types": { "referrer": "Empfehlungspartner", "reseller": "Wiederverkäufer", "integrator": "Integrator" },
+  "statuses": { "pending": "Ausstehend", "active": "Aktiv", "paused": "Pausiert", "closed": "Archiviert" },
+  "governance": "Clara kann Provisionen vorbereiten. Freigabe und Auszahlung bleiben genehmigungspflichtig.",
+  "referralCode": "Code"
+}
