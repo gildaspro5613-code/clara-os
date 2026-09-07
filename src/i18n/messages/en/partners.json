@@ -14,6 +14,15 @@
     "section": "Partner record",
     "kpis": { "referrals": "Referrals", "deals": "Deals", "revenue": "Won revenue", "commission": "Pending commission" },
     "actions": { "title": "Manage status", "active": "Activate", "paused": "Pause", "closed": "Archive", "updating": "Updating…", "error": "Unable to update status.", "archived": "This partner is archived and its status can no longer be changed." },
+    "operations": {
+      "title": "Partner operations",
+      "subtitle": "Add a referral, record a won deal or prepare a commission.",
+      "activeRequired": "The partner must be active for new referrals and deals.",
+      "referralTitle": "New referral", "email": "Prospect email", "addReferral": "Add referral",
+      "dealTitle": "New sale", "offer": "Clara offer", "amount": "Amount", "currency": "Currency", "addDeal": "Record sale",
+      "commissionTitle": "Prepare commission", "selectDeal": "Select a won deal", "selectRule": "Select a rule", "period": "Period", "prepareCommission": "Calculate commission",
+      "referralSuccess": "Referral added.", "dealSuccess": "Sale recorded.", "commissionSuccess": "Commission prepared as draft.", "error": "The operation could not be completed."
+    },
     "referrals": { "title": "Referrals", "empty": "No attributed referrals." },
     "deals": { "title": "Deals", "empty": "No attributed deals." },
     "commissions": { "title": "Commissions", "empty": "No commissions calculated.", "period": "Period {period}" }
