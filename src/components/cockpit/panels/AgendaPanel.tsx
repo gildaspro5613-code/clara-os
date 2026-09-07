@@ -20,7 +20,7 @@ import { useTranslations } from "next-intl";
 export default function AgendaPanel() {
   const t = useTranslations("cockpitUi");
   return (
-    <GlassPanel className="mt-7 ml-2 w-[13.5rem] px-5 py-4 bg-black/25 border-white/[0.08] shadow-[0_2px_16px_rgba(0,0,0,0.16)]">
+    <GlassPanel className="h-auto w-[13.5rem] px-5 py-4 bg-black/25 border-white/[0.08] shadow-[0_2px_16px_rgba(0,0,0,0.16)]">
       <h3 className="mb-3 text-sm font-medium tracking-[0.08em] uppercase text-white/74">
         {t("today")}
       </h3>
