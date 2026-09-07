@@ -3,24 +3,19 @@
   "section": "Développer",
   "title": "Partenaires",
   "subtitle": "Pilote le réseau de partenaires, les recommandations, les ventes attribuées et les commissions depuis Clara OS.",
-  "kpis": {
-    "active": "Partenaires actifs",
-    "referrals": "Recommandations",
-    "wonRevenue": "CA attribué",
-    "pendingCommissions": "Commissions à traiter"
-  },
-  "table": {
-    "title": "Réseau partenaires",
-    "partner": "Partenaire",
-    "type": "Type",
-    "status": "Statut",
-    "referrals": "Recommandations",
-    "revenue": "CA gagné",
-    "commission": "Commission en attente",
-    "empty": "Aucun partenaire pour le moment. Le premier partenaire créé apparaîtra ici."
-  },
+  "kpis": { "active": "Partenaires actifs", "referrals": "Recommandations", "wonRevenue": "CA attribué", "pendingCommissions": "Commissions à traiter" },
+  "table": { "title": "Réseau partenaires", "partner": "Partenaire", "type": "Type", "status": "Statut", "referrals": "Recommandations", "revenue": "CA gagné", "commission": "Commission en attente", "empty": "Aucun partenaire pour le moment. Le premier partenaire créé apparaîtra ici." },
   "types": { "referrer": "Apporteur", "reseller": "Revendeur", "integrator": "Intégrateur" },
   "statuses": { "pending": "En attente", "active": "Actif", "paused": "En pause", "closed": "Archivé" },
   "governance": "Les commissions peuvent être préparées par Clara. Leur approbation et leur paiement restent soumis à validation.",
-  "referralCode": "Code"
+  "referralCode": "Code",
+  "detail": {
+    "back": "Retour aux partenaires",
+    "section": "Fiche partenaire",
+    "kpis": { "referrals": "Recommandations", "deals": "Opportunités", "revenue": "CA gagné", "commission": "Commission en attente" },
+    "actions": { "title": "Gérer le statut", "active": "Activer", "paused": "Mettre en pause", "closed": "Archiver", "updating": "Mise à jour…", "error": "Impossible de modifier le statut.", "archived": "Ce partenaire est archivé et son statut ne peut plus être modifié." },
+    "referrals": { "title": "Recommandations", "empty": "Aucune recommandation attribuée." },
+    "deals": { "title": "Opportunités", "empty": "Aucune opportunité attribuée." },
+    "commissions": { "title": "Commissions", "empty": "Aucune commission calculée.", "period": "Période {period}" }
+  }
 }
