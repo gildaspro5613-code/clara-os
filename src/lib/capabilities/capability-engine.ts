@@ -82,166 +82,66 @@ import { MakeCapabilityExecutor } from "./make/executor";
 import { MAKE_CAPABILITIES } from "@/lib/connectors/make";
 import { MAGICQ_CAPABILITIES } from "@/lib/connectors/internal/chamsys/magicq";
 import { DisabledMagicQLightingExecutor, executeMagicQFixtureIntensityCapability, type MagicQLightingExecutor } from "./magicq-lighting/executor";
+import { NOTIFY_TEAM_CAPABILITY_ID } from "./notify-team/capability";
+import { executeNotifyTeamCapability } from "./notify-team/executor";
 
-/**
- * Capability execution request.
- */
+/** Capability execution request. */
 export interface CapabilityExecutionRequest {
-
-  /**
-   * Capability identifier.
-   */
   readonly capabilityId: string;
-
-  /**
-   * Capability execution context.
-   */
   readonly context: unknown;
-
   readonly workspaceId?: string;
-
 }
 
-/**
- * Capability execution result.
- */
+/** Capability execution result. */
 export interface CapabilityExecutionResult {
-
-  /**
-   * Execution status.
-   */
   readonly success: boolean;
-
-  /**
-   * Execution message.
-   */
   readonly message: string;
-
-  /**
-   * Optional generated content.
-   */
   readonly content?: string;
-
-  /**
-   * Generated document identifier.
-   */
   readonly documentId?: string;
-
-  /**
-   * Generated document URL.
-   */
   readonly documentUrl?: string;
-
-  /** Provider-neutral operational result for connector-backed capabilities. */
   readonly operationalResult?: OperationalCapabilityResult;
-
-  /**
-   * Completion timestamp.
-   */
   readonly completedAt: Date;
-
 }
 
-/**
- * Capability Engine.
- */
+/** Capability Engine. */
 export class CapabilityEngine {
-
   public constructor(
     private readonly githubRead = new GitHubReadExecutor(),
-    private readonly magicqLighting: MagicQLightingExecutor =
-      new DisabledMagicQLightingExecutor(),
+    private readonly magicqLighting: MagicQLightingExecutor = new DisabledMagicQLightingExecutor(),
     private readonly makeCapability = new MakeCapabilityExecutor(),
   ) {}
 
-  /**
-   * Registry.
-   */
-  private readonly registry =
-    new CapabilityRegistry();
+  private readonly registry = new CapabilityRegistry();
+  private readonly generateDocument = new GenerateDocumentWorkflow();
+  private readonly workspaceInstall = new WorkspaceInstallWorkflow();
+  private readonly organizeDrive = new OrganizeDriveWorkflow();
+  private readonly updateSheetRow = new UpdateSheetRowWorkflow();
+  private readonly appendSheetRow = new AppendSheetRowWorkflow();
+  private readonly readSheet = new ReadSheetWorkflow();
+  private readonly findSheetRow = new FindSheetRowWorkflow();
+  private readonly deleteSheetRow = new DeleteSheetRowWorkflow();
+  private readonly readCalendar = new ReadCalendarWorkflow();
+  private readonly readGmail = new ReadGmailWorkflow();
+  private readonly createCalendarEvent = new CreateCalendarEventWorkflow();
+  private readonly updateCalendarEvent = new UpdateCalendarEventWorkflow();
+  private readonly deleteCalendarEvent = new DeleteCalendarEventWorkflow();
+  private readonly findDocument = new FindDocumentWorkflow();
+  private readonly readDocument = new ReadDocumentWorkflow();
+  private readonly sendGmail = new SendGmailWorkflow();
+  private readonly driveSearch = new DriveSearchWorkflow();
 
-  /**
-   * Workflows.
-   */
-  private readonly generateDocument =
-    new GenerateDocumentWorkflow();
-
-  private readonly workspaceInstall =
-    new WorkspaceInstallWorkflow();
-
-  private readonly organizeDrive =
-    new OrganizeDriveWorkflow();
-
-  private readonly updateSheetRow =
-    new UpdateSheetRowWorkflow();
-
-  private readonly appendSheetRow =
-    new AppendSheetRowWorkflow();
-
-  private readonly readSheet =
-    new ReadSheetWorkflow();
-
-  private readonly findSheetRow =
-    new FindSheetRowWorkflow();
-
-  private readonly deleteSheetRow =
-    new DeleteSheetRowWorkflow();
-
-  private readonly readCalendar =
-    new ReadCalendarWorkflow();
-
-  private readonly readGmail =
-    new ReadGmailWorkflow();
-
-  private readonly createCalendarEvent =
-    new CreateCalendarEventWorkflow();
-
-  private readonly updateCalendarEvent =
-    new UpdateCalendarEventWorkflow();
-
-  private readonly deleteCalendarEvent =
-    new DeleteCalendarEventWorkflow();
-
-  private readonly findDocument =
-    new FindDocumentWorkflow();
-
-  private readonly readDocument =
-    new ReadDocumentWorkflow();
-
-  private readonly sendGmail =
-    new SendGmailWorkflow();
-
-  private readonly driveSearch =
-    new DriveSearchWorkflow();
-
-  /**
-   * Executes one capability.
-   */
-  public async execute(
-    request: CapabilityExecutionRequest,
-  ): Promise<CapabilityExecutionResult> {
-
-    const capability =
-      this.registry.findById(
-        request.capabilityId,
-      );
+  public async execute(request: CapabilityExecutionRequest): Promise<CapabilityExecutionResult> {
+    const capability = this.registry.findById(request.capabilityId);
 
     if (!capability) {
-
       return {
-
         success: false,
-
         message: `Unknown capability: ${request.capabilityId}`,
-
         completedAt: new Date(),
-
       };
-
     }
 
     switch (request.capabilityId) {
-
       case MAKE_CAPABILITIES.SCENARIO_PREPARE:
       case MAKE_CAPABILITIES.SCENARIO_EXECUTE: {
         const result = await this.makeCapability.execute(
@@ -254,6 +154,23 @@ export class CapabilityEngine {
           message: result.success
             ? `Make capability ${result.status ?? "completed"}.`
             : result.error?.message ?? "Make capability failed.",
+          content: result.success ? JSON.stringify(result.data) : undefined,
+          operationalResult: result,
+          completedAt: new Date(),
+        };
+      }
+
+      case NOTIFY_TEAM_CAPABILITY_ID: {
+        const result = await executeNotifyTeamCapability(
+          this.makeCapability,
+          request.workspaceId,
+          request.context,
+        );
+        return {
+          success: result.success,
+          message: result.success
+            ? `Team notification ${result.status ?? "completed"}.`
+            : result.error?.message ?? "Team notification failed.",
           content: result.success ? JSON.stringify(result.data) : undefined,
           operationalResult: result,
           completedAt: new Date(),
@@ -290,515 +207,175 @@ export class CapabilityEngine {
       }
 
       case "search-drive": {
-
-        const result =
-          await this.driveSearch.execute(
-            request.context as DriveSearchContext,
-          );
-
+        const result = await this.driveSearch.execute(request.context as DriveSearchContext);
         return {
-
-          success:
-            result.success,
-
-          message:
-            result.message,
-
-          content:
-            result.driveContext
-              ? JSON.stringify(
-                  result.driveContext,
-                )
-              : result.entries
-                ? JSON.stringify(
-                    result.entries,
-                  )
-                : undefined,
-
-          completedAt:
-            result.completedAt,
-
+          success: result.success,
+          message: result.message,
+          content: result.driveContext
+            ? JSON.stringify(result.driveContext)
+            : result.entries
+              ? JSON.stringify(result.entries)
+              : undefined,
+          completedAt: result.completedAt,
         };
-
       }
 
       case "generate-document": {
-
-        const result =
-          await this.generateDocument.execute(
-
-            request.context as GenerateDocumentContext,
-
-          );
-
+        const result = await this.generateDocument.execute(request.context as GenerateDocumentContext);
         return {
-
           success: result.success,
-
           message: result.message,
-
           content: result.content,
-
           documentId: result.documentId,
-
           documentUrl: result.documentUrl,
-
-          completedAt:
-            result.completedAt,
-
+          completedAt: result.completedAt,
         };
-
       }
 
       case "workspace-install": {
-
-        const result =
-          await this.workspaceInstall.execute(
-
-            request.context as WorkspaceInstallContext,
-
-          );
-
-        return {
-
-          success: result.success,
-
-          message: result.message,
-
-          completedAt: result.completedAt,
-
-        };
-
+        const result = await this.workspaceInstall.execute(request.context as WorkspaceInstallContext);
+        return { success: result.success, message: result.message, completedAt: result.completedAt };
       }
 
       case "update-sheet-row": {
-
-        const result =
-          await this.updateSheetRow.execute(
-
-            request.context as UpdateSheetRowContext,
-
-          );
-
-        return {
-
-          success: result.success,
-
-          message: result.message,
-
-          completedAt: result.completedAt,
-
-        };
-
+        const result = await this.updateSheetRow.execute(request.context as UpdateSheetRowContext);
+        return { success: result.success, message: result.message, completedAt: result.completedAt };
       }
 
       case "organize-drive": {
-
-        const result =
-          await this.organizeDrive.execute(
-
-            request.context as OrganizeDriveContext,
-
-          );
-
-        return {
-
-          success:
-            result.success,
-
-          message:
-            result.message,
-
-          completedAt:
-            result.completedAt,
-
-        };
-
+        const result = await this.organizeDrive.execute(request.context as OrganizeDriveContext);
+        return { success: result.success, message: result.message, completedAt: result.completedAt };
       }
 
       case "read-sheet": {
-
-        const result =
-          await this.readSheet.execute(
-
-            request.context as ReadSheetContext,
-
-          );
-
+        const result = await this.readSheet.execute(request.context as ReadSheetContext);
         return {
-
           success: result.success,
-
           message: result.message,
-
-          content:
-            JSON.stringify(
-              result.values,
-            ),
-
-          completedAt:
-            result.completedAt,
-
+          content: JSON.stringify(result.values),
+          completedAt: result.completedAt,
         };
-
       }
 
       case "find-document": {
-
-        const result =
-          await this.findDocument.execute(
-
-            request.context as FindDocumentContext,
-
-          );
-
+        const result = await this.findDocument.execute(request.context as FindDocumentContext);
         return {
-
-          success:
-            result.success,
-
-          message:
-            result.message,
-
-          content:
-            result.documentId
-              ? JSON.stringify({
-                  documentId:
-                    result.documentId,
-                  documentName:
-                    result.documentName,
-                  documentUrl:
-                    result.documentUrl,
-                })
-              : undefined,
-
-          documentId:
-            result.documentId,
-
-          documentUrl:
-            result.documentUrl,
-
-          completedAt:
-            result.completedAt,
-
+          success: result.success,
+          message: result.message,
+          content: result.documentId
+            ? JSON.stringify({
+                documentId: result.documentId,
+                documentName: result.documentName,
+                documentUrl: result.documentUrl,
+              })
+            : undefined,
+          documentId: result.documentId,
+          documentUrl: result.documentUrl,
+          completedAt: result.completedAt,
         };
-
       }
 
       case "find-sheet-row": {
-
-        const result =
-          await this.findSheetRow.execute(
-
-            request.context as FindSheetRowContext,
-
-          );
-
+        const result = await this.findSheetRow.execute(request.context as FindSheetRowContext);
         return {
-
-          success:
-            result.success,
-
-          message:
-            result.message,
-
-          content:
-            JSON.stringify(
-              result.rows,
-            ),
-
-          completedAt:
-            result.completedAt,
-
+          success: result.success,
+          message: result.message,
+          content: JSON.stringify(result.rows),
+          completedAt: result.completedAt,
         };
-
       }
 
       case "send-gmail": {
-
-        const result =
-          await this.sendGmail.execute(
-
-            request.context as SendGmailContext,
-
-          );
-
+        const result = await this.sendGmail.execute(request.context as SendGmailContext);
         return {
-
-          success:
-            result.success,
-
-          message:
-            result.message,
-
-          content:
-            JSON.stringify({
-
-              messageId:
-                result.messageId,
-
-              threadId:
-                result.threadId,
-
-            }),
-
-          completedAt:
-            result.completedAt,
-
+          success: result.success,
+          message: result.message,
+          content: JSON.stringify({ messageId: result.messageId, threadId: result.threadId }),
+          completedAt: result.completedAt,
         };
-
       }
 
       case "read-document": {
-
-        const result =
-          await this.readDocument.execute(
-
-            request.context as ReadDocumentContext,
-
-          );
-
+        const result = await this.readDocument.execute(request.context as ReadDocumentContext);
         return {
-
-          success:
-            result.success,
-
-          message:
-            result.message,
-
-          content:
-            result.content,
-
-          completedAt:
-            result.completedAt,
-
+          success: result.success,
+          message: result.message,
+          content: result.content,
+          completedAt: result.completedAt,
         };
-
       }
 
       case "append-sheet-row": {
-
-        const result =
-          await this.appendSheetRow.execute(
-
-            request.context as AppendSheetRowContext,
-
-          );
-
-        return {
-
-          success: result.success,
-
-          message: result.message,
-
-          completedAt: result.completedAt,
-
-        };
-
+        const result = await this.appendSheetRow.execute(request.context as AppendSheetRowContext);
+        return { success: result.success, message: result.message, completedAt: result.completedAt };
       }
 
       case "delete-calendar-event": {
-
-        const result =
-          await this.deleteCalendarEvent.execute(
-
-            request.context as DeleteCalendarEventContext,
-
-          );
-
-        return {
-
-          success: result.success,
-
-          message: result.message,
-
-          completedAt: result.completedAt,
-
-        };
-
+        const result = await this.deleteCalendarEvent.execute(request.context as DeleteCalendarEventContext);
+        return { success: result.success, message: result.message, completedAt: result.completedAt };
       }
 
       case "update-calendar-event": {
-
-        const result =
-          await this.updateCalendarEvent.execute(
-
-            request.context as UpdateCalendarEventContext,
-
-          );
-
+        const result = await this.updateCalendarEvent.execute(request.context as UpdateCalendarEventContext);
         return {
-
-          success:
-            result.success,
-
-          message:
-            result.message,
-
-          documentUrl:
-            result.eventUrl,
-
-          content:
-            JSON.stringify({
-
-              eventId:
-                result.eventId,
-
-              calendarId:
-                result.calendarId,
-
-              eventUrl:
-                result.eventUrl,
-
-            }),
-
-          completedAt:
-            result.completedAt,
-
+          success: result.success,
+          message: result.message,
+          documentUrl: result.eventUrl,
+          content: JSON.stringify({
+            eventId: result.eventId,
+            calendarId: result.calendarId,
+            eventUrl: result.eventUrl,
+          }),
+          completedAt: result.completedAt,
         };
-
       }
 
       case "create-calendar-event": {
-
-        const result =
-          await this.createCalendarEvent.execute(
-
-            request.context as CreateCalendarEventContext,
-
-          );
-
+        const result = await this.createCalendarEvent.execute(request.context as CreateCalendarEventContext);
         return {
-
-          success:
-            result.success,
-
-          message:
-            result.message,
-
-          documentId:
-            undefined,
-
-          documentUrl:
-            result.eventUrl,
-
-          content:
-            JSON.stringify({
-
-              eventId:
-                result.eventId,
-
-              calendarId:
-                result.calendarId,
-
-              eventUrl:
-                result.eventUrl,
-
-            }),
-
-          completedAt:
-            result.completedAt,
-
+          success: result.success,
+          message: result.message,
+          documentUrl: result.eventUrl,
+          content: JSON.stringify({
+            eventId: result.eventId,
+            calendarId: result.calendarId,
+            eventUrl: result.eventUrl,
+          }),
+          completedAt: result.completedAt,
         };
-
       }
 
       case "read-gmail": {
-
-        const result =
-          await this.readGmail.execute(
-
-            request.context as ReadGmailContext,
-
-          );
-
+        const result = await this.readGmail.execute(request.context as ReadGmailContext);
         return {
-
-          success:
-            result.success,
-
-          message:
-            result.message,
-
-          content:
-            JSON.stringify(
-              result.emails,
-            ),
-
-          completedAt:
-            result.completedAt,
-
+          success: result.success,
+          message: result.message,
+          content: JSON.stringify(result.emails),
+          completedAt: result.completedAt,
         };
-
       }
 
       case "read-calendar": {
-
-        const result =
-          await this.readCalendar.execute(
-
-            request.context as ReadCalendarContext,
-
-          );
-
+        const result = await this.readCalendar.execute(request.context as ReadCalendarContext);
         return {
-
-          success:
-            result.success,
-
-          message:
-            result.message,
-
-          content:
-            JSON.stringify(
-              result.events,
-            ),
-
-          completedAt:
-            result.completedAt,
-
+          success: result.success,
+          message: result.message,
+          content: JSON.stringify(result.events),
+          completedAt: result.completedAt,
         };
-
       }
 
       case "delete-sheet-row": {
-
-        const result =
-          await this.deleteSheetRow.execute(
-
-            request.context as DeleteSheetRowContext,
-
-          );
-
-        return {
-
-          success:
-            result.success,
-
-          message:
-            result.message,
-
-          completedAt:
-            result.completedAt,
-
-        };
-
+        const result = await this.deleteSheetRow.execute(request.context as DeleteSheetRowContext);
+        return { success: result.success, message: result.message, completedAt: result.completedAt };
       }
 
       default:
-
         return {
-
           success: false,
-
           message: "Capability not implemented.",
-
           completedAt: new Date(),
-
         };
-
     }
-
   }
-
 }
