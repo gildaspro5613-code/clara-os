@@ -39,6 +39,84 @@ function mapPriority(
   }
 }
 
+function normalizeTaskTitle(title: string): string {
+  return title.trim().toLocaleLowerCase();
+}
+
+function reconcileContinuationTasks(
+  previousMission: Mission,
+  plannedTasks: MissionTask[],
+  decisionNextAction?: string,
+): MissionTask[] {
+  const completedByTitle = new Map(
+    previousMission.tasks
+      .filter((task) => task.completed)
+      .map((task) => [normalizeTaskTitle(task.title), task]),
+  );
+
+  const previousCurrentTask = previousMission.tasks.find(
+    (task) => !task.completed,
+  );
+
+  const nextActionChanged = Boolean(
+    previousCurrentTask &&
+    decisionNextAction?.trim() &&
+    normalizeTaskTitle(previousCurrentTask.title) !==
+      normalizeTaskTitle(decisionNextAction),
+  );
+
+  // If Clara's Brain has moved beyond the previous current step and that step
+  // is no longer present in the new plan, preserve it as completed history.
+  // This lets a user answer to a pending step and see the same mission advance
+  // instead of creating a fresh mission or remaining stuck at 0%.
+  if (
+    previousCurrentTask &&
+    nextActionChanged &&
+    !plannedTasks.some(
+      (task) =>
+        normalizeTaskTitle(task.title) ===
+        normalizeTaskTitle(previousCurrentTask.title),
+    )
+  ) {
+    completedByTitle.set(
+      normalizeTaskTitle(previousCurrentTask.title),
+      {
+        ...previousCurrentTask,
+        completed: true,
+      },
+    );
+  }
+
+  const completedHistory = Array.from(completedByTitle.values());
+
+  const reconciledPlan = plannedTasks.map((task) => {
+    const completed = completedByTitle.get(
+      normalizeTaskTitle(task.title),
+    );
+
+    return completed
+      ? {
+          ...task,
+          id: completed.id,
+          completed: true,
+        }
+      : task;
+  });
+
+  const completedTitles = new Set(
+    reconciledPlan
+      .filter((task) => task.completed)
+      .map((task) => normalizeTaskTitle(task.title)),
+  );
+
+  return [
+    ...completedHistory.filter(
+      (task) => !completedTitles.has(normalizeTaskTitle(task.title)),
+    ),
+    ...reconciledPlan,
+  ];
+}
+
 /**
  * Convert a Brain execution into an operational Mission.
  *
@@ -80,8 +158,12 @@ export function missionFromBrain(
     }));
 
   const tasks: MissionTask[] =
-    isContinuation
-      ? previousMission!.tasks
+    isContinuation && previousMission
+      ? reconcileContinuationTasks(
+          previousMission,
+          plannedTasks,
+          dashboard.decision.nextAction,
+        )
       : plannedTasks;
 
   const completedTasks = tasks.filter(
@@ -100,7 +182,7 @@ export function missionFromBrain(
   );
 
   const nextAction =
-    dashboard.decision.nextAction ??
+    dashboard.decision.nextAction?.trim() ||
     nextTask?.title;
 
   const completedTask = [...tasks]
@@ -112,7 +194,7 @@ export function missionFromBrain(
       isContinuation && previousMission
         ? previousMission.id
         : dashboard.decision.missionId ??
-          `mission-${dashboard.decision.id}`, 
+          `mission-${dashboard.decision.id}`,
 
     title: dashboard.decision.objective.title,
 
@@ -131,13 +213,15 @@ export function missionFromBrain(
     ),
 
     createdAt:
-      dashboard.decision.createdAt,
+      isContinuation && previousMission
+        ? previousMission.createdAt
+        : dashboard.decision.createdAt,
 
     tasks,
 
     progress,
 
-    nextAction: nextTask?.title,
+    nextAction,
 
     lastAction: completedTask?.title,
 

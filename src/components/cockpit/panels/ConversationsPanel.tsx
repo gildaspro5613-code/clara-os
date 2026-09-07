@@ -6,53 +6,57 @@
  * File : ConversationsPanel.tsx
  * Responsibility :
  * Displays a compact overview of Clara's
- * latest conversations.
- *
- * Presentation only.
+ * latest persisted conversation activity.
  * ============================================
  */
 
 import GlassPanel from "@/components/ui/GlassPanel";
+import type { ClaraSession } from "@/lib/core/session";
 import { useTranslations } from "next-intl";
 
-export default function ConversationsPanel() {
+interface ConversationsPanelProps {
+  session: ClaraSession;
+}
+
+export default function ConversationsPanel({
+  session,
+}: ConversationsPanelProps) {
   const t = useTranslations("cockpitUi");
+  const recentMessages = session.conversation.slice(-2).reverse();
+
   return (
     <GlassPanel title={t("latestConversations")}>
       <div className="space-y-3">
+        {recentMessages.length > 0 ? (
+          recentMessages.map((message) => (
+            <div
+              key={message.id}
+              className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3"
+            >
+              <div className="flex items-center justify-between gap-4">
+                <p className="font-semibold">
+                  {message.role === "clara"
+                    ? "Clara"
+                    : session.user.firstName ?? "Utilisateur"}
+                </p>
 
-        <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-          <div className="flex items-center justify-between gap-4">
-            <p className="font-semibold">
-              Festival Horizon
+                <span className="shrink-0 text-xs text-white/45">
+                  {session.mission?.title ?? "Clara OS"}
+                </span>
+              </div>
+
+              <p className="mt-1 line-clamp-2 text-sm text-white/65">
+                {message.content}
+              </p>
+            </div>
+          ))
+        ) : (
+          <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+            <p className="text-sm text-white/65">
+              {session.mission?.objective ?? t("conversationCockpit")}
             </p>
-
-            <span className="shrink-0 text-xs text-white/45">
-              12 min
-            </span>
           </div>
-
-          <p className="mt-1 text-sm text-white/65">
-            {t("conversationDocuments")}
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-          <div className="flex items-center justify-between gap-4">
-            <p className="font-semibold">
-              Melodie Digital
-            </p>
-
-            <span className="shrink-0 text-xs text-white/45">
-              28 min
-            </span>
-          </div>
-
-          <p className="mt-1 text-sm text-white/65">
-            {t("conversationCockpit")}
-          </p>
-        </div>
-
+        )}
       </div>
     </GlassPanel>
   );

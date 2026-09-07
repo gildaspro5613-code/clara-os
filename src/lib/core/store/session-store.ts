@@ -11,7 +11,7 @@
  */
 
 import type { ClaraSession } from "../session";
-import { createSession } from "../session";
+import { createSession, normalizeSession } from "../session";
 
 import { sql } from "./database";
 
@@ -55,8 +55,9 @@ export async function loadSession(): Promise<ClaraSession> {
     return createSession();
   }
 
-  const parsed =
-    sessionRows[0].data as ClaraSession;
+  const parsed = normalizeSession(
+    sessionRows[0].data as ClaraSession,
+  );
 
   return {
     ...parsed,
