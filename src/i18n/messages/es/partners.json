@@ -1,0 +1,12 @@
+{
+  "nav": "Socios",
+  "section": "Desarrollar",
+  "title": "Socios",
+  "subtitle": "Gestiona la red de socios, las recomendaciones, las ventas atribuidas y las comisiones desde Clara OS.",
+  "kpis": { "active": "Socios activos", "referrals": "Recomendaciones", "wonRevenue": "Ingresos atribuidos", "pendingCommissions": "Comisiones por procesar" },
+  "table": { "title": "Red de socios", "partner": "Socio", "type": "Tipo", "status": "Estado", "referrals": "Recomendaciones", "revenue": "Ingresos ganados", "commission": "Comisión pendiente", "empty": "Todavía no hay socios. El primer socio creado aparecerá aquí." },
+  "types": { "referrer": "Prescriptor", "reseller": "Revendedor", "integrator": "Integrador" },
+  "statuses": { "pending": "Pendiente", "active": "Activo", "paused": "En pausa", "closed": "Archivado" },
+  "governance": "Clara puede preparar las comisiones. Su aprobación y pago siguen sujetos a validación.",
+  "referralCode": "Código"
+}
