@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { BadgeEuro, Handshake, Link2, ShieldCheck, TrendingUp } from "lucide-react";
 
@@ -127,7 +128,7 @@ export default async function PartnersPage() {
                       return (
                         <tr key={partner.id} className="transition hover:bg-white/[0.025]">
                           <td className="px-6 py-5">
-                            <div className="font-medium text-white/90">{partner.name}</div>
+                            <Link href={`/partners/${partner.id}`} className="font-medium text-white/90 transition hover:text-cyan-300">{partner.name}</Link>
                             <div className="mt-1 text-xs text-white/35">{partner.email}</div>
                             <div className="mt-2 text-[11px] text-cyan-300/60">{t("referralCode")}: {partner.referralCode}</div>
                           </td>
