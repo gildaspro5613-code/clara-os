@@ -18,7 +18,7 @@ type CreateDealBody = {
 };
 
 const DEAL_STATUSES = new Set<DealStatus>(["lead", "qualified", "proposal", "won", "lost"]);
-const INTERVALS = new Set<NonNullable<Deal["recurringInterval"]>>(["monthly", "yearly"]);
+const INTERVALS = new Set<NonNullable<Deal["recurringInterval"]>>(["month", "year"]);
 
 function parseBody(value: unknown): CreateDealBody | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
