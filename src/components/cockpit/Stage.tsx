@@ -46,7 +46,6 @@ export default function Stage({
     <>
       {/* ============================================
           DESKTOP / LAPTOP
-          Hero intentionally kept light.
           Clara remains the visual focal point.
           ============================================ */}
 
@@ -71,22 +70,28 @@ export default function Stage({
         </div>
       </div>
 
-      {/* Main action */}
+      {/* Agenda + current mission keep independent natural heights so
+          a verbose mission is not pushed below the useful Hero area. */}
       <div
         className="
           pointer-events-auto
           absolute
           right-[5%]
-          top-[8%]
+          top-[7%]
           z-20
           hidden
           w-[28%]
           max-w-[420px]
-          lg:block
+          flex-col
+          items-end
+          gap-4
+          lg:flex
         "
       >
         <AgendaPanel />
-        <MissionPanel mission={mission} />
+        <div className="w-full">
+          <MissionPanel mission={mission} />
+        </div>
       </div>
 
       {/* ============================================
