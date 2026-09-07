@@ -6,15 +6,30 @@ import type { Referral, ReferralStatus } from "@/lib/partners/types";
 export const dynamic = "force-dynamic";
 
 type RouteContext = { params: Promise<{ partnerId: string }> };
+type ReferralMetadata = NonNullable<Referral["metadata"]>;
 
 type CreateReferralBody = {
   email?: string;
   contactId?: string;
   status: ReferralStatus;
-  metadata?: Record<string, unknown>;
+  metadata?: ReferralMetadata;
 };
 
 const REFERRAL_STATUSES = new Set<ReferralStatus>(["captured", "qualified", "converted", "lost"]);
+
+function parseMetadata(value: unknown): ReferralMetadata | undefined | null {
+  if (value === undefined) return undefined;
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const metadata: ReferralMetadata = {};
+  for (const [key, item] of Object.entries(value as Record<string, unknown>)) {
+    if (!key.trim() || key.length > 120) return null;
+    if (item !== null && typeof item !== "string" && typeof item !== "number" && typeof item !== "boolean") {
+      return null;
+    }
+    metadata[key] = item;
+  }
+  return metadata;
+}
 
 function parseBody(value: unknown): CreateReferralBody | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
@@ -22,11 +37,9 @@ function parseBody(value: unknown): CreateReferralBody | null {
   const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : undefined;
   const contactId = typeof body.contactId === "string" ? body.contactId.trim() : undefined;
   const status = typeof body.status === "string" ? body.status as ReferralStatus : "captured";
-  const metadata = body.metadata && typeof body.metadata === "object" && !Array.isArray(body.metadata)
-    ? body.metadata as Record<string, unknown>
-    : undefined;
+  const metadata = parseMetadata(body.metadata);
 
-  if (!REFERRAL_STATUSES.has(status)) return null;
+  if (!REFERRAL_STATUSES.has(status) || metadata === null) return null;
   if (email && (!email.includes("@") || email.length > 320)) return null;
   if (contactId && contactId.length > 160) return null;
   if (!email && !contactId) return null;
