@@ -14,6 +14,15 @@
     "section": "Scheda partner",
     "kpis": { "referrals": "Segnalazioni", "deals": "Opportunità", "revenue": "Ricavi acquisiti", "commission": "Commissione in sospeso" },
     "actions": { "title": "Gestisci stato", "active": "Attiva", "paused": "Metti in pausa", "closed": "Archivia", "updating": "Aggiornamento…", "error": "Impossibile aggiornare lo stato.", "archived": "Questo partner è archiviato e il suo stato non può più essere modificato." },
+    "operations": {
+      "title": "Operazioni partner",
+      "subtitle": "Aggiungi una segnalazione, registra una vendita acquisita o prepara una commissione.",
+      "activeRequired": "Il partner deve essere attivo per nuove segnalazioni e vendite.",
+      "referralTitle": "Nuova segnalazione", "email": "Email del prospect", "addReferral": "Aggiungi segnalazione",
+      "dealTitle": "Nuova vendita", "offer": "Offerta Clara", "amount": "Importo", "currency": "Valuta", "addDeal": "Registra vendita",
+      "commissionTitle": "Prepara commissione", "selectDeal": "Seleziona una vendita acquisita", "selectRule": "Seleziona una regola", "period": "Periodo", "prepareCommission": "Calcola commissione",
+      "referralSuccess": "Segnalazione aggiunta.", "dealSuccess": "Vendita registrata.", "commissionSuccess": "Commissione preparata come bozza.", "error": "Impossibile completare l’operazione."
+    },
     "referrals": { "title": "Segnalazioni", "empty": "Nessuna segnalazione attribuita." },
     "deals": { "title": "Opportunità", "empty": "Nessuna opportunità attribuita." },
     "commissions": { "title": "Commissioni", "empty": "Nessuna commissione calcolata.", "period": "Periodo {period}" }
