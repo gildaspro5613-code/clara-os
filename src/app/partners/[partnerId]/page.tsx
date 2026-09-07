@@ -4,6 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { ArrowLeft, BadgeEuro, BriefcaseBusiness, Link2, Mail, ShieldCheck } from "lucide-react";
 
 import MainLayout from "@/components/layout/MainLayout";
+import PartnerOperations from "@/components/partners/PartnerOperations";
 import PartnerStatusActions from "@/components/partners/PartnerStatusActions";
 import { DatabasePartnerRepository } from "@/lib/partners/database-repository";
 import { getPartnerPrincipal } from "@/lib/partners/server-context";
@@ -32,10 +33,11 @@ export default async function PartnerDetailPage({ params }: PageProps) {
   const partner = await repository.findPartner(principal.workspaceId, partnerId);
   if (!partner) notFound();
 
-  const [referrals, deals, commissions] = await Promise.all([
+  const [referrals, deals, commissions, rules] = await Promise.all([
     repository.listReferrals(principal.workspaceId, partner.id),
     repository.listDeals(principal.workspaceId, partner.id),
     repository.listCommissions(principal.workspaceId, partner.id),
+    repository.listCommissionRules(principal.workspaceId),
   ]);
 
   const wonDeals = deals.filter((deal) => deal.status === "won");
@@ -89,6 +91,13 @@ export default async function PartnerDetailPage({ params }: PageProps) {
               </article>
             ))}
           </section>
+
+          <PartnerOperations
+            partnerId={partner.id}
+            partnerActive={partner.status === "active"}
+            wonDeals={wonDeals.map(({ id, offerId, currency: dealCurrency, amountCents }) => ({ id, offerId, currency: dealCurrency, amountCents }))}
+            rules={rules.map(({ id, name, model, percentageBps, fixedAmountCents, active }) => ({ id, name, model, percentageBps, fixedAmountCents, active }))}
+          />
 
           <section className="mt-6 grid gap-6 xl:grid-cols-3">
             <DataPanel title={t("detail.referrals.title")} empty={t("detail.referrals.empty")}>{referrals.map((referral) => (
