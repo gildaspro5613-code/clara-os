@@ -84,6 +84,8 @@ import { MAGICQ_CAPABILITIES } from "@/lib/connectors/internal/chamsys/magicq";
 import { DisabledMagicQLightingExecutor, executeMagicQFixtureIntensityCapability, type MagicQLightingExecutor } from "./magicq-lighting/executor";
 import { NOTIFY_TEAM_CAPABILITY_ID } from "./notify-team/capability";
 import { executeNotifyTeamCapability } from "./notify-team/executor";
+import { PREPARE_MISSION_DRIVE_CAPABILITY_ID } from "./mission-drive/capability";
+import { executePrepareMissionDriveCapability } from "./mission-drive/executor";
 
 /** Capability execution request. */
 export interface CapabilityExecutionRequest {
@@ -171,6 +173,23 @@ export class CapabilityEngine {
           message: result.success
             ? `Team notification ${result.status ?? "completed"}.`
             : result.error?.message ?? "Team notification failed.",
+          content: result.success ? JSON.stringify(result.data) : undefined,
+          operationalResult: result,
+          completedAt: new Date(),
+        };
+      }
+
+      case PREPARE_MISSION_DRIVE_CAPABILITY_ID: {
+        const result = await executePrepareMissionDriveCapability(
+          this.makeCapability,
+          request.workspaceId,
+          request.context,
+        );
+        return {
+          success: result.success,
+          message: result.success
+            ? `Mission Drive ${result.status ?? "completed"}.`
+            : result.error?.message ?? "Mission Drive preparation failed.",
           content: result.success ? JSON.stringify(result.data) : undefined,
           operationalResult: result,
           completedAt: new Date(),
