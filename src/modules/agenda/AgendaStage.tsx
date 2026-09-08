@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { CalendarDays, Clock, MapPin } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 
 interface CalendarEvent {
   id?: string;
@@ -23,22 +24,24 @@ interface CalendarResponse {
   message?: string;
 }
 
-function formatTime(event: CalendarEvent) {
+function formatTime(event: CalendarEvent, locale: string, allDay: string) {
   if (event.start?.date) {
-    return "Toute la journée";
+    return allDay;
   }
 
   if (!event.start?.dateTime) {
     return "";
   }
 
-  return new Intl.DateTimeFormat("fr-FR", {
+  return new Intl.DateTimeFormat(locale, {
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(event.start.dateTime));
 }
 
 export default function AgendaStage() {
+  const t = useTranslations("agendaPage");
+  const locale = useLocale();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -55,7 +58,7 @@ export default function AgendaStage() {
         const data: CalendarResponse = await response.json();
 
         if (!response.ok || !data.success) {
-          throw new Error(data.message ?? "Agenda indisponible");
+          throw new Error(data.message ?? t("unavailable"));
         }
 
         if (!cancelled) {
@@ -79,7 +82,7 @@ export default function AgendaStage() {
     };
   }, []);
 
-  const today = new Intl.DateTimeFormat("fr-FR", {
+  const today = new Intl.DateTimeFormat(locale, {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -95,12 +98,11 @@ export default function AgendaStage() {
             </span>
 
             <h1 className="mt-3 text-4xl font-medium tracking-tight">
-              Agenda
+              {t("title")}
             </h1>
 
             <p className="mt-3 max-w-xl text-sm leading-6 text-white/50">
-              La journée de travail de Clara, organisée autour de vos
-              rendez-vous.
+              {t("subtitle")}
             </p>
           </div>
 
@@ -115,35 +117,35 @@ export default function AgendaStage() {
             <div className="mb-7 flex items-center justify-between border-b border-white/10 pb-5">
               <div>
                 <span className="text-[10px] uppercase tracking-[0.24em] text-white/35">
-                  Aujourd&apos;hui
+                  {t("today")}
                 </span>
 
                 <h2 className="mt-2 text-xl font-medium">
-                  {events.length} événement{events.length > 1 ? "s" : ""}
+                  {t("eventCount", {count: events.length})}
                 </h2>
               </div>
             </div>
 
             {loading && (
               <p className="py-10 text-sm text-white/45">
-                Clara consulte votre agenda…
+                {t("loading")}
               </p>
             )}
 
             {!loading && error && (
               <p className="py-10 text-sm text-white/45">
-                Agenda momentanément indisponible.
+                {t("temporarilyUnavailable")}
               </p>
             )}
 
             {!loading && !error && events.length === 0 && (
               <div className="py-10">
                 <p className="text-base text-white/65">
-                  Aucun rendez-vous prévu aujourd&apos;hui.
+                  {t("empty")}
                 </p>
 
                 <p className="mt-2 text-sm text-white/35">
-                  Votre journée semble dégagée.
+                  {t("emptyHelp")}
                 </p>
               </div>
             )}
@@ -158,12 +160,12 @@ export default function AgendaStage() {
                     <div className="flex gap-5">
                       <div className="flex min-w-[76px] items-start gap-2 pt-1 text-xs text-white/40">
                         <Clock size={14} strokeWidth={1.6} />
-                        <span>{formatTime(event)}</span>
+                        <span>{formatTime(event, locale, t("allDay"))}</span>
                       </div>
 
                       <div className="min-w-0">
                         <h3 className="text-base font-medium text-white/90">
-                          {event.summary || "Événement sans titre"}
+                          {event.summary || t("untitled")}
                         </h3>
 
                         {event.location && (
@@ -184,12 +186,12 @@ export default function AgendaStage() {
 
           <aside className="rounded-3xl border border-white/10 bg-white/[0.025] p-7 lg:p-8">
             <span className="text-[10px] uppercase tracking-[0.24em] text-cyan-400/70">
-              CONTEXTE
+              {t("context")}
             </span>
 
             <div className="mt-8 border-b border-white/10 pb-7">
               <span className="text-[10px] uppercase tracking-[0.2em] text-white/30">
-                ÉVÉNEMENTS
+                {t("events")}
               </span>
 
               <p className="mt-3 text-2xl font-medium">
@@ -199,15 +201,11 @@ export default function AgendaStage() {
 
             <div className="py-7 border-b border-white/10">
               <span className="text-[10px] uppercase tracking-[0.2em] text-white/30">
-                DERNIÈRE ACTIVITÉ
+                {t("latestActivity")}
               </span>
 
               <p className="mt-3 text-sm leading-6 text-white/55">
-                {events.length > 0
-                  ? `Clara a identifié ${events.length} événement${
-                      events.length > 1 ? "s" : ""
-                    } dans votre agenda.`
-                  : "Aucun rendez-vous enregistré aujourd'hui."}
+                {events.length > 0 ? t("identified", {count: events.length}) : t("noneRecorded")}
               </p>
             </div>
 
@@ -217,8 +215,7 @@ export default function AgendaStage() {
               </span>
 
               <p className="mt-4 text-sm leading-7 text-white/60">
-                L&apos;agenda permet à Clara de tenir compte de votre journée
-                dans ses actions et ses recommandations.
+                {t("claraHelp")}
               </p>
             </div>
           </aside>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { CalendarDays, ChevronRight, Clock } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 
 interface CalendarEvent {
   id?: string;
@@ -24,22 +25,24 @@ interface CalendarResponse {
   message?: string;
 }
 
-function formatTime(event: CalendarEvent) {
+function formatTime(event: CalendarEvent, locale: string, allDay: string) {
   if (event.start?.date) {
-    return "Toute la journée";
+    return allDay;
   }
 
   if (!event.start?.dateTime) {
     return "";
   }
 
-  return new Intl.DateTimeFormat("fr-FR", {
+  return new Intl.DateTimeFormat(locale, {
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(event.start.dateTime));
 }
 
 export default function AgendaWidget() {
+  const t = useTranslations("cockpitUi");
+  const locale = useLocale();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -56,7 +59,7 @@ export default function AgendaWidget() {
         const data: CalendarResponse = await response.json();
 
         if (!response.ok || !data.success) {
-          throw new Error(data.message ?? "Agenda indisponible");
+          throw new Error(data.message ?? t("agendaUnavailable"));
         }
 
         if (!cancelled) {
@@ -110,40 +113,40 @@ export default function AgendaWidget() {
 
           <div>
             <p className="text-[11px] uppercase tracking-[0.22em] text-white/45">
-              Agenda
+              {t("agenda")}
             </p>
 
             <p className="mt-1 text-sm text-white/75">
-              Aujourd'hui
+              {t("today")}
             </p>
           </div>
         </div>
 
         <span className="text-xs text-white/35">
-          {events.length} événement{events.length > 1 ? "s" : ""}
+          {t("eventCount", {count: events.length})}
         </span>
       </div>
 
       {loading && (
         <div className="py-6 text-sm text-white/45">
-          Clara consulte votre agenda…
+          {t("agendaLoading")}
         </div>
       )}
 
       {!loading && error && (
         <div className="py-6 text-sm text-white/45">
-          Agenda momentanément indisponible.
+          {t("agendaTemporarilyUnavailable")}
         </div>
       )}
 
       {!loading && !error && events.length === 0 && (
         <div className="py-6">
           <p className="text-sm text-white/65">
-            Aucun rendez-vous prévu aujourd'hui.
+            {t("noAppointments")}
           </p>
 
           <p className="mt-1 text-xs text-white/35">
-            Votre journée semble dégagée.
+            {t("dayClear")}
           </p>
         </div>
       )}
@@ -167,12 +170,12 @@ export default function AgendaWidget() {
             >
               <div className="flex min-w-[58px] items-center gap-1.5 pt-0.5 text-xs text-white/45">
                 <Clock size={13} strokeWidth={1.6} />
-                <span>{formatTime(event)}</span>
+                <span>{formatTime(event, locale, t("allDay"))}</span>
               </div>
 
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium text-white/85">
-                  {event.summary || "Événement sans titre"}
+                  {event.summary || t("untitledEvent")}
                 </p>
 
                 {event.location && (
@@ -199,7 +202,7 @@ export default function AgendaWidget() {
           hover:text-white/75
         "
       >
-        Voir l'agenda
+        {t("viewAgenda")}
         <ChevronRight size={14} strokeWidth={1.7} />
       </Link>
     </article>

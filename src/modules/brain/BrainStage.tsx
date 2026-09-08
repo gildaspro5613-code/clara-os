@@ -9,44 +9,24 @@
 // ============================================
 
 import type { BrainDashboard } from "@/lib/brain/dashboard";
+import { getTranslations } from "next-intl/server";
 
 interface BrainStageProps {
   dashboard: BrainDashboard;
 }
 
-function confidenceLabel(confidence: number) {
-  if (confidence >= 0.8) return "Élevée";
-  if (confidence >= 0.5) return "Moyenne";
-  return "Faible";
-}
-
-function priorityLabel(priority: string) {
-  switch (priority) {
-    case "CRITICAL":
-      return "Critique";
-    case "HIGH":
-      return "Haute";
-    case "LOW":
-      return "Faible";
-    default:
-      return "Normale";
-  }
-}
-
-function recommendationLabel(confidence: string) {
-  switch (confidence) {
-    case "HIGH":
-      return "Élevée";
-    case "MEDIUM":
-      return "Moyenne";
-    default:
-      return "Faible";
-  }
-}
-
-export default function BrainStage({
+export default async function BrainStage({
   dashboard,
 }: BrainStageProps) {
+  const t = await getTranslations("brainPage");
+
+  const confidenceLabel = (confidence: number) =>
+    confidence >= 0.8 ? t("levels.high") : confidence >= 0.5 ? t("levels.medium") : t("levels.low");
+  const priorityLabel = (priority: string) =>
+    priority === "CRITICAL" ? t("priorities.critical") : priority === "HIGH" ? t("priorities.high") : priority === "LOW" ? t("priorities.low") : t("priorities.normal");
+  const recommendationLabel = (confidence: string) =>
+    confidence === "HIGH" ? t("levels.high") : confidence === "MEDIUM" ? t("levels.medium") : t("levels.low");
+
   const {
     context,
     memory,
@@ -74,8 +54,7 @@ export default function BrainStage({
           </h1>
 
           <p className="mt-3 max-w-2xl text-sm leading-6 text-white/50">
-            Ce que Clara comprend, ce qu&apos;elle décide et ce
-            qu&apos;elle recommande.
+            {t("subtitle")}
           </p>
         </header>
 
@@ -91,7 +70,7 @@ export default function BrainStage({
 
             <article className="rounded-3xl border border-white/10 bg-white/[0.045] p-7 lg:p-9">
               <span className="text-[10px] uppercase tracking-[0.22em] text-cyan-400/70">
-                Compréhension
+                {t("understanding")}
               </span>
 
               <h2 className="mt-5 text-2xl font-medium">
@@ -106,7 +85,7 @@ export default function BrainStage({
 
                 <div>
                   <span className="text-[10px] uppercase tracking-[0.18em] text-white/30">
-                    Confiance
+                    {t("confidence")}
                   </span>
 
                   <p className="mt-2 text-sm text-white/75">
@@ -118,7 +97,7 @@ export default function BrainStage({
 
                 <div>
                   <span className="text-[10px] uppercase tracking-[0.18em] text-white/30">
-                    Prochaine étape
+                    {t("nextStep")}
                   </span>
 
                   <p className="mt-2 text-sm text-white/75">
@@ -133,7 +112,7 @@ export default function BrainStage({
 
             <article className="rounded-3xl border border-white/10 bg-white/[0.025] p-7 lg:p-9">
               <span className="text-[10px] uppercase tracking-[0.22em] text-white/35">
-                Décision
+                {t("decision")}
               </span>
 
               <div className="mt-6 flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
@@ -159,7 +138,7 @@ export default function BrainStage({
 
             <article className="rounded-3xl border border-cyan-400/10 bg-cyan-400/[0.025] p-7 lg:p-9">
               <span className="text-[10px] uppercase tracking-[0.22em] text-cyan-400/70">
-                Recommandation de Clara
+                {t("recommendation")}
               </span>
 
               <h2 className="mt-5 text-xl font-medium leading-8">
@@ -174,7 +153,7 @@ export default function BrainStage({
 
               <div className="mt-7 border-t border-white/10 pt-5">
                 <span className="text-[10px] uppercase tracking-[0.18em] text-white/30">
-                  Niveau de confiance
+                  {t("confidenceLevel")}
                 </span>
 
                 <p className="mt-2 text-sm text-white/75">
@@ -189,7 +168,7 @@ export default function BrainStage({
 
             <article className="rounded-3xl border border-white/10 bg-white/[0.025] p-7 lg:p-9">
               <span className="text-[10px] uppercase tracking-[0.22em] text-white/35">
-                Plan
+                {t("plan")}
               </span>
 
               <div className="mt-5 space-y-3">
@@ -225,14 +204,14 @@ export default function BrainStage({
           <aside className="self-start rounded-3xl border border-white/10 bg-white/[0.025] p-7 lg:sticky lg:top-8">
 
             <span className="text-[10px] uppercase tracking-[0.22em] text-cyan-400/70">
-              Contexte
+              {t("context")}
             </span>
 
             <div className="mt-7">
 
               <div>
                 <span className="text-[10px] uppercase tracking-[0.18em] text-white/30">
-                  Événement
+                  {t("event")}
                 </span>
 
                 <p className="mt-2 text-sm leading-6 text-white/70">
@@ -244,7 +223,7 @@ export default function BrainStage({
 
               <div>
                 <span className="text-[10px] uppercase tracking-[0.18em] text-white/30">
-                  Origine
+                  {t("origin")}
                 </span>
 
                 <p className="mt-2 text-sm leading-6 text-white/70">
@@ -256,17 +235,11 @@ export default function BrainStage({
 
               <div>
                 <span className="text-[10px] uppercase tracking-[0.18em] text-white/30">
-                  Mémoire
+                  {t("memory")}
                 </span>
 
                 <p className="mt-2 text-sm leading-6 text-white/70">
-                  {memory.facts.length > 0
-                    ? `${memory.facts.length} élément${
-                        memory.facts.length > 1 ? "s" : ""
-                      } connu${
-                        memory.facts.length > 1 ? "s" : ""
-                      }`
-                    : "Aucun fait pertinent"}
+                  {memory.facts.length > 0 ? t("knownFacts", {count: memory.facts.length}) : t("noFacts")}
                 </p>
               </div>
 
@@ -278,8 +251,7 @@ export default function BrainStage({
                 </span>
 
                 <p className="mt-2 text-sm leading-6 text-white/75">
-                  Le Brain analyse le contexte et prépare la
-                  prochaine décision.
+                  {t("claraHelp")}
                 </p>
               </div>
 

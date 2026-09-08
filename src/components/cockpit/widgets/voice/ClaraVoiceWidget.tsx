@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { Conversation } from "@elevenlabs/client";
 import { Mic } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type VoiceState =
   | "ready"
@@ -16,6 +17,7 @@ type ConversationSession = {
 };
 
 export default function ClaraVoiceWidget() {
+  const t = useTranslations("voice");
   const [state, setState] = useState<VoiceState>("ready");
   const conversationRef = useRef<ConversationSession | null>(null);
 
@@ -50,7 +52,7 @@ export default function ClaraVoiceWidget() {
       if (!response.ok || !data.success || !data.signedUrl) {
         throw new Error(
           data.error ??
-            "Impossible de démarrer la conversation avec Clara.",
+            t("startError"),
         );
       }
 
@@ -131,25 +133,25 @@ export default function ClaraVoiceWidget() {
 
   const label =
     state === "connecting"
-      ? "Connexion à Clara…"
+      ? t("connecting")
       : state === "speaking"
-        ? "Clara parle…"
+        ? t("speaking")
         : state === "listening"
-          ? "Clara écoute…"
+          ? t("listening")
           : state === "error"
-            ? "Réessayer Clara"
-            : "Parler à Clara";
+            ? t("retry")
+            : t("talk");
 
   const description =
     state === "connecting"
-      ? "Initialisation de la conversation."
+      ? t("initializing")
       : state === "speaking"
-        ? "Clara vous répond."
+        ? t("answering")
         : state === "listening"
-          ? "Parlez naturellement."
+          ? t("speakNaturally")
           : state === "error"
-            ? "La conversation n’a pas pu démarrer."
-            : "Clara est prête.";
+            ? t("failed")
+            : t("ready");
 
   return (
     <button
@@ -157,8 +159,8 @@ export default function ClaraVoiceWidget() {
       onClick={handleToggle}
       aria-label={
         active
-          ? "Arrêter Clara"
-          : "Parler à Clara"
+          ? t("stop")
+          : t("talk")
       }
       className="
         group

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import GlassPanel from "@/components/ui/GlassPanel";
+import { useTranslations } from "next-intl";
 
 interface WeatherResponse {
   success: boolean;
@@ -14,6 +15,7 @@ interface WeatherResponse {
 }
 
 export default function WeatherWidget() {
+  const t = useTranslations("cockpitUi");
   const [weather, setWeather] = useState<WeatherResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -33,7 +35,7 @@ export default function WeatherWidget() {
 
         if (!response.ok || !data.success) {
           throw new Error(
-            data.message ?? "Météo indisponible",
+            data.message ?? t("weatherUnavailable"),
           );
         }
 
@@ -63,18 +65,18 @@ export default function WeatherWidget() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-[11px] uppercase tracking-[0.22em] text-white/45">
-            Météo
+            {t("weather")}
           </p>
 
           <p className="mt-1 text-sm text-white/75">
-            Aujourd'hui
+            {t("today")}
           </p>
         </div>
 
         {weather?.icon && (
           <img
             src={`https:${weather.icon}`}
-            alt={weather.condition ?? "Conditions météo"}
+            alt={weather.condition ?? t("weatherConditions")}
             width={40}
             height={40}
           />
@@ -83,13 +85,13 @@ export default function WeatherWidget() {
 
       {loading && (
         <div className="py-6 text-sm text-white/45">
-          Clara consulte la météo…
+          {t("weatherLoading")}
         </div>
       )}
 
       {!loading && !weather && (
         <div className="py-6 text-sm text-white/45">
-          Météo momentanément indisponible.
+          {t("weatherTemporarilyUnavailable")}
         </div>
       )}
 
@@ -112,7 +114,7 @@ export default function WeatherWidget() {
           </div>
 
           <p className="mt-5 text-[10px] text-white/25">
-            Données météo · WeatherAPI.com
+            {t("weatherData")}
           </p>
         </div>
       )}

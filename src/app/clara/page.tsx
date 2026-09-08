@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import MainLayout from "@/components/layout/MainLayout";
 import ClaraChatWidget from "@/components/cockpit/widgets/clara/ClaraChatWidget";
 import { loadSession } from "@/lib/core/store/session-store";
@@ -5,6 +6,7 @@ import { loadSession } from "@/lib/core/store/session-store";
 export const dynamic = "force-dynamic";
 
 export default async function ClaraPage() {
+  const t = await getTranslations("pages");
   const session = await loadSession();
   const mission = session.mission;
 
@@ -13,7 +15,7 @@ export default async function ClaraPage() {
       <div className="w-full p-8">
         <div className="mb-6">
           <p className="text-xs uppercase tracking-[0.22em] text-cyan-400">
-            Intelligence opérationnelle
+            {t("claraEyebrow")}
           </p>
 
           <h1 className="mt-2 text-2xl font-semibold text-white">
@@ -21,15 +23,14 @@ export default async function ClaraPage() {
           </h1>
 
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-400">
-            L’intelligence opérationnelle de Clara OS, connectée à son état
-            courant et à sa mission active.
+            {t("claraSubtitle")}
           </p>
         </div>
 
         <section className="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <article className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
             <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
-              État
+              {t("state")}
             </p>
             <p className="mt-3 text-lg font-semibold text-white">
               {session.state}
@@ -38,28 +39,28 @@ export default async function ClaraPage() {
 
           <article className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
             <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
-              Mission actuelle
+              {t("currentMission")}
             </p>
             <p className="mt-3 break-words text-base font-semibold leading-relaxed text-white">
-              {mission?.title ?? "Aucune mission active"}
+              {mission?.title ?? t("noMission")}
             </p>
           </article>
 
           <article className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
             <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
-              Objectif
+              {t("objective")}
             </p>
             <p className="mt-3 text-sm leading-relaxed text-slate-300">
-              {mission?.objective ?? "Aucun objectif actif"}
+              {mission?.objective ?? t("noObjective")}
             </p>
           </article>
 
           <article className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
             <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
-              Prochaine action
+              {t("nextAction")}
             </p>
             <p className="mt-3 text-sm leading-relaxed text-slate-300">
-              {mission?.nextAction ?? "Aucune action suivante définie"}
+              {mission?.nextAction ?? t("noNextAction")}
             </p>
           </article>
         </section>
