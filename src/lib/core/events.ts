@@ -27,3 +27,27 @@ export function createSystemEvent(): Event {
   };
 
 }
+
+export interface UserMessageEventPayload {
+  message: string;
+  locale: string;
+  conversationId?: string;
+}
+
+/**
+ * Creates a conversational event entering Clara Core.
+ *
+ * The payload intentionally stays transport-agnostic so the same Brain
+ * pipeline can later be used from the Cockpit, Clara page or another UI.
+ */
+export function createUserMessageEvent(
+  payload: UserMessageEventPayload,
+): Event {
+  return {
+    id: crypto.randomUUID(),
+    type: EventType.USER_MESSAGE,
+    source: "CLARA_CHAT",
+    timestamp: new Date(),
+    payload,
+  };
+}
