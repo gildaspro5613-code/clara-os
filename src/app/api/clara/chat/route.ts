@@ -5,9 +5,8 @@
  * File : /api/clara/chat/route.ts
  * Responsibility :
  * Clara conversational chat endpoint.
- * Routes every user message through Clara Core/Brain before producing the
- * conversational response. OpenAI remains the response capability for this
- * first Brain V2 bridge; visible chat behaviour is intentionally unchanged.
+ * Routes every user message through Mission Resolver then Clara Core/Brain
+ * before producing the conversational response.
  * ============================================
  */
 
@@ -17,21 +16,20 @@ import { OpenAIResponsesEngine } from "@/lib/connectors/internal/openai/response
 import { createUserMessageEvent, getRuntime } from "@/lib/core";
 import { getClaraSystemPrompt } from "@/i18n/prompts";
 import { resolveLocale } from "@/i18n/config";
+import { resolveMission } from "@/modules/missions/mission-resolver";
 
 type ClaraChatBody = {
   message?: unknown;
   locale?: unknown;
   conversationId?: unknown;
+  missionId?: unknown;
 };
 
 /**
  * POST /api/clara/chat
  *
  * Body:
- *   { message: string; locale?: string; conversationId?: string }
- *
- * Returns:
- *   { content: string; success: boolean; locale: string }
+ *   { message: string; locale?: string; conversationId?: string; missionId?: string }
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   let body: ClaraChatBody;
@@ -63,15 +61,25 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       ? body.conversationId.trim()
       : undefined;
 
+  const requestedMissionId =
+    typeof body.missionId === "string" && body.missionId.trim()
+      ? body.missionId.trim()
+      : undefined;
+
   try {
+    const missionResolution = resolveMission({
+      missionId: requestedMissionId,
+      message,
+    });
+
     const event = createUserMessageEvent({
       message,
       locale,
       conversationId,
+      missionId: missionResolution.mission?.id,
+      missionResolution: missionResolution.status,
     });
 
-    // Brain V2 bridge: every conversational message now enters Clara Core.
-    // Mission, Journal and Memory persistence are deliberately separate lots.
     await getRuntime().processEvent(event);
 
     const instructions = getClaraSystemPrompt(locale);
@@ -89,6 +97,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       locale,
       conversationId,
       eventId: event.id,
+      missionId: missionResolution.mission?.id,
+      missionResolution: missionResolution.status,
+      missionCandidates:
+        missionResolution.status === "AMBIGUOUS"
+          ? missionResolution.candidates?.map((mission) => ({
+              id: mission.id,
+              title: mission.title,
+            }))
+          : undefined,
       error: result.success ? undefined : result.message,
     });
   } catch (err) {
