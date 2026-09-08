@@ -2,9 +2,11 @@
 
 ## Purpose
 
-Partner Management is a native Clara OS capability for operating a B2B partner/referral program. Melodie Digital is the first production workspace, but the domain model must remain reusable by other Clara OS customers.
+Partner Management is a native Clara OS business capability for operating a B2B partner/referral program. Melodie Digital is the first production workspace, but the domain model must remain reusable by other Clara OS customers.
 
-The goal is not to clone PartnerStack. The V1 provides the smallest reliable operating loop needed to recruit partners, attribute leads and revenue, calculate commissions, and let Clara reason over the program.
+The goal is not to clone PartnerStack. The V1 provides the smallest reliable operating loop needed to attribute partners, leads and revenue, calculate commissions, and let Clara reason over the program.
+
+**Product boundary:** Clara OS owns the business engine, persistence, APIs, audit trail and Clara capabilities. The partner-facing interface and portal belong exclusively to the Melodie Digital website currently under construction. Clara OS must not expose a `/partners` application page or Partner navigation entry.
 
 ## Core flow
 
@@ -95,13 +97,13 @@ Required fields:
 4. Financial state changes are never autonomous WRITE/EXECUTE actions without Clara governance approval.
 5. No API keys, payment credentials, OAuth tokens or other secrets are stored in the Partner domain.
 6. Every record is scoped by `workspaceId` from V1.
-7. All user-facing strings must be internationalized in FR/EN/ES/DE/IT.
+7. Partner-facing website strings must be internationalized in FR/EN/ES/DE/IT at the website layer.
 
 ## Clara capability boundary
 
-V1 should expose normalized business capabilities rather than coupling the Brain directly to storage.
+V1 exposes normalized business capabilities rather than coupling the Brain directly to storage.
 
-Suggested capabilities:
+Capabilities:
 - `partners.list` — READ
 - `partners.get` — READ
 - `partners.create` — PREPARE/WRITE governed
@@ -116,18 +118,27 @@ Suggested capabilities:
 
 The Brain may reason over partner performance, propose follow-up actions and prepare commission calculations. It must not bypass the existing approval/autonomy layer.
 
-## UI V1
+## Website portal boundary
 
-Internal route: `/partners`.
+The Melodie Digital website owns all partner-facing UI, including:
+- partner account/portal access;
+- referral link/code presentation;
+- referrals and lead status;
+- attributed sales/revenue visibility;
+- commission visibility;
+- partner documents/resources;
+- onboarding and partner communication.
 
-The initial workspace view should include:
-- KPI cards: active partners, leads/referrals, won revenue, pending commissions;
-- partner table with status, type, attributed leads, won revenue and pending commission;
-- partner detail drawer/page with referrals, deals and commissions;
-- explicit actions for invite/create, pause/archive, calculate/approve commission;
-- empty states suitable for the first partner program.
+The website consumes the Partner Management service exposed by Clara OS through authenticated, workspace-scoped interfaces. The website must never become the source of truth for attribution or financial state.
 
-A public partner portal is explicitly deferred.
+Clara OS remains responsible for:
+- partner business records;
+- attribution rules;
+- deal/revenue references;
+- commission rules and deterministic calculations;
+- audit trail;
+- governance/approval boundaries;
+- Clara capability exposure.
 
 ## Integration strategy
 
@@ -155,11 +166,11 @@ Partner Management is a Clara capability. GPT is only a cognitive provider behin
 - commission calculation service;
 - unit tests.
 
-### Slice 2 — Internal operations
-- `/partners` page;
+### Slice 2 — Service/API operations
 - partner/referral/deal/commission APIs;
-- navigation entry;
-- 5-language i18n.
+- workspace-scoped persistence;
+- audit trail;
+- website-consumable service boundary.
 
 ### Slice 3 — Clara capability exposure
 - normalized capabilities;
@@ -167,10 +178,17 @@ Partner Management is a Clara capability. GPT is only a cognitive provider behin
 - governed write actions;
 - audit events.
 
+### Website workstream — separate repository/application
+- partner portal UI;
+- account/authentication experience;
+- responsive dashboard;
+- FR/EN/ES/DE/IT website translations;
+- onboarding/resources;
+- secure consumption of Clara OS Partner Management APIs.
+
 ### Deferred
-- public partner portal;
 - automatic payouts;
-- partner marketplace;
+- public partner marketplace;
 - complex tiers/bonuses;
 - multi-level attribution;
 - PartnerStack connector.
@@ -181,8 +199,8 @@ Do not merge into `clara-os-commercial-finish` until:
 - `npx tsc --noEmit` passes;
 - production build passes;
 - unit tests for attribution/commission rules pass;
-- Vercel Preview is visually validated;
+- Partner Management does not add a Clara OS application page or navigation entry;
 - existing Brain/GPT, Contacts, Lighting and Sound flows are unchanged;
-- FR/EN/ES/DE/IT navigation and Partner screens are verified.
+- website-facing integration contract is documented and workspace-scoped.
 
 Related issue: #93
