@@ -16,7 +16,7 @@ Use a native Clara connector when the integration is strategic, stable, security
 
 Use Make when the operation is client-specific, spans several external systems, is a secondary integration, benefits from rapid composition, or does not justify a dedicated native connector.
 
-The Brain should prefer semantic Clara capabilities such as `notify-team`. It should not need to know that Make executes the implementation. The generic `make.scenario.prepare` and `make.scenario.execute` capabilities remain infrastructure primitives and governance boundaries.
+The Brain should prefer semantic Clara capabilities such as `notify-team` and `prepare-mission-drive`. It should not need to know that Make executes the implementation. The generic `make.scenario.prepare` and `make.scenario.execute` capabilities remain infrastructure primitives and governance boundaries.
 
 ## Workspace authorization
 
@@ -39,6 +39,20 @@ Long-running workflows must return promptly with `accepted` or `pending` plus an
 `notify-team` is the first semantic Make-backed capability. It uses the fixed internal scenario key `notify-team`, validates its payload before provider execution, and remaps the provider result to the semantic Clara capability id. This proves that Clara can expose a business capability while keeping Make invisible to the cognitive layer.
 
 The POC deliberately does not send a real notification until the workspace has an authorized and credential-backed `notify-team` scenario.
+
+## Mission Drive orchestration
+
+`prepare-mission-drive` is the first mission-oriented semantic capability backed by the real bounded Drive scenarios prepared in Make.
+
+Clara OS keeps orchestration ownership and invokes the scenarios sequentially:
+
+1. `create-drive-folder`
+2. optionally `archive-document`
+3. optionally `move-drive-document`
+
+The capability accepts a Clara `missionId`, a mission folder name and optionally an initial document. It returns mission-oriented Drive metadata such as the folder id/link and, when a document is supplied, its id/link.
+
+This deliberately avoids creating one monolithic Make workflow. Make executes each external Drive operation; Clara Runtime owns the sequence, policy and result. Mission persistence can consume the returned references without moving mission state into Make.
 
 ## MCP / Toolbox compatibility
 
