@@ -32,6 +32,8 @@ export interface UserMessageEventPayload {
   message: string;
   locale: string;
   conversationId?: string;
+  missionId?: string;
+  missionResolution?: "BOUND" | "GENERAL" | "AMBIGUOUS" | "UNRESOLVED";
 }
 
 /**
