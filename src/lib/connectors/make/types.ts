@@ -10,9 +10,21 @@ export interface MakeScenarioConfiguration {
   timeoutMs?: number;
 }
 
+export interface MakeMcpCredentials {
+  /** Make MCP/Toolbox endpoint. Stored only in the credential store. */
+  url: string;
+  /** Bearer token for the MCP/Toolbox endpoint. Stored only in the credential store. */
+  bearerToken: string;
+  /** Optional Clara scenarioKey → Make tool name mapping. */
+  tools?: Record<string, string>;
+  timeoutMs?: number;
+}
+
 /** Credentials are resolved by connectionId and never supplied by Clara/user input. */
 export interface MakeWebhookCredentials {
   scenarios: Record<string, MakeScenarioConfiguration>;
+  /** Optional MCP/Toolbox transport. When present it is preferred over webhook execution. */
+  mcp?: MakeMcpCredentials;
 }
 
 export interface MakeScenarioInvocation {
