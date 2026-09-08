@@ -111,6 +111,10 @@ import {
   NotifyTeamCapabilityDefinition,
   type NotifyTeamCapability,
 } from "./notify-team/capability";
+import {
+  PrepareMissionDriveCapabilityDefinition,
+  type PrepareMissionDriveCapability,
+} from "./mission-drive/capability";
 
 /**
  * Capability definition.
@@ -136,7 +140,8 @@ export type CapabilityDefinition =
   | GitHubReadCapability
   | MakeScenarioCapability
   | MagicQLightingCapability
-  | NotifyTeamCapability;
+  | NotifyTeamCapability
+  | PrepareMissionDriveCapability;
 
 /**
  * Capability Registry.
@@ -185,6 +190,8 @@ export class CapabilityRegistry {
     MakeScenarioExecuteCapabilityDefinition,
 
     NotifyTeamCapabilityDefinition,
+
+    PrepareMissionDriveCapabilityDefinition,
 
     MagicQFixtureIntensityCapabilityDefinition,
 
