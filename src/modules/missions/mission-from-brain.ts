@@ -181,9 +181,14 @@ export function missionFromBrain(
     (task) => !task.completed
   );
 
+  // Mission state is canonical: after reconciliation, the next action must be
+  // the first incomplete task in the persisted plan. A Brain decision can
+  // still contain wording for the step that has just been validated; using it
+  // here would leave the Mission UI one step behind even though progress has
+  // already advanced.
   const nextAction =
-    dashboard.decision.nextAction?.trim() ||
-    nextTask?.title;
+    nextTask?.title ??
+    dashboard.decision.nextAction?.trim();
 
   const completedTask = [...tasks]
     .reverse()
