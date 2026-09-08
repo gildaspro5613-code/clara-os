@@ -8,15 +8,15 @@ import AttentionPanel from "../panels/AttentionPanel";
 import QuickActionsPanel from "../panels/QuickActionsPanel";
 import SummaryPanel from "../panels/SummaryPanel";
 import ConversationsPanel from "../panels/ConversationsPanel";
-import type { Mission } from "@/modules/missions/types/Mission";
+import type { ClaraSession } from "@/lib/core/session";
 import { getTranslations } from "next-intl/server";
 
 interface CockpitWidgetsProps {
-  mission: Mission | null;
+  session: ClaraSession;
 }
 
 export default async function CockpitWidgets({
-  mission,
+  session,
 }: CockpitWidgetsProps) {
   const t = await getTranslations("cockpitUi");
   return (
@@ -28,16 +28,16 @@ export default async function CockpitWidgets({
 
         {/* ============================================
             OVERVIEW
-            Trois cartes de même importance.
+            Clara session is the shared source of truth.
             ============================================ */}
 
         <div className="grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-3">
           <div className="min-w-0 md:col-span-2 xl:col-span-1">
-            <SummaryPanel />
+            <SummaryPanel session={session} />
           </div>
 
           <div className="min-w-0">
-            <AttentionPanel />
+            <AttentionPanel mission={session.mission} />
           </div>
 
           <div className="min-w-0">
@@ -47,13 +47,11 @@ export default async function CockpitWidgets({
 
         {/* ============================================
             ACTIVITY
-            Deux aperçus complémentaires.
-            Aucun étirement artificiel.
             ============================================ */}
 
         <div className="mt-5 grid items-stretch gap-5 lg:grid-cols-[1.35fr_1fr]">
           <div className="min-w-0">
-            <ConversationsPanel />
+            <ConversationsPanel session={session} />
           </div>
 
           <div className="min-w-0">
@@ -63,12 +61,11 @@ export default async function CockpitWidgets({
 
         {/* ============================================
             CONFORT & OPÉRATION
-            Mission + widgets de confort Clara OS.
             ============================================ */}
 
         <div className="mt-5 grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-[1.35fr_1fr_1fr]">
           <div className="min-w-0 md:col-span-2 xl:col-span-1">
-            <MissionWidget mission={mission} />
+            <MissionWidget mission={session.mission} />
           </div>
 
           <div className="min-w-0">
@@ -82,13 +79,14 @@ export default async function CockpitWidgets({
 
         {/* ============================================
             CLARA
-            Entrée conversationnelle rapide.
-            L'espace de travail complet reste dans
-            la page Clara dédiée.
+            Same durable conversation as /clara.
             ============================================ */}
 
         <div className="mt-5">
-          <ClaraChatWidget />
+          <ClaraChatWidget
+            initialMessages={session.conversation}
+            userFirstName={session.user.firstName}
+          />
         </div>
 
       </div>

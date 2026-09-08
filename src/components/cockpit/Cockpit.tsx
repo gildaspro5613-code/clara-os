@@ -13,7 +13,7 @@ export default function Cockpit({
 }: CockpitProps) {
   return (
     <CockpitLayout hero={<Hero session={session} />}>
-      <CockpitWidgets mission={session.mission} />
+      <CockpitWidgets session={session} />
     </CockpitLayout>
   );
 }

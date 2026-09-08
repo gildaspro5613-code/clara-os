@@ -55,27 +55,49 @@ export class Clara {
   private readonly journal = new Journal();
 
   /**
+   * Reload the durable session before a cognitive cycle.
+   *
+   * Serverless requests are not guaranteed to reuse the same module instance.
+   * Treat the database as the source of truth so mission/conversation continuity
+   * does not depend on a warm Vercel runtime.
+   */
+  private async hydrateSession(): Promise<void> {
+    this.session = await loadSession();
+
+    if (this.session.mission) {
+      const persistedMission = await loadMission(
+        this.session.mission.id,
+      );
+
+      if (persistedMission) {
+        const nextPendingTask = persistedMission.tasks.find(
+          (task) => !task.completed,
+        );
+
+        // Legacy V1 behaviour marked any non-autonomous task as "blocked",
+        // including ordinary conversational/manual mission steps with no
+        // execution contract. Those steps are still active work and should not
+        // be presented as an execution/approval blockage.
+        if (
+          persistedMission.status === "blocked" &&
+          nextPendingTask &&
+          !nextPendingTask.execution
+        ) {
+          persistedMission.status = "active";
+          await saveMission(persistedMission);
+        }
+
+        this.session.mission = persistedMission;
+      }
+    }
+  }
+
+  /**
    * Starts Clara.
    */
   public async start(): Promise<ClaraSession> {
 
-    const persistedSession =
-      await loadSession();
-
-    this.session =
-      persistedSession;
-
-    if (this.session.mission) {
-      const persistedMission =
-        await loadMission(
-          this.session.mission.id,
-        );
-
-      if (persistedMission) {
-        this.session.mission =
-          persistedMission;
-      }
-    }
+    await this.hydrateSession();
 
     this.session.state = ClaraState.STARTING;
     this.session.updatedAt = new Date();
@@ -97,6 +119,8 @@ export class Clara {
    */
   public async stop(): Promise<void> {
 
+    await this.hydrateSession();
+
     this.session.state = ClaraState.STOPPING;
     this.session.updatedAt = new Date();
     await saveSession(this.session);
@@ -117,6 +141,10 @@ export class Clara {
   public async processEvent(
     event: Event,
   ): Promise<ClaraSession> {
+
+    // Never rely on an in-memory singleton for continuity. A new serverless
+    // invocation must resume the same durable Clara state and active mission.
+    await this.hydrateSession();
 
     this.session = await orchestrate(
       this.session,
@@ -166,6 +194,23 @@ export class Clara {
         break;
       }
 
+      // A task with no execution contract is a normal conversational/manual
+      // step. Clara can keep conducting the mission without pretending that an
+      // execution approval or external intervention is required.
+      if (!nextPendingTask.execution) {
+        if (this.session.mission.status !== "active") {
+          this.session.mission = {
+            ...this.session.mission,
+            status: "active",
+          };
+          await saveMission(this.session.mission);
+        }
+
+        break;
+      }
+
+      // "blocked" is reserved for an actual execution task that exists but is
+      // not currently authorized for autonomous execution.
       if (!canExecuteAutonomously(nextPendingTask)) {
         this.session.mission = {
           ...this.session.mission,

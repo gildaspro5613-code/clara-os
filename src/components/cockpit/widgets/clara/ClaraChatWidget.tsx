@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Check, Send, X } from "lucide-react";
+import type { ClaraConversationMessage } from "@/lib/core/session";
 
 interface PendingApproval {
   id: string;
@@ -13,27 +14,48 @@ interface PendingApproval {
   expiresAt: string;
 }
 
-interface Message {
-  id: number;
-  role: "user" | "clara";
-  content: string;
-}
-
 interface ClaraChatWidgetProps {
   autoFocus?: boolean;
+  initialMessages?: ClaraConversationMessage[];
+  userFirstName?: string | null;
+}
+
+function personalizedGreeting(
+  greeting: string,
+  firstName?: string | null,
+): string {
+  if (!firstName?.trim()) return greeting;
+
+  // All Clara locales currently start their greeting with a short salutation
+  // followed by punctuation (Bonjour. / Hello. / Hola. / Hallo. / Buongiorno.).
+  // Personalize that first sentence without duplicating five translation keys.
+  return greeting.replace(
+    /^([^.!?]+)([.!?])/, 
+    `$1 ${firstName.trim()}$2`,
+  );
 }
 
 export default function ClaraChatWidget({
   autoFocus = false,
+  initialMessages = [],
+  userFirstName,
 }: ClaraChatWidgetProps) {
   const t = useTranslations("chat");
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 1,
-      role: "clara",
-      content: t("greeting"),
-    },
-  ]);
+  const [messages, setMessages] = useState<ClaraConversationMessage[]>(
+    initialMessages.length > 0
+      ? initialMessages
+      : [
+          {
+            id: "clara-greeting",
+            role: "clara",
+            content: personalizedGreeting(
+              t("greeting"),
+              userFirstName,
+            ),
+            createdAt: new Date().toISOString(),
+          },
+        ],
+  );
 
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -54,9 +76,10 @@ export default function ClaraChatWidget({
     setMessages((current) => [
       ...current,
       {
-        id: Date.now(),
+        id: crypto.randomUUID(),
         role: "user",
         content: message,
+        createdAt: new Date().toISOString(),
       },
     ]);
 
@@ -75,20 +98,29 @@ export default function ClaraChatWidget({
         success?: boolean;
         message?: string;
         approvals?: PendingApproval[];
+        conversation?: ClaraConversationMessage[];
       };
 
       if (!response.ok || !data.success) {
         throw new Error(data.message ?? t("unavailable"));
       }
 
-      setMessages((current) => [
-        ...current,
-        {
-          id: Date.now() + 1,
-          role: "clara",
-          content: data.message ?? "",
-        },
-      ]);
+      // Prefer the durable server transcript so Cockpit and /clara always
+      // converge on exactly the same conversation state.
+      if (Array.isArray(data.conversation)) {
+        setMessages(data.conversation);
+      } else {
+        setMessages((current) => [
+          ...current,
+          {
+            id: crypto.randomUUID(),
+            role: "clara",
+            content: data.message ?? "",
+            createdAt: new Date().toISOString(),
+          },
+        ]);
+      }
+
       setApprovals((current) => [...current, ...(data.approvals ?? [])]);
 
       router.refresh();
@@ -96,12 +128,13 @@ export default function ClaraChatWidget({
       setMessages((current) => [
         ...current,
         {
-          id: Date.now() + 1,
+          id: crypto.randomUUID(),
           role: "clara",
           content:
             error instanceof Error
               ? error.message
               : t("unavailable"),
+          createdAt: new Date().toISOString(),
         },
       ]);
     } finally {
@@ -124,16 +157,18 @@ export default function ClaraChatWidget({
       }
       if (!response.ok || !data.success) throw new Error(data.message ?? t("approvalError"));
       setMessages((current) => [...current, {
-        id: Date.now(),
+        id: crypto.randomUUID(),
         role: "clara",
         content: data.content || data.message || (decision === "approve" ? t("approved") : t("rejected")),
+        createdAt: new Date().toISOString(),
       }]);
       router.refresh();
     } catch (error) {
       setMessages((current) => [...current, {
-        id: Date.now(),
+        id: crypto.randomUUID(),
         role: "clara",
         content: error instanceof Error ? error.message : t("approvalError"),
+        createdAt: new Date().toISOString(),
       }]);
     } finally {
       setLoading(false);

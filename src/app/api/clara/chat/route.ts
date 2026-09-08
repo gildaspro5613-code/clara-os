@@ -1,19 +1,31 @@
 import { NextResponse } from "next/server";
 
+import { composeClaraResponse } from "@/lib/brain/response-composer";
 import { dispatchEvent } from "@/lib/core/event-bus";
 import { getRuntime } from "@/lib/core/runtime";
+import {
+  loadSession,
+  saveSession,
+} from "@/lib/core/store/session-store";
+import type { ClaraConversationMessage } from "@/lib/core/session";
 import { EventType } from "@/types";
-import { CognitiveToolLoop } from "@/lib/brain/cognitive-tool-loop";
 
 interface ChatRequest {
   message?: string;
 }
 
-function getPlan(): "essential" | "pro" | "premium" {
-  const plan = process.env.CLARA_PLAN;
-  return plan === "essential" || plan === "pro" ? plan : "premium";
-}
+const MAX_PERSISTED_MESSAGES = 100;
+const MAX_REASONING_HISTORY = 16;
 
+/**
+ * Clara chat is an interface to Clara's runtime, not a second cognitive
+ * orchestrator. The Brain owns understanding, mission continuity,
+ * prioritisation and recommendation. GPT is invoked inside the Brain as a
+ * cognitive provider only. A separate response composer may then express the
+ * Brain result naturally, but it has no tools and no execution authority.
+ *
+ * Cockpit and /clara are two views over this same persisted conversation.
+ */
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as ChatRequest;
@@ -26,6 +38,11 @@ export async function POST(request: Request) {
       );
     }
 
+    const persistedBeforeCycle = await loadSession();
+    const recentConversation = persistedBeforeCycle.conversation
+      .slice(-MAX_REASONING_HISTORY)
+      .map(({ role, content }) => ({ role, content }));
+
     const event = {
       id: crypto.randomUUID(),
       type: EventType.USER_MESSAGE,
@@ -33,96 +50,77 @@ export async function POST(request: Request) {
       timestamp: new Date(),
       payload: {
         message,
+        userFirstName: persistedBeforeCycle.user.firstName,
+        conversationHistory: recentConversation,
       },
     };
 
+    // One user request = one Clara/Brain decision cycle.
     const session = await dispatchEvent(
       getRuntime(),
       event,
     );
 
-    const sourcesSummary = session.sources.length > 0
-      ? session.sources
-          .map((source) => source.summary)
-          .join("\n\n")
-      : "Aucune source externe chargée.";
+    const recommendation = session.recommendation;
+    const mission = session.mission;
 
-    const prompt = [
-      "Tu es Clara.",
-      "",
-      "Tu es l'assistante IA de Gildas et l'interface intelligente de Clara OS.",
-      "",
-      "Tu tutoies toujours Gildas.",
-      "",
-      "Tu es naturelle, chaleureuse, élégante, intelligente et rassurante.",
-      "Tu parles simplement, avec fluidité et sans formalisme artificiel.",
-      "Tu peux être spontanée, complice et légèrement malicieuse lorsque le contexte s'y prête.",
-      "",
-      "Tu n'es pas une commerciale.",
-      "Tu n'es pas un service client.",
-      "Tu n'es pas une interface technique.",
-      "",
-      "Tu accompagnes Gildas dans son travail, ses décisions, ses projets et ses actions.",
-      "Tu connais le contexte de Clara OS et tu l'accompagnes comme une véritable assistante opérationnelle.",
-      "",
-      "Privilégie des réponses naturelles, courtes et utiles.",
-      "Ne répète pas inutilement ce que Gildas vient de dire.",
-      "Ne commence pas par une structure technique ou bureaucratique.",
-      "Tu n'as pas besoin de rappeler qui tu es à chaque réponse.",
-      "",
-      "Tu peux proposer directement la prochaine action utile lorsque le contexte le permet.",
-      "Si une information manque réellement, pose une seule question ciblée.",
-      "Ne prétends jamais avoir effectué une action qui ne l'a pas été.",
-      "Si tu ne sais pas quelque chose, dis-le simplement.",
-      "",
-      "Contexte opérationnel disponible :",
-      `État actuel : ${session.state}`,
-      `Mission actuelle : ${session.mission?.title ?? "Aucune mission active"}`,
-      `Objectif actuel : ${session.mission?.objective ?? "Aucun objectif actif"}`,
-      `Prochaine action connue : ${session.mission?.nextAction ?? "Aucune action suivante définie"}`,
-      `Recommandation du Brain : ${session.recommendation?.summary ?? "Aucune recommandation produite"}`,
-      `Justification éventuelle : ${session.recommendation?.rationale ?? "Aucune justification disponible"}`,
-      "",
-      "Sources externes disponibles :",
-      sourcesSummary,
-      "",
-      "Règles concernant les sources externes :",
-      "- Si une source pertinente est disponible, utilise ses données réelles.",
-      "- N'invente jamais une donnée absente des sources.",
-      "- Si une source est indisponible, dis-le simplement et naturellement.",
-      "",
-      "Message de Gildas :",
+    // The composer only gives Clara a conversational voice. It receives the
+    // already-decided Brain/session state and cannot call Clara capabilities.
+    const responseMessage = await composeClaraResponse(
       message,
-    ].join("\\n");
+      session,
+    );
 
-    const toolLoop = new CognitiveToolLoop();
-
-    const result = await toolLoop.execute({
-      prompt,
-      principal: {
-        actorId: process.env.CLARA_ACTOR_ID ?? "owner",
-        workspaceId: process.env.CLARA_WORKSPACE_ID ?? "melodie-digital",
-        plan: getPlan(),
-        // Fail closed until Clara's authenticated approval UI issues
-        // server-verified, single-use approvals.
-        approvedCapabilityIds: [],
+    const now = new Date().toISOString();
+    const newMessages: ClaraConversationMessage[] = [
+      {
+        id: crypto.randomUUID(),
+        role: "user",
+        content: message,
+        createdAt: now,
       },
-    });
+      {
+        id: crypto.randomUUID(),
+        role: "clara",
+        content: responseMessage,
+        createdAt: new Date().toISOString(),
+      },
+    ];
 
-    if (!result.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: result.message,
-        },
-        { status: 500 },
-      );
-    }
+    session.conversation = [
+      ...session.conversation,
+      ...newMessages,
+    ].slice(-MAX_PERSISTED_MESSAGES);
+    session.updatedAt = new Date();
+    await saveSession(session);
 
     return NextResponse.json({
       success: true,
-      message: result.content,
-      approvals: result.approvalRequests ?? [],
+      message: responseMessage,
+      conversation: session.conversation,
+      user: session.user,
+      brain: {
+        state: session.state,
+        recommendation: recommendation
+          ? {
+              summary: recommendation.summary,
+              rationale: recommendation.rationale,
+            }
+          : null,
+        mission: mission
+          ? {
+              id: mission.id,
+              title: mission.title,
+              objective: mission.objective,
+              status: mission.status,
+              progress: mission.progress,
+              nextAction: mission.nextAction,
+            }
+          : null,
+      },
+      // Capability approvals will be emitted by the Brain execution boundary,
+      // not by the chat route or the response composer.
+      approvals: [],
     });
   } catch (error) {
     return NextResponse.json(
