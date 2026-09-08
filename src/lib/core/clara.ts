@@ -19,6 +19,7 @@ import {
 import { createSystemEvent } from "./events";
 import { orchestrate } from "./orchestrator";
 import { Journal } from "./journal";
+import { writeCognitiveEntry } from "./journal-writer";
 
 export class Clara {
 
@@ -79,11 +80,15 @@ export class Clara {
     );
 
     /*
-     * Journal integration will be added
-     * once the complete writing pipeline
-     * is finalized.
+     * Record the cognitive result produced by the Brain.
+     * This deliberately journals only completed cognitive cycles for now;
+     * execution/result/verification entries belong to later Brain V2 lots.
      */
-    void this.journal;
+    if (this.session.recommendation) {
+      this.journal.addEntry(
+        writeCognitiveEntry(this.session.recommendation),
+      );
+    }
 
     return this.session;
 
@@ -101,6 +106,13 @@ export class Clara {
    */
   public getSession(): ClaraSession {
     return this.session;
+  }
+
+  /**
+   * Returns Clara's operational journal.
+   */
+  public getJournal(): Journal {
+    return this.journal;
   }
 
 }
