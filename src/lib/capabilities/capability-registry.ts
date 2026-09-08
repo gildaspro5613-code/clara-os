@@ -9,108 +9,28 @@
  * ============================================
  */
 
-
-import {
-  DriveSearchCapability,
-  DriveSearchCapabilityDefinition,
-} from "./drive-search/capability";
-
-import {
-  GenerateDocumentCapability,
-  GenerateDocumentCapabilityDefinition,
-} from "./generate-document/capability";
-
-import {
-  WorkspaceInstallCapability,
-  WorkspaceInstallCapabilityDefinition,
-} from "./workspace-install/capability";
-
-import {
-  OrganizeDriveCapability,
-  OrganizeDriveCapabilityDefinition,
-} from "./organize-drive/capability";
-
-import {
-  UpdateSheetRowCapability,
-  UpdateSheetRowCapabilityDefinition,
-} from "./update-sheet-row/capability";
-
-import {
-  AppendSheetRowCapability,
-  AppendSheetRowCapabilityDefinition,
-} from "./append-sheet-row/capability";
-
-import {
-  ReadSheetCapability,
-  ReadSheetCapabilityDefinition,
-} from "./read-sheet/capability";
-
-import {
-  FindSheetRowCapability,
-  FindSheetRowCapabilityDefinition,
-} from "./find-sheet-row/capability";
-
-import {
-  DeleteSheetRowCapability,
-  DeleteSheetRowCapabilityDefinition,
-} from "./delete-sheet-row/capability";
-
- import {
-  ReadDocumentCapability,
-} from "./read-document/capability";
-
-import {
-  FindDocumentCapability,
-} from "./find-document/capability";
-
-import {
-  ReadCalendarCapability,
-} from "./read-calendar/capability";
-
-import {
-  ReadGmailCapability,
-  ReadGmailCapabilityDefinition,
-} from "./read-gmail/capability";
-
-import {
-  DeleteCalendarEventCapability,
-  DeleteCalendarEventCapabilityDefinition,
-} from "./delete-calendar-event/capability";
-
-import {
-  SendGmailCapability,
-  SendGmailCapabilityDefinition,
-} from "./send-gmail/capability";
-
-
-import {
-  ReadCalendarCapabilityDefinition,
-} from "./read-calendar/capability";
-
-import {
-  CreateCalendarEventCapability,
-  CreateCalendarEventCapabilityDefinition,
-} from "./create-calendar-event/capability";
-
-import {
-  UpdateCalendarEventCapability,
-  UpdateCalendarEventCapabilityDefinition,
-} from "./update-calendar-event/capability";
-
+import { DriveSearchCapability, DriveSearchCapabilityDefinition } from "./drive-search/capability";
+import { GenerateDocumentCapability, GenerateDocumentCapabilityDefinition } from "./generate-document/capability";
+import { WorkspaceInstallCapability, WorkspaceInstallCapabilityDefinition } from "./workspace-install/capability";
+import { OrganizeDriveCapability, OrganizeDriveCapabilityDefinition } from "./organize-drive/capability";
+import { UpdateSheetRowCapability, UpdateSheetRowCapabilityDefinition } from "./update-sheet-row/capability";
+import { AppendSheetRowCapability, AppendSheetRowCapabilityDefinition } from "./append-sheet-row/capability";
+import { ReadSheetCapability, ReadSheetCapabilityDefinition } from "./read-sheet/capability";
+import { FindSheetRowCapability, FindSheetRowCapabilityDefinition } from "./find-sheet-row/capability";
+import { DeleteSheetRowCapability, DeleteSheetRowCapabilityDefinition } from "./delete-sheet-row/capability";
+import { ReadDocumentCapability } from "./read-document/capability";
+import { FindDocumentCapability } from "./find-document/capability";
+import { ReadCalendarCapability, ReadCalendarCapabilityDefinition } from "./read-calendar/capability";
+import { ReadGmailCapability, ReadGmailCapabilityDefinition } from "./read-gmail/capability";
+import { DeleteCalendarEventCapability, DeleteCalendarEventCapabilityDefinition } from "./delete-calendar-event/capability";
+import { SendGmailCapability, SendGmailCapabilityDefinition } from "./send-gmail/capability";
+import { CreateCalendarEventCapability, CreateCalendarEventCapabilityDefinition } from "./create-calendar-event/capability";
+import { UpdateCalendarEventCapability, UpdateCalendarEventCapabilityDefinition } from "./update-calendar-event/capability";
 import { GitHubReadCapabilityDefinitions, type GitHubReadCapability } from "./github-read/capability";
-import {
-  MakeScenarioExecuteCapabilityDefinition,
-  MakeScenarioPrepareCapabilityDefinition,
-  type MakeScenarioCapability,
-} from "./make-scenario/capability";
-import {
-  MagicQFixtureIntensityCapabilityDefinition,
-  type MagicQLightingCapability,
-} from "./magicq-lighting/capability";
+import { MakeScenarioExecuteCapabilityDefinition, MakeScenarioPrepareCapabilityDefinition, type MakeScenarioCapability } from "./make-scenario/capability";
+import { MagicQFixtureIntensityCapabilityDefinition, type MagicQLightingCapability } from "./magicq-lighting/capability";
+import { PartnerManagementCapabilityDefinitions, type PartnerManagementCapability } from "./partner-management/capability";
 
-/**
- * Capability definition.
- */
 export type CapabilityDefinition =
   | DriveSearchCapability
   | GenerateDocumentCapability
@@ -131,111 +51,50 @@ export type CapabilityDefinition =
   | SendGmailCapability
   | GitHubReadCapability
   | MakeScenarioCapability
-  | MagicQLightingCapability;
+  | MagicQLightingCapability
+  | PartnerManagementCapability;
 
-/**
- * Capability Registry.
- */
 export class CapabilityRegistry {
-
-  /**
-   * Registered capabilities.
-   */
   private readonly capabilities: CapabilityDefinition[] = [
-
     DriveSearchCapabilityDefinition,
-
     GenerateDocumentCapabilityDefinition,
-
     WorkspaceInstallCapabilityDefinition,
-
     OrganizeDriveCapabilityDefinition,
-
     UpdateSheetRowCapabilityDefinition,
-
     AppendSheetRowCapabilityDefinition,
-
     ReadSheetCapabilityDefinition,
-
     FindSheetRowCapabilityDefinition,
-
     DeleteSheetRowCapabilityDefinition,
-
     ReadCalendarCapabilityDefinition,
-
     ReadGmailCapabilityDefinition,
-
     CreateCalendarEventCapabilityDefinition,
-
     UpdateCalendarEventCapabilityDefinition,
-
     SendGmailCapabilityDefinition,
-
     DeleteCalendarEventCapabilityDefinition,
-
     ...GitHubReadCapabilityDefinitions,
-
     MakeScenarioPrepareCapabilityDefinition,
-
     MakeScenarioExecuteCapabilityDefinition,
-
     MagicQFixtureIntensityCapabilityDefinition,
-
+    ...PartnerManagementCapabilityDefinitions,
   ];
 
-  /**
-   * Returns every capability.
-   */
   public getAll(): CapabilityDefinition[] {
-
     return this.capabilities;
-
   }
 
-  /**
-   * Returns a stable capability catalog
-   * for cognitive consumers such as the Brain.
-   */
-  public getAvailableCapabilities(): Array<{
-    id: string;
-    name: string;
-    description: string;
-  }> {
-
-    return this.capabilities.map(
-      capability => ({
-        id: capability.id,
-        name: capability.name,
-        description: capability.description,
-      }),
-    );
-
+  public getAvailableCapabilities(): Array<{ id: string; name: string; description: string }> {
+    return this.capabilities.map(capability => ({
+      id: capability.id,
+      name: capability.name,
+      description: capability.description,
+    }));
   }
 
-  /**
-   * Finds one capability.
-   */
-  public findById(
-    id: string,
-  ): CapabilityDefinition | undefined {
-
-    return this.capabilities.find(
-
-      capability => capability.id === id,
-
-    );
-
+  public findById(id: string): CapabilityDefinition | undefined {
+    return this.capabilities.find(capability => capability.id === id);
   }
 
-  /**
-   * Checks whether a capability exists.
-   */
-  public has(
-    id: string,
-  ): boolean {
-
+  public has(id: string): boolean {
     return this.findById(id) !== undefined;
-
   }
-
 }
