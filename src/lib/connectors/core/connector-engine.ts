@@ -17,6 +17,14 @@ import {
   createEvent,
   type CreateEventOptions,
 } from "@/lib/connectors/google/calendar";
+import {
+  sendMicrosoftMessage,
+  type SendMicrosoftMessageOptions,
+} from "@/lib/connectors/microsoft/outlook/send-message";
+import {
+  createMicrosoftEvent,
+  type CreateMicrosoftEventOptions,
+} from "@/lib/connectors/microsoft/calendar/create-event";
 
 import { Connector } from "./connector";
 import { ConnectorEvent } from "./connector-event";
@@ -38,10 +46,7 @@ export class ConnectorEngine {
     event: ConnectorEvent,
   ): Promise<ConnectorResult> {
     if (!connector.enabled) {
-      return this.failure(
-        event,
-        `Connector ${connector.id} is disabled.`,
-      );
+      return this.failure(event, `Connector ${connector.id} is disabled.`);
     }
 
     if (!connector.capabilities.includes(event.capability)) {
@@ -68,15 +73,8 @@ export class ConnectorEngine {
             return this.unsupported(route, event);
           }
 
-          const data = await sendMessage(
-            event.payload as SendMessageOptions,
-          );
-
-          return this.success(
-            event,
-            data,
-            "Google Gmail executed successfully.",
-          );
+          const data = await sendMessage(event.payload as SendMessageOptions);
+          return this.success(event, data, "Google Gmail executed successfully.");
         }
 
         case "google.calendar": {
@@ -84,15 +82,30 @@ export class ConnectorEngine {
             return this.unsupported(route, event);
           }
 
-          const data = await createEvent(
-            event.payload as CreateEventOptions,
-          );
+          const data = await createEvent(event.payload as CreateEventOptions);
+          return this.success(event, data, "Google Calendar executed successfully.");
+        }
 
-          return this.success(
-            event,
-            data,
-            "Google Calendar executed successfully.",
+        case "microsoft.outlook": {
+          if (event.capability !== "send-email") {
+            return this.unsupported(route, event);
+          }
+
+          const data = await sendMicrosoftMessage(
+            event.payload as SendMicrosoftMessageOptions,
           );
+          return this.success(event, data, "Microsoft Outlook executed successfully.");
+        }
+
+        case "microsoft.calendar": {
+          if (event.capability !== "schedule-event") {
+            return this.unsupported(route, event);
+          }
+
+          const data = await createMicrosoftEvent(
+            event.payload as CreateMicrosoftEventOptions,
+          );
+          return this.success(event, data, "Microsoft Calendar executed successfully.");
         }
 
         default:
@@ -123,20 +136,14 @@ export class ConnectorEngine {
     };
   }
 
-  private unsupported(
-    route: string,
-    event: ConnectorEvent,
-  ): ConnectorResult {
+  private unsupported(route: string, event: ConnectorEvent): ConnectorResult {
     return this.failure(
       event,
       `Connector route ${route} does not implement ${event.capability}.`,
     );
   }
 
-  private failure(
-    event: ConnectorEvent,
-    message: string,
-  ): ConnectorResult {
+  private failure(event: ConnectorEvent, message: string): ConnectorResult {
     return {
       success: false,
       capability: event.capability,
