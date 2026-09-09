@@ -19,6 +19,7 @@ export const CAPABILITY_CATALOG = {
   "retrieve-file": { route: "google.drive" },
   "speech-to-text": { route: "openai.audio" },
   "text-to-speech": { route: "openai.audio" },
+  "start-voice-session": { route: "elevenlabs.conversation" },
   "workspace-install": { route: "workspace.installer" },
 } as const;
 
