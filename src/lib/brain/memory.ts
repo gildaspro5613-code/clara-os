@@ -26,6 +26,17 @@ function isMission(value: unknown): value is Mission {
   );
 }
 
+interface JournalMemoryItem {
+  summary: string;
+  details?: string;
+}
+
+function isJournalMemoryItem(value: unknown): value is JournalMemoryItem {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Partial<JournalMemoryItem>;
+  return typeof candidate.summary === "string";
+}
+
 /**
  * Load only memory that is relevant to the current cognitive context.
  *
@@ -35,7 +46,8 @@ function isMission(value: unknown): value is Mission {
  *
  * Durable cross-session memory persistence is intentionally not invented
  * here. Until a persistence repository is introduced, the resolved mission
- * is the first trustworthy source of reusable operational memory.
+ * and a small recent operational Journal window are the trustworthy sources
+ * of reusable operational memory.
  */
 export function loadMemory(context: Context): Memory {
   const memory: Memory = {
@@ -45,6 +57,19 @@ export function loadMemory(context: Context): Memory {
   };
 
   const metadata = context.metadata ?? {};
+  const recentJournalActions = metadata.recentJournalActions;
+
+  if (Array.isArray(recentJournalActions)) {
+    recentJournalActions
+      .filter(isJournalMemoryItem)
+      .slice(-5)
+      .forEach((entry) => {
+        memory.shortTerm.push(
+          `Action récente: ${entry.summary}${entry.details ? ` — ${entry.details}` : ""}`,
+        );
+      });
+  }
+
   const mission = metadata.mission;
 
   if (!isMission(mission)) {
