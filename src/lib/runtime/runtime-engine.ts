@@ -11,21 +11,26 @@
  */
 
 import { CapabilityEngine } from "@/lib/capabilities/capability-engine";
+import { CapabilityRegistry } from "@/lib/capabilities/capability-registry";
+import { ConnectorEngine } from "@/lib/connectors/core/connector-engine";
 
+import { CapabilityRouter } from "./capability-router";
 import { Runtime } from "./runtime";
 import { RuntimeEvent } from "./runtime-event";
 import { RuntimeResult } from "./runtime-result";
 
 /**
  * Runtime Engine.
+ *
+ * Provider-neutral capability ids enter Runtime. Implemented Clara workflows
+ * stay inside CapabilityEngine; connector-backed capabilities are routed below
+ * Brain to the existing connector implementations.
  */
 export class RuntimeEngine {
-
-  /**
-   * Capability Engine.
-   */
-  private readonly capabilityEngine =
-    new CapabilityEngine();
+  private readonly capabilityEngine = new CapabilityEngine();
+  private readonly capabilityRegistry = new CapabilityRegistry();
+  private readonly capabilityRouter = new CapabilityRouter();
+  private readonly connectorEngine = new ConnectorEngine();
 
   /**
    * Executes one runtime cycle.
@@ -34,26 +39,43 @@ export class RuntimeEngine {
     runtime: Runtime,
     event: RuntimeEvent,
   ): Promise<RuntimeResult> {
+    void runtime;
 
-    const result =
-      await this.capabilityEngine.execute({
-
+    if (this.capabilityRegistry.has(event.capabilityId)) {
+      const result = await this.capabilityEngine.execute({
         capabilityId: event.capabilityId,
-
         context: event.context,
-
       });
 
+      return {
+        success: result.success,
+        message: result.message,
+        completedAt: result.completedAt,
+      };
+    }
+
+    const route = this.capabilityRouter.resolve(event.capabilityId as never);
+
+    if (route === "unknown") {
+      return {
+        success: false,
+        message: `Unknown capability: ${event.capabilityId}`,
+        completedAt: new Date(),
+      };
+    }
+
+    const result = await this.connectorEngine.executeRoute(route, {
+      id: event.id,
+      capability: event.capabilityId,
+      payload: event.context,
+      source: event.source,
+      receivedAt: event.receivedAt,
+    });
+
     return {
-
       success: result.success,
-
-      message: result.message,
-
+      message: result.error ?? result.message ?? "Connector execution completed.",
       completedAt: result.completedAt,
-
     };
-
   }
-
 }
