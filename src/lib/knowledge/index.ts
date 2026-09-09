@@ -11,14 +11,10 @@
 
 import { KnowledgeEngine } from "./engine";
 
-/**
- * Shared Knowledge Engine.
- */
+/** Shared Knowledge Engine. */
 const knowledge = new KnowledgeEngine();
 
-/**
- * Returns the shared Knowledge Engine.
- */
+/** Returns the shared Knowledge Engine. */
 export function getKnowledge(): KnowledgeEngine {
   return knowledge;
 }
@@ -26,3 +22,5 @@ export function getKnowledge(): KnowledgeEngine {
 export * from "./engine";
 export * from "./types";
 export * from "./module";
+export * from "./clara-live/module";
+export * from "./clara-live/source";

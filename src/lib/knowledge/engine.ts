@@ -11,20 +11,21 @@
  */
 
 import { KnowledgeModule } from "./module";
-
 import { FOUNDATION_MODULE } from "./foundation/module";
+import { CLARA_LIVE_MODULE } from "./clara-live/module";
 
 /**
  * Knowledge Engine.
  */
 export class KnowledgeEngine {
-
   /**
    * Loaded knowledge modules.
    */
-  private readonly modules: KnowledgeModule[] = [
-    FOUNDATION_MODULE,
-  ];
+  private readonly modules: KnowledgeModule[];
+
+  public constructor(modules: readonly KnowledgeModule[] = [CLARA_LIVE_MODULE]) {
+    this.modules = [FOUNDATION_MODULE, ...modules];
+  }
 
   /**
    * Returns every loaded module.
@@ -36,14 +37,8 @@ export class KnowledgeEngine {
   /**
    * Returns one module.
    */
-  public getModule(
-    id: string,
-  ): KnowledgeModule | undefined {
-
-    return this.modules.find(
-      (module) => module.id === id,
-    );
-
+  public getModule(id: string): KnowledgeModule | undefined {
+    return this.modules.find((module) => module.id === id);
   }
 
   /**
@@ -52,6 +47,4 @@ export class KnowledgeEngine {
   public getKnowledge(): readonly KnowledgeModule[] {
     return this.modules;
   }
-
 }
-    
