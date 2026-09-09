@@ -4,7 +4,7 @@
 //
 // File : MissionsStage.tsx
 // Responsibility :
-// Official Missions composition backed by the canonical Mission Store.
+// Official Missions composition backed by durable server persistence.
 // ============================================
 
 "use client";
@@ -18,7 +18,55 @@ import { missionsMock } from "./data/missions.mock";
 import { missionStore } from "./mission-store";
 import type { Mission } from "./types/Mission";
 
-const STORAGE_KEY = "clara-os-missions-v1";
+type SerializedMission = Omit<Mission, "createdAt" | "dueDate"> & {
+  createdAt: string;
+  dueDate?: string;
+};
+
+function hydrateMission(mission: SerializedMission): Mission {
+  return {
+    ...mission,
+    createdAt: new Date(mission.createdAt),
+    dueDate: mission.dueDate ? new Date(mission.dueDate) : undefined,
+  };
+}
+
+async function loadDurableMissions(): Promise<Mission[]> {
+  const response = await fetch("/api/missions", { cache: "no-store" });
+  if (!response.ok) throw new Error("Unable to load missions.");
+
+  const payload = (await response.json()) as {
+    success?: boolean;
+    missions?: SerializedMission[];
+  };
+
+  if (!payload.success || !Array.isArray(payload.missions)) {
+    throw new Error("Invalid missions response.");
+  }
+
+  return payload.missions.map(hydrateMission);
+}
+
+async function saveDurableMission(mission: Mission): Promise<Mission> {
+  const response = await fetch("/api/missions", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ mission }),
+  });
+
+  if (!response.ok) throw new Error("Unable to save mission.");
+
+  const payload = (await response.json()) as {
+    success?: boolean;
+    mission?: SerializedMission;
+  };
+
+  if (!payload.success || !payload.mission) {
+    throw new Error("Invalid mission response.");
+  }
+
+  return hydrateMission(payload.mission);
+}
 
 export default function MissionsStage() {
   const t = useTranslations("missions");
@@ -33,44 +81,20 @@ export default function MissionsStage() {
   useEffect(() => missionStore.subscribe((snapshot) => setMissions([...snapshot])), []);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (!stored) return;
+    let cancelled = false;
 
-      const completedTasks = JSON.parse(stored) as Record<string, boolean>;
-
-      missionStore.list().forEach((mission) => {
-        missionStore.upsert({
-          ...mission,
-          tasks: mission.tasks.map((task) => ({
-            ...task,
-            completed:
-              completedTasks[task.id] !== undefined
-                ? completedTasks[task.id]
-                : task.completed,
-          })),
-        });
+    void loadDurableMissions()
+      .then((durableMissions) => {
+        if (!cancelled) missionStore.replace(durableMissions);
+      })
+      .catch(() => {
+        // Keep the current read-only snapshot if durable persistence is temporarily unavailable.
       });
-    } catch {
-      // Ignore invalid local persistence.
-    }
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
-
-  useEffect(() => {
-    try {
-      const completedTasks: Record<string, boolean> = {};
-
-      missions.forEach((mission) => {
-        mission.tasks.forEach((task) => {
-          completedTasks[task.id] = task.completed;
-        });
-      });
-
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(completedTasks));
-    } catch {
-      // Ignore persistence errors.
-    }
-  }, [missions]);
 
   const activeMissions = missions.filter((mission) => mission.status === "active");
   const plannedMissions = missions.filter((mission) => mission.status === "planned");
@@ -78,7 +102,19 @@ export default function MissionsStage() {
   const selectedMission = missions.find((mission) => mission.id === selectedMissionId);
 
   function updateMission(updatedMission: Mission) {
-    missionStore.upsert(updatedMission);
+    const optimistic = missionStore.upsert(updatedMission);
+
+    void saveDurableMission(optimistic)
+      .then((saved) => {
+        missionStore.upsert(saved);
+      })
+      .catch(() => {
+        void loadDurableMissions()
+          .then((durableMissions) => missionStore.replace(durableMissions))
+          .catch(() => {
+            // Leave the optimistic snapshot visible if the durable store is unreachable.
+          });
+      });
   }
 
   if (selectedMission) {
