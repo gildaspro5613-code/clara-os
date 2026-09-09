@@ -16,6 +16,7 @@ interface UserMessageContextPayload {
   conversationId?: unknown;
   missionId?: unknown;
   missionResolution?: unknown;
+  recentJournalActions?: unknown;
 }
 
 /**
@@ -38,6 +39,10 @@ export function buildContext(event: Event): Context {
 
     if (typeof payload.missionResolution === "string") {
       metadata.missionResolution = payload.missionResolution;
+    }
+
+    if (Array.isArray(payload.recentJournalActions)) {
+      metadata.recentJournalActions = payload.recentJournalActions;
     }
 
     if (typeof payload.missionId === "string") {
