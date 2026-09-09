@@ -10,6 +10,7 @@
  * ============================================
  */
 
+import { isKnownCapabilityId } from "@/lib/capabilities/capability-catalog";
 import type { Context } from "@/types";
 import {
   isExecutionDirective,
@@ -24,7 +25,8 @@ interface StructuredExecutionPayload {
  * V1 trusted source: a structured executionDirective carried by the event
  * payload. Natural-language fields are deliberately ignored.
  *
- * Mission/conversation bindings from Brain Context override untrusted values
+ * The capability id must exist in Clara OS' canonical capability catalog.
+ * Mission/conversation bindings from Brain Context override payload values
  * when available, keeping the directive attached to the resolved operation.
  */
 export function resolveExecutionDirective(
@@ -40,11 +42,16 @@ export function resolveExecutionDirective(
   }
 
   const directive = payload.executionDirective;
+  if (!isKnownCapabilityId(directive.capabilityId)) {
+    return undefined;
+  }
+
   const missionId = context.metadata?.missionId;
   const conversationId = context.metadata?.conversationId;
 
   return {
     ...directive,
+    capabilityId: directive.capabilityId,
     missionId:
       typeof missionId === "string" ? missionId : directive.missionId,
     conversationId:
