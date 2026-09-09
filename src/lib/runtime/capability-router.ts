@@ -16,20 +16,20 @@ import {
   type CapabilityId,
 } from "@/lib/capabilities/capability-catalog";
 
-import { ProviderResolver } from "./provider-resolver";
+import { NativeConnectorResolver } from "./native-connector-resolver";
 
 export type Capability = CapabilityId | "unknown";
 
 /**
  * Capability Router.
  *
- * Brain only requests a provider-neutral capability id. Routing remains
- * below Brain. Organization configuration may select a workspace provider;
- * otherwise the canonical catalog route remains the backward-compatible
- * fallback.
+ * Brain requests only a provider-neutral capability id. Native connector
+ * selection remains below Brain and may use explicit/available organization
+ * connector context. The canonical route remains the backward-compatible
+ * fallback while durable connection settings are introduced.
  */
 export class CapabilityRouter {
-  private readonly providerResolver = new ProviderResolver();
+  private readonly nativeConnectorResolver = new NativeConnectorResolver();
 
   public resolve(capability: Capability, context?: unknown): string {
     if (!isKnownCapabilityId(capability)) {
@@ -38,7 +38,7 @@ export class CapabilityRouter {
 
     const canonicalRoute = resolveCapabilityRoute(capability);
 
-    return this.providerResolver.resolveRoute(
+    return this.nativeConnectorResolver.resolveRoute(
       capability,
       context,
       canonicalRoute,
