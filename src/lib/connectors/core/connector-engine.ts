@@ -8,14 +8,26 @@
  * ============================================
  */
 
-import { sendMessage, type SendMessageOptions } from "@/lib/connectors/google/gmail";
 import { createEvent, type CreateEventOptions } from "@/lib/connectors/google/calendar";
+import {
+  createDocument,
+  getDocument,
+  type CreateDocumentOptions,
+  type GetDocumentOptions,
+} from "@/lib/connectors/google/docs";
 import { getFile, uploadFile, type UploadFileOptions } from "@/lib/connectors/google/drive";
+import { sendMessage, type SendMessageOptions } from "@/lib/connectors/google/gmail";
+import {
+  readRange,
+  writeRange,
+  type ReadRangeOptions,
+  type WriteRangeOptions,
+} from "@/lib/connectors/google/sheets";
 import { getElevenLabsSignedUrl } from "@/lib/connectors/internal/elevenlabs";
 import { OpenAIResponsesEngine } from "@/lib/connectors/internal/openai/responses/openai-responses-engine";
 import type { OpenAIResponsesContext } from "@/lib/connectors/internal/openai/responses/openai-responses-context";
-import { sendMicrosoftMessage, type SendMicrosoftMessageOptions } from "@/lib/connectors/microsoft/outlook/send-message";
 import { createMicrosoftEvent, type CreateMicrosoftEventOptions } from "@/lib/connectors/microsoft/calendar/create-event";
+import { sendMicrosoftMessage, type SendMicrosoftMessageOptions } from "@/lib/connectors/microsoft/outlook/send-message";
 import type { Locale } from "@/i18n/types";
 
 import { Connector } from "./connector";
@@ -62,6 +74,28 @@ export class ConnectorEngine {
             }
             const data = await getFile(payload.fileId);
             return this.success(event, data, "Google Drive file retrieved successfully.");
+          }
+          return this.unsupported(route, event);
+        }
+        case "google.docs": {
+          if (event.capability === "create-document") {
+            const data = await createDocument(event.payload as CreateDocumentOptions);
+            return this.success(event, data, "Google Docs document created successfully.");
+          }
+          if (event.capability === "retrieve-document") {
+            const data = await getDocument(event.payload as GetDocumentOptions);
+            return this.success(event, data, "Google Docs document retrieved successfully.");
+          }
+          return this.unsupported(route, event);
+        }
+        case "google.sheets": {
+          if (event.capability === "read-spreadsheet-range") {
+            const data = await readRange(event.payload as ReadRangeOptions);
+            return this.success(event, data, "Google Sheets range read successfully.");
+          }
+          if (event.capability === "write-spreadsheet-range") {
+            const data = await writeRange(event.payload as WriteRangeOptions);
+            return this.success(event, data, "Google Sheets range written successfully.");
           }
           return this.unsupported(route, event);
         }
