@@ -21,6 +21,7 @@ import {
 import { createSystemEvent } from "./events";
 import { orchestrate } from "./orchestrator";
 import { Journal } from "./journal";
+import { JournalEntryType } from "./journal-entry";
 import { writeCognitiveEntry } from "./journal-writer";
 import { writeOperationalEntry } from "./operational-journal-writer";
 
@@ -77,9 +78,32 @@ export class Clara {
     event: Event,
   ): Promise<ClaraSession> {
 
+    const recentJournalActions = this.journal
+      .getEntries()
+      .filter((entry) => entry.type === JournalEntryType.ACTION)
+      .slice(-5)
+      .map((entry) => ({
+        summary: entry.summary,
+        details: entry.details,
+        createdAt: entry.createdAt,
+      }));
+
+    const payload =
+      event.payload && typeof event.payload === "object"
+        ? event.payload as Record<string, unknown>
+        : {};
+
+    const contextualEvent: Event = {
+      ...event,
+      payload: {
+        ...payload,
+        recentJournalActions,
+      },
+    };
+
     this.session = await orchestrate(
       this.session,
-      event,
+      contextualEvent,
     );
 
     if (this.session.recommendation) {
