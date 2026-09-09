@@ -19,6 +19,7 @@ export interface ExecutionIntent {
   readonly mode: ExecutionIntentMode;
   readonly context: unknown;
   readonly missionId?: string;
+  readonly missionTaskId?: string;
   readonly conversationId?: string;
   readonly createdAt: Date;
 }
@@ -29,6 +30,7 @@ export function createExecutionIntent(input: {
   context: unknown;
   source?: ExecutionIntent["source"];
   missionId?: string;
+  missionTaskId?: string;
   conversationId?: string;
 }): ExecutionIntent {
   return {
@@ -38,6 +40,7 @@ export function createExecutionIntent(input: {
     mode: input.mode,
     context: input.context,
     missionId: input.missionId,
+    missionTaskId: input.missionTaskId,
     conversationId: input.conversationId,
     createdAt: new Date(),
   };
