@@ -5,82 +5,31 @@
  * --------------------------------------------
  * File : capability-router.ts
  * Responsibility :
- * Resolves a capability into the
- * connector responsible for executing it.
+ * Resolves a capability into the lower-level
+ * connector/service responsible for it.
  * ============================================
  */
 
-export type Capability =
+import {
+  isKnownCapabilityId,
+  resolveCapabilityRoute,
+  type CapabilityId,
+} from "@/lib/capabilities/capability-catalog";
 
-  | "generate-text"
-
-  | "generate-document"
-
-  | "publish-document"
-
-  | "send-email"
-
-  | "schedule-event"
-
-  | "store-file"
-
-  | "retrieve-file"
-
-  | "speech-to-text"
-
-  | "text-to-speech"
-
-  | "unknown";
+export type Capability = CapabilityId | "unknown";
 
 /**
  * Capability Router.
  *
- * Determines which connector should
- * execute a requested capability.
+ * Brain only requests a provider-neutral capability id. Routing remains
+ * below Brain and is sourced from the canonical capability catalog.
  */
 export class CapabilityRouter {
-
-  /**
-   * Resolves a capability.
-   */
-  public resolve(
-    capability: Capability,
-  ): string {
-
-    switch (capability) {
-
-      case "generate-text":
-        return "openai.responses";
-
-      case "generate-document":
-        return "publisher";
-
-      case "publish-document":
-        return "publisher";
-
-      case "send-email":
-        return "google.gmail";
-
-      case "schedule-event":
-        return "google.calendar";
-
-      case "store-file":
-        return "google.drive";
-
-      case "retrieve-file":
-        return "google.drive";
-
-      case "speech-to-text":
-        return "openai.audio";
-
-      case "text-to-speech":
-        return "openai.audio";
-
-      default:
-        return "unknown";
-
+  public resolve(capability: Capability): string {
+    if (!isKnownCapabilityId(capability)) {
+      return "unknown";
     }
 
+    return resolveCapabilityRoute(capability);
   }
-
 }
