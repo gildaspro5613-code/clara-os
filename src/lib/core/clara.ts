@@ -10,6 +10,8 @@
  */
 
 import { Event } from "@/types";
+import type { ExecutionIntent } from "@/lib/runtime/execution-intent";
+import type { ExecutionCoordinatorResult } from "@/lib/runtime/execution-coordinator";
 
 import { ClaraState } from "./state";
 import {
@@ -20,6 +22,7 @@ import { createSystemEvent } from "./events";
 import { orchestrate } from "./orchestrator";
 import { Journal } from "./journal";
 import { writeCognitiveEntry } from "./journal-writer";
+import { writeOperationalEntry } from "./operational-journal-writer";
 
 export class Clara {
 
@@ -79,11 +82,6 @@ export class Clara {
       event,
     );
 
-    /*
-     * Record the cognitive result produced by the Brain.
-     * This deliberately journals only completed cognitive cycles for now;
-     * execution/result/verification entries belong to later Brain V2 lots.
-     */
     if (this.session.recommendation) {
       this.journal.addEntry(
         writeCognitiveEntry(this.session.recommendation),
@@ -92,6 +90,19 @@ export class Clara {
 
     return this.session;
 
+  }
+
+  /**
+   * Records a completed gated execution cycle.
+   * The caller remains responsible for applying VERIFIED outcomes to Mission.
+   */
+  public recordExecution(
+    intent: ExecutionIntent,
+    result: ExecutionCoordinatorResult,
+  ): void {
+    this.journal.addEntry(
+      writeOperationalEntry(intent, result),
+    );
   }
 
   /**
