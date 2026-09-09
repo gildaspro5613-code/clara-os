@@ -25,7 +25,7 @@ import { RuntimeResult } from "./runtime-result";
  *
  * Provider-neutral capability ids enter Runtime. Implemented Clara workflows
  * stay inside CapabilityEngine; connector-backed capabilities are routed below
- * Brain to the existing connector implementations.
+ * Brain to the organization-configured provider when available.
  */
 export class RuntimeEngine {
   private readonly capabilityEngine = new CapabilityEngine();
@@ -63,7 +63,10 @@ export class RuntimeEngine {
       };
     }
 
-    const route = this.capabilityRouter.resolve(event.capabilityId);
+    const route = this.capabilityRouter.resolve(
+      event.capabilityId,
+      event.context,
+    );
 
     if (route === "unknown") {
       return {
