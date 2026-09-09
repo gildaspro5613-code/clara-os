@@ -9,41 +9,30 @@
  * ============================================
  */
 
-import { Recommendation } from "@/types";
+import { Recommendation, Task } from "@/types";
 import { ClaraState } from "./state";
 
 export interface ClaraSession {
-  /**
-   * Current operational state.
-   */
   state: ClaraState;
-
-  /**
-   * Current recommendation produced
-   * by Clara's Brain.
-   */
   recommendation: Recommendation | null;
 
   /**
-   * Session creation date.
+   * Tasks produced by the latest Brain cycle.
+   * Tasks without an explicit execution directive remain planning-only.
    */
-  startedAt: Date;
+  tasks: Task[];
 
-  /**
-   * Last update.
-   */
+  startedAt: Date;
   updatedAt: Date;
 }
 
-/**
- * Creates a new Clara session.
- */
 export function createSession(): ClaraSession {
   const now = new Date();
 
   return {
     state: ClaraState.STARTING,
     recommendation: null,
+    tasks: [],
     startedAt: now,
     updatedAt: now,
   };
