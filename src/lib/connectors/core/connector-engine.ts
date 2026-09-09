@@ -11,14 +11,18 @@
 import { sendMessage, type SendMessageOptions } from "@/lib/connectors/google/gmail";
 import { createEvent, type CreateEventOptions } from "@/lib/connectors/google/calendar";
 import { getFile, uploadFile, type UploadFileOptions } from "@/lib/connectors/google/drive";
+import { getElevenLabsSignedUrl } from "@/lib/connectors/internal/elevenlabs";
 import { OpenAIResponsesEngine } from "@/lib/connectors/internal/openai/responses/openai-responses-engine";
 import type { OpenAIResponsesContext } from "@/lib/connectors/internal/openai/responses/openai-responses-context";
 import { sendMicrosoftMessage, type SendMicrosoftMessageOptions } from "@/lib/connectors/microsoft/outlook/send-message";
 import { createMicrosoftEvent, type CreateMicrosoftEventOptions } from "@/lib/connectors/microsoft/calendar/create-event";
+import type { Locale } from "@/i18n/types";
 
 import { Connector } from "./connector";
 import { ConnectorEvent } from "./connector-event";
 import { ConnectorResult } from "./connector-result";
+
+const CLARA_LOCALES = new Set<Locale>(["fr", "en", "es", "de", "it"]);
 
 /**
  * Executes already-implemented native connector operations behind provider
@@ -66,6 +70,15 @@ export class ConnectorEngine {
           const result = await new OpenAIResponsesEngine().generate(event.payload as OpenAIResponsesContext);
           if (!result.success) return this.failure(event, result.message ?? "OpenAI Responses failed.");
           return this.success(event, result, "OpenAI Responses executed successfully.");
+        }
+        case "elevenlabs.conversation": {
+          if (event.capability !== "start-voice-session") return this.unsupported(route, event);
+          const payload = event.payload as { locale?: unknown };
+          if (!payload || typeof payload.locale !== "string" || !CLARA_LOCALES.has(payload.locale as Locale)) {
+            return this.failure(event, "ElevenLabs start-voice-session requires locale fr, en, es, de, or it.");
+          }
+          const data = await getElevenLabsSignedUrl(payload.locale as Locale);
+          return this.success(event, data, "ElevenLabs voice session prepared successfully.");
         }
         case "microsoft.outlook": {
           if (event.capability !== "send-email") return this.unsupported(route, event);
