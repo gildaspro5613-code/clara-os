@@ -4,9 +4,8 @@
  * --------------------------------------------
  * File : /api/clara/chat/route.ts
  * Responsibility :
- * Clara conversational chat endpoint.
- * Routes every user message through Mission Resolver then Clara Core/Brain
- * before producing the conversational response.
+ * Clara conversational endpoint.
+ * Routes every user message through Mission Resolver then Clara Core/Brain.
  * ============================================
  */
 
@@ -22,15 +21,10 @@ type ClaraChatBody = {
   message?: unknown;
   locale?: unknown;
   conversationId?: unknown;
+  organizationId?: unknown;
   missionId?: unknown;
 };
 
-/**
- * POST /api/clara/chat
- *
- * Body:
- *   { message: string; locale?: string; conversationId?: string; missionId?: string }
- */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   let body: ClaraChatBody;
 
@@ -44,7 +38,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   const message = typeof body.message === "string" ? body.message.trim() : "";
-
   if (!message) {
     return NextResponse.json(
       { success: false, content: "", error: "message is required." },
@@ -52,15 +45,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
   }
 
-  const locale = resolveLocale(
-    typeof body.locale === "string" ? body.locale : null,
-  );
-
+  const locale = resolveLocale(typeof body.locale === "string" ? body.locale : null);
   const conversationId =
     typeof body.conversationId === "string" && body.conversationId.trim()
       ? body.conversationId.trim()
       : undefined;
-
+  const organizationId =
+    typeof body.organizationId === "string" && body.organizationId.trim()
+      ? body.organizationId.trim()
+      : undefined;
   const requestedMissionId =
     typeof body.missionId === "string" && body.missionId.trim()
       ? body.missionId.trim()
@@ -76,6 +69,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       message,
       locale,
       conversationId,
+      organizationId,
       missionId: missionResolution.mission?.id,
       mission: missionResolution.mission,
       missionResolution: missionResolution.status,
@@ -83,12 +77,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     await getRuntime().processEvent(event);
 
-    const instructions = getClaraSystemPrompt(locale);
-    const engine = new OpenAIResponsesEngine();
-
-    const result = await engine.generate({
+    const result = await new OpenAIResponsesEngine().generate({
       prompt: message,
-      instructions,
+      instructions: getClaraSystemPrompt(locale),
       model: "gpt-5.5",
     });
 
@@ -97,6 +88,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       content: result.content,
       locale,
       conversationId,
+      organizationId,
       eventId: event.id,
       missionId: missionResolution.mission?.id,
       missionResolution: missionResolution.status,
@@ -116,6 +108,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         content: "",
         locale,
         conversationId,
+        organizationId,
         error: err instanceof Error ? err.message : "Unexpected error.",
       },
       { status: 500 },
