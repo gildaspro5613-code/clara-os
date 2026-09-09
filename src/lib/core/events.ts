@@ -33,6 +33,7 @@ export interface UserMessageEventPayload {
   locale: string;
   conversationId?: string;
   missionId?: string;
+  mission?: unknown;
   missionResolution?: "BOUND" | "GENERAL" | "AMBIGUOUS" | "UNRESOLVED";
 }
 
