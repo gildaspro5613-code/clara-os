@@ -9,29 +9,23 @@
  * ============================================
  */
 
-import {
-  Event,
-  EventType,
-} from "@/types";
+import { Event, EventType } from "@/types";
 
-/**
- * Creates a system event.
- */
+/** Creates a system event. */
 export function createSystemEvent(): Event {
-
   return {
     id: crypto.randomUUID(),
     type: EventType.SYSTEM,
     source: "CLARA_CORE",
     timestamp: new Date(),
   };
-
 }
 
 export interface UserMessageEventPayload {
   message: string;
   locale: string;
   conversationId?: string;
+  organizationId?: string;
   missionId?: string;
   mission?: unknown;
   missionResolution?: "BOUND" | "GENERAL" | "AMBIGUOUS" | "UNRESOLVED";
@@ -40,12 +34,10 @@ export interface UserMessageEventPayload {
 /**
  * Creates a conversational event entering Clara Core.
  *
- * The payload intentionally stays transport-agnostic so the same Brain
- * pipeline can later be used from the Cockpit, Clara page or another UI.
+ * Organization identity is transport-neutral and follows the event through
+ * Brain into Runtime so connector selection can be tenant-aware.
  */
-export function createUserMessageEvent(
-  payload: UserMessageEventPayload,
-): Event {
+export function createUserMessageEvent(payload: UserMessageEventPayload): Event {
   return {
     id: crypto.randomUUID(),
     type: EventType.USER_MESSAGE,
