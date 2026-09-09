@@ -8,7 +8,7 @@
 // The resolver never creates a mission implicitly.
 // ============================================
 
-import { missionStore } from "./mission-store";
+import { PostgresMissionRepository } from "./postgres-mission-repository";
 import type { Mission } from "./types/Mission";
 
 export type MissionResolutionStatus =
@@ -27,6 +27,8 @@ export interface MissionResolution {
   mission?: Mission;
   candidates?: Mission[];
 }
+
+const missionRepository = new PostgresMissionRepository();
 
 function normalize(value: string): string {
   return value
@@ -50,23 +52,22 @@ function isMissionMentioned(message: string, mission: Mission): boolean {
     : false;
 }
 
-export function resolveMission(
+export async function resolveMission(
   input: MissionResolutionInput,
-): MissionResolution {
+): Promise<MissionResolution> {
   if (input.missionId) {
-    const explicitMission = missionStore.get(input.missionId);
+    const explicitMission = await missionRepository.get(input.missionId);
     return explicitMission
       ? { status: "BOUND", mission: explicitMission }
       : { status: "UNRESOLVED" };
   }
 
-  const candidates = missionStore
-    .list()
-    .filter((mission) =>
-      mission.status !== "completed" &&
-      mission.status !== "cancelled" &&
-      isMissionMentioned(input.message, mission),
-    );
+  const missions = await missionRepository.list();
+  const candidates = missions.filter((mission) =>
+    mission.status !== "completed" &&
+    mission.status !== "cancelled" &&
+    isMissionMentioned(input.message, mission),
+  );
 
   if (candidates.length === 1) {
     return { status: "BOUND", mission: candidates[0] };
