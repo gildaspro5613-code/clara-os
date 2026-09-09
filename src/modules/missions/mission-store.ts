@@ -4,21 +4,14 @@
 //
 // File : mission-store.ts
 // Responsibility :
-// Canonical in-process mission state for Brain V2.
-// UI persistence adapters can synchronize with this store without
-// making a page or widget the source of truth.
+// Client-side mission cache for Brain V2.
+// Durable server persistence remains the source of truth.
 // ============================================
 
+import { cloneMission, normalizeMission } from "./mission-normalizer";
 import type { Mission } from "./types/Mission";
 
 type MissionListener = (missions: readonly Mission[]) => void;
-
-function cloneMission(mission: Mission): Mission {
-  return {
-    ...mission,
-    tasks: mission.tasks.map((task) => ({ ...task })),
-  };
-}
 
 class MissionStore {
   private missions = new Map<string, Mission>();
@@ -43,6 +36,14 @@ class MissionStore {
     this.emit();
   }
 
+  replace(missions: readonly Mission[]): void {
+    this.missions.clear();
+    missions.forEach((mission) => {
+      this.missions.set(mission.id, cloneMission(mission));
+    });
+    this.emit();
+  }
+
   upsert(mission: Mission): Mission {
     const normalized = normalizeMission(mission);
     this.missions.set(normalized.id, normalized);
@@ -59,24 +60,6 @@ class MissionStore {
     const snapshot = this.list();
     this.listeners.forEach((listener) => listener(snapshot));
   }
-}
-
-function normalizeMission(mission: Mission): Mission {
-  const completed = mission.tasks.filter((task) => task.completed).length;
-  const progress = mission.tasks.length
-    ? Math.round((completed / mission.tasks.length) * 100)
-    : 0;
-  const nextTask = mission.tasks.find((task) => !task.completed);
-
-  return cloneMission({
-    ...mission,
-    progress,
-    nextAction: nextTask?.title,
-    status:
-      mission.status === "active" && mission.tasks.length > 0 && progress === 100
-        ? "completed"
-        : mission.status,
-  });
 }
 
 export const missionStore = new MissionStore();
