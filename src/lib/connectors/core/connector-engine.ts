@@ -18,6 +18,13 @@ import {
   type CreateEventOptions,
 } from "@/lib/connectors/google/calendar";
 import {
+  getFile,
+  uploadFile,
+  type UploadFileOptions,
+} from "@/lib/connectors/google/drive";
+import { OpenAIResponsesEngine } from "@/lib/connectors/internal/openai/responses/openai-responses-engine";
+import type { OpenAIResponsesContext } from "@/lib/connectors/internal/openai/responses/openai-responses-context";
+import {
   sendMicrosoftMessage,
   type SendMicrosoftMessageOptions,
 } from "@/lib/connectors/microsoft/outlook/send-message";
@@ -38,9 +45,6 @@ import { ConnectorResult } from "./connector-result";
  * engine dispatches to the existing connector implementation.
  */
 export class ConnectorEngine {
-  /**
-   * Backward-compatible connector execution entry point.
-   */
   public async execute(
     connector: Connector,
     event: ConnectorEvent,
@@ -59,9 +63,6 @@ export class ConnectorEngine {
     return this.executeRoute(connector.id, event);
   }
 
-  /**
-   * Executes a connector operation from the provider route resolved by Runtime.
-   */
   public async executeRoute(
     route: string,
     event: ConnectorEvent,
@@ -69,28 +70,52 @@ export class ConnectorEngine {
     try {
       switch (route) {
         case "google.gmail": {
-          if (event.capability !== "send-email") {
-            return this.unsupported(route, event);
-          }
-
+          if (event.capability !== "send-email") return this.unsupported(route, event);
           const data = await sendMessage(event.payload as SendMessageOptions);
           return this.success(event, data, "Google Gmail executed successfully.");
         }
 
         case "google.calendar": {
-          if (event.capability !== "schedule-event") {
-            return this.unsupported(route, event);
-          }
-
+          if (event.capability !== "schedule-event") return this.unsupported(route, event);
           const data = await createEvent(event.payload as CreateEventOptions);
           return this.success(event, data, "Google Calendar executed successfully.");
         }
 
-        case "microsoft.outlook": {
-          if (event.capability !== "send-email") {
-            return this.unsupported(route, event);
+        case "google.drive": {
+          if (event.capability === "store-file") {
+            const data = await uploadFile(event.payload as UploadFileOptions);
+            return this.success(event, data, "Google Drive file stored successfully.");
           }
 
+          if (event.capability === "retrieve-file") {
+            const payload = event.payload as { fileId?: unknown };
+            if (!payload || typeof payload.fileId !== "string" || !payload.fileId) {
+              return this.failure(event, "Google Drive retrieve-file requires fileId.");
+            }
+            const data = await getFile(payload.fileId);
+            return this.success(event, data, "Google Drive file retrieved successfully.");
+          }
+
+          return this.unsupported(route, event);
+        }
+
+        case "openai.responses": {
+          if (event.capability !== "generate-text") return this.unsupported(route, event);
+          const result = await new OpenAIResponsesEngine().generate(
+            event.payload as OpenAIResponsesContext,
+          );
+          if (!result.success) {
+            return this.failure(event, result.message ?? "OpenAI Responses failed.");
+          }
+          return this.success(event, result, "OpenAI Responses executed successfully.");
+        }
+
+        case "google.calendar": {
+          return this.unsupported(route, event);
+        }
+
+        case "microsoft.outlook": {
+          if (event.capability !== "send-email") return this.unsupported(route, event);
           const data = await sendMicrosoftMessage(
             event.payload as SendMicrosoftMessageOptions,
           );
@@ -98,10 +123,7 @@ export class ConnectorEngine {
         }
 
         case "microsoft.calendar": {
-          if (event.capability !== "schedule-event") {
-            return this.unsupported(route, event);
-          }
-
+          if (event.capability !== "schedule-event") return this.unsupported(route, event);
           const data = await createMicrosoftEvent(
             event.payload as CreateMicrosoftEventOptions,
           );
@@ -122,34 +144,15 @@ export class ConnectorEngine {
     }
   }
 
-  private success(
-    event: ConnectorEvent,
-    data: unknown,
-    message: string,
-  ): ConnectorResult {
-    return {
-      success: true,
-      capability: event.capability,
-      data,
-      message,
-      completedAt: new Date(),
-    };
+  private success(event: ConnectorEvent, data: unknown, message: string): ConnectorResult {
+    return { success: true, capability: event.capability, data, message, completedAt: new Date() };
   }
 
   private unsupported(route: string, event: ConnectorEvent): ConnectorResult {
-    return this.failure(
-      event,
-      `Connector route ${route} does not implement ${event.capability}.`,
-    );
+    return this.failure(event, `Connector route ${route} does not implement ${event.capability}.`);
   }
 
   private failure(event: ConnectorEvent, message: string): ConnectorResult {
-    return {
-      success: false,
-      capability: event.capability,
-      message,
-      error: message,
-      completedAt: new Date(),
-    };
+    return { success: false, capability: event.capability, message, error: message, completedAt: new Date() };
   }
 }
