@@ -11,10 +11,8 @@
  */
 
 import { Decision } from "./decision";
+import type { ExecutionDirective } from "@/lib/runtime/execution-directive";
 
-/**
- * État d'une tâche.
- */
 export enum TaskStatus {
   TODO = "TODO",
   IN_PROGRESS = "IN_PROGRESS",
@@ -22,47 +20,19 @@ export enum TaskStatus {
   CANCELLED = "CANCELLED",
 }
 
-/**
- * Représente une tâche créée par Clara.
- */
 export interface Task {
-  /**
-   * Identifiant unique.
-   */
   id: string;
-
-  /**
-   * Décision à l'origine de cette tâche.
-   */
   decision: Decision;
-
-  /**
-   * Nom de la tâche.
-   */
   title: string;
-
-  /**
-   * Description détaillée.
-   */
   description?: string;
-
-  /**
-   * État actuel.
-   */
   status: TaskStatus;
-
-  /**
-   * Date de création.
-   */
   createdAt: Date;
-
-  /**
-   * Date d'échéance éventuelle.
-   */
   dueAt?: Date;
+  completedAt?: Date;
 
   /**
-   * Date de fin.
+   * Optional explicit execution metadata.
+   * Absence means the task is cognitive/planning-only and MUST NOT execute.
    */
-  completedAt?: Date;
+  execution?: ExecutionDirective;
 }
