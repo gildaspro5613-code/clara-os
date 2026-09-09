@@ -10,11 +10,11 @@
  */
 
 import { Context, Event, EventType } from "@/types";
-import { missionStore } from "@/modules/missions/mission-store";
 
 interface UserMessageContextPayload {
   conversationId?: unknown;
   missionId?: unknown;
+  mission?: unknown;
   missionResolution?: unknown;
   recentJournalActions?: unknown;
 }
@@ -22,10 +22,9 @@ interface UserMessageContextPayload {
 /**
  * Build a processing context from an incoming event.
  *
- * Mission information is loaded only when the conversation bridge has
- * explicitly resolved a mission. The Brain therefore receives the current
- * canonical mission snapshot without making the Brain responsible for
- * mission resolution.
+ * Mission resolution happens before the event enters Brain. The resolved
+ * durable mission snapshot is carried by the event so Brain remains
+ * independent from the persistence provider and does not query a client store.
  */
 export function buildContext(event: Event): Context {
   const metadata: Record<string, unknown> = {};
@@ -46,12 +45,11 @@ export function buildContext(event: Event): Context {
     }
 
     if (typeof payload.missionId === "string") {
-      const mission = missionStore.get(payload.missionId);
+      metadata.missionId = payload.missionId;
+    }
 
-      if (mission) {
-        metadata.missionId = mission.id;
-        metadata.mission = mission;
-      }
+    if (payload.mission && typeof payload.mission === "object") {
+      metadata.mission = payload.mission;
     }
   }
 
