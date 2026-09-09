@@ -13,6 +13,7 @@ import { Context, Event, EventType } from "@/types";
 
 interface UserMessageContextPayload {
   conversationId?: unknown;
+  organizationId?: unknown;
   missionId?: unknown;
   mission?: unknown;
   missionResolution?: unknown;
@@ -22,9 +23,8 @@ interface UserMessageContextPayload {
 /**
  * Build a processing context from an incoming event.
  *
- * Mission resolution happens before the event enters Brain. The resolved
- * durable mission snapshot is carried by the event so Brain remains
- * independent from the persistence provider and does not query a client store.
+ * Durable identity and mission snapshots are carried by the event so Brain
+ * remains independent from persistence and connector providers.
  */
 export function buildContext(event: Event): Context {
   const metadata: Record<string, unknown> = {};
@@ -34,6 +34,10 @@ export function buildContext(event: Event): Context {
 
     if (typeof payload.conversationId === "string") {
       metadata.conversationId = payload.conversationId;
+    }
+
+    if (typeof payload.organizationId === "string") {
+      metadata.organizationId = payload.organizationId;
     }
 
     if (typeof payload.missionResolution === "string") {
@@ -53,36 +57,21 @@ export function buildContext(event: Event): Context {
     }
   }
 
-  return {
-    event,
-    now: new Date(),
-    metadata,
-  };
+  return { event, now: new Date(), metadata };
 }
 
-/**
- * Add additional metadata to an existing context.
- */
+/** Add additional metadata to an existing context. */
 export function enrichContext(
   context: Context,
-  metadata: Record<string, unknown>
+  metadata: Record<string, unknown>,
 ): Context {
   return {
     ...context,
-    metadata: {
-      ...(context.metadata ?? {}),
-      ...metadata,
-    },
+    metadata: { ...(context.metadata ?? {}), ...metadata },
   };
 }
 
-/**
- * Validate that a context contains the minimum
- * information required by the Brain.
- */
+/** Validate that a context contains the minimum information required by Brain. */
 export function isValidContext(context: Context): boolean {
-  return (
-    context.event !== undefined &&
-    context.now instanceof Date
-  );
+  return context.event !== undefined && context.now instanceof Date;
 }
