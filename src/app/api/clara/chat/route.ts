@@ -67,7 +67,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       : undefined;
 
   try {
-    const missionResolution = resolveMission({
+    const missionResolution = await resolveMission({
       missionId: requestedMissionId,
       message,
     });
@@ -77,6 +77,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       locale,
       conversationId,
       missionId: missionResolution.mission?.id,
+      mission: missionResolution.mission,
       missionResolution: missionResolution.status,
     });
 
