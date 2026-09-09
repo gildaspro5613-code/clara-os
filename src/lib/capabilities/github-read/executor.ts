@@ -2,16 +2,10 @@ import { ConnectionResolutionError } from "@/lib/connections/connection-resolver
 import { GitHubConnectorAdapter, type GitHubCapabilityInput } from "@/lib/connectors/github/adapter";
 import { GitHubConnectorDefinition } from "@/lib/connectors/github/definition";
 import { GitHubApiError } from "@/lib/connectors/github/errors";
+import type { OperationalCapabilityResult } from "../operational-result";
+export type { OperationalCapabilityResult } from "../operational-result";
 
 export interface GitHubReadContext { readonly connectionId: string; readonly input: unknown }
-export interface OperationalCapabilityResult {
-  readonly capabilityId: string;
-  readonly success: boolean;
-  readonly provider: "github";
-  readonly connectionId?: string;
-  readonly data?: unknown;
-  readonly error?: { readonly code: string; readonly message: string };
-}
 export interface GitHubReadAdapter {
   execute(connectionId: string, request: GitHubCapabilityInput): Promise<{ provider: "github"; capability: GitHubCapabilityInput["capability"]; data: unknown }>;
 }
@@ -49,7 +43,14 @@ export class GitHubReadExecutor {
         capability: capabilityId,
         input: candidate?.input ?? {},
       } as GitHubCapabilityInput);
-      return { capabilityId, success: true, provider: "github", connectionId, data: result.data };
+      return {
+        capabilityId,
+        success: true,
+        provider: "github",
+        connectionId,
+        status: "completed",
+        data: result.data,
+      };
     } catch (error) {
       if (error instanceof ConnectionResolutionError) {
         return this.failure(capabilityId, connectionId, error.code, "The GitHub connection is unavailable or incompatible.");
@@ -62,6 +63,13 @@ export class GitHubReadExecutor {
   }
 
   private failure(capabilityId: string, connectionId: string | undefined, code: string, message: string): OperationalCapabilityResult {
-    return { capabilityId, success: false, provider: "github", connectionId: connectionId || undefined, error: { code, message } };
+    return {
+      capabilityId,
+      success: false,
+      provider: "github",
+      connectionId: connectionId || undefined,
+      status: "failed",
+      error: { code, message },
+    };
   }
 }

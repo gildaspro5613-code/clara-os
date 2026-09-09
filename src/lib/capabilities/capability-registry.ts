@@ -107,6 +107,14 @@ import {
   MagicQFixtureIntensityCapabilityDefinition,
   type MagicQLightingCapability,
 } from "./magicq-lighting/capability";
+import {
+  NotifyTeamCapabilityDefinition,
+  type NotifyTeamCapability,
+} from "./notify-team/capability";
+import {
+  PrepareMissionDriveCapabilityDefinition,
+  type PrepareMissionDriveCapability,
+} from "./mission-drive/capability";
 
 /**
  * Capability definition.
@@ -131,7 +139,9 @@ export type CapabilityDefinition =
   | SendGmailCapability
   | GitHubReadCapability
   | MakeScenarioCapability
-  | MagicQLightingCapability;
+  | MagicQLightingCapability
+  | NotifyTeamCapability
+  | PrepareMissionDriveCapability;
 
 /**
  * Capability Registry.
@@ -178,6 +188,10 @@ export class CapabilityRegistry {
     MakeScenarioPrepareCapabilityDefinition,
 
     MakeScenarioExecuteCapabilityDefinition,
+
+    NotifyTeamCapabilityDefinition,
+
+    PrepareMissionDriveCapabilityDefinition,
 
     MagicQFixtureIntensityCapabilityDefinition,
 

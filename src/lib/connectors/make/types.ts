@@ -3,11 +3,28 @@ export interface MakeScenarioConfiguration {
   url: string;
   /** Optional secret headers required by the scenario gateway. */
   headers?: Record<string, string>;
+  /**
+   * Maximum synchronous wait time for this scenario.
+   * Clara OS caps the value to keep Runtime execution bounded.
+   */
+  timeoutMs?: number;
+}
+
+export interface MakeMcpCredentials {
+  /** Make MCP/Toolbox endpoint. Stored only in the credential store. */
+  url: string;
+  /** Bearer token for the MCP/Toolbox endpoint. Stored only in the credential store. */
+  bearerToken: string;
+  /** Optional Clara scenarioKey → Make tool name mapping. */
+  tools?: Record<string, string>;
+  timeoutMs?: number;
 }
 
 /** Credentials are resolved by connectionId and never supplied by Clara/user input. */
 export interface MakeWebhookCredentials {
   scenarios: Record<string, MakeScenarioConfiguration>;
+  /** Optional MCP/Toolbox transport. When present it is preferred over webhook execution. */
+  mcp?: MakeMcpCredentials;
 }
 
 export interface MakeScenarioInvocation {
@@ -23,9 +40,13 @@ export interface PreparedMakeScenarioInvocation {
   payload: Record<string, unknown>;
 }
 
+export type MakeScenarioExecutionStatus = "completed" | "accepted" | "pending";
+
 export interface MakeScenarioExecutionResult {
   ok: true;
   scenarioKey: string;
   status: number;
+  executionStatus: MakeScenarioExecutionStatus;
+  executionId?: string;
   data: unknown;
 }

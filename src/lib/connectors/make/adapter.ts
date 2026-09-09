@@ -1,5 +1,6 @@
 import type { ConnectionResolver } from "@/lib/connections/connection-resolver";
 import { MakeWebhookClient, type MakeFetch } from "./client";
+import { MakeMcpClient } from "./mcp-client";
 import { MAKE_CAPABILITIES } from "./definition";
 import type {
   MakeScenarioInvocation,
@@ -35,8 +36,8 @@ function normalizeInvocation(input: MakeScenarioInvocation): MakeScenarioInvocat
 
 /**
  * Provider adapter invoked only after Runtime/Autonomy Gate authorization.
- * Scenario URLs and secret headers are resolved from the credential store;
- * user/mission input can select only a stable scenarioKey.
+ * Provider transport credentials are resolved from CredentialStore. Clara only
+ * selects a stable scenarioKey; it never receives MCP or webhook secrets.
  */
 export class MakeConnectorAdapter {
   constructor(
@@ -60,6 +61,13 @@ export class MakeConnectorAdapter {
     }
 
     const { credentials } = await this.resolver.resolve<MakeWebhookCredentials>(connectionId, "make");
+
+    if (credentials.mcp) {
+      const client = new MakeMcpClient(this.fetcher);
+      const data = await client.execute(credentials.mcp, invocation);
+      return { provider: "make", capability: request.capability, data };
+    }
+
     const configuration = credentials.scenarios[invocation.scenarioKey];
     if (!configuration) {
       throw new Error(`Make scenario is not configured: ${invocation.scenarioKey}`);
