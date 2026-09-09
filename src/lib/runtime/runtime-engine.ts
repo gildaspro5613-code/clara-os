@@ -10,6 +10,7 @@
  * ============================================
  */
 
+import { isKnownCapabilityId } from "@/lib/capabilities/capability-catalog";
 import { CapabilityEngine } from "@/lib/capabilities/capability-engine";
 import { CapabilityRegistry } from "@/lib/capabilities/capability-registry";
 import { ConnectorEngine } from "@/lib/connectors/core/connector-engine";
@@ -54,12 +55,20 @@ export class RuntimeEngine {
       };
     }
 
-    const route = this.capabilityRouter.resolve(event.capabilityId as never);
+    if (!isKnownCapabilityId(event.capabilityId)) {
+      return {
+        success: false,
+        message: `Unknown capability: ${event.capabilityId}`,
+        completedAt: new Date(),
+      };
+    }
+
+    const route = this.capabilityRouter.resolve(event.capabilityId);
 
     if (route === "unknown") {
       return {
         success: false,
-        message: `Unknown capability: ${event.capabilityId}`,
+        message: `No route for capability: ${event.capabilityId}`,
         completedAt: new Date(),
       };
     }
