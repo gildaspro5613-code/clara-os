@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "knowledge:clara-live:check": "tsx src/scripts/check-clara-live-knowledge-provider.ts",
     "google:refresh-token": "tsx src/scripts/generate-google-refresh-token.ts",
     "google:install": "tsx src/lib/connectors/google/installer/google-installer.ts"
   },
