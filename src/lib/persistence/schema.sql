@@ -11,6 +11,21 @@ CREATE TABLE IF NOT EXISTS organizations (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS connection_accounts (
+  id TEXT PRIMARY KEY,
+  organization_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  provider_id TEXT NOT NULL,
+  label TEXT,
+  status TEXT NOT NULL CHECK (status IN ('pending', 'connected', 'error', 'disconnected')),
+  credential_ref TEXT,
+  metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS connection_accounts_org_provider_idx
+  ON connection_accounts (organization_id, provider_id);
+
 CREATE TABLE IF NOT EXISTS organization_connectors (
   organization_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   connector_id TEXT NOT NULL,
