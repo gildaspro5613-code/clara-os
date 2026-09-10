@@ -1,24 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { OrganizationConnectorRepository } from "@/lib/runtime/organization-connector-repository";
-import type { NativeConnectorId } from "@/lib/runtime/native-connector-resolver";
+import { isNativeConnectorId } from "@/lib/runtime/native-connector-resolver";
 
-const CONNECTOR_IDS = new Set<NativeConnectorId>([
-  "google.gmail",
-  "google.calendar",
-  "google.drive",
-  "google.docs",
-  "google.sheets",
-  "microsoft.outlook",
-  "microsoft.calendar",
-  "openai.responses",
-  "openai.audio",
-  "elevenlabs.conversation",
-]);
+const SENSITIVE_KEY_PATTERN = /(token|secret|password|api[_-]?key|authorization|credential|private[_-]?key|access[_-]?key|refresh[_-]?token)/i;
 
 function organizationIdFrom(request: NextRequest): string | undefined {
   const value = request.nextUrl.searchParams.get("organizationId")?.trim();
   return value || undefined;
+}
+
+function containsSensitiveData(value: unknown, key = ""): boolean {
+  if (key && SENSITIVE_KEY_PATTERN.test(key)) return true;
+  if (!value || typeof value !== "object") return false;
+
+  if (Array.isArray(value)) {
+    return value.some((item) => containsSensitiveData(item));
+  }
+
+  return Object.entries(value as Record<string, unknown>).some(
+    ([childKey, childValue]) => containsSensitiveData(childValue, childKey),
+  );
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
@@ -47,10 +49,10 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
   }
 
   const organizationId = typeof body.organizationId === "string" ? body.organizationId.trim() : "";
-  const connectorId = typeof body.connectorId === "string" ? body.connectorId : "";
+  const connectorId = body.connectorId;
   const enabled = typeof body.enabled === "boolean" ? body.enabled : undefined;
 
-  if (!organizationId || !CONNECTOR_IDS.has(connectorId as NativeConnectorId) || enabled === undefined) {
+  if (!organizationId || !isNativeConnectorId(connectorId) || enabled === undefined) {
     return NextResponse.json(
       { success: false, error: "organizationId, known connectorId and enabled are required." },
       { status: 400 },
@@ -66,10 +68,17 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       ? body.metadata as Record<string, unknown>
       : {};
 
+  if (containsSensitiveData(metadata) || (connectionRef && SENSITIVE_KEY_PATTERN.test(connectionRef))) {
+    return NextResponse.json(
+      { success: false, error: "Secrets and credentials are not accepted by this endpoint." },
+      { status: 400 },
+    );
+  }
+
   try {
     const connector = await new OrganizationConnectorRepository().upsert({
       organizationId,
-      connectorId: connectorId as NativeConnectorId,
+      connectorId,
       enabled,
       connectionRef,
       metadata,
