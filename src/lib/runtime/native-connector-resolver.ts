@@ -11,17 +11,25 @@
 
 import type { CapabilityId } from "@/lib/capabilities/capability-catalog";
 
-export type NativeConnectorId =
-  | "google.gmail"
-  | "google.calendar"
-  | "google.drive"
-  | "google.docs"
-  | "google.sheets"
-  | "microsoft.outlook"
-  | "microsoft.calendar"
-  | "openai.responses"
-  | "openai.audio"
-  | "elevenlabs.conversation";
+export const NATIVE_CONNECTOR_IDS = [
+  "google.gmail",
+  "google.calendar",
+  "google.drive",
+  "google.docs",
+  "google.sheets",
+  "microsoft.outlook",
+  "microsoft.calendar",
+  "openai.responses",
+  "openai.audio",
+  "elevenlabs.conversation",
+] as const;
+
+export type NativeConnectorId = (typeof NATIVE_CONNECTOR_IDS)[number];
+
+export function isNativeConnectorId(value: unknown): value is NativeConnectorId {
+  return typeof value === "string" &&
+    (NATIVE_CONNECTOR_IDS as readonly string[]).includes(value);
+}
 
 export interface NativeConnectorResolutionContext {
   connectorId?: NativeConnectorId;
