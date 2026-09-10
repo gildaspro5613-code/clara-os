@@ -1,6 +1,9 @@
 import { sql } from "@/lib/core/store/database";
 import { ensurePersistenceSchema } from "@/lib/persistence/ensure-schema";
-import type { NativeConnectorId } from "./native-connector-resolver";
+import {
+  isNativeConnectorId,
+  type NativeConnectorId,
+} from "./native-connector-resolver";
 
 export interface OrganizationConnectorRecord {
   organizationId: string;
@@ -18,10 +21,12 @@ interface ConnectorRow {
   metadata: Record<string, unknown> | null;
 }
 
-function mapRow(row: ConnectorRow): OrganizationConnectorRecord {
+function mapRow(row: ConnectorRow): OrganizationConnectorRecord | undefined {
+  if (!isNativeConnectorId(row.connector_id)) return undefined;
+
   return {
     organizationId: row.organization_id,
-    connectorId: row.connector_id as NativeConnectorId,
+    connectorId: row.connector_id,
     enabled: row.enabled,
     connectionRef: row.connection_ref ?? undefined,
     metadata: row.metadata ?? {},
@@ -37,7 +42,10 @@ export class OrganizationConnectorRepository {
       WHERE organization_id = ${organizationId}
       ORDER BY connector_id ASC
     ` as ConnectorRow[];
-    return rows.map(mapRow);
+
+    return rows
+      .map(mapRow)
+      .filter((record): record is OrganizationConnectorRecord => Boolean(record));
   }
 
   public async listEnabled(organizationId: string): Promise<OrganizationConnectorRecord[]> {
@@ -70,6 +78,8 @@ export class OrganizationConnectorRepository {
       RETURNING organization_id, connector_id, enabled, connection_ref, metadata
     ` as ConnectorRow[];
 
-    return mapRow(rows[0]);
+    const mapped = mapRow(rows[0]);
+    if (!mapped) throw new Error("Invalid connector id returned by persistence.");
+    return mapped;
   }
 }
