@@ -5,25 +5,27 @@
  * --------------------------------------------
  * File : auth.ts
  * Responsibility :
- * Creates and validates an
- * authenticated Google OAuth2 client.
+ * Creates authenticated Google clients.
  * ============================================
  */
 
 import { google } from "googleapis";
 import { googleConfig } from "@/lib/config/google";
+import { getGoogleWorkspaceTokenForOrganization } from "@/lib/security/vercel-connect-google";
 
 /**
  * Google integration.
+ *
+ * Organization-scoped calls use a short-lived Vercel Connect token. The
+ * legacy refresh-token client is retained only for existing unscoped/internal
+ * flows while the remaining callers are migrated.
  */
 export class GoogleIntegration {
-
   /**
-   * Creates an authenticated OAuth2 client.
+   * Creates the legacy authenticated OAuth2 client.
    */
   public static createClient() {
-
-    this.validateConfiguration();
+    this.validateLegacyConfiguration();
 
     const auth = new google.auth.OAuth2(
       googleConfig.clientId,
@@ -36,73 +38,53 @@ export class GoogleIntegration {
     });
 
     return auth;
-
   }
 
   /**
-   * Tests Google authentication.
+   * Creates an organization-scoped Google client using a short-lived access
+   * token supplied on demand by Vercel Connect.
    */
-  public static async testConnection(): Promise<boolean> {
+  public static async createOrganizationClient(organizationId: string) {
+    const accessToken = await getGoogleWorkspaceTokenForOrganization(
+      organizationId,
+    );
 
+    const auth = new google.auth.OAuth2();
+    auth.setCredentials({ access_token: accessToken });
+    return auth;
+  }
+
+  /**
+   * Tests Google authentication. When organizationId is supplied, the test is
+   * performed with that organization's Vercel Connect credential.
+   */
+  public static async testConnection(organizationId?: string): Promise<boolean> {
     try {
+      const auth = organizationId
+        ? await this.createOrganizationClient(organizationId)
+        : this.createClient();
 
-      const auth = this.createClient();
-
-      const drive = google.drive({
-
-        version: "v3",
-
-        auth,
-
-      });
-
-      await drive.about.get({
-
-        fields: "user",
-
-      });
-
+      const drive = google.drive({ version: "v3", auth });
+      await drive.about.get({ fields: "user" });
       return true;
-
     } catch (error) {
-
       console.error(error);
-
       return false;
-
     }
-
   }
 
-  /**
-   * Validates configuration.
-   */
-  private static validateConfiguration(): void {
-
+  private static validateLegacyConfiguration(): void {
     const required = [
-
       ["GOOGLE_CLIENT_ID", googleConfig.clientId],
-
       ["GOOGLE_CLIENT_SECRET", googleConfig.clientSecret],
-
       ["GOOGLE_REDIRECT_URI", googleConfig.redirectUri],
-
       ["GOOGLE_REFRESH_TOKEN", googleConfig.refreshToken],
-
     ];
 
     for (const [key, value] of required) {
-
       if (!value) {
-
-        throw new Error(
-          `Missing Google configuration: ${key}`,
-        );
-
+        throw new Error(`Missing Google configuration: ${key}`);
       }
-
     }
-
   }
-
 }
