@@ -23,11 +23,16 @@ import {
   type ReadRangeOptions,
   type WriteRangeOptions,
 } from "@/lib/connectors/google/sheets";
+import {
+  runWithGoogleRuntimeToken,
+} from "@/lib/connectors/internal/google/auth/google-runtime-token-context";
 import { getElevenLabsSignedUrl } from "@/lib/connectors/internal/elevenlabs";
 import { OpenAIResponsesEngine } from "@/lib/connectors/internal/openai/responses/openai-responses-engine";
 import type { OpenAIResponsesContext } from "@/lib/connectors/internal/openai/responses/openai-responses-context";
 import { createMicrosoftEvent, type CreateMicrosoftEventOptions } from "@/lib/connectors/microsoft/calendar/create-event";
 import { sendMicrosoftMessage, type SendMicrosoftMessageOptions } from "@/lib/connectors/microsoft/outlook/send-message";
+import { resolveOrganizationId } from "@/lib/core/organization-context";
+import { getGoogleWorkspaceTokenForOrganization } from "@/lib/security/vercel-connect-google";
 import type { Locale } from "@/i18n/types";
 
 import { Connector } from "./connector";
@@ -49,8 +54,25 @@ export class ConnectorEngine {
     return this.executeRoute(connector.id, event);
   }
 
-  public async executeRoute(route: string, event: ConnectorEvent): Promise<ConnectorResult> {
+  public async executeRoute(
+    route: string,
+    event: ConnectorEvent,
+    googleTokenBound = false,
+  ): Promise<ConnectorResult> {
     try {
+      if (!googleTokenBound && route.startsWith("google.")) {
+        const organizationId = resolveOrganizationId(event.payload);
+
+        if (organizationId) {
+          const accessToken = await getGoogleWorkspaceTokenForOrganization(organizationId);
+
+          return runWithGoogleRuntimeToken(
+            { organizationId, accessToken },
+            () => this.executeRoute(route, event, true),
+          );
+        }
+      }
+
       switch (route) {
         case "google.gmail": {
           if (event.capability !== "send-email") return this.unsupported(route, event);
