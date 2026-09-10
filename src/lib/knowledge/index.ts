@@ -24,3 +24,4 @@ export * from "./types";
 export * from "./module";
 export * from "./clara-live/module";
 export * from "./clara-live/source";
+export * from "./clara-live/http-source";
