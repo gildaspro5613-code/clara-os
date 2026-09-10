@@ -13,6 +13,7 @@
 import { google } from "googleapis";
 
 import { googleConfig } from "@/lib/config/google";
+import { getGoogleRuntimeAccessToken } from "./google-runtime-token-context";
 
 /**
  * Google authentication service.
@@ -21,8 +22,28 @@ export class GoogleAuth {
 
   /**
    * Creates an authenticated OAuth2 client.
+   *
+   * Organization-scoped connector executions use the short-lived token bound
+   * to the current async runtime. Legacy environment credentials remain only
+   * as a temporary fallback for non-migrated code paths.
    */
   public static createClient() {
+
+    const runtimeAccessToken = getGoogleRuntimeAccessToken();
+
+    if (runtimeAccessToken) {
+
+      const client = new google.auth.OAuth2();
+
+      client.setCredentials({
+
+        access_token: runtimeAccessToken,
+
+      });
+
+      return client;
+
+    }
 
     this.validateConfiguration();
 
@@ -47,7 +68,7 @@ export class GoogleAuth {
   }
 
   /**
-   * Validates Google configuration.
+   * Validates Google legacy configuration.
    */
   private static validateConfiguration(): void {
 
