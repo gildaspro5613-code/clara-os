@@ -31,8 +31,8 @@ import { OpenAIResponsesEngine } from "@/lib/connectors/internal/openai/response
 import type { OpenAIResponsesContext } from "@/lib/connectors/internal/openai/responses/openai-responses-context";
 import { createMicrosoftEvent, type CreateMicrosoftEventOptions } from "@/lib/connectors/microsoft/calendar/create-event";
 import { sendMicrosoftMessage, type SendMicrosoftMessageOptions } from "@/lib/connectors/microsoft/outlook/send-message";
-import { resolveOrganizationId } from "@/lib/core/organization-context";
-import { getGoogleWorkspaceTokenForOrganization } from "@/lib/security/vercel-connect-google";
+import { resolveOrganizationId, resolveUserId } from "@/lib/core/organization-context";
+import { getGoogleWorkspaceTokenForUser } from "@/lib/security/vercel-connect-google";
 import type { Locale } from "@/i18n/types";
 
 import { Connector } from "./connector";
@@ -62,9 +62,17 @@ export class ConnectorEngine {
     try {
       if (!googleTokenBound && route.startsWith("google.")) {
         const organizationId = resolveOrganizationId(event.payload);
+        const userId = resolveUserId(event.payload);
 
         if (organizationId) {
-          const accessToken = await getGoogleWorkspaceTokenForOrganization(organizationId);
+          if (!userId) {
+            return this.failure(
+              event,
+              "Organization-scoped Google execution requires an authenticated Clara userId.",
+            );
+          }
+
+          const accessToken = await getGoogleWorkspaceTokenForUser(userId);
 
           return runWithGoogleRuntimeToken(
             { organizationId, accessToken },
