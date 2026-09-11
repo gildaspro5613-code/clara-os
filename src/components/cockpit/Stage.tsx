@@ -1,27 +1,31 @@
 import type { ClaraSession } from "@/lib/core/session";
+import type { Mission } from "@/modules/missions/types/Mission";
 
 import BriefPanel from "@/components/cockpit/panels/BriefPanel";
 import TasksPanel from "@/components/cockpit/panels/TasksPanel";
-import AgendaPanel from "@/components/cockpit/panels/AgendaPanel";
 import ClaraVoiceWidget from "@/components/cockpit/widgets/voice/ClaraVoiceWidget";
 
 interface StageProps {
   session: ClaraSession;
 }
 
-export default function Stage({
-  session,
-}: StageProps) {
-  const mission = session.mission;
+const FALLBACK_MISSION: Mission = {
+  id: "cockpit-hero-fallback",
+  title: "Finaliser le cockpit Clara OS",
+  objective: "Clara poursuit l’intégration des derniers éléments de l’interface.",
+  status: "active",
+  priority: "high",
+  createdAt: new Date(0),
+  tasks: [],
+  progress: 82,
+  nextAction: "Assembler le Stage et positionner Clara.",
+};
+
+export default function Stage({ session }: StageProps) {
+  const mission = session.mission ?? FALLBACK_MISSION;
 
   return (
     <>
-      {/* ============================================
-          DESKTOP / LAPTOP
-          Hero intentionally kept light.
-          Clara remains the visual focal point.
-          ============================================ */}
-
       {/* Clara's briefing */}
       <div
         className="
@@ -37,40 +41,26 @@ export default function Stage({
         "
       >
         <BriefPanel />
-
-        <div className="mt-4 ml-3 w-[92%]">
-          <ClaraVoiceWidget />
-        </div>
       </div>
 
-      {/* Main action — deliberately the only
-          operational glass panel in the Hero */}
+      {/* Main action */}
       <div
         className="
           pointer-events-auto
           absolute
           right-[5%]
-          top-[8%]
+          top-[18%]
           z-20
           hidden
-          w-[28%]
-          max-w-[420px]
+          w-[25%]
+          max-w-[360px]
           lg:block
         "
       >
-        <AgendaPanel />
-
-        {mission && <TasksPanel mission={mission} />}
+        <TasksPanel mission={mission} />
       </div>
 
-      {/* Context zone reserved for:
-          date / weather / next agenda item.
-          Kept visually discreet. */}
-
-      {/* ============================================
-          MOBILE
-          ============================================ */}
-
+      {/* Mobile */}
       <div
         className="
           pointer-events-none
@@ -105,8 +95,25 @@ export default function Stage({
         "
       >
         <div className="pointer-events-auto">
-          {mission && <TasksPanel mission={mission} />}
+          <TasksPanel mission={mission} />
         </div>
+      </div>
+
+      {/* Voice widget — bottom-centre, desktop only */}
+      <div
+        className="
+          pointer-events-auto
+          absolute
+          bottom-[6%]
+          left-1/2
+          z-20
+          hidden
+          w-[260px]
+          -translate-x-1/2
+          lg:block
+        "
+      >
+        <ClaraVoiceWidget />
       </div>
     </>
   );
