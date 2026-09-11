@@ -11,14 +11,14 @@
 
 import { google } from "googleapis";
 import { googleConfig } from "@/lib/config/google";
-import { getGoogleWorkspaceTokenForOrganization } from "@/lib/security/vercel-connect-google";
+import { getGoogleWorkspaceTokenForUser } from "@/lib/security/vercel-connect-google";
 
 /**
  * Google integration.
  *
- * Organization-scoped calls use a short-lived Vercel Connect token. The
- * legacy refresh-token client is retained only for existing unscoped/internal
- * flows while the remaining callers are migrated.
+ * User-scoped calls use a short-lived Vercel Connect token. The legacy
+ * refresh-token client is retained only for existing unscoped/internal flows
+ * while the remaining callers are migrated.
  */
 export class GoogleIntegration {
   /**
@@ -41,13 +41,11 @@ export class GoogleIntegration {
   }
 
   /**
-   * Creates an organization-scoped Google client using a short-lived access
-   * token supplied on demand by Vercel Connect.
+   * Creates a user-scoped Google client using a short-lived access token
+   * supplied on demand by Vercel Connect.
    */
-  public static async createOrganizationClient(organizationId: string) {
-    const accessToken = await getGoogleWorkspaceTokenForOrganization(
-      organizationId,
-    );
+  public static async createUserClient(userId: string) {
+    const accessToken = await getGoogleWorkspaceTokenForUser(userId);
 
     const auth = new google.auth.OAuth2();
     auth.setCredentials({ access_token: accessToken });
@@ -55,13 +53,13 @@ export class GoogleIntegration {
   }
 
   /**
-   * Tests Google authentication. When organizationId is supplied, the test is
-   * performed with that organization's Vercel Connect credential.
+   * Tests Google authentication. When userId is supplied, the test is
+   * performed with that user's Vercel Connect credential.
    */
-  public static async testConnection(organizationId?: string): Promise<boolean> {
+  public static async testConnection(userId?: string): Promise<boolean> {
     try {
-      const auth = organizationId
-        ? await this.createOrganizationClient(organizationId)
+      const auth = userId
+        ? await this.createUserClient(userId)
         : this.createClient();
 
       const drive = google.drive({ version: "v3", auth });
