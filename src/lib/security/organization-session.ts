@@ -6,6 +6,7 @@ const ORGANIZATION_SESSION_COOKIE = "clara_org_session";
 
 interface OrganizationSessionPayload {
   organizationId: string;
+  userId: string;
   expiresAt: number;
 }
 
@@ -43,6 +44,8 @@ function decodeSession(value: string): OrganizationSessionPayload | undefined {
     if (
       typeof payload.organizationId !== "string" ||
       !payload.organizationId.trim() ||
+      typeof payload.userId !== "string" ||
+      !payload.userId.trim() ||
       typeof payload.expiresAt !== "number" ||
       payload.expiresAt < Date.now()
     ) {
@@ -51,6 +54,7 @@ function decodeSession(value: string): OrganizationSessionPayload | undefined {
 
     return {
       organizationId: payload.organizationId.trim(),
+      userId: payload.userId.trim(),
       expiresAt: payload.expiresAt,
     };
   } catch {
@@ -59,9 +63,10 @@ function decodeSession(value: string): OrganizationSessionPayload | undefined {
 }
 
 /**
- * Resolves organization identity only from a server-signed session cookie.
- * This is a trust boundary, not a login system. A future authenticated session
- * issuer must mint the cookie after validating the user/organization membership.
+ * Resolves organization and user identity only from a server-signed session
+ * cookie. This is a trust boundary, not a login system. A future authenticated
+ * session issuer must mint the cookie after validating user membership in the
+ * organization.
  */
 export function resolveOrganizationSession(
   request: NextRequest,
@@ -72,16 +77,19 @@ export function resolveOrganizationSession(
 
 export function createOrganizationSessionValue(input: {
   organizationId: string;
+  userId: string;
   expiresAt: number;
 }): string {
   const organizationId = input.organizationId.trim();
+  const userId = input.userId.trim();
   if (!organizationId) throw new Error("organizationId is required.");
+  if (!userId) throw new Error("userId is required.");
   if (!Number.isFinite(input.expiresAt) || input.expiresAt <= Date.now()) {
     throw new Error("A future expiresAt is required.");
   }
 
   const body = Buffer.from(
-    JSON.stringify({ organizationId, expiresAt: input.expiresAt }),
+    JSON.stringify({ organizationId, userId, expiresAt: input.expiresAt }),
   ).toString("base64url");
 
   return `${body}.${sign(body)}`;
