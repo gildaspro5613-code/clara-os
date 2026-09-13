@@ -36,6 +36,7 @@ import {
 import { loadMission } from "@/modules/missions/mission-store";
 import { writeCognitiveEntry } from "./journal-writer";
 import { saveMission } from "@/modules/missions/mission-store";
+import { resolveActorContext } from "./actor-context";
 
 export class Clara {
 
@@ -138,6 +139,15 @@ export class Clara {
       }
     }
 
+    const eventActor = resolveActorContext(event.payload);
+    const executionActor = eventActor.userId
+      ? eventActor
+      : {
+          userId: this.session.user.userId,
+          organizationId: this.session.user.organizationId,
+          workspaceId: this.session.user.workspaceId,
+        };
+
     const MAX_AUTONOMOUS_TASKS_PER_EVENT = 10;
     let autonomousTasksExecuted = 0;
 
@@ -179,11 +189,7 @@ export class Clara {
       const result = await executeMissionTask(
         nextPendingTask,
         missionBeforeExecution,
-        {
-          userId: this.session.user.userId,
-          organizationId: this.session.user.organizationId,
-          workspaceId: this.session.user.workspaceId,
-        },
+        executionActor,
       );
 
       this.session.mission = completeMissionTask(
