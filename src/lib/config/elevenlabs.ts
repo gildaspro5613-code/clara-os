@@ -19,8 +19,15 @@ export const elevenLabsConfig = {
     process.env.ELEVENLABS_API_KEY,
 
   /**
-   * ElevenLabs Conversational AI agent ID.
+   * Voice used for Clara text-to-speech.
    * Must remain server-side only.
+   */
+  voiceId:
+    process.env.ELEVENLABS_VOICE_ID,
+
+  /**
+   * ElevenLabs Conversational AI agent ID.
+   * Kept for telephony/legacy integrations, not for Clara's cognitive loop.
    */
   agentId:
     process.env.ELEVENLABS_AGENT_ID,
