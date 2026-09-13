@@ -30,6 +30,7 @@ import {
   type ReadRangeOptions,
   type WriteRangeOptions,
 } from "@/lib/connectors/google/sheets";
+import { withGoogleRuntimeToken } from "@/lib/connectors/internal/google/auth/google-runtime-token-context";
 import {
   ElevenLabsEngine,
   type ElevenLabsContext,
@@ -40,6 +41,7 @@ import {
   createMicrosoftEvent,
   type CreateMicrosoftEventOptions,
 } from "@/lib/connectors/microsoft/calendar/create-event";
+import { withMicrosoftRuntimeToken } from "@/lib/connectors/microsoft/graph/microsoft-runtime-token-context";
 import {
   sendMicrosoftMessage,
   type SendMicrosoftMessageOptions,
@@ -49,7 +51,10 @@ import {
   getGoogleWorkspaceTokenForUser,
   isGoogleVercelConnectConfigured,
 } from "@/lib/security/vercel-connect-google";
-import { withGoogleRuntimeToken } from "@/lib/connectors/internal/google/auth/google-runtime-token-context";
+import {
+  getMicrosoftGraphTokenForUser,
+  isMicrosoftVercelConnectConfigured,
+} from "@/lib/security/vercel-connect-microsoft";
 
 import { Connector } from "./connector";
 import { ConnectorEvent } from "./connector-event";
@@ -98,6 +103,33 @@ export class ConnectorEngine {
     const accessToken = await getGoogleWorkspaceTokenForUser(actor.userId);
 
     return withGoogleRuntimeToken(
+      {
+        accessToken,
+        userId: actor.userId,
+        organizationId: actor.organizationId,
+      },
+      operation,
+    );
+  }
+
+  private async executeMicrosoft<T>(
+    event: ConnectorEvent,
+    operation: () => Promise<T>,
+  ): Promise<T> {
+    if (!isMicrosoftVercelConnectConfigured()) {
+      return operation();
+    }
+
+    const actor = resolveActorContext(event.payload);
+    if (!actor.userId) {
+      throw new Error(
+        "Microsoft Vercel Connect requires an authenticated Clara userId.",
+      );
+    }
+
+    const accessToken = await getMicrosoftGraphTokenForUser(actor.userId);
+
+    return withMicrosoftRuntimeToken(
       {
         accessToken,
         userId: actor.userId,
@@ -310,8 +342,11 @@ export class ConnectorEngine {
             return this.unsupported(route, event);
           }
 
-          const data = await sendMicrosoftMessage(
-            event.payload as SendMicrosoftMessageOptions,
+          const data = await this.executeMicrosoft(
+            event,
+            () => sendMicrosoftMessage(
+              event.payload as SendMicrosoftMessageOptions,
+            ),
           );
           return this.success(
             event,
@@ -325,8 +360,11 @@ export class ConnectorEngine {
             return this.unsupported(route, event);
           }
 
-          const data = await createMicrosoftEvent(
-            event.payload as CreateMicrosoftEventOptions,
+          const data = await this.executeMicrosoft(
+            event,
+            () => createMicrosoftEvent(
+              event.payload as CreateMicrosoftEventOptions,
+            ),
           );
           return this.success(
             event,
