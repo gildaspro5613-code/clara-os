@@ -5,30 +5,25 @@
  * --------------------------------------------
  * File : connector-engine.ts
  * Responsibility :
- * Coordinates connector execution.
+ * Coordinates generic connector execution.
  * ============================================
  */
 
-import { Connector } from "./connector";
-import { ConnectorEvent } from "./connector-event";
-import { ConnectorResult } from "./connector-result";
+import type { ExecutableConnector } from "./connector";
+import type { ConnectorEvent } from "./connector-event";
+import type { ConnectorResult } from "./connector-result";
 
 /**
  * Connector engine.
  */
 export class ConnectorEngine {
-
   /**
-   * Executes one connector.
+   * Executes one generic connector capability.
    */
   public async execute(
-
-    connector: Connector,
-
+    connector: ExecutableConnector,
     event: ConnectorEvent,
-
   ): Promise<ConnectorResult> {
-
     if (!connector.enabled) {
       return this.failure(
         event.capability,
@@ -53,27 +48,20 @@ export class ConnectorEngine {
           : "Connector execution failed with an unknown error.",
       );
     }
-
   }
 
   /**
    * Builds a standardized failed connector result.
    */
   private failure(
-
     capability: string,
-
     error: string,
-
   ): ConnectorResult {
-
     return {
       success: false,
       capability,
       error,
       completedAt: new Date(),
     };
-
   }
-
 }
