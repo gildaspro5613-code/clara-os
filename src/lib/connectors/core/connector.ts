@@ -5,55 +5,33 @@
  * --------------------------------------------
  * File : connector.ts
  * Responsibility :
- * Defines the base Connector
- * contract.
+ * Defines connector metadata contracts.
  * ============================================
  */
 
 import { ConnectorContext } from "./connector-context";
-import { ConnectorEvent } from "./connector-event";
-import { ConnectorResult } from "./connector-result";
+import type { ConnectorEvent } from "./connector-event";
+import type { ConnectorResult } from "./connector-result";
 
 /**
- * Base connector.
+ * Base connector metadata.
  */
 export interface Connector {
-
-  /**
-   * Connector identifier.
-   */
   id: string;
-
-  /**
-   * Connector name.
-   */
   name: string;
-
-  /**
-   * Connector version.
-   */
   version: string;
-
-  /**
-   * Connector context.
-   */
   context: ConnectorContext;
-
-  /**
-   * Connector capabilities.
-   */
   capabilities: string[];
-
-  /**
-   * Connector availability.
-   */
   enabled: boolean;
+}
 
-  /**
-   * Executes one connector capability.
-   */
+/**
+ * Generic connector contract used by ConnectorEngine.
+ * Provider-specific connectors may expose their own typed execution methods
+ * without being forced into this event shape.
+ */
+export interface ExecutableConnector extends Connector {
   execute(event: ConnectorEvent): Promise<ConnectorResult>;
-
 }
 
 /** The autonomy-relevant class of an operation exposed by a connector. */
