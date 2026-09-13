@@ -30,6 +30,12 @@ import {
   type ReadRangeOptions,
   type WriteRangeOptions,
 } from "@/lib/connectors/google/sheets";
+import {
+  ElevenLabsEngine,
+  type ElevenLabsContext,
+} from "@/lib/connectors/internal/elevenlabs";
+import { OpenAIResponsesEngine } from "@/lib/connectors/internal/openai/responses/openai-responses-engine";
+import type { OpenAIResponsesContext } from "@/lib/connectors/internal/openai/responses/openai-responses-context";
 
 import { Connector } from "./connector";
 import { ConnectorEvent } from "./connector-event";
@@ -38,9 +44,8 @@ import { ConnectorResult } from "./connector-result";
 /**
  * Executes native connector operations while keeping Brain provider-neutral.
  *
- * This first stable wave activates the Google Workspace routes already present
- * in Clara OS. Other providers are reintroduced separately so the validated
- * application shell is never replaced by a connector branch.
+ * The stable connector branch always extends the validated Clara OS shell;
+ * provider capabilities are added here without replacing application UI.
  */
 export class ConnectorEngine {
   public async execute(
@@ -164,6 +169,73 @@ export class ConnectorEngine {
               event,
               data,
               "Google Sheets range written successfully.",
+            );
+          }
+
+          return this.unsupported(route, event);
+        }
+
+        case "openai.responses": {
+          if (event.capability !== "generate-text") {
+            return this.unsupported(route, event);
+          }
+
+          const result = await new OpenAIResponsesEngine().generate(
+            event.payload as OpenAIResponsesContext,
+          );
+
+          if (!result.success) {
+            return this.failure(
+              event,
+              result.message ?? "OpenAI Responses failed.",
+            );
+          }
+
+          return this.success(
+            event,
+            result,
+            "OpenAI Responses executed successfully.",
+          );
+        }
+
+        case "elevenlabs.speech": {
+          const engine = new ElevenLabsEngine();
+
+          if (event.capability === "text-to-speech") {
+            const context = {
+              ...(event.payload as Omit<ElevenLabsContext, "operation">),
+              operation: "text-to-speech" as const,
+            };
+            const result = await engine.textToSpeech(context);
+
+            if (!result.success) {
+              return this.failure(
+                event,
+                result.error ?? "ElevenLabs text-to-speech failed.",
+              );
+            }
+
+            return this.success(
+              event,
+              result,
+              "ElevenLabs speech generated successfully.",
+            );
+          }
+
+          if (event.capability === "list-voices") {
+            const result = await engine.listVoices();
+
+            if (!result.success) {
+              return this.failure(
+                event,
+                result.error ?? "ElevenLabs voice listing failed.",
+              );
+            }
+
+            return this.success(
+              event,
+              result,
+              "ElevenLabs voices listed successfully.",
             );
           }
 
