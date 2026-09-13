@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import { composeClaraResponse } from "@/lib/brain/response-composer";
 import { dispatchEvent } from "@/lib/core/event-bus";
@@ -8,6 +8,7 @@ import {
   saveSession,
 } from "@/lib/core/store/session-store";
 import type { ClaraConversationMessage } from "@/lib/core/session";
+import { resolveAuthenticatedActorSession } from "@/lib/security/authenticated-actor-session";
 import { EventType } from "@/types";
 
 interface ChatRequest {
@@ -26,7 +27,7 @@ const MAX_REASONING_HISTORY = 16;
  *
  * Cockpit and /clara are two views over this same persisted conversation.
  */
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as ChatRequest;
     const message = body.message?.trim();
@@ -38,6 +39,7 @@ export async function POST(request: Request) {
       );
     }
 
+    const authenticatedActor = resolveAuthenticatedActorSession(request);
     const persistedBeforeCycle = await loadSession();
     const recentConversation = persistedBeforeCycle.conversation
       .slice(-MAX_REASONING_HISTORY)
@@ -50,8 +52,16 @@ export async function POST(request: Request) {
       timestamp: new Date(),
       payload: {
         message,
-        userFirstName: persistedBeforeCycle.user.firstName,
+        userFirstName:
+          authenticatedActor?.firstName ?? persistedBeforeCycle.user.firstName,
         conversationHistory: recentConversation,
+        actor: authenticatedActor
+          ? {
+              userId: authenticatedActor.userId,
+              organizationId: authenticatedActor.organizationId,
+              workspaceId: authenticatedActor.workspaceId,
+            }
+          : undefined,
       },
     };
 
@@ -98,7 +108,15 @@ export async function POST(request: Request) {
       success: true,
       message: responseMessage,
       conversation: session.conversation,
-      user: session.user,
+      user: authenticatedActor
+        ? {
+            userId: authenticatedActor.userId,
+            firstName:
+              authenticatedActor.firstName ?? session.user.firstName,
+            organizationId: authenticatedActor.organizationId,
+            workspaceId: authenticatedActor.workspaceId,
+          }
+        : session.user,
       brain: {
         state: session.state,
         recommendation: recommendation
