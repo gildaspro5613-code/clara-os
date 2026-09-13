@@ -10,20 +10,64 @@
  * ============================================
  */
 
-import { CapabilityEngine } from "@/lib/capabilities/capability-engine";
+import {
+  CapabilityEngine,
+  type CapabilityExecutionResult,
+} from "@/lib/capabilities/capability-engine";
+import { ConnectorEngine } from "@/lib/connectors/core/connector-engine";
 import { ExperienceEngine } from "@/lib/experience/experience-engine";
 import { runBrainDashboard } from "@/lib/brain/brain";
 import { WisdomEngine } from "@/lib/wisdom/wisdom-engine";
-import { buildDashboard } from "@/lib/brain/dashboard";
 import {
   DecisionPriority,
   EventType,
 } from "@/types";
 
+import {
+  CapabilityRouter,
+  type Capability,
+} from "./capability-router";
 import { Runtime } from "./runtime";
 import { RuntimeCycle } from "./runtime-cycle";
 import { RuntimeEvent } from "./runtime-event";
 import { RuntimeResult } from "./runtime-result";
+
+const CONNECTOR_CAPABILITIES = new Set<Capability>([
+  "generate-text",
+  "send-email",
+  "schedule-event",
+  "store-file",
+  "retrieve-file",
+  "create-document",
+  "retrieve-document",
+  "read-spreadsheet-range",
+  "write-spreadsheet-range",
+  "text-to-speech",
+  "list-voices",
+]);
+
+function isConnectorCapability(value: string): value is Capability {
+  return CONNECTOR_CAPABILITIES.has(value as Capability);
+}
+
+function connectorContent(data: unknown): string | undefined {
+  if (data === undefined) return undefined;
+
+  if (
+    data &&
+    typeof data === "object" &&
+    "content" in data &&
+    typeof (data as { content?: unknown }).content === "string"
+  ) {
+    return (data as { content: string }).content;
+  }
+
+  try {
+    return JSON.stringify(data);
+  } catch {
+    return undefined;
+  }
+}
 
 /**
  * Runtime Engine.
@@ -37,6 +81,9 @@ export class RuntimeEngine {
     private readonly capabilityEngine = new CapabilityEngine(),
   ) {}
 
+  private readonly connectorEngine = new ConnectorEngine();
+  private readonly capabilityRouter = new CapabilityRouter();
+
   /**
    * Experience Engine.
    */
@@ -48,6 +95,48 @@ export class RuntimeEngine {
    */
   private readonly wisdomEngine =
     new WisdomEngine();
+
+  private async executeCapability(
+    event: RuntimeEvent,
+  ): Promise<CapabilityExecutionResult> {
+    if (!isConnectorCapability(event.capabilityId)) {
+      return this.capabilityEngine.execute({
+        capabilityId: event.capabilityId,
+        context: event.context,
+      });
+    }
+
+    const route = this.capabilityRouter.resolve(
+      event.capabilityId,
+      event.context,
+    );
+
+    if (route === "unknown") {
+      return {
+        success: false,
+        message: `No native connector route for capability: ${event.capabilityId}`,
+        completedAt: new Date(),
+      };
+    }
+
+    const connectorResult = await this.connectorEngine.executeRoute(route, {
+      id: event.id,
+      capability: event.capabilityId,
+      payload: event.context,
+      source: event.source,
+      receivedAt: event.receivedAt,
+    });
+
+    return {
+      success: connectorResult.success,
+      message:
+        connectorResult.error ??
+        connectorResult.message ??
+        "Connector execution completed.",
+      content: connectorContent(connectorResult.data),
+      completedAt: connectorResult.completedAt,
+    };
+  }
 
   /**
    * Executes one runtime cycle.
@@ -66,13 +155,7 @@ export class RuntimeEngine {
     ];
 
     const result =
-      await this.capabilityEngine.execute({
-
-        capabilityId: event.capabilityId,
-
-        context: event.context,
-
-      });
+      await this.executeCapability(event);
 
     cycles.push(
       RuntimeCycle.EXECUTE,
