@@ -40,7 +40,15 @@ export async function POST(request: NextRequest) {
     }
 
     const authenticatedActor = resolveAuthenticatedActorSession(request);
-    const persistedBeforeCycle = await loadSession();
+    const actor = authenticatedActor
+      ? {
+          userId: authenticatedActor.userId,
+          organizationId: authenticatedActor.organizationId,
+          workspaceId: authenticatedActor.workspaceId,
+        }
+      : undefined;
+
+    const persistedBeforeCycle = await loadSession(actor);
     const recentConversation = persistedBeforeCycle.conversation
       .slice(-MAX_REASONING_HISTORY)
       .map(({ role, content }) => ({ role, content }));
@@ -55,13 +63,7 @@ export async function POST(request: NextRequest) {
         userFirstName:
           authenticatedActor?.firstName ?? persistedBeforeCycle.user.firstName,
         conversationHistory: recentConversation,
-        actor: authenticatedActor
-          ? {
-              userId: authenticatedActor.userId,
-              organizationId: authenticatedActor.organizationId,
-              workspaceId: authenticatedActor.workspaceId,
-            }
-          : undefined,
+        actor,
       },
     };
 
@@ -102,7 +104,7 @@ export async function POST(request: NextRequest) {
       ...newMessages,
     ].slice(-MAX_PERSISTED_MESSAGES);
     session.updatedAt = new Date();
-    await saveSession(session);
+    await saveSession(session, actor);
 
     return NextResponse.json({
       success: true,
