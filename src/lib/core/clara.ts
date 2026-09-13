@@ -179,6 +179,11 @@ export class Clara {
       const result = await executeMissionTask(
         nextPendingTask,
         missionBeforeExecution,
+        {
+          userId: this.session.user.userId,
+          organizationId: this.session.user.organizationId,
+          workspaceId: this.session.user.workspaceId,
+        },
       );
 
       this.session.mission = completeMissionTask(
