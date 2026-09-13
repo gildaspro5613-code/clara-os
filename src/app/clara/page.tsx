@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import MainLayout from "@/components/layout/MainLayout";
+import ClaraVoiceWidget from "@/components/clara/ClaraVoiceWidget";
 import ClaraChatWidget from "@/components/cockpit/widgets/clara/ClaraChatWidget";
 import { loadSession } from "@/lib/core/store/session-store";
 
@@ -76,12 +77,13 @@ export default async function ClaraPage({
           </article>
         </section>
 
-        <div className="max-w-4xl">
+        <div className="grid max-w-5xl gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
           <ClaraChatWidget
             autoFocus={focusClaraInput}
             initialMessages={session.conversation}
             userFirstName={session.user.firstName}
           />
+          <ClaraVoiceWidget />
         </div>
       </div>
     </MainLayout>
