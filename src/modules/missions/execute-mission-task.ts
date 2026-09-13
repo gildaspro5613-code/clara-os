@@ -5,6 +5,10 @@ import {
 import { ExecutionCoordinator } from "@/lib/runtime/execution-coordinator";
 import { RuntimeCycle } from "@/lib/runtime/runtime-cycle";
 import type { RuntimeResult } from "@/lib/runtime/runtime-result";
+import {
+  withActorContext,
+  type ActorContext,
+} from "@/lib/core/actor-context";
 
 import type {
   Mission,
@@ -38,6 +42,7 @@ function refusedResult(
 export async function executeMissionTask(
   task: MissionTask,
   mission: Mission,
+  actor?: ActorContext,
 ): Promise<RuntimeResult> {
   const runtime = RuntimeFactory.create();
 
@@ -52,7 +57,9 @@ export async function executeMissionTask(
   const intent = createExecutionIntent({
     capabilityId: task.execution.capabilityId,
     mode: task.execution.mode ?? "EXECUTE",
-    context: task.execution.context,
+    context: actor
+      ? withActorContext(task.execution.context, actor)
+      : task.execution.context,
     source: "BRAIN",
     missionId: mission.id,
     missionTaskId: task.id,
