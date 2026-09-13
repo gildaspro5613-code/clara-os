@@ -18,6 +18,7 @@ import {
 } from "@/lib/connectors/google/oauth/google-oauth";
 import type { OAuthTokenSet } from "@/lib/auth/oauth/types";
 import { mergeOAuthTokens } from "@/lib/auth/oauth/service";
+import { getGoogleRuntimeTokenContext } from "./google-runtime-token-context";
 
 export class GoogleAuth {
   constructor(
@@ -28,6 +29,14 @@ export class GoogleAuth {
   ) {}
 
   async createClient(connectionId?: string): Promise<OAuth2Client> {
+    const runtimeToken = getGoogleRuntimeTokenContext();
+
+    if (runtimeToken) {
+      const client = this.clientFactory();
+      client.setCredentials({ access_token: runtimeToken.accessToken });
+      return client;
+    }
+
     const connection = connectionId
       ? await this.connections.findById(connectionId)
       : await this.connections.findByWorkspaceAndProvider(
