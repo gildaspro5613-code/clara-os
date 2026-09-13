@@ -1,120 +1,44 @@
-/**
- * ============================================
- * CLARA OS
- * Missions Module
- *
- * File : execute-mission-task.ts
- * Responsibility :
- * Execute one Mission Task through Clara Runtime.
- * ============================================
- */
-
-import { RuntimeEngine } from "@/lib/runtime/runtime-engine";
 import { RuntimeFactory } from "@/lib/runtime/runtime-factory";
+import {
+  createExecutionIntent,
+} from "@/lib/runtime/execution-intent";
+import {
+  ExecutionCoordinator,
+  type ExecutionCoordinatorResult,
+} from "@/lib/runtime/execution-coordinator";
 
 import type {
   Mission,
   MissionTask,
 } from "./types/Mission";
 
-import { canExecuteAutonomously } from "./autonomy-gate";
-
-import {
-  RuntimeCycle,
-} from "@/lib/runtime/runtime-cycle";
-
-import type {
-  RuntimeResult,
-} from "@/lib/runtime/runtime-result";
-
 /**
- * Executes one Mission Task when an execution
- * contract is available.
+ * Executes one Mission Task through the protected Clara OS execution chain.
  */
 export async function executeMissionTask(
   task: MissionTask,
   mission: Mission,
-): Promise<RuntimeResult> {
-
-  const runtime =
-    RuntimeFactory.create();
-
-  const event =
-    RuntimeFactory.createEvent(
-      task.execution?.capabilityId ?? "unknown",
-      task.execution?.context ?? {},
-      "mission",
-    );
+): Promise<ExecutionCoordinatorResult> {
+  const runtime = RuntimeFactory.create();
 
   if (!task.execution) {
-
-    return {
-
-      success: false,
-
-      message:
-        "Cette tâche ne possède aucune capacité d'exécution définie.",
-
-      runtimeId:
-        runtime.id,
-
-      eventId:
-        event.id,
-
-      cycles: [
-        RuntimeCycle.RECEIVE,
-        RuntimeCycle.CONTEXT,
-        RuntimeCycle.COMPLETE,
-      ],
-
-      experienceCount: 0,
-
-      completedAt:
-        new Date(),
-
-    };
-
-  }
-
-  if (!canExecuteAutonomously(task)) {
-
-    return {
-
-      success: false,
-
-      message:
-        "Cette tâche n'est pas autorisée pour une exécution autonome.",
-
-      runtimeId:
-        runtime.id,
-
-      eventId:
-        event.id,
-
-      cycles: [
-        RuntimeCycle.RECEIVE,
-        RuntimeCycle.CONTEXT,
-        RuntimeCycle.COMPLETE,
-      ],
-
-      experienceCount: 0,
-
-      completedAt:
-        new Date(),
-
-    };
-
-  }
-
-  const engine =
-    new RuntimeEngine();
-
-  const result =
-    await engine.run(
-      runtime,
-      event,
+    throw new Error(
+      "Mission task execution contract is required before Runtime execution.",
     );
+  }
 
-  return result;
+  const intent = createExecutionIntent({
+    capabilityId: task.execution.capabilityId,
+    mode: task.execution.mode ?? "EXECUTE",
+    context: task.execution.context,
+    source: "BRAIN",
+    missionId: mission.id,
+    missionTaskId: task.id,
+  });
 
+  const coordinator = new ExecutionCoordinator();
+
+  return coordinator.run(runtime, intent, {
+    executeAuthorized: task.execution.autonomous,
+  });
 }
