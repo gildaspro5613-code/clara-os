@@ -44,6 +44,12 @@ import {
   sendMicrosoftMessage,
   type SendMicrosoftMessageOptions,
 } from "@/lib/connectors/microsoft/outlook/send-message";
+import { resolveActorContext } from "@/lib/core/actor-context";
+import {
+  getGoogleWorkspaceTokenForUser,
+  isGoogleVercelConnectConfigured,
+} from "@/lib/security/vercel-connect-google";
+import { withGoogleRuntimeToken } from "@/lib/connectors/internal/google/auth/google-runtime-token-context";
 
 import { Connector } from "./connector";
 import { ConnectorEvent } from "./connector-event";
@@ -74,6 +80,33 @@ export class ConnectorEngine {
     return this.executeRoute(connector.id, event);
   }
 
+  private async executeGoogle<T>(
+    event: ConnectorEvent,
+    operation: () => Promise<T>,
+  ): Promise<T> {
+    if (!isGoogleVercelConnectConfigured()) {
+      return operation();
+    }
+
+    const actor = resolveActorContext(event.payload);
+    if (!actor.userId) {
+      throw new Error(
+        "Google Vercel Connect requires an authenticated Clara userId.",
+      );
+    }
+
+    const accessToken = await getGoogleWorkspaceTokenForUser(actor.userId);
+
+    return withGoogleRuntimeToken(
+      {
+        accessToken,
+        userId: actor.userId,
+        organizationId: actor.organizationId,
+      },
+      operation,
+    );
+  }
+
   public async executeRoute(
     route: string,
     event: ConnectorEvent,
@@ -85,7 +118,10 @@ export class ConnectorEngine {
             return this.unsupported(route, event);
           }
 
-          const data = await sendMessage(event.payload as SendMessageOptions);
+          const data = await this.executeGoogle(
+            event,
+            () => sendMessage(event.payload as SendMessageOptions),
+          );
           return this.success(
             event,
             data,
@@ -98,7 +134,10 @@ export class ConnectorEngine {
             return this.unsupported(route, event);
           }
 
-          const data = await createEvent(event.payload as CreateEventOptions);
+          const data = await this.executeGoogle(
+            event,
+            () => createEvent(event.payload as CreateEventOptions),
+          );
           return this.success(
             event,
             data,
@@ -108,7 +147,10 @@ export class ConnectorEngine {
 
         case "google.drive": {
           if (event.capability === "store-file") {
-            const data = await uploadFile(event.payload as UploadFileOptions);
+            const data = await this.executeGoogle(
+              event,
+              () => uploadFile(event.payload as UploadFileOptions),
+            );
             return this.success(
               event,
               data,
@@ -126,7 +168,10 @@ export class ConnectorEngine {
               );
             }
 
-            const data = await getFile(payload.fileId);
+            const data = await this.executeGoogle(
+              event,
+              () => getFile(payload.fileId as string),
+            );
             return this.success(
               event,
               data,
@@ -139,8 +184,9 @@ export class ConnectorEngine {
 
         case "google.docs": {
           if (event.capability === "create-document") {
-            const data = await createDocument(
-              event.payload as CreateDocumentOptions,
+            const data = await this.executeGoogle(
+              event,
+              () => createDocument(event.payload as CreateDocumentOptions),
             );
             return this.success(
               event,
@@ -150,7 +196,10 @@ export class ConnectorEngine {
           }
 
           if (event.capability === "retrieve-document") {
-            const data = await getDocument(event.payload as GetDocumentOptions);
+            const data = await this.executeGoogle(
+              event,
+              () => getDocument(event.payload as GetDocumentOptions),
+            );
             return this.success(
               event,
               data,
@@ -163,7 +212,10 @@ export class ConnectorEngine {
 
         case "google.sheets": {
           if (event.capability === "read-spreadsheet-range") {
-            const data = await readRange(event.payload as ReadRangeOptions);
+            const data = await this.executeGoogle(
+              event,
+              () => readRange(event.payload as ReadRangeOptions),
+            );
             return this.success(
               event,
               data,
@@ -172,7 +224,10 @@ export class ConnectorEngine {
           }
 
           if (event.capability === "write-spreadsheet-range") {
-            const data = await writeRange(event.payload as WriteRangeOptions);
+            const data = await this.executeGoogle(
+              event,
+              () => writeRange(event.payload as WriteRangeOptions),
+            );
             return this.success(
               event,
               data,
