@@ -36,6 +36,14 @@ import {
 } from "@/lib/connectors/internal/elevenlabs";
 import { OpenAIResponsesEngine } from "@/lib/connectors/internal/openai/responses/openai-responses-engine";
 import type { OpenAIResponsesContext } from "@/lib/connectors/internal/openai/responses/openai-responses-context";
+import {
+  createMicrosoftEvent,
+  type CreateMicrosoftEventOptions,
+} from "@/lib/connectors/microsoft/calendar/create-event";
+import {
+  sendMicrosoftMessage,
+  type SendMicrosoftMessageOptions,
+} from "@/lib/connectors/microsoft/outlook/send-message";
 
 import { Connector } from "./connector";
 import { ConnectorEvent } from "./connector-event";
@@ -240,6 +248,36 @@ export class ConnectorEngine {
           }
 
           return this.unsupported(route, event);
+        }
+
+        case "microsoft.outlook": {
+          if (event.capability !== "send-email") {
+            return this.unsupported(route, event);
+          }
+
+          const data = await sendMicrosoftMessage(
+            event.payload as SendMicrosoftMessageOptions,
+          );
+          return this.success(
+            event,
+            data,
+            "Microsoft Outlook executed successfully.",
+          );
+        }
+
+        case "microsoft.calendar": {
+          if (event.capability !== "schedule-event") {
+            return this.unsupported(route, event);
+          }
+
+          const data = await createMicrosoftEvent(
+            event.payload as CreateMicrosoftEventOptions,
+          );
+          return this.success(
+            event,
+            data,
+            "Microsoft Calendar executed successfully.",
+          );
         }
 
         default:
