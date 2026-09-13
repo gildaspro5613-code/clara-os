@@ -36,7 +36,10 @@ import {
 import { loadMission } from "@/modules/missions/mission-store";
 import { writeCognitiveEntry } from "./journal-writer";
 import { saveMission } from "@/modules/missions/mission-store";
-import { resolveActorContext } from "./actor-context";
+import {
+  resolveActorContext,
+  type ActorContext,
+} from "./actor-context";
 
 export class Clara {
 
@@ -44,8 +47,10 @@ export class Clara {
   private runtime: Runtime | null = null;
   private readonly journal = new Journal();
 
-  private async hydrateSession(): Promise<void> {
-    this.session = await loadSession();
+  private async hydrateSession(
+    actor?: ActorContext,
+  ): Promise<void> {
+    this.session = await loadSession(actor);
 
     if (this.session.mission) {
       const persistedMission = await loadMission(
@@ -107,7 +112,12 @@ export class Clara {
   public async processEvent(
     event: Event,
   ): Promise<ClaraSession> {
-    await this.hydrateSession();
+    const eventActor = resolveActorContext(event.payload);
+    const requestActor = eventActor.userId
+      ? eventActor
+      : undefined;
+
+    await this.hydrateSession(requestActor);
 
     this.session = await orchestrate(
       this.session,
@@ -139,14 +149,11 @@ export class Clara {
       }
     }
 
-    const eventActor = resolveActorContext(event.payload);
-    const executionActor = eventActor.userId
-      ? eventActor
-      : {
-          userId: this.session.user.userId,
-          organizationId: this.session.user.organizationId,
-          workspaceId: this.session.user.workspaceId,
-        };
+    const executionActor = requestActor ?? {
+      userId: this.session.user.userId,
+      organizationId: this.session.user.organizationId,
+      workspaceId: this.session.user.workspaceId,
+    };
 
     const MAX_AUTONOMOUS_TASKS_PER_EVENT = 10;
     let autonomousTasksExecuted = 0;
@@ -215,7 +222,7 @@ export class Clara {
     }
 
     this.session.updatedAt = new Date();
-    await saveSession(this.session);
+    await saveSession(this.session, requestActor);
 
     if (this.session.recommendation) {
       this.journal.addEntry(
