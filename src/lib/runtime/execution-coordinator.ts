@@ -16,6 +16,15 @@ export interface ExecutionCoordinatorResult {
   readonly mission?: Mission;
 }
 
+function inferEvidence(result: RuntimeResult): unknown {
+  return (
+    result.operationalResult ??
+    result.documentId ??
+    result.documentUrl ??
+    result.outputs?.[0]
+  );
+}
+
 /** Single controlled seam: Autonomy Gate -> Runtime -> Verification -> Mission -> Journal. */
 export class ExecutionCoordinator {
   private readonly runtimeEngine = new RuntimeEngine();
@@ -40,7 +49,11 @@ export class ExecutionCoordinator {
     };
 
     const runtimeResult = await this.runtimeEngine.run(runtime, event);
-    const verification = verifyRuntimeResult(intent, runtimeResult, options.evidence);
+    const verification = verifyRuntimeResult(
+      intent,
+      runtimeResult,
+      options.evidence ?? inferEvidence(runtimeResult),
+    );
 
     if (verification.status !== "VERIFIED") {
       return { gate, runtimeResult, verification };
