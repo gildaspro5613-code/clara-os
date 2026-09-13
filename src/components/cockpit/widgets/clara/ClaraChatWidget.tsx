@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Check, Send, X } from "lucide-react";
@@ -20,17 +20,18 @@ interface ClaraChatWidgetProps {
   userFirstName?: string | null;
 }
 
+interface ConversationUpdatedDetail {
+  conversation?: ClaraConversationMessage[];
+}
+
 function personalizedGreeting(
   greeting: string,
   firstName?: string | null,
 ): string {
   if (!firstName?.trim()) return greeting;
 
-  // All Clara locales currently start their greeting with a short salutation
-  // followed by punctuation (Bonjour. / Hello. / Hola. / Hallo. / Buongiorno.).
-  // Personalize that first sentence without duplicating five translation keys.
   return greeting.replace(
-    /^([^.!?]+)([.!?])/, 
+    /^([^.!?]+)([.!?])/,
     `$1 ${firstName.trim()}$2`,
   );
 }
@@ -61,6 +62,27 @@ export default function ClaraChatWidget({
   const [loading, setLoading] = useState(false);
   const [approvals, setApprovals] = useState<PendingApproval[]>([]);
   const router = useRouter();
+
+  useEffect(() => {
+    const handleConversationUpdated = (event: Event) => {
+      const detail = (event as CustomEvent<ConversationUpdatedDetail>).detail;
+      if (Array.isArray(detail?.conversation)) {
+        setMessages(detail.conversation);
+      }
+    };
+
+    window.addEventListener(
+      "clara:conversation-updated",
+      handleConversationUpdated,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "clara:conversation-updated",
+        handleConversationUpdated,
+      );
+    };
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -105,8 +127,6 @@ export default function ClaraChatWidget({
         throw new Error(data.message ?? t("unavailable"));
       }
 
-      // Prefer the durable server transcript so Cockpit and /clara always
-      // converge on exactly the same conversation state.
       if (Array.isArray(data.conversation)) {
         setMessages(data.conversation);
       } else {
@@ -142,7 +162,10 @@ export default function ClaraChatWidget({
     }
   }
 
-  async function decideApproval(approval: PendingApproval, decision: "approve" | "reject") {
+  async function decideApproval(
+    approval: PendingApproval,
+    decision: "approve" | "reject",
+  ) {
     if (loading) return;
     setLoading(true);
     try {
@@ -151,25 +174,43 @@ export default function ClaraChatWidget({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: approval.id, token: approval.token, decision }),
       });
-      const data = await response.json() as { success?: boolean; message?: string; content?: string };
+      const data = await response.json() as {
+        success?: boolean;
+        message?: string;
+        content?: string;
+      };
       if (response.status !== 500) {
-        setApprovals((current) => current.filter((item) => item.id !== approval.id));
+        setApprovals((current) =>
+          current.filter((item) => item.id !== approval.id),
+        );
       }
-      if (!response.ok || !data.success) throw new Error(data.message ?? t("approvalError"));
-      setMessages((current) => [...current, {
-        id: crypto.randomUUID(),
-        role: "clara",
-        content: data.content || data.message || (decision === "approve" ? t("approved") : t("rejected")),
-        createdAt: new Date().toISOString(),
-      }]);
+      if (!response.ok || !data.success) {
+        throw new Error(data.message ?? t("approvalError"));
+      }
+      setMessages((current) => [
+        ...current,
+        {
+          id: crypto.randomUUID(),
+          role: "clara",
+          content:
+            data.content ||
+            data.message ||
+            (decision === "approve" ? t("approved") : t("rejected")),
+          createdAt: new Date().toISOString(),
+        },
+      ]);
       router.refresh();
     } catch (error) {
-      setMessages((current) => [...current, {
-        id: crypto.randomUUID(),
-        role: "clara",
-        content: error instanceof Error ? error.message : t("approvalError"),
-        createdAt: new Date().toISOString(),
-      }]);
+      setMessages((current) => [
+        ...current,
+        {
+          id: crypto.randomUUID(),
+          role: "clara",
+          content:
+            error instanceof Error ? error.message : t("approvalError"),
+          createdAt: new Date().toISOString(),
+        },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -216,7 +257,10 @@ export default function ClaraChatWidget({
       {approvals.length > 0 && (
         <div className="mt-4 space-y-3" aria-live="polite">
           {approvals.map((approval) => (
-            <section key={approval.id} className="rounded-2xl border border-cyan-400/25 bg-cyan-400/[0.06] p-4">
+            <section
+              key={approval.id}
+              className="rounded-2xl border border-cyan-400/25 bg-cyan-400/[0.06] p-4"
+            >
               <p className="text-[10px] uppercase tracking-[0.2em] text-cyan-300/80">
                 {t("approvalRequired")}
               </p>
