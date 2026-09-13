@@ -2,27 +2,49 @@ import { RuntimeFactory } from "@/lib/runtime/runtime-factory";
 import {
   createExecutionIntent,
 } from "@/lib/runtime/execution-intent";
-import {
-  ExecutionCoordinator,
-  type ExecutionCoordinatorResult,
-} from "@/lib/runtime/execution-coordinator";
+import { ExecutionCoordinator } from "@/lib/runtime/execution-coordinator";
+import { RuntimeCycle } from "@/lib/runtime/runtime-cycle";
+import type { RuntimeResult } from "@/lib/runtime/runtime-result";
 
 import type {
   Mission,
   MissionTask,
 } from "./types/Mission";
 
+function refusedResult(
+  runtimeId: string,
+  eventId: string,
+  message: string,
+): RuntimeResult {
+  return {
+    success: false,
+    message,
+    runtimeId,
+    eventId,
+    cycles: [
+      RuntimeCycle.RECEIVE,
+      RuntimeCycle.CONTEXT,
+      RuntimeCycle.COMPLETE,
+    ],
+    experienceCount: 0,
+    completedAt: new Date(),
+  };
+}
+
 /**
- * Executes one Mission Task through the protected Clara OS execution chain.
+ * Executes one Mission Task through the protected Clara OS execution chain
+ * while preserving the existing RuntimeResult contract used by Core.
  */
 export async function executeMissionTask(
   task: MissionTask,
   mission: Mission,
-): Promise<ExecutionCoordinatorResult> {
+): Promise<RuntimeResult> {
   const runtime = RuntimeFactory.create();
 
   if (!task.execution) {
-    throw new Error(
+    return refusedResult(
+      runtime.id,
+      crypto.randomUUID(),
       "Mission task execution contract is required before Runtime execution.",
     );
   }
@@ -36,9 +58,31 @@ export async function executeMissionTask(
     missionTaskId: task.id,
   });
 
-  const coordinator = new ExecutionCoordinator();
-
-  return coordinator.run(runtime, intent, {
+  const execution = await new ExecutionCoordinator().run(runtime, intent, {
     executeAuthorized: task.execution.autonomous,
   });
+
+  if (execution.gate.outcome !== "ALLOW") {
+    return refusedResult(runtime.id, intent.id, execution.gate.reason);
+  }
+
+  if (!execution.runtimeResult) {
+    return refusedResult(
+      runtime.id,
+      intent.id,
+      "Runtime execution did not produce a result.",
+    );
+  }
+
+  if (execution.verification?.status !== "VERIFIED") {
+    return {
+      ...execution.runtimeResult,
+      success: false,
+      message:
+        execution.verification?.message ??
+        "Execution completed but could not be verified.",
+    };
+  }
+
+  return execution.runtimeResult;
 }
