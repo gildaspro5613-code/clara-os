@@ -24,6 +24,7 @@ export interface MissionTaskExecution {
   capabilityId: string;
   context: unknown;
   autonomous: boolean;
+  mode?: "READ" | "PREPARE" | "EXECUTE";
 }
 
 export interface MissionTask {
