@@ -20,7 +20,7 @@ async function ensureOperationalJournalSchema(): Promise<void> {
         capability_id TEXT,
         verification_status TEXT
       )
-    `.then(() => undefined).catch((error) => {
+    `.then(() => undefined).catch((error: unknown) => {
       schemaReady = null;
       throw error;
     });
