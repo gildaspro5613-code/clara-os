@@ -11,6 +11,8 @@
  */
 
 import { ConnectorContext } from "./connector-context";
+import { ConnectorEvent } from "./connector-event";
+import { ConnectorResult } from "./connector-result";
 
 /**
  * Base connector.
@@ -46,5 +48,10 @@ export interface Connector {
    * Connector availability.
    */
   enabled: boolean;
+
+  /**
+   * Executes one connector capability.
+   */
+  execute(event: ConnectorEvent): Promise<ConnectorResult>;
 
 }
