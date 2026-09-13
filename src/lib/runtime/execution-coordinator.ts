@@ -5,14 +5,18 @@ import type { RuntimeResult } from "./runtime-result";
 import type { ExecutionIntent } from "./execution-intent";
 import { evaluateAutonomy, type AutonomyGateDecision } from "./autonomy-gate";
 import { verifyRuntimeResult, type VerificationResult } from "./verification";
+import { applyVerificationToMission } from "@/modules/missions/apply-verification";
+import { recordVerifiedExecution } from "@/lib/core/operational-journal-store";
+import type { Mission } from "@/modules/missions/types/Mission";
 
 export interface ExecutionCoordinatorResult {
   readonly gate: AutonomyGateDecision;
   readonly runtimeResult?: RuntimeResult;
   readonly verification?: VerificationResult;
+  readonly mission?: Mission;
 }
 
-/** Single controlled seam: Autonomy Gate -> Runtime -> Verification. */
+/** Single controlled seam: Autonomy Gate -> Runtime -> Verification -> Mission -> Journal. */
 export class ExecutionCoordinator {
   private readonly runtimeEngine = new RuntimeEngine();
 
@@ -38,6 +42,18 @@ export class ExecutionCoordinator {
     const runtimeResult = await this.runtimeEngine.run(runtime, event);
     const verification = verifyRuntimeResult(intent, runtimeResult, options.evidence);
 
-    return { gate, runtimeResult, verification };
+    if (verification.status !== "VERIFIED") {
+      return { gate, runtimeResult, verification };
+    }
+
+    const mission = await applyVerificationToMission(
+      intent,
+      verification,
+      runtimeResult,
+    );
+
+    await recordVerifiedExecution({ intent, runtimeResult, verification });
+
+    return { gate, runtimeResult, verification, mission };
   }
 }
