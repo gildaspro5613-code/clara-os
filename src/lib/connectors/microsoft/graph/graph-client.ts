@@ -10,7 +10,7 @@
  * ============================================
  */
 
-import { getMicrosoftRuntimeTokenContext } from "../../internal/microsoft/auth/microsoft-runtime-token-context";
+import { getMicrosoftRuntimeTokenContext } from "./microsoft-runtime-token-context";
 
 const DEFAULT_GRAPH_BASE_URL = "https://graph.microsoft.com/v1.0";
 
