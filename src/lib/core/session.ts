@@ -13,7 +13,11 @@ import type { Mission } from "@/modules/missions/types/Mission";
 import { ClaraState } from "./state";
 
 export interface ClaraUserIdentity {
+  /** Stable application-defined user identifier used for user-scoped access. */
+  userId: string;
   firstName: string | null;
+  organizationId?: string;
+  workspaceId?: string;
 }
 
 export interface ClaraConversationMessage {
@@ -29,9 +33,12 @@ function resolveDefaultUser(): ClaraUserIdentity {
     process.env.CLARA_OWNER_FIRST_NAME?.trim();
 
   return {
-    // Transitional V1 fallback for the current single-owner Melodie Digital
-    // workspace. Authenticated workspace identity will replace this fallback.
+    // Transitional single-owner identity. Authenticated account identity can
+    // replace this value later without changing connector/provider contracts.
+    userId: process.env.CLARA_USER_ID?.trim() || "owner",
     firstName: configuredFirstName || "Gildas",
+    organizationId: process.env.CLARA_ORGANIZATION_ID?.trim() || undefined,
+    workspaceId: process.env.CLARA_WORKSPACE_ID?.trim() || "default",
   };
 }
 
@@ -59,7 +66,7 @@ export interface ClaraSession {
   sources: BrainSourceContext[];
 
   /**
-   * User identity available to Clara's conversational surfaces.
+   * User identity available to Clara's conversational and operational surfaces.
    */
   user: ClaraUserIdentity;
 
@@ -105,10 +112,15 @@ export function normalizeSession(
   session: ClaraSession,
 ): ClaraSession {
   const defaults = createSession();
+  const existingUser = session.user ?? defaults.user;
 
   return {
     ...session,
-    user: session.user ?? defaults.user,
+    user: {
+      ...defaults.user,
+      ...existingUser,
+      userId: existingUser.userId?.trim() || defaults.user.userId,
+    },
     conversation: Array.isArray(session.conversation)
       ? session.conversation
       : [],
