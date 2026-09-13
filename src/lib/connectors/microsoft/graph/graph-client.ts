@@ -10,6 +10,8 @@
  * ============================================
  */
 
+import { getMicrosoftRuntimeTokenContext } from "../../internal/microsoft/auth/microsoft-runtime-token-context";
+
 const DEFAULT_GRAPH_BASE_URL = "https://graph.microsoft.com/v1.0";
 
 export interface MicrosoftGraphClientOptions {
@@ -22,12 +24,15 @@ export class MicrosoftGraphClient {
   private readonly baseUrl: string;
 
   public constructor(options: MicrosoftGraphClientOptions = {}) {
+    const runtimeToken = getMicrosoftRuntimeTokenContext()?.accessToken;
     const accessToken =
-      options.accessToken ?? process.env.MICROSOFT_GRAPH_ACCESS_TOKEN;
+      options.accessToken ??
+      runtimeToken ??
+      process.env.MICROSOFT_GRAPH_ACCESS_TOKEN;
 
     if (!accessToken) {
       throw new Error(
-        "MicrosoftGraphClient: MICROSOFT_GRAPH_ACCESS_TOKEN is not configured.",
+        "MicrosoftGraphClient: no Microsoft Graph access token is available.",
       );
     }
 
