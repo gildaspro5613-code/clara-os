@@ -23,6 +23,7 @@ import {
 import { orchestrate } from "./orchestrator";
 import {
   executeMissionTask,
+  completeMissionTask,
   canExecuteAutonomously,
 } from "@/modules/missions";
 import { dispatchEvent } from "./event-bus";
@@ -38,28 +39,10 @@ import { saveMission } from "@/modules/missions/mission-store";
 
 export class Clara {
 
-  /**
-   * Current runtime session.
-   */
   private session: ClaraSession = createSession();
-
-  /**
-   * Active Clara Runtime.
-   */
   private runtime: Runtime | null = null;
-
-  /**
-   * Clara's operational journal.
-   */
   private readonly journal = new Journal();
 
-  /**
-   * Reload the durable session before a cognitive cycle.
-   *
-   * Serverless requests are not guaranteed to reuse the same module instance.
-   * Treat the database as the source of truth so mission/conversation continuity
-   * does not depend on a warm Vercel runtime.
-   */
   private async hydrateSession(): Promise<void> {
     this.session = await loadSession();
 
@@ -87,11 +70,7 @@ export class Clara {
     }
   }
 
-  /**
-   * Starts Clara.
-   */
   public async start(): Promise<ClaraSession> {
-
     await this.hydrateSession();
 
     this.session.state = ClaraState.STARTING;
@@ -106,14 +85,9 @@ export class Clara {
     await saveSession(this.session);
 
     return this.session;
-
   }
 
-  /**
-   * Stops Clara.
-   */
   public async stop(): Promise<void> {
-
     await this.hydrateSession();
 
     this.session.state = ClaraState.STOPPING;
@@ -127,16 +101,11 @@ export class Clara {
     this.session.state = ClaraState.STOPPED;
     this.session.updatedAt = new Date();
     await saveSession(this.session);
-
   }
 
-  /**
-   * Processes one incoming event.
-   */
   public async processEvent(
     event: Event,
   ): Promise<ClaraSession> {
-
     await this.hydrateSession();
 
     this.session = await orchestrate(
@@ -170,7 +139,6 @@ export class Clara {
     }
 
     const MAX_AUTONOMOUS_TASKS_PER_EVENT = 10;
-
     let autonomousTasksExecuted = 0;
 
     while (
@@ -207,61 +175,26 @@ export class Clara {
         break;
       }
 
-      const execution = await executeMissionTask(
+      const missionBeforeExecution = this.session.mission;
+      const result = await executeMissionTask(
         nextPendingTask,
-        this.session.mission,
+        missionBeforeExecution,
       );
 
+      this.session.mission = completeMissionTask(
+        missionBeforeExecution,
+        nextPendingTask.id,
+        result,
+      );
+
+      await saveMission(this.session.mission);
       autonomousTasksExecuted += 1;
 
-      if (execution.gate.outcome !== "ALLOW") {
-        this.session.mission = {
-          ...this.session.mission,
-          status: "blocked",
-          result: execution.gate.reason,
-        };
-        await saveMission(this.session.mission);
+      if (!result.success) {
         break;
       }
 
-      if (!execution.runtimeResult) {
-        break;
-      }
-
-      if (!execution.runtimeResult.success) {
-        this.session.mission = {
-          ...this.session.mission,
-          status: "blocked",
-          result: execution.runtimeResult.message,
-        };
-        await saveMission(this.session.mission);
-        break;
-      }
-
-      if (execution.verification?.status !== "VERIFIED") {
-        this.session.mission = {
-          ...this.session.mission,
-          result:
-            execution.verification?.message ??
-            "Execution completed but could not be verified.",
-        };
-        await saveMission(this.session.mission);
-        break;
-      }
-
-      if (execution.mission) {
-        this.session.mission = execution.mission;
-      } else {
-        const refreshedMission = await loadMission(this.session.mission.id);
-        if (refreshedMission) {
-          this.session.mission = refreshedMission;
-        }
-      }
-
-      if (
-        !this.session.mission ||
-        this.session.mission.status === "completed"
-      ) {
+      if (this.session.mission.status === "completed") {
         break;
       }
     }
@@ -282,28 +215,17 @@ export class Clara {
     }
 
     return this.session;
-
   }
 
-  /**
-   * Returns Clara's operational journal.
-   */
   public getJournal(): readonly JournalEntry[] {
     return this.journal.getEntries();
   }
 
-  /**
-   * Returns current state.
-   */
   public getState(): ClaraState {
     return this.session.state;
   }
 
-  /**
-   * Returns current session.
-   */
   public getSession(): ClaraSession {
     return this.session;
   }
-
 }
