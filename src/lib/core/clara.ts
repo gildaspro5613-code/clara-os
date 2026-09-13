@@ -23,7 +23,6 @@ import {
 import { orchestrate } from "./orchestrator";
 import {
   executeMissionTask,
-  completeMissionTask,
   canExecuteAutonomously,
 } from "@/modules/missions";
 import { dispatchEvent } from "./event-bus";
@@ -74,10 +73,6 @@ export class Clara {
           (task) => !task.completed,
         );
 
-        // Legacy V1 behaviour marked any non-autonomous task as "blocked",
-        // including ordinary conversational/manual mission steps with no
-        // execution contract. Those steps are still active work and should not
-        // be presented as an execution/approval blockage.
         if (
           persistedMission.status === "blocked" &&
           nextPendingTask &&
@@ -142,8 +137,6 @@ export class Clara {
     event: Event,
   ): Promise<ClaraSession> {
 
-    // Never rely on an in-memory singleton for continuity. A new serverless
-    // invocation must resume the same durable Clara state and active mission.
     await this.hydrateSession();
 
     this.session = await orchestrate(
@@ -182,21 +175,16 @@ export class Clara {
 
     while (
       this.session.mission &&
-      autonomousTasksExecuted <
-        MAX_AUTONOMOUS_TASKS_PER_EVENT
+      autonomousTasksExecuted < MAX_AUTONOMOUS_TASKS_PER_EVENT
     ) {
-      const nextPendingTask =
-        this.session.mission.tasks.find(
-          (task) => !task.completed,
-        );
+      const nextPendingTask = this.session.mission.tasks.find(
+        (task) => !task.completed,
+      );
 
       if (!nextPendingTask) {
         break;
       }
 
-      // A task with no execution contract is a normal conversational/manual
-      // step. Clara can keep conducting the mission without pretending that an
-      // execution approval or external intervention is required.
       if (!nextPendingTask.execution) {
         if (this.session.mission.status !== "active") {
           this.session.mission = {
@@ -209,8 +197,6 @@ export class Clara {
         break;
       }
 
-      // "blocked" is reserved for an actual execution task that exists but is
-      // not currently authorized for autonomous execution.
       if (!canExecuteAutonomously(nextPendingTask)) {
         this.session.mission = {
           ...this.session.mission,
@@ -218,37 +204,58 @@ export class Clara {
         };
 
         await saveMission(this.session.mission);
-
         break;
       }
 
-      const nextExecutableTask =
-        nextPendingTask;
-
-      const missionBeforeExecution =
-        this.session.mission;
-
-      const result =
-        await executeMissionTask(
-          nextExecutableTask,
-          missionBeforeExecution,
-        );
-
-      this.session.mission =
-        completeMissionTask(
-          missionBeforeExecution,
-          nextExecutableTask.id,
-          result,
-        );
-
-      if (this.session.mission) {
-        await saveMission(this.session.mission);
-      }
+      const execution = await executeMissionTask(
+        nextPendingTask,
+        this.session.mission,
+      );
 
       autonomousTasksExecuted += 1;
 
-      if (!result.success) {
+      if (execution.gate.outcome !== "ALLOW") {
+        this.session.mission = {
+          ...this.session.mission,
+          status: "blocked",
+          result: execution.gate.reason,
+        };
+        await saveMission(this.session.mission);
         break;
+      }
+
+      if (!execution.runtimeResult) {
+        break;
+      }
+
+      if (!execution.runtimeResult.success) {
+        this.session.mission = {
+          ...this.session.mission,
+          status: "blocked",
+          result: execution.runtimeResult.message,
+        };
+        await saveMission(this.session.mission);
+        break;
+      }
+
+      if (execution.verification?.status !== "VERIFIED") {
+        this.session.mission = {
+          ...this.session.mission,
+          result:
+            execution.verification?.message ??
+            "Execution completed but could not be verified.",
+        };
+        await saveMission(this.session.mission);
+        break;
+      }
+
+      if (execution.mission) {
+        this.session.mission = execution.mission;
+      } else {
+        const refreshedMission = await loadMission(this.session.mission.id);
+        if (refreshedMission) {
+          this.session.mission = refreshedMission;
+        }
       }
 
       if (
