@@ -30,6 +30,26 @@ export function resolveActorContext(context: unknown): ActorContext {
   };
 }
 
+/** Adds trusted session identity without replacing capability-specific input. */
+export function withActorContext(
+  context: unknown,
+  actor: ActorContext,
+): Record<string, unknown> {
+  const payload =
+    context && typeof context === "object" && !Array.isArray(context)
+      ? context as Record<string, unknown>
+      : { input: context };
+
+  return {
+    ...payload,
+    actor: {
+      userId: cleanString(actor.userId),
+      organizationId: cleanString(actor.organizationId),
+      workspaceId: cleanString(actor.workspaceId),
+    },
+  };
+}
+
 export function requireUserId(context: unknown): string {
   const { userId } = resolveActorContext(context);
   if (!userId) {
