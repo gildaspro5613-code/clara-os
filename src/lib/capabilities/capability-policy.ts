@@ -24,7 +24,6 @@ const PREPARE_CAPABILITIES = new Set([
 
 const EXECUTE_CAPABILITIES = new Set([
   "make.scenario.execute",
-  "lighting.fixture.intensity.set",
 ]);
 
 export function getCapabilityPolicy(capabilityId: string): CapabilityPolicy {
