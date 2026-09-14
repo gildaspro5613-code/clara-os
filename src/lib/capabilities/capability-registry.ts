@@ -9,7 +9,6 @@
  * ============================================
  */
 
-
 import {
   DriveSearchCapability,
   DriveSearchCapabilityDefinition,
@@ -55,17 +54,11 @@ import {
   DeleteSheetRowCapabilityDefinition,
 } from "./delete-sheet-row/capability";
 
- import {
-  ReadDocumentCapability,
-} from "./read-document/capability";
+import { ReadDocumentCapability } from "./read-document/capability";
 
-import {
-  FindDocumentCapability,
-} from "./find-document/capability";
+import { FindDocumentCapability } from "./find-document/capability";
 
-import {
-  ReadCalendarCapability,
-} from "./read-calendar/capability";
+import { ReadCalendarCapability } from "./read-calendar/capability";
 
 import {
   ReadGmailCapability,
@@ -82,10 +75,7 @@ import {
   SendGmailCapabilityDefinition,
 } from "./send-gmail/capability";
 
-
-import {
-  ReadCalendarCapabilityDefinition,
-} from "./read-calendar/capability";
+import { ReadCalendarCapabilityDefinition } from "./read-calendar/capability";
 
 import {
   CreateCalendarEventCapability,
@@ -97,19 +87,21 @@ import {
   UpdateCalendarEventCapabilityDefinition,
 } from "./update-calendar-event/capability";
 
-import { GitHubReadCapabilityDefinitions, type GitHubReadCapability } from "./github-read/capability";
+import {
+  GitHubReadCapabilityDefinitions,
+  type GitHubReadCapability,
+} from "./github-read/capability";
 import {
   MakeScenarioExecuteCapabilityDefinition,
   MakeScenarioPrepareCapabilityDefinition,
   type MakeScenarioCapability,
 } from "./make-scenario/capability";
-import {
-  MagicQFixtureIntensityCapabilityDefinition,
-  type MagicQLightingCapability,
-} from "./magicq-lighting/capability";
 
 /**
  * Capability definition.
+ *
+ * Vertical-specific capabilities (for example Clara Live lighting) are not
+ * registered here. They belong to their own vertical catalog and runtime.
  */
 export type CapabilityDefinition =
   | DriveSearchCapability
@@ -130,112 +122,54 @@ export type CapabilityDefinition =
   | DeleteCalendarEventCapability
   | SendGmailCapability
   | GitHubReadCapability
-  | MakeScenarioCapability
-  | MagicQLightingCapability;
+  | MakeScenarioCapability;
 
 /**
  * Capability Registry.
  */
 export class CapabilityRegistry {
-
-  /**
-   * Registered capabilities.
-   */
   private readonly capabilities: CapabilityDefinition[] = [
-
     DriveSearchCapabilityDefinition,
-
     GenerateDocumentCapabilityDefinition,
-
     WorkspaceInstallCapabilityDefinition,
-
     OrganizeDriveCapabilityDefinition,
-
     UpdateSheetRowCapabilityDefinition,
-
     AppendSheetRowCapabilityDefinition,
-
     ReadSheetCapabilityDefinition,
-
     FindSheetRowCapabilityDefinition,
-
     DeleteSheetRowCapabilityDefinition,
-
     ReadCalendarCapabilityDefinition,
-
     ReadGmailCapabilityDefinition,
-
     CreateCalendarEventCapabilityDefinition,
-
     UpdateCalendarEventCapabilityDefinition,
-
     SendGmailCapabilityDefinition,
-
     DeleteCalendarEventCapabilityDefinition,
-
     ...GitHubReadCapabilityDefinitions,
-
     MakeScenarioPrepareCapabilityDefinition,
-
     MakeScenarioExecuteCapabilityDefinition,
-
-    MagicQFixtureIntensityCapabilityDefinition,
-
   ];
 
-  /**
-   * Returns every capability.
-   */
   public getAll(): CapabilityDefinition[] {
-
     return this.capabilities;
-
   }
 
-  /**
-   * Returns a stable capability catalog
-   * for cognitive consumers such as the Brain.
-   */
   public getAvailableCapabilities(): Array<{
     id: string;
     name: string;
     description: string;
   }> {
-
-    return this.capabilities.map(
-      capability => ({
-        id: capability.id,
-        name: capability.name,
-        description: capability.description,
-      }),
-    );
-
+    return this.capabilities.map((capability) => ({
+      id: capability.id,
+      name: capability.name,
+      description: capability.description,
+    }));
   }
 
-  /**
-   * Finds one capability.
-   */
-  public findById(
-    id: string,
-  ): CapabilityDefinition | undefined {
-
-    return this.capabilities.find(
-
-      capability => capability.id === id,
-
-    );
-
+  public findById(id: string): CapabilityDefinition | undefined {
+    return this.capabilities.find((capability) => capability.id === id);
   }
 
-  /**
-   * Checks whether a capability exists.
-   */
-  public has(
-    id: string,
-  ): boolean {
-
+  public has(id: string): boolean {
     return this.findById(id) !== undefined;
-
   }
-
 }
