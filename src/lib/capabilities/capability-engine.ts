@@ -22,8 +22,6 @@ import { DatabaseConnectionRepository } from "@/lib/connections/connection-repos
 import { ConnectionResolver } from "@/lib/connections/connection-resolver";
 import { CredentialStore } from "@/lib/connections/credential-store";
 import { MakeConnectorAdapter, MAKE_CAPABILITIES } from "@/lib/connectors/make";
-import { MAGICQ_CAPABILITIES } from "@/lib/connectors/internal/chamsys/magicq";
-import { DisabledMagicQLightingExecutor, executeMagicQFixtureIntensityCapability, type MagicQLightingExecutor } from "./magicq-lighting/executor";
 import { ConnectorEngine } from "@/lib/connectors/core/connector-engine";
 import type { ConnectorContext } from "@/lib/connectors/core/connector-context";
 import { GoogleWorkspaceConnector, GOOGLE_WORKSPACE_CAPABILITIES } from "@/lib/connectors/google";
@@ -53,12 +51,14 @@ export interface CapabilityExecutionResult {
 
 /**
  * Capability Engine.
+ *
+ * The generic Clara OS engine executes horizontal business capabilities only.
+ * Vertical-specific execution (for example Clara Live lighting) is isolated
+ * from this catalog and must be provided by the corresponding vertical runtime.
  */
 export class CapabilityEngine {
   public constructor(
     private readonly githubRead = new GitHubReadExecutor(),
-    private readonly magicqLighting: MagicQLightingExecutor =
-      new DisabledMagicQLightingExecutor(),
   ) {}
 
   private readonly registry = new CapabilityRegistry();
@@ -139,13 +139,6 @@ export class CapabilityEngine {
           completedAt: new Date(),
         };
       }
-
-      case MAGICQ_CAPABILITIES.FIXTURE_INTENSITY_SET:
-        return executeMagicQFixtureIntensityCapability(
-          this.magicqLighting,
-          request.workspaceId,
-          request.context,
-        );
 
       case "github.repository.list":
       case "github.repository.read":
