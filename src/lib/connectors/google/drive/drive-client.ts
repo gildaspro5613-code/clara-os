@@ -5,33 +5,59 @@
  * --------------------------------------------
  * File : drive-client.ts
  * Responsibility :
- * Creates the authenticated
- * Google Drive SDK client.
+ * Creates and configures a Google Drive
+ * API client from an authenticated OAuth2
+ * client.
  * ============================================
  */
 
 import { google } from "googleapis";
 import type { drive_v3 } from "googleapis";
-
-import { GoogleAuth } from "@/lib/connectors/internal/google/auth/google-auth";
+import type { OAuth2Client } from "google-auth-library";
 
 /**
- * Google Drive client factory.
+ * Creates and configures a Google Drive
+ * API client.
+ *
+ * This class only creates the Drive client.
+ * It never performs Drive operations,
+ * authenticates users, refreshes tokens,
+ * or writes credentials.
  */
-export class DriveClient {
+export class GoogleDriveClient {
 
   /**
-   * Creates an authenticated Drive client.
+   * Configured Google Drive v3 client instance.
    */
-  public create(): drive_v3.Drive {
+  private readonly client: drive_v3.Drive;
 
-    return google.drive({
+  /**
+   * Creates a Drive client from an
+   * authenticated OAuth2 client.
+   *
+   * @param auth - An authenticated OAuth2Client
+   *   instance supplied by the caller.
+   */
+  constructor(
+    auth: OAuth2Client,
+  ) {
 
+    this.client = google.drive({
       version: "v3",
-
-      auth: GoogleAuth.createClient(),
-
+      auth,
     });
+
+  }
+
+  /**
+   * Returns the configured Drive v3 client.
+   *
+   * @returns The `drive_v3.Drive` instance
+   *   ready for use by Drive operation classes.
+   */
+  public getClient(): drive_v3.Drive {
+
+    return this.client;
 
   }
 
