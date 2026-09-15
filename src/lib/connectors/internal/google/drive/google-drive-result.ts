@@ -11,6 +11,38 @@
  */
 
 /**
+ * Lightweight Drive resource descriptor used in search / list results.
+ */
+export interface DriveResourceEntry {
+
+  /**
+   * Resource identifier.
+   */
+  id: string;
+
+  /**
+   * Display name.
+   */
+  name: string;
+
+  /**
+   * MIME type (folder = `application/vnd.google-apps.folder`).
+   */
+  mimeType?: string;
+
+  /**
+   * Parent folder identifiers.
+   */
+  parents?: string[];
+
+  /**
+   * URL to open the resource in a browser.
+   */
+  webViewLink?: string;
+
+}
+
+/**
  * Google Drive result.
  */
 export interface GoogleDriveResult {
@@ -21,12 +53,12 @@ export interface GoogleDriveResult {
   success: boolean;
 
   /**
-   * File identifier.
+   * File identifier (primary resource).
    */
   fileId: string;
 
   /**
-   * File name.
+   * File name (primary resource).
    */
   fileName: string;
 
@@ -36,14 +68,24 @@ export interface GoogleDriveResult {
   url?: string;
 
   /**
-   * File content.
+   * Binary file content (download operations).
    */
   content?: Buffer;
+
+  /**
+   * Extracted plain-text content (readContent operations).
+   */
+  textContent?: string;
 
   /**
    * File MIME type.
    */
   mimeType?: string;
+
+  /**
+   * Multiple resources returned by search / list operations.
+   */
+  entries?: DriveResourceEntry[];
 
   /**
    * Optional message.

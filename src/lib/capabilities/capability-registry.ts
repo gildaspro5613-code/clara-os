@@ -19,12 +19,18 @@ import {
   WorkspaceInstallCapabilityDefinition,
 } from "./workspace-install/capability";
 
+import {
+  DriveSearchCapability,
+  DriveSearchCapabilityDefinition,
+} from "./drive-search/capability";
+
 /**
  * Capability definition.
  */
 export type CapabilityDefinition =
   | GenerateDocumentCapability
-  | WorkspaceInstallCapability;
+  | WorkspaceInstallCapability
+  | DriveSearchCapability;
 
 /**
  * Capability Registry.
@@ -39,6 +45,8 @@ export class CapabilityRegistry {
     GenerateDocumentCapabilityDefinition,
 
     WorkspaceInstallCapabilityDefinition,
+
+    DriveSearchCapabilityDefinition,
 
   ];
 

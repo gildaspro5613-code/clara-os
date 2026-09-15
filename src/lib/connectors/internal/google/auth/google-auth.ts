@@ -28,17 +28,17 @@ export class GoogleAuth {
 
     const client = new google.auth.OAuth2(
 
-      googleConfig.clientId,
+      googleConfig.clientId.trim(),
 
-      googleConfig.clientSecret,
+      googleConfig.clientSecret.trim(),
 
-      googleConfig.redirectUri,
+      googleConfig.redirectUri.trim(),
 
     );
 
     client.setCredentials({
 
-      refresh_token: googleConfig.refreshToken,
+      refresh_token: googleConfig.refreshToken.trim(),
 
     });
 
@@ -53,13 +53,13 @@ export class GoogleAuth {
 
     const required = [
 
-      ["GOOGLE_CLIENT_ID", googleConfig.clientId],
+      ["GOOGLE_CLIENT_ID", googleConfig.clientId.trim()],
 
-      ["GOOGLE_CLIENT_SECRET", googleConfig.clientSecret],
+      ["GOOGLE_CLIENT_SECRET", googleConfig.clientSecret.trim()],
 
-      ["GOOGLE_REDIRECT_URI", googleConfig.redirectUri],
+      ["GOOGLE_REDIRECT_URI", googleConfig.redirectUri.trim()],
 
-      ["GOOGLE_REFRESH_TOKEN", googleConfig.refreshToken],
+      ["GOOGLE_REFRESH_TOKEN", googleConfig.refreshToken.trim()],
 
     ];
 
