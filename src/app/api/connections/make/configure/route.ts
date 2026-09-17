@@ -22,8 +22,10 @@ function isMakeWebhookHost(hostname: string): boolean {
 
 function validWebhookUrl(value: unknown): value is string {
   if (typeof value !== "string") return false;
+  const candidate = value.trim();
+  if (!candidate || candidate.length > 2048) return false;
   try {
-    const url = new URL(value.trim());
+    const url = new URL(candidate);
     return url.protocol === "https:" && !url.username && !url.password && isMakeWebhookHost(url.hostname);
   } catch {
     return false;
