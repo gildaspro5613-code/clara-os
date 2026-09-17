@@ -102,10 +102,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "SCENARIO_LIMIT_REACHED" }, { status: 409, headers: PRIVATE_HEADERS });
     }
 
+    const previousScenario = previousScenarios[scenarioKey];
     const credentials: MakeWebhookCredentials = {
       scenarios: {
         ...previousScenarios,
-        [scenarioKey]: { url: webhookUrl },
+        [scenarioKey]: {
+          ...(previousScenario?.headers ? { headers: previousScenario.headers } : {}),
+          ...(previousScenario?.timeoutMs ? { timeoutMs: previousScenario.timeoutMs } : {}),
+          url: webhookUrl,
+        },
       },
     };
 
