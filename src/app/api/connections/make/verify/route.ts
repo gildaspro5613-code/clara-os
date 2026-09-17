@@ -19,7 +19,8 @@ function isMakeWebhookHost(hostname: string): boolean {
   return host === "make.com" || host.endsWith(".make.com") || host === "integromat.com" || host.endsWith(".integromat.com");
 }
 
-function isValidMakeWebhook(value: string): boolean {
+function isValidMakeWebhook(value: unknown): value is string {
+  if (typeof value !== "string") return false;
   const candidate = value.trim();
   if (!candidate || candidate.length > 2048) return false;
   try {
@@ -64,15 +65,14 @@ export async function POST(request: Request) {
     }
 
     const credentials = await credentialStore.get<MakeWebhookCredentials>(connection.id);
-    const scenario = credentials?.scenarios?.[scenarioKey];
+    const scenarios = credentials && typeof credentials.scenarios === "object" && credentials.scenarios !== null && !Array.isArray(credentials.scenarios)
+      ? credentials.scenarios
+      : {};
+    const scenario = scenarios[scenarioKey];
 
-    if (!scenario) {
-      return NextResponse.json({ error: "MAKE_SCENARIO_NOT_CONFIGURED" }, { status: 404, headers: PRIVATE_HEADERS });
-    }
-
-    if (!isValidMakeWebhook(scenario.url)) {
+    if (!scenario || typeof scenario !== "object" || !isValidMakeWebhook(scenario.url)) {
       await repository.updateStatus(connection.id, ConnectionStatus.RECONNECT_REQUIRED);
-      return NextResponse.json({ error: "INVALID_URL" }, { status: 400, headers: PRIVATE_HEADERS });
+      return NextResponse.json({ error: "INVALID_CONFIGURATION" }, { status: 400, headers: PRIVATE_HEADERS });
     }
 
     await repository.updateStatus(connection.id, ConnectionStatus.ACTIVE);
