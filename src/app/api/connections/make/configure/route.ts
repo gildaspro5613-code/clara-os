@@ -12,6 +12,7 @@ type ConfigureMakeRequest = {
 };
 
 const PRIVATE_HEADERS = { "Cache-Control": "private, no-store" };
+const MAX_SCENARIOS = 100;
 
 function validScenarioKey(value: unknown): value is string {
   return typeof value === "string" && /^[a-zA-Z0-9._:-]{1,120}$/.test(value.trim());
@@ -68,10 +69,15 @@ export async function POST(request: Request) {
     const previousCredentials = existing
       ? await credentialStore.get<MakeWebhookCredentials>(connection.id)
       : null;
+    const previousScenarios = previousCredentials?.scenarios ?? {};
+
+    if (!(scenarioKey in previousScenarios) && Object.keys(previousScenarios).length >= MAX_SCENARIOS) {
+      return NextResponse.json({ error: "SCENARIO_LIMIT_REACHED" }, { status: 409, headers: PRIVATE_HEADERS });
+    }
 
     const credentials: MakeWebhookCredentials = {
       scenarios: {
-        ...(previousCredentials?.scenarios ?? {}),
+        ...previousScenarios,
         [scenarioKey]: { url: webhookUrl },
       },
     };
