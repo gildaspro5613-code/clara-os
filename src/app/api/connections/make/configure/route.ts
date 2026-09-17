@@ -41,7 +41,15 @@ function scenarioMap(value: MakeWebhookCredentials | null): MakeWebhookCredentia
   const scenarios: MakeWebhookCredentials["scenarios"] = {};
   for (const [key, scenario] of Object.entries(value.scenarios)) {
     const url = scenario && typeof scenario === "object" ? normalizeWebhookUrl(scenario.url) : null;
-    if (validScenarioKey(key) && url) scenarios[key] = { ...scenario, url };
+    if (!validScenarioKey(key) || !url) continue;
+    const headers = scenario.headers && typeof scenario.headers === "object" && !Array.isArray(scenario.headers)
+      ? Object.fromEntries(Object.entries(scenario.headers).filter(([name, headerValue]) => name.length <= 128 && typeof headerValue === "string" && headerValue.length <= 4096))
+      : undefined;
+    scenarios[key] = {
+      url,
+      ...(headers && Object.keys(headers).length ? { headers } : {}),
+      ...(typeof scenario.timeoutMs === "number" ? { timeoutMs: scenario.timeoutMs } : {}),
+    };
   }
   return scenarios;
 }
