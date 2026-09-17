@@ -16,7 +16,7 @@
   "scenarioKey": "Clé du scénario",
   "webhook": "Webhook HTTPS Make",
   "save": "Enregistrer",
-  "saved": "Configuration enregistrée. Validez maintenant sa configuration locale.",
+  "saved": "Configuration enregistrée. Validez maintenant sa cohérence locale.",
   "saveFailed": "La configuration Make n’a pas pu être enregistrée.",
   "scenarioRequired": "Indiquez la clé du scénario à valider.",
   "verified": "Configuration Make validée. Aucun scénario n’a été exécuté.",
