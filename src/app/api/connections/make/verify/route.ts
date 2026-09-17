@@ -2,13 +2,27 @@ import { NextResponse } from "next/server";
 
 import { ConnectionStatus } from "@/lib/connections/connection";
 import { DatabaseConnectionRepository } from "@/lib/connections/connection-repository";
-import { ConnectionResolver } from "@/lib/connections/connection-resolver";
 import { CredentialStore } from "@/lib/connections/credential-store";
 import { CURRENT_WORKSPACE_ID } from "@/lib/connections/current-workspace";
-import { MakeConnectorAdapter, MakeWebhookError } from "@/lib/connectors/make";
+import type { MakeWebhookCredentials } from "@/lib/connectors/make";
 
 type VerifyMakeRequest = { scenarioKey?: unknown };
 
+function isHttpsWebhook(value: string): boolean {
+  try {
+    return new URL(value).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Verifies the local Make connection configuration only.
+ *
+ * This route deliberately does not call a Make webhook: connection verification
+ * must never trigger an automation or other business side effect. Real provider
+ * execution remains the responsibility of the Make capability execution path.
+ */
 export async function POST(request: Request) {
   let body: VerifyMakeRequest;
   try {
@@ -31,32 +45,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "MAKE_NOT_CONFIGURED" }, { status: 404 });
     }
 
-    const resolver = new ConnectionResolver(repository, credentialStore);
-    const adapter = new MakeConnectorAdapter(resolver);
+    const credentials = await credentialStore.get<MakeWebhookCredentials>(connection.id);
+    const scenario = credentials?.scenarios?.[scenarioKey];
 
-    await adapter.execute(connection.id, {
-      capability: "make.scenario.execute",
-      input: {
-        scenarioKey,
-        payload: {
-          type: "clara.connection.verify",
-          timestamp: new Date().toISOString(),
-        },
-      },
-    });
+    if (!scenario) {
+      return NextResponse.json({ error: "MAKE_SCENARIO_NOT_CONFIGURED" }, { status: 404 });
+    }
+
+    if (!isHttpsWebhook(scenario.url)) {
+      await repository.updateStatus(connection.id, ConnectionStatus.RECONNECT_REQUIRED);
+      return NextResponse.json({ error: "INVALID_URL" }, { status: 400 });
+    }
 
     await repository.updateStatus(connection.id, ConnectionStatus.ACTIVE);
-    return NextResponse.json({ provider: "make", connected: true, status: ConnectionStatus.ACTIVE });
-  } catch (error) {
-    const connection = await repository.findByWorkspaceAndProvider(CURRENT_WORKSPACE_ID, "make");
-    if (connection) await repository.updateStatus(connection.id, ConnectionStatus.RECONNECT_REQUIRED);
-
-    if (error instanceof MakeWebhookError) {
-      return NextResponse.json(
-        { error: error.code, retryable: error.retryable },
-        { status: error.status && error.status >= 400 && error.status < 600 ? error.status : 502 },
-      );
-    }
+    return NextResponse.json({
+      provider: "make",
+      connected: true,
+      status: ConnectionStatus.ACTIVE,
+      verification: "LOCAL_CONFIGURATION",
+    });
+  } catch {
     return NextResponse.json({ error: "MAKE_VERIFICATION_FAILED" }, { status: 502 });
   }
 }
