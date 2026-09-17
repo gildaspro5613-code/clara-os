@@ -53,11 +53,7 @@ function scenarioMap(value: MakeWebhookCredentials | null): MakeWebhookCredentia
     const timeoutMs = typeof scenario.timeoutMs === "number" && Number.isFinite(scenario.timeoutMs)
       ? Math.min(39_000, Math.max(1_000, Math.round(scenario.timeoutMs)))
       : undefined;
-    scenarios[key] = {
-      url,
-      ...(headers ? { headers } : {}),
-      ...(timeoutMs ? { timeoutMs } : {}),
-    };
+    scenarios[key] = { url, ...(headers ? { headers } : {}), ...(timeoutMs ? { timeoutMs } : {}) };
   }
   return scenarios;
 }
@@ -84,18 +80,15 @@ export async function POST(request: Request) {
     const now = new Date();
 
     const connection: Connection = existing ?? {
-      id: crypto.randomUUID(),
-      workspaceId: CURRENT_WORKSPACE_ID,
-      provider: "make",
-      status: ConnectionStatus.CONFIGURED,
-      scopes: [],
-      createdAt: now,
-      updatedAt: now,
+      id: crypto.randomUUID(), workspaceId: CURRENT_WORKSPACE_ID, provider: "make",
+      status: ConnectionStatus.CONFIGURED, scopes: [], createdAt: now, updatedAt: now,
     };
 
-    const previousCredentials = existing
-      ? await credentialStore.get<MakeWebhookCredentials>(connection.id)
-      : null;
+    const previousCredentials = existing ? await credentialStore.get<MakeWebhookCredentials>(connection.id) : null;
+    if (existing && !previousCredentials) {
+      await repository.updateStatus(connection.id, ConnectionStatus.RECONNECT_REQUIRED).catch(() => undefined);
+      return NextResponse.json({ error: "EXISTING_CREDENTIALS_UNAVAILABLE" }, { status: 409, headers: PRIVATE_HEADERS });
+    }
     const previousScenarios = scenarioMap(previousCredentials);
 
     if (!(scenarioKey in previousScenarios) && Object.keys(previousScenarios).length >= MAX_SCENARIOS) {
@@ -119,25 +112,13 @@ export async function POST(request: Request) {
 
     await credentialStore.set(connection.id, credentials);
     try {
-      await repository.save({
-        ...connection,
-        status: ConnectionStatus.CONFIGURED,
-        scopes: [...scopes],
-        updatedAt: now,
-      });
+      await repository.save({ ...connection, status: ConnectionStatus.CONFIGURED, scopes: [...scopes], updatedAt: now });
     } catch (error) {
-      if (existing && previousCredentials) {
-        await credentialStore.set(connection.id, previousCredentials).catch(() => undefined);
-      }
+      if (existing && previousCredentials) await credentialStore.set(connection.id, previousCredentials).catch(() => undefined);
       throw error;
     }
 
-    return NextResponse.json({
-      provider: "make",
-      connected: false,
-      status: ConnectionStatus.CONFIGURED,
-      scenarioKey,
-    }, { headers: PRIVATE_HEADERS });
+    return NextResponse.json({ provider: "make", connected: false, status: ConnectionStatus.CONFIGURED, scenarioKey }, { headers: PRIVATE_HEADERS });
   } catch {
     return NextResponse.json({ error: "CONFIGURATION_UNAVAILABLE" }, { status: 503, headers: PRIVATE_HEADERS });
   }
