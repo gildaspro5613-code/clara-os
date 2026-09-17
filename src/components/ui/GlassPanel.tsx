@@ -25,6 +25,8 @@ export default function GlassPanel({
         p-5 sm:p-6
         text-white
         transition-all duration-300
+        hover:border-cyan-400/20
+        hover:bg-white/[0.05]
         ${className}
       `}
     >
