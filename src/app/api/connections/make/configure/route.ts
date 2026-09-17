@@ -70,13 +70,15 @@ export async function POST(request: Request) {
     const scopes = new Set(connection.scopes);
     scopes.add(`make:scenario:${scenarioKey}`);
 
+    // Persist the encrypted secret first. If this fails, the public connection
+    // metadata must not claim that a configuration exists without credentials.
+    await credentialStore.set(connection.id, credentials);
     await repository.save({
       ...connection,
       status: ConnectionStatus.CONFIGURED,
       scopes: [...scopes],
       updatedAt: now,
     });
-    await credentialStore.set(connection.id, credentials);
 
     return NextResponse.json({
       provider: "make",
