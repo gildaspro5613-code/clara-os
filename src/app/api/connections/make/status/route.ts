@@ -26,10 +26,12 @@ export async function GET() {
       });
     }
 
-    const scenarioKeys = connection.scopes
-      .filter((scope) => scope.startsWith("make:scenario:"))
-      .map((scope) => scope.slice("make:scenario:".length))
-      .filter(Boolean);
+    const scenarioKeys = [...new Set(
+      connection.scopes
+        .filter((scope) => scope.startsWith("make:scenario:"))
+        .map((scope) => scope.slice("make:scenario:".length))
+        .filter(Boolean),
+    )];
 
     return NextResponse.json({
       provider: "make",
