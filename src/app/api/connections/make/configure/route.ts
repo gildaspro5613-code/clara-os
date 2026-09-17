@@ -70,15 +70,23 @@ export async function POST(request: Request) {
     const scopes = new Set(connection.scopes);
     scopes.add(`make:scenario:${scenarioKey}`);
 
-    // Persist the encrypted secret first. If this fails, the public connection
-    // metadata must not claim that a configuration exists without credentials.
     await credentialStore.set(connection.id, credentials);
-    await repository.save({
-      ...connection,
-      status: ConnectionStatus.CONFIGURED,
-      scopes: [...scopes],
-      updatedAt: now,
-    });
+    try {
+      await repository.save({
+        ...connection,
+        status: ConnectionStatus.CONFIGURED,
+        scopes: [...scopes],
+        updatedAt: now,
+      });
+    } catch (error) {
+      // Restore the previous encrypted value when updating an existing connection.
+      // A newly allocated orphan credential is unreachable because no connection
+      // metadata was persisted for its random id.
+      if (existing && previousCredentials) {
+        await credentialStore.set(connection.id, previousCredentials).catch(() => undefined);
+      }
+      throw error;
+    }
 
     return NextResponse.json({
       provider: "make",
