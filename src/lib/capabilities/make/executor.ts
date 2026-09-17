@@ -1,3 +1,4 @@
+import { ConnectionStatus } from "@/lib/connections/connection";
 import type { ConnectionRepository } from "@/lib/connections/connection-repository";
 import { DatabaseConnectionRepository } from "@/lib/connections/connection-repository";
 import { ConnectionResolver, ConnectionResolutionError } from "@/lib/connections/connection-resolver";
@@ -62,6 +63,10 @@ export class MakeCapabilityExecutor {
     const connection = await this.connections.findByWorkspaceAndProvider(normalizedWorkspaceId, "make");
     if (!connection) {
       return this.failure(capabilityId, undefined, "CONNECTION_REQUIRED", "Make is not configured for this Clara OS workspace.");
+    }
+
+    if (connection.status !== ConnectionStatus.ACTIVE) {
+      return this.failure(capabilityId, connection.id, "CONNECTION_NOT_ACTIVE", "The Make connection must be active before preparing or executing scenarios.");
     }
 
     if (!isMakeScenarioAllowed(connection.scopes, scenarioKey)) {
