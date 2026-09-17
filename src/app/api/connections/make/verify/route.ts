@@ -8,6 +8,8 @@ import type { MakeWebhookCredentials } from "@/lib/connectors/make";
 
 type VerifyMakeRequest = { scenarioKey?: unknown };
 
+const PRIVATE_HEADERS = { "Cache-Control": "private, no-store" };
+
 function validScenarioKey(value: unknown): value is string {
   return typeof value === "string" && /^[a-zA-Z0-9._:-]{1,120}$/.test(value.trim());
 }
@@ -40,11 +42,11 @@ export async function POST(request: Request) {
   try {
     body = (await request.json()) as VerifyMakeRequest;
   } catch {
-    return NextResponse.json({ error: "INVALID_REQUEST" }, { status: 400 });
+    return NextResponse.json({ error: "INVALID_REQUEST" }, { status: 400, headers: PRIVATE_HEADERS });
   }
 
   if (!validScenarioKey(body.scenarioKey)) {
-    return NextResponse.json({ error: "INVALID_SCENARIO_KEY" }, { status: 400 });
+    return NextResponse.json({ error: "INVALID_SCENARIO_KEY" }, { status: 400, headers: PRIVATE_HEADERS });
   }
   const scenarioKey = body.scenarioKey.trim();
 
@@ -54,23 +56,23 @@ export async function POST(request: Request) {
   try {
     const connection = await repository.findByWorkspaceAndProvider(CURRENT_WORKSPACE_ID, "make");
     if (!connection) {
-      return NextResponse.json({ error: "MAKE_NOT_CONFIGURED" }, { status: 404 });
+      return NextResponse.json({ error: "MAKE_NOT_CONFIGURED" }, { status: 404, headers: PRIVATE_HEADERS });
     }
 
     if (!connection.scopes.includes(`make:scenario:${scenarioKey}`)) {
-      return NextResponse.json({ error: "MAKE_SCENARIO_NOT_AUTHORIZED" }, { status: 403 });
+      return NextResponse.json({ error: "MAKE_SCENARIO_NOT_AUTHORIZED" }, { status: 403, headers: PRIVATE_HEADERS });
     }
 
     const credentials = await credentialStore.get<MakeWebhookCredentials>(connection.id);
     const scenario = credentials?.scenarios?.[scenarioKey];
 
     if (!scenario) {
-      return NextResponse.json({ error: "MAKE_SCENARIO_NOT_CONFIGURED" }, { status: 404 });
+      return NextResponse.json({ error: "MAKE_SCENARIO_NOT_CONFIGURED" }, { status: 404, headers: PRIVATE_HEADERS });
     }
 
     if (!isValidMakeWebhook(scenario.url)) {
       await repository.updateStatus(connection.id, ConnectionStatus.RECONNECT_REQUIRED);
-      return NextResponse.json({ error: "INVALID_URL" }, { status: 400 });
+      return NextResponse.json({ error: "INVALID_URL" }, { status: 400, headers: PRIVATE_HEADERS });
     }
 
     await repository.updateStatus(connection.id, ConnectionStatus.ACTIVE);
@@ -79,8 +81,8 @@ export async function POST(request: Request) {
       connected: true,
       status: ConnectionStatus.ACTIVE,
       validation: "LOCAL_CONFIGURATION",
-    });
+    }, { headers: PRIVATE_HEADERS });
   } catch {
-    return NextResponse.json({ error: "MAKE_VALIDATION_FAILED" }, { status: 502 });
+    return NextResponse.json({ error: "MAKE_VALIDATION_FAILED" }, { status: 502, headers: PRIVATE_HEADERS });
   }
 }
