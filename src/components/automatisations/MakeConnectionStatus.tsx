@@ -4,7 +4,7 @@ import { FormEvent, useCallback, useEffect, useState } from "react";
 import { CheckCircle2, Loader2, Settings2, Workflow } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-type MakeStatus = { provider: "make"; connected: boolean; status: string; updatedAt?: string };
+type MakeStatus = { provider: "make"; connected: boolean; status: string; scenarioKeys?: string[]; updatedAt?: string };
 
 function badgeClass(status: string) {
   if (status === "ACTIVE") return "border-emerald-400/20 bg-emerald-400/5 text-emerald-300/80";
@@ -26,13 +26,14 @@ export default function MakeConnectionStatus() {
     const response = await fetch("/api/connections/make/status", { cache: "no-store", signal });
     const data = (await response.json()) as MakeStatus;
     setState(data);
+    if (data.scenarioKeys?.length === 1) setScenarioKey(data.scenarioKeys[0]);
   }, []);
 
   useEffect(() => {
     const controller = new AbortController();
     refreshStatus(controller.signal).catch((error: unknown) => {
       if (error instanceof Error && error.name === "AbortError") return;
-      setState({ provider: "make", connected: false, status: "UNAVAILABLE" });
+      setState({ provider: "make", connected: false, status: "UNAVAILABLE", scenarioKeys: [] });
     });
     return () => controller.abort();
   }, [refreshStatus]);
