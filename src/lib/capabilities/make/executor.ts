@@ -54,20 +54,6 @@ export class MakeCapabilityExecutor {
       return this.failure(capabilityId, undefined, "SCENARIO_KEY_REQUIRED", "A Make scenario key is required.");
     }
 
-    if (capabilityId === MAKE_CAPABILITIES.SCENARIO_PREPARE) {
-      return {
-        capabilityId,
-        success: true,
-        provider: "make",
-        status: "completed",
-        data: {
-          prepared: true,
-          scenarioKey,
-          payload: candidate?.payload ?? {},
-        },
-      };
-    }
-
     const normalizedWorkspaceId = workspaceId?.trim() ?? "";
     if (!normalizedWorkspaceId) {
       return this.failure(capabilityId, undefined, "WORKSPACE_REQUIRED", "Workspace identity is required for Make execution.");
@@ -80,6 +66,21 @@ export class MakeCapabilityExecutor {
 
     if (!isMakeScenarioAllowed(connection.scopes, scenarioKey)) {
       return this.failure(capabilityId, connection.id, "SCENARIO_NOT_ALLOWED", "This Make scenario is not authorized for the workspace.");
+    }
+
+    if (capabilityId === MAKE_CAPABILITIES.SCENARIO_PREPARE) {
+      return {
+        capabilityId,
+        success: true,
+        provider: "make",
+        connectionId: connection.id,
+        status: "completed",
+        data: {
+          prepared: true,
+          scenarioKey,
+          payload: candidate?.payload ?? {},
+        },
+      };
     }
 
     try {
