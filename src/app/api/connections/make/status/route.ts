@@ -22,13 +22,20 @@ export async function GET() {
         provider: "make",
         connected: false,
         status: "NOT_CONFIGURED",
+        scenarioKeys: [],
       });
     }
+
+    const scenarioKeys = connection.scopes
+      .filter((scope) => scope.startsWith("make:scenario:"))
+      .map((scope) => scope.slice("make:scenario:".length))
+      .filter(Boolean);
 
     return NextResponse.json({
       provider: "make",
       connected: connection.status === "ACTIVE",
       status: connection.status,
+      scenarioKeys,
       updatedAt: connection.updatedAt.toISOString(),
     });
   } catch {
@@ -37,6 +44,7 @@ export async function GET() {
         provider: "make",
         connected: false,
         status: "UNAVAILABLE",
+        scenarioKeys: [],
       },
       { status: 503 },
     );
