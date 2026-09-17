@@ -38,11 +38,12 @@ function normalizeWebhookUrl(value: unknown): string | null {
 
 function scenarioMap(value: MakeWebhookCredentials | null): MakeWebhookCredentials["scenarios"] {
   if (!value || typeof value.scenarios !== "object" || value.scenarios === null || Array.isArray(value.scenarios)) return {};
-  return Object.fromEntries(
-    Object.entries(value.scenarios).filter(([key, scenario]) =>
-      validScenarioKey(key) && scenario && typeof scenario === "object" && normalizeWebhookUrl(scenario.url),
-    ),
-  );
+  const scenarios: MakeWebhookCredentials["scenarios"] = {};
+  for (const [key, scenario] of Object.entries(value.scenarios)) {
+    const url = scenario && typeof scenario === "object" ? normalizeWebhookUrl(scenario.url) : null;
+    if (validScenarioKey(key) && url) scenarios[key] = { ...scenario, url };
+  }
+  return scenarios;
 }
 
 export async function POST(request: Request) {
