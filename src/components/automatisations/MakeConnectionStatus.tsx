@@ -25,6 +25,7 @@ export default function MakeConnectionStatus() {
   const refreshStatus = useCallback(async (signal?: AbortSignal) => {
     const response = await fetch("/api/connections/make/status", { cache: "no-store", signal });
     const data = (await response.json()) as MakeStatus;
+    if (!response.ok) throw new Error("STATUS_UNAVAILABLE");
     setState(data);
     if (data.scenarioKeys?.length) {
       setScenarioKey((current) => data.scenarioKeys?.includes(current) ? current : data.scenarioKeys?.[0] ?? "");
