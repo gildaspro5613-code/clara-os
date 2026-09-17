@@ -12,9 +12,10 @@ function validScenarioKey(value: unknown): value is string {
   return typeof value === "string" && /^[a-zA-Z0-9._:-]{1,120}$/.test(value.trim());
 }
 
-function isHttpsWebhook(value: string): boolean {
+function isValidHttpsWebhook(value: string): boolean {
   try {
-    return new URL(value).protocol === "https:";
+    const url = new URL(value);
+    return url.protocol === "https:" && !url.username && !url.password;
   } catch {
     return false;
   }
@@ -60,7 +61,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "MAKE_SCENARIO_NOT_CONFIGURED" }, { status: 404 });
     }
 
-    if (!isHttpsWebhook(scenario.url)) {
+    if (!isValidHttpsWebhook(scenario.url)) {
       await repository.updateStatus(connection.id, ConnectionStatus.RECONNECT_REQUIRED);
       return NextResponse.json({ error: "INVALID_URL" }, { status: 400 });
     }
