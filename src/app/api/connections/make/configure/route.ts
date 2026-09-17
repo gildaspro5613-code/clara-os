@@ -14,6 +14,7 @@ type ConfigureMakeRequest = {
 const PRIVATE_HEADERS = { "Cache-Control": "private, no-store" };
 const MAX_SCENARIOS = 100;
 const MAX_HEADERS = 32;
+const HEADER_NAME = /^[!#$%&'*+.^_`|~0-9A-Za-z-]{1,128}$/;
 
 function validScenarioKey(value: unknown): value is string {
   return typeof value === "string" && /^[a-zA-Z0-9._:-]{1,120}$/.test(value.trim());
@@ -45,7 +46,7 @@ function scenarioMap(value: MakeWebhookCredentials | null): MakeWebhookCredentia
     if (!validScenarioKey(key) || !url) continue;
     const headerEntries = scenario.headers && typeof scenario.headers === "object" && !Array.isArray(scenario.headers)
       ? Object.entries(scenario.headers)
-          .filter(([name, headerValue]) => name.length <= 128 && typeof headerValue === "string" && headerValue.length <= 4096)
+          .filter(([name, headerValue]) => HEADER_NAME.test(name) && typeof headerValue === "string" && headerValue.length <= 4096 && !/[\r\n]/.test(headerValue))
           .slice(0, MAX_HEADERS)
       : [];
     const headers = headerEntries.length ? Object.fromEntries(headerEntries) : undefined;
