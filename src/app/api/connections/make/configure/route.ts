@@ -29,7 +29,7 @@ function validWebhookUrl(value: unknown): value is string {
   if (!candidate || candidate.length > 2048) return false;
   try {
     const url = new URL(candidate);
-    return url.protocol === "https:" && !url.username && !url.password && !url.hash && isMakeWebhookHost(url.hostname) && url.pathname.length > 1;
+    return url.protocol === "https:" && !url.username && !url.password && !url.hash && !url.search && isMakeWebhookHost(url.hostname) && url.pathname.length > 1;
   } catch {
     return false;
   }
