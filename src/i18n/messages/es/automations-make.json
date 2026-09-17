@@ -1,5 +1,6 @@
 {
-  "description":"Ejecuta las automatizaciones externas autorizadas por Clara OS sin exponer credenciales ni webhooks al navegador.",
-  "status":{"ACTIVE":"Conectado","CONFIGURED":"Configurado","PENDING_AUTHENTICATION":"Configuración pendiente","RECONNECT_REQUIRED":"Reconexión necesaria","DISABLED":"Desactivado","NOT_CONFIGURED":"No conectado","UNAVAILABLE":"Estado no disponible","LOADING":"Verificando…"},
-  "configure":"Configurar","modify":"Modificar","verify":"Verificar","scenarioKey":"Clave del escenario","webhook":"Webhook HTTPS de Make","save":"Guardar","saved":"Configuración guardada. Ya puede verificar la conexión.","saveFailed":"No se pudo guardar la configuración de Make.","scenarioRequired":"Indique la clave del escenario que desea verificar.","verified":"Conexión Make verificada y activa.","verifyFailed":"La verificación de Make ha fallado. Compruebe el escenario y su webhook."
+  "description": "Ejecuta automatizaciones externas autorizadas por Clara OS sin exponer credenciales ni webhooks al navegador.",
+  "status": {"ACTIVE":"Configurado","CONFIGURED":"Pendiente de validación","PENDING_AUTHENTICATION":"Configuración pendiente","RECONNECT_REQUIRED":"Reconfiguración necesaria","DISABLED":"Desactivado","NOT_CONFIGURED":"No configurado","UNAVAILABLE":"Estado no disponible","LOADING":"Cargando…"},
+  "configure":"Configurar","modify":"Modificar","verify":"Validar configuración","scenarioKey":"Clave del escenario","webhook":"Webhook HTTPS de Make","save":"Guardar",
+  "saved":"Configuración guardada. Valida ahora su configuración local.","saveFailed":"No se pudo guardar la configuración de Make.","scenarioRequired":"Indica la clave del escenario que deseas validar.","verified":"Configuración de Make validada. No se ejecutó ningún escenario.","verifyFailed":"La validación local ha fallado. Comprueba la clave del escenario y la configuración del webhook."
 }
