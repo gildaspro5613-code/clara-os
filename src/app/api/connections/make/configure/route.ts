@@ -23,15 +23,16 @@ function isMakeWebhookHost(hostname: string): boolean {
   return host === "make.com" || host.endsWith(".make.com") || host === "integromat.com" || host.endsWith(".integromat.com");
 }
 
-function validWebhookUrl(value: unknown): value is string {
-  if (typeof value !== "string") return false;
+function normalizeWebhookUrl(value: unknown): string | null {
+  if (typeof value !== "string") return null;
   const candidate = value.trim();
-  if (!candidate || candidate.length > 2048) return false;
+  if (!candidate || candidate.length > 2048) return null;
   try {
     const url = new URL(candidate);
-    return url.protocol === "https:" && !url.username && !url.password && !url.hash && !url.search && isMakeWebhookHost(url.hostname) && url.pathname.length > 1;
+    if (url.protocol !== "https:" || url.username || url.password || url.hash || url.search || !isMakeWebhookHost(url.hostname) || url.pathname.length <= 1) return null;
+    return url.toString();
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -43,12 +44,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "INVALID_REQUEST" }, { status: 400, headers: PRIVATE_HEADERS });
   }
 
-  if (!validScenarioKey(body.scenarioKey) || !validWebhookUrl(body.webhookUrl)) {
+  const webhookUrl = normalizeWebhookUrl(body.webhookUrl);
+  if (!validScenarioKey(body.scenarioKey) || !webhookUrl) {
     return NextResponse.json({ error: "INVALID_CONFIGURATION" }, { status: 400, headers: PRIVATE_HEADERS });
   }
 
   const scenarioKey = body.scenarioKey.trim();
-  const webhookUrl = body.webhookUrl.trim();
 
   try {
     const repository = new DatabaseConnectionRepository();
