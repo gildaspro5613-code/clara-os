@@ -64,6 +64,12 @@ export default function MakeConnectionStatus() {
   const canVerify = status === "CONFIGURED" || status === "RECONNECT_REQUIRED" || status === "ACTIVE";
   const configuredScenarioKeys = state?.scenarioKeys ?? [];
 
+  function toggleConfiguration() {
+    setWebhookUrl("");
+    setFeedback(null);
+    setShowConfiguration((value) => !value);
+  }
+
   return (
     <aside className="rounded-3xl border border-white/10 bg-white/[0.025] p-7 transition hover:border-cyan-400/20 hover:bg-white/[0.04]">
       <Workflow className={state?.connected ? "text-cyan-300" : "text-white/40"} size={22} />
@@ -76,7 +82,7 @@ export default function MakeConnectionStatus() {
         </select>
       )}
       <div className="mt-6 flex flex-wrap gap-2">
-        <button type="button" onClick={() => setShowConfiguration((value) => !value)} className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-white/70 transition hover:border-cyan-400/25 hover:bg-white/[0.06]"><Settings2 size={14} /> {status === "NOT_CONFIGURED" ? t("configure") : t("modify")}</button>
+        <button type="button" onClick={toggleConfiguration} className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-white/70 transition hover:border-cyan-400/25 hover:bg-white/[0.06]"><Settings2 size={14} /> {status === "NOT_CONFIGURED" ? t("configure") : t("modify")}</button>
         {canVerify && <button type="button" onClick={verify} disabled={busy !== null} className="inline-flex items-center gap-2 rounded-xl border border-cyan-400/20 bg-cyan-400/5 px-3 py-2 text-xs text-cyan-200/80 transition hover:bg-cyan-400/10 disabled:opacity-50">{busy === "verify" ? <Loader2 className="animate-spin" size={14} /> : <CheckCircle2 size={14} />}{t("verify")}</button>}
       </div>
       {showConfiguration && (
