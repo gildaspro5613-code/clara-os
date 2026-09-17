@@ -55,16 +55,17 @@ export class MakeCapabilityExecutor {
     }
 
     if (capabilityId === MAKE_CAPABILITIES.SCENARIO_PREPARE) {
-      try {
-        const adapter = await this.adapterFactory();
-        const result = await adapter.execute("not-required", {
-          capability: MAKE_CAPABILITIES.SCENARIO_PREPARE,
-          input: { scenarioKey, payload: candidate?.payload ?? {} },
-        });
-        return { capabilityId, success: true, provider: "make", status: "completed", data: result.data };
-      } catch {
-        return this.failure(capabilityId, undefined, "MAKE_PREPARE_FAILED", "Make could not prepare the scenario invocation.");
-      }
+      return {
+        capabilityId,
+        success: true,
+        provider: "make",
+        status: "completed",
+        data: {
+          prepared: true,
+          scenarioKey,
+          payload: candidate?.payload ?? {},
+        },
+      };
     }
 
     const normalizedWorkspaceId = workspaceId?.trim() ?? "";
