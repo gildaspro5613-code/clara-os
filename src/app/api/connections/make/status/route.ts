@@ -31,7 +31,7 @@ export async function GET() {
         .filter((scope) => scope.startsWith("make:scenario:"))
         .map((scope) => scope.slice("make:scenario:".length))
         .filter(Boolean),
-    )];
+    )].sort();
 
     return NextResponse.json({
       provider: "make",
