@@ -77,18 +77,18 @@ export default function MakeConnectionStatus() {
       <p className="mt-3 text-sm leading-7 text-white/50">{t("description")}</p>
       <span className={`mt-6 inline-flex rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.18em] ${badgeClass(status)}`}>{label}</span>
       {configuredScenarioKeys.length > 1 && (
-        <select aria-label={t("scenarioKey")} value={scenarioKey} onChange={(event) => setScenarioKey(event.target.value)} className="mt-4 w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-xs text-white/70 outline-none focus:border-cyan-400/30">
+        <select aria-label={t("scenarioKey")} value={scenarioKey} disabled={busy !== null} onChange={(event) => setScenarioKey(event.target.value)} className="mt-4 w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-xs text-white/70 outline-none focus:border-cyan-400/30 disabled:opacity-50">
           {configuredScenarioKeys.map((key) => <option key={key} value={key}>{key}</option>)}
         </select>
       )}
       <div className="mt-6 flex flex-wrap gap-2">
-        <button type="button" onClick={toggleConfiguration} className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-white/70 transition hover:border-cyan-400/25 hover:bg-white/[0.06]"><Settings2 size={14} /> {status === "NOT_CONFIGURED" ? t("configure") : t("modify")}</button>
+        <button type="button" onClick={toggleConfiguration} disabled={busy !== null} className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-white/70 transition hover:border-cyan-400/25 hover:bg-white/[0.06] disabled:opacity-50"><Settings2 size={14} /> {status === "NOT_CONFIGURED" ? t("configure") : t("modify")}</button>
         {canVerify && <button type="button" onClick={verify} disabled={busy !== null} className="inline-flex items-center gap-2 rounded-xl border border-cyan-400/20 bg-cyan-400/5 px-3 py-2 text-xs text-cyan-200/80 transition hover:bg-cyan-400/10 disabled:opacity-50">{busy === "verify" ? <Loader2 className="animate-spin" size={14} /> : <CheckCircle2 size={14} />}{t("verify")}</button>}
       </div>
       {showConfiguration && (
         <form onSubmit={configure} className="mt-5 space-y-3 border-t border-white/10 pt-5">
-          <label className="block text-[11px] uppercase tracking-[0.16em] text-white/45">{t("scenarioKey")}<input value={scenarioKey} onChange={(event) => setScenarioKey(event.target.value)} placeholder="notify-team" required className="mt-2 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 text-sm normal-case tracking-normal text-white outline-none placeholder:text-white/25 focus:border-cyan-400/30" /></label>
-          <label className="block text-[11px] uppercase tracking-[0.16em] text-white/45">{t("webhook")}<input type="url" value={webhookUrl} onChange={(event) => setWebhookUrl(event.target.value)} placeholder="https://hook.eu2.make.com/…" required className="mt-2 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 text-sm normal-case tracking-normal text-white outline-none placeholder:text-white/25 focus:border-cyan-400/30" /></label>
+          <label className="block text-[11px] uppercase tracking-[0.16em] text-white/45">{t("scenarioKey")}<input value={scenarioKey} disabled={busy !== null} onChange={(event) => setScenarioKey(event.target.value)} placeholder="notify-team" required className="mt-2 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 text-sm normal-case tracking-normal text-white outline-none placeholder:text-white/25 focus:border-cyan-400/30 disabled:opacity-50" /></label>
+          <label className="block text-[11px] uppercase tracking-[0.16em] text-white/45">{t("webhook")}<input type="url" value={webhookUrl} disabled={busy !== null} onChange={(event) => setWebhookUrl(event.target.value)} placeholder="https://hook.eu2.make.com/…" required className="mt-2 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 text-sm normal-case tracking-normal text-white outline-none placeholder:text-white/25 focus:border-cyan-400/30 disabled:opacity-50" /></label>
           <button type="submit" disabled={busy !== null} className="inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-3 py-2 text-xs font-medium text-slate-950 transition hover:bg-cyan-200 disabled:opacity-50">{busy === "configure" && <Loader2 className="animate-spin" size={14} />}{t("save")}</button>
         </form>
       )}
