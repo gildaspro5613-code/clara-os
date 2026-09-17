@@ -5,6 +5,8 @@ import { CURRENT_WORKSPACE_ID } from "@/lib/connections/current-workspace";
 
 export const dynamic = "force-dynamic";
 
+const PRIVATE_HEADERS = { "Cache-Control": "private, no-store" };
+
 /**
  * Returns only non-sensitive Make connection metadata for the current workspace.
  * Credentials, webhook URLs and secret headers never leave the server-side store.
@@ -23,7 +25,7 @@ export async function GET() {
         connected: false,
         status: "NOT_CONFIGURED",
         scenarioKeys: [],
-      });
+      }, { headers: PRIVATE_HEADERS });
     }
 
     const scenarioKeys = [...new Set(
@@ -39,7 +41,7 @@ export async function GET() {
       status: connection.status,
       scenarioKeys,
       updatedAt: connection.updatedAt.toISOString(),
-    });
+    }, { headers: PRIVATE_HEADERS });
   } catch {
     return NextResponse.json(
       {
@@ -48,7 +50,7 @@ export async function GET() {
         status: "UNAVAILABLE",
         scenarioKeys: [],
       },
-      { status: 503 },
+      { status: 503, headers: PRIVATE_HEADERS },
     );
   }
 }
