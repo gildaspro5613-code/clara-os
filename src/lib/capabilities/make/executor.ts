@@ -30,6 +30,10 @@ async function defaultAdapter(): Promise<MakeExecutionAdapter> {
   );
 }
 
+function validScenarioKey(value: string): boolean {
+  return /^[a-zA-Z0-9._:-]{1,120}$/.test(value);
+}
+
 /** Provider-neutral execution boundary for Make-backed capabilities. */
 export class MakeCapabilityExecutor {
   constructor(
@@ -51,8 +55,8 @@ export class MakeCapabilityExecutor {
 
     const candidate = context as Partial<MakeExecutionContext> | null;
     const scenarioKey = typeof candidate?.scenarioKey === "string" ? candidate.scenarioKey.trim() : "";
-    if (!scenarioKey) {
-      return this.failure(capabilityId, undefined, "SCENARIO_KEY_REQUIRED", "A Make scenario key is required.");
+    if (!validScenarioKey(scenarioKey)) {
+      return this.failure(capabilityId, undefined, "INVALID_SCENARIO_KEY", "A valid Make scenario key is required.");
     }
 
     const normalizedWorkspaceId = workspaceId?.trim() ?? "";
