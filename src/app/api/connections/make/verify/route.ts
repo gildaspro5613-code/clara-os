@@ -8,6 +8,10 @@ import type { MakeWebhookCredentials } from "@/lib/connectors/make";
 
 type VerifyMakeRequest = { scenarioKey?: unknown };
 
+function validScenarioKey(value: unknown): value is string {
+  return typeof value === "string" && /^[a-zA-Z0-9._:-]{1,120}$/.test(value.trim());
+}
+
 function isHttpsWebhook(value: string): boolean {
   try {
     return new URL(value).protocol === "https:";
@@ -31,10 +35,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "INVALID_REQUEST" }, { status: 400 });
   }
 
-  const scenarioKey = typeof body.scenarioKey === "string" ? body.scenarioKey.trim() : "";
-  if (!scenarioKey) {
-    return NextResponse.json({ error: "SCENARIO_KEY_REQUIRED" }, { status: 400 });
+  if (!validScenarioKey(body.scenarioKey)) {
+    return NextResponse.json({ error: "INVALID_SCENARIO_KEY" }, { status: 400 });
   }
+  const scenarioKey = body.scenarioKey.trim();
 
   const repository = new DatabaseConnectionRepository();
   const credentialStore = new CredentialStore();
