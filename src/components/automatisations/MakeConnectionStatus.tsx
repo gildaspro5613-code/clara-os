@@ -26,7 +26,9 @@ export default function MakeConnectionStatus() {
     const response = await fetch("/api/connections/make/status", { cache: "no-store", signal });
     const data = (await response.json()) as MakeStatus;
     setState(data);
-    if (data.scenarioKeys?.length === 1) setScenarioKey(data.scenarioKeys[0]);
+    if (data.scenarioKeys?.length) {
+      setScenarioKey((current) => data.scenarioKeys?.includes(current) ? current : data.scenarioKeys?.[0] ?? "");
+    }
   }, []);
 
   useEffect(() => {
@@ -60,6 +62,7 @@ export default function MakeConnectionStatus() {
   const status = state?.status ?? "LOADING";
   const label = t.has(`status.${status}`) ? t(`status.${status}`) : status;
   const canVerify = status === "CONFIGURED" || status === "RECONNECT_REQUIRED" || status === "ACTIVE";
+  const configuredScenarioKeys = state?.scenarioKeys ?? [];
 
   return (
     <aside className="rounded-3xl border border-white/10 bg-white/[0.025] p-7 transition hover:border-cyan-400/20 hover:bg-white/[0.04]">
@@ -67,6 +70,11 @@ export default function MakeConnectionStatus() {
       <h2 className="mt-5 text-lg font-medium">Make</h2>
       <p className="mt-3 text-sm leading-7 text-white/50">{t("description")}</p>
       <span className={`mt-6 inline-flex rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.18em] ${badgeClass(status)}`}>{label}</span>
+      {configuredScenarioKeys.length > 1 && (
+        <select aria-label={t("scenarioKey")} value={scenarioKey} onChange={(event) => setScenarioKey(event.target.value)} className="mt-4 w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-xs text-white/70 outline-none focus:border-cyan-400/30">
+          {configuredScenarioKeys.map((key) => <option key={key} value={key}>{key}</option>)}
+        </select>
+      )}
       <div className="mt-6 flex flex-wrap gap-2">
         <button type="button" onClick={() => setShowConfiguration((value) => !value)} className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-white/70 transition hover:border-cyan-400/25 hover:bg-white/[0.06]"><Settings2 size={14} /> {status === "NOT_CONFIGURED" ? t("configure") : t("modify")}</button>
         {canVerify && <button type="button" onClick={verify} disabled={busy !== null} className="inline-flex items-center gap-2 rounded-xl border border-cyan-400/20 bg-cyan-400/5 px-3 py-2 text-xs text-cyan-200/80 transition hover:bg-cyan-400/10 disabled:opacity-50">{busy === "verify" ? <Loader2 className="animate-spin" size={14} /> : <CheckCircle2 size={14} />}{t("verify")}</button>}
