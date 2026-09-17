@@ -1,0 +1,24 @@
+{
+  "description": "Exécute les automatisations externes autorisées par Clara OS, sans exposer les identifiants ni les webhooks au navigateur.",
+  "status": {
+    "ACTIVE": "Connecté",
+    "CONFIGURED": "Configuré",
+    "PENDING_AUTHENTICATION": "Configuration en attente",
+    "RECONNECT_REQUIRED": "Reconnexion requise",
+    "DISABLED": "Désactivé",
+    "NOT_CONFIGURED": "Non connecté",
+    "UNAVAILABLE": "État indisponible",
+    "LOADING": "Vérification…"
+  },
+  "configure": "Configurer",
+  "modify": "Modifier",
+  "verify": "Vérifier",
+  "scenarioKey": "Clé du scénario",
+  "webhook": "Webhook HTTPS Make",
+  "save": "Enregistrer",
+  "saved": "Configuration enregistrée. Vérifiez maintenant la connexion.",
+  "saveFailed": "La configuration Make n’a pas pu être enregistrée.",
+  "scenarioRequired": "Indiquez la clé du scénario à vérifier.",
+  "verified": "Connexion Make vérifiée et active.",
+  "verifyFailed": "La vérification Make a échoué. Contrôlez le scénario et son webhook."
+}
