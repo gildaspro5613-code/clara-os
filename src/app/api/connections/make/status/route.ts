@@ -7,6 +7,10 @@ export const dynamic = "force-dynamic";
 
 const PRIVATE_HEADERS = { "Cache-Control": "private, no-store" };
 
+function validScenarioKey(value: string): boolean {
+  return /^[a-zA-Z0-9._:-]{1,120}$/.test(value);
+}
+
 /**
  * Returns only non-sensitive Make connection metadata for the current workspace.
  * Credentials, webhook URLs and secret headers never leave the server-side store.
@@ -32,7 +36,7 @@ export async function GET() {
       connection.scopes
         .filter((scope) => scope.startsWith("make:scenario:"))
         .map((scope) => scope.slice("make:scenario:".length))
-        .filter(Boolean),
+        .filter(validScenarioKey),
     )].sort();
 
     return NextResponse.json({
