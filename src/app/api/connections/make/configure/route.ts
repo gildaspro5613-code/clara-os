@@ -38,7 +38,11 @@ function normalizeWebhookUrl(value: unknown): string | null {
 
 function scenarioMap(value: MakeWebhookCredentials | null): MakeWebhookCredentials["scenarios"] {
   if (!value || typeof value.scenarios !== "object" || value.scenarios === null || Array.isArray(value.scenarios)) return {};
-  return value.scenarios;
+  return Object.fromEntries(
+    Object.entries(value.scenarios).filter(([key, scenario]) =>
+      validScenarioKey(key) && scenario && typeof scenario === "object" && normalizeWebhookUrl(scenario.url),
+    ),
+  );
 }
 
 export async function POST(request: Request) {
@@ -88,7 +92,7 @@ export async function POST(request: Request) {
       },
     };
 
-    const scopes = new Set(connection.scopes);
+    const scopes = new Set(connection.scopes.filter((scope) => !scope.startsWith("make:scenario:") || validScenarioKey(scope.slice("make:scenario:".length))));
     scopes.add(`make:scenario:${scenarioKey}`);
 
     await credentialStore.set(connection.id, credentials);
