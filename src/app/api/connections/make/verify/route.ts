@@ -9,6 +9,7 @@ import type { MakeWebhookCredentials } from "@/lib/connectors/make";
 type VerifyMakeRequest = { scenarioKey?: unknown };
 
 const PRIVATE_HEADERS = { "Cache-Control": "private, no-store" };
+const HEADER_NAME = /^[!#$%&'*+.^_`|~0-9A-Za-z-]{1,128}$/;
 
 function validScenarioKey(value: unknown): value is string {
   return typeof value === "string" && /^[a-zA-Z0-9._:-]{1,120}$/.test(value.trim());
@@ -29,6 +30,17 @@ function isValidMakeWebhook(value: unknown): value is string {
   } catch {
     return false;
   }
+}
+
+function validExecutionOptions(scenario: Record<string, unknown>): boolean {
+  const headers = scenario.headers;
+  if (headers !== undefined) {
+    if (!headers || typeof headers !== "object" || Array.isArray(headers)) return false;
+    const entries = Object.entries(headers);
+    if (entries.length > 32 || entries.some(([name, value]) => !HEADER_NAME.test(name) || typeof value !== "string" || value.length > 4096 || /[\r\n]/.test(value))) return false;
+  }
+  const timeoutMs = scenario.timeoutMs;
+  return timeoutMs === undefined || (typeof timeoutMs === "number" && Number.isFinite(timeoutMs) && timeoutMs >= 1_000 && timeoutMs <= 39_000);
 }
 
 /**
@@ -70,7 +82,7 @@ export async function POST(request: Request) {
       : {};
     const scenario = scenarios[scenarioKey];
 
-    if (!scenario || typeof scenario !== "object" || !isValidMakeWebhook(scenario.url)) {
+    if (!scenario || typeof scenario !== "object" || !isValidMakeWebhook(scenario.url) || !validExecutionOptions(scenario as unknown as Record<string, unknown>)) {
       await repository.updateStatus(connection.id, ConnectionStatus.RECONNECT_REQUIRED);
       return NextResponse.json({ error: "INVALID_CONFIGURATION" }, { status: 400, headers: PRIVATE_HEADERS });
     }
