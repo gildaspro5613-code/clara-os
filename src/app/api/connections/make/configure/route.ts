@@ -92,8 +92,8 @@ export async function POST(request: Request) {
       },
     };
 
-    const scopes = new Set(connection.scopes.filter((scope) => !scope.startsWith("make:scenario:") || validScenarioKey(scope.slice("make:scenario:".length))));
-    scopes.add(`make:scenario:${scenarioKey}`);
+    const scopes = new Set(connection.scopes.filter((scope) => !scope.startsWith("make:scenario:")));
+    for (const key of Object.keys(credentials.scenarios)) scopes.add(`make:scenario:${key}`);
 
     await credentialStore.set(connection.id, credentials);
     try {
