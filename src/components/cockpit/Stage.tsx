@@ -36,20 +36,14 @@ function MissionPanel({ mission }: MissionPanelProps) {
   return mission ? <TasksPanel mission={mission} /> : <EmptyMissionPanel />;
 }
 
-export default function Stage({
-  session,
-}: StageProps) {
+export default function Stage({ session }: StageProps) {
   const mission = session.mission;
   const firstName = session.user.firstName;
 
   return (
     <>
-      {/* ============================================
-          DESKTOP / LAPTOP
-          Clara remains the visual focal point.
-          ============================================ */}
-
-      {/* Clara's briefing */}
+      {/* Desktop / laptop: briefing and agenda anchor the upper Hero while
+          voice and mission settle lower into the workspace. */}
       <div
         className="
           pointer-events-auto
@@ -64,14 +58,24 @@ export default function Stage({
         "
       >
         <BriefPanel firstName={firstName} />
-
-        <div className="mt-4 ml-3 w-[92%]">
-          <ClaraVoiceWidget />
-        </div>
       </div>
 
-      {/* Agenda + current mission keep independent natural heights so
-          a verbose mission is not pushed below the useful Hero area. */}
+      <div
+        className="
+          pointer-events-auto
+          absolute
+          left-[6%]
+          top-[61%]
+          z-20
+          hidden
+          w-[23%]
+          max-w-[330px]
+          lg:block
+        "
+      >
+        <ClaraVoiceWidget />
+      </div>
+
       <div
         className="
           pointer-events-auto
@@ -82,22 +86,29 @@ export default function Stage({
           hidden
           w-[28%]
           max-w-[420px]
-          flex-col
-          items-end
-          gap-4
-          lg:flex
+          lg:block
         "
       >
         <AgendaPanel />
-        <div className="w-full">
-          <MissionPanel mission={mission} />
-        </div>
       </div>
 
-      {/* ============================================
-          MOBILE
-          ============================================ */}
+      <div
+        className="
+          pointer-events-auto
+          absolute
+          right-[5%]
+          top-[61%]
+          z-20
+          hidden
+          w-[28%]
+          max-w-[420px]
+          lg:block
+        "
+      >
+        <MissionPanel mission={mission} />
+      </div>
 
+      {/* Mobile */}
       <div
         className="
           pointer-events-none
