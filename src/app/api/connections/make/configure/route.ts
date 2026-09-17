@@ -11,6 +11,8 @@ type ConfigureMakeRequest = {
   webhookUrl?: unknown;
 };
 
+const PRIVATE_HEADERS = { "Cache-Control": "private, no-store" };
+
 function validScenarioKey(value: unknown): value is string {
   return typeof value === "string" && /^[a-zA-Z0-9._:-]{1,120}$/.test(value.trim());
 }
@@ -37,11 +39,11 @@ export async function POST(request: Request) {
   try {
     body = (await request.json()) as ConfigureMakeRequest;
   } catch {
-    return NextResponse.json({ error: "INVALID_REQUEST" }, { status: 400 });
+    return NextResponse.json({ error: "INVALID_REQUEST" }, { status: 400, headers: PRIVATE_HEADERS });
   }
 
   if (!validScenarioKey(body.scenarioKey) || !validWebhookUrl(body.webhookUrl)) {
-    return NextResponse.json({ error: "INVALID_CONFIGURATION" }, { status: 400 });
+    return NextResponse.json({ error: "INVALID_CONFIGURATION" }, { status: 400, headers: PRIVATE_HEADERS });
   }
 
   const scenarioKey = body.scenarioKey.trim();
@@ -100,8 +102,8 @@ export async function POST(request: Request) {
       connected: false,
       status: ConnectionStatus.CONFIGURED,
       scenarioKey,
-    });
+    }, { headers: PRIVATE_HEADERS });
   } catch {
-    return NextResponse.json({ error: "CONFIGURATION_UNAVAILABLE" }, { status: 503 });
+    return NextResponse.json({ error: "CONFIGURATION_UNAVAILABLE" }, { status: 503, headers: PRIVATE_HEADERS });
   }
 }
