@@ -36,6 +36,11 @@ function normalizeWebhookUrl(value: unknown): string | null {
   }
 }
 
+function scenarioMap(value: MakeWebhookCredentials | null): MakeWebhookCredentials["scenarios"] {
+  if (!value || typeof value.scenarios !== "object" || value.scenarios === null || Array.isArray(value.scenarios)) return {};
+  return value.scenarios;
+}
+
 export async function POST(request: Request) {
   let body: ConfigureMakeRequest;
   try {
@@ -70,7 +75,7 @@ export async function POST(request: Request) {
     const previousCredentials = existing
       ? await credentialStore.get<MakeWebhookCredentials>(connection.id)
       : null;
-    const previousScenarios = previousCredentials?.scenarios ?? {};
+    const previousScenarios = scenarioMap(previousCredentials);
 
     if (!(scenarioKey in previousScenarios) && Object.keys(previousScenarios).length >= MAX_SCENARIOS) {
       return NextResponse.json({ error: "SCENARIO_LIMIT_REACHED" }, { status: 409, headers: PRIVATE_HEADERS });
@@ -95,9 +100,6 @@ export async function POST(request: Request) {
         updatedAt: now,
       });
     } catch (error) {
-      // Restore the previous encrypted value when updating an existing connection.
-      // A newly allocated orphan credential is unreachable because no connection
-      // metadata was persisted for its random id.
       if (existing && previousCredentials) {
         await credentialStore.set(connection.id, previousCredentials).catch(() => undefined);
       }
