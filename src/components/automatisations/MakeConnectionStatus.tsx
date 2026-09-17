@@ -2,23 +2,9 @@
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { CheckCircle2, Loader2, Settings2, Workflow } from "lucide-react";
+import { useTranslations } from "next-intl";
 
-type MakeStatus = {
-  provider: "make";
-  connected: boolean;
-  status: string;
-  updatedAt?: string;
-};
-
-const statusLabels: Record<string, string> = {
-  ACTIVE: "Connecté",
-  CONFIGURED: "Configuré",
-  PENDING_AUTHENTICATION: "Configuration en attente",
-  RECONNECT_REQUIRED: "Reconnexion requise",
-  DISABLED: "Désactivé",
-  NOT_CONFIGURED: "Non connecté",
-  UNAVAILABLE: "État indisponible",
-};
+type MakeStatus = { provider: "make"; connected: boolean; status: string; updatedAt?: string };
 
 function badgeClass(status: string) {
   if (status === "ACTIVE") return "border-emerald-400/20 bg-emerald-400/5 text-emerald-300/80";
@@ -28,6 +14,7 @@ function badgeClass(status: string) {
 }
 
 export default function MakeConnectionStatus() {
+  const t = useTranslations("automationsMake");
   const [state, setState] = useState<MakeStatus | null>(null);
   const [scenarioKey, setScenarioKey] = useState("");
   const [webhookUrl, setWebhookUrl] = useState("");
@@ -51,122 +38,45 @@ export default function MakeConnectionStatus() {
   }, [refreshStatus]);
 
   async function configure(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setBusy("configure");
-    setFeedback(null);
+    event.preventDefault(); setBusy("configure"); setFeedback(null);
     try {
-      const response = await fetch("/api/connections/make/configure", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ scenarioKey, webhookUrl }),
-      });
+      const response = await fetch("/api/connections/make/configure", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ scenarioKey, webhookUrl }) });
       if (!response.ok) throw new Error("CONFIGURATION_FAILED");
-      setWebhookUrl("");
-      setShowConfiguration(false);
-      setFeedback("Configuration enregistrée. Vérifiez maintenant la connexion.");
-      await refreshStatus();
-    } catch {
-      setFeedback("La configuration Make n’a pas pu être enregistrée.");
-    } finally {
-      setBusy(null);
-    }
+      setWebhookUrl(""); setShowConfiguration(false); setFeedback(t("saved")); await refreshStatus();
+    } catch { setFeedback(t("saveFailed")); } finally { setBusy(null); }
   }
 
   async function verify() {
-    if (!scenarioKey.trim()) {
-      setFeedback("Indiquez la clé du scénario à vérifier.");
-      setShowConfiguration(true);
-      return;
-    }
-    setBusy("verify");
-    setFeedback(null);
+    if (!scenarioKey.trim()) { setFeedback(t("scenarioRequired")); setShowConfiguration(true); return; }
+    setBusy("verify"); setFeedback(null);
     try {
-      const response = await fetch("/api/connections/make/verify", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ scenarioKey }),
-      });
+      const response = await fetch("/api/connections/make/verify", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ scenarioKey }) });
       if (!response.ok) throw new Error("VERIFICATION_FAILED");
-      setFeedback("Connexion Make vérifiée et active.");
-      await refreshStatus();
-    } catch {
-      setFeedback("La vérification Make a échoué. Contrôlez le scénario et son webhook.");
-      await refreshStatus().catch(() => undefined);
-    } finally {
-      setBusy(null);
-    }
+      setFeedback(t("verified")); await refreshStatus();
+    } catch { setFeedback(t("verifyFailed")); await refreshStatus().catch(() => undefined); } finally { setBusy(null); }
   }
 
   const status = state?.status ?? "LOADING";
-  const label = status === "LOADING" ? "Vérification…" : statusLabels[status] ?? status;
+  const label = t.has(`status.${status}`) ? t(`status.${status}`) : status;
   const canVerify = status === "CONFIGURED" || status === "RECONNECT_REQUIRED" || status === "ACTIVE";
 
   return (
     <aside className="rounded-3xl border border-white/10 bg-white/[0.025] p-7 transition hover:border-cyan-400/20 hover:bg-white/[0.04]">
       <Workflow className={state?.connected ? "text-cyan-300" : "text-white/40"} size={22} />
       <h2 className="mt-5 text-lg font-medium">Make</h2>
-      <p className="mt-3 text-sm leading-7 text-white/50">
-        Exécute les automatisations externes autorisées par Clara OS, sans exposer les identifiants ni les webhooks au navigateur.
-      </p>
-      <span className={`mt-6 inline-flex rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.18em] ${badgeClass(status)}`}>
-        {label}
-      </span>
-
+      <p className="mt-3 text-sm leading-7 text-white/50">{t("description")}</p>
+      <span className={`mt-6 inline-flex rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.18em] ${badgeClass(status)}`}>{label}</span>
       <div className="mt-6 flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => setShowConfiguration((value) => !value)}
-          className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-white/70 transition hover:border-cyan-400/25 hover:bg-white/[0.06]"
-        >
-          <Settings2 size={14} /> {status === "NOT_CONFIGURED" ? "Configurer" : "Modifier"}
-        </button>
-        {canVerify && (
-          <button
-            type="button"
-            onClick={verify}
-            disabled={busy !== null}
-            className="inline-flex items-center gap-2 rounded-xl border border-cyan-400/20 bg-cyan-400/5 px-3 py-2 text-xs text-cyan-200/80 transition hover:bg-cyan-400/10 disabled:opacity-50"
-          >
-            {busy === "verify" ? <Loader2 className="animate-spin" size={14} /> : <CheckCircle2 size={14} />}
-            Vérifier
-          </button>
-        )}
+        <button type="button" onClick={() => setShowConfiguration((value) => !value)} className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-white/70 transition hover:border-cyan-400/25 hover:bg-white/[0.06]"><Settings2 size={14} /> {status === "NOT_CONFIGURED" ? t("configure") : t("modify")}</button>
+        {canVerify && <button type="button" onClick={verify} disabled={busy !== null} className="inline-flex items-center gap-2 rounded-xl border border-cyan-400/20 bg-cyan-400/5 px-3 py-2 text-xs text-cyan-200/80 transition hover:bg-cyan-400/10 disabled:opacity-50">{busy === "verify" ? <Loader2 className="animate-spin" size={14} /> : <CheckCircle2 size={14} />}{t("verify")}</button>}
       </div>
-
       {showConfiguration && (
         <form onSubmit={configure} className="mt-5 space-y-3 border-t border-white/10 pt-5">
-          <label className="block text-[11px] uppercase tracking-[0.16em] text-white/45">
-            Clé du scénario
-            <input
-              value={scenarioKey}
-              onChange={(event) => setScenarioKey(event.target.value)}
-              placeholder="notify-team"
-              required
-              className="mt-2 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 text-sm normal-case tracking-normal text-white outline-none placeholder:text-white/25 focus:border-cyan-400/30"
-            />
-          </label>
-          <label className="block text-[11px] uppercase tracking-[0.16em] text-white/45">
-            Webhook HTTPS Make
-            <input
-              type="url"
-              value={webhookUrl}
-              onChange={(event) => setWebhookUrl(event.target.value)}
-              placeholder="https://hook.eu2.make.com/…"
-              required
-              className="mt-2 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 text-sm normal-case tracking-normal text-white outline-none placeholder:text-white/25 focus:border-cyan-400/30"
-            />
-          </label>
-          <button
-            type="submit"
-            disabled={busy !== null}
-            className="inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-3 py-2 text-xs font-medium text-slate-950 transition hover:bg-cyan-200 disabled:opacity-50"
-          >
-            {busy === "configure" && <Loader2 className="animate-spin" size={14} />}
-            Enregistrer
-          </button>
+          <label className="block text-[11px] uppercase tracking-[0.16em] text-white/45">{t("scenarioKey")}<input value={scenarioKey} onChange={(event) => setScenarioKey(event.target.value)} placeholder="notify-team" required className="mt-2 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 text-sm normal-case tracking-normal text-white outline-none placeholder:text-white/25 focus:border-cyan-400/30" /></label>
+          <label className="block text-[11px] uppercase tracking-[0.16em] text-white/45">{t("webhook")}<input type="url" value={webhookUrl} onChange={(event) => setWebhookUrl(event.target.value)} placeholder="https://hook.eu2.make.com/…" required className="mt-2 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 text-sm normal-case tracking-normal text-white outline-none placeholder:text-white/25 focus:border-cyan-400/30" /></label>
+          <button type="submit" disabled={busy !== null} className="inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-3 py-2 text-xs font-medium text-slate-950 transition hover:bg-cyan-200 disabled:opacity-50">{busy === "configure" && <Loader2 className="animate-spin" size={14} />}{t("save")}</button>
         </form>
       )}
-
       {feedback && <p className="mt-4 text-xs leading-5 text-white/50">{feedback}</p>}
     </aside>
   );
