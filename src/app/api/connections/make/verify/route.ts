@@ -17,9 +17,9 @@ function isHttpsWebhook(value: string): boolean {
 }
 
 /**
- * Verifies the local Make connection configuration only.
+ * Validates the local Make connection configuration only.
  *
- * This route deliberately does not call a Make webhook: connection verification
+ * This route deliberately does not call a Make webhook: configuration validation
  * must never trigger an automation or other business side effect. Real provider
  * execution remains the responsibility of the Make capability execution path.
  */
@@ -45,6 +45,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "MAKE_NOT_CONFIGURED" }, { status: 404 });
     }
 
+    if (!connection.scopes.includes(`make:scenario:${scenarioKey}`)) {
+      return NextResponse.json({ error: "MAKE_SCENARIO_NOT_AUTHORIZED" }, { status: 403 });
+    }
+
     const credentials = await credentialStore.get<MakeWebhookCredentials>(connection.id);
     const scenario = credentials?.scenarios?.[scenarioKey];
 
@@ -62,9 +66,9 @@ export async function POST(request: Request) {
       provider: "make",
       connected: true,
       status: ConnectionStatus.ACTIVE,
-      verification: "LOCAL_CONFIGURATION",
+      validation: "LOCAL_CONFIGURATION",
     });
   } catch {
-    return NextResponse.json({ error: "MAKE_VERIFICATION_FAILED" }, { status: 502 });
+    return NextResponse.json({ error: "MAKE_VALIDATION_FAILED" }, { status: 502 });
   }
 }
