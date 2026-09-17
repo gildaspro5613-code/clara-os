@@ -27,9 +27,8 @@ export default function MakeConnectionStatus() {
     const data = (await response.json()) as MakeStatus;
     if (!response.ok) throw new Error("STATUS_UNAVAILABLE");
     setState(data);
-    if (data.scenarioKeys?.length) {
-      setScenarioKey((current) => data.scenarioKeys?.includes(current) ? current : data.scenarioKeys?.[0] ?? "");
-    }
+    const keys = data.scenarioKeys ?? [];
+    setScenarioKey((current) => keys.length ? (keys.includes(current) ? current : keys[0]) : "");
   }, []);
 
   useEffect(() => {
