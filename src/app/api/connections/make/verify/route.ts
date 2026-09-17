@@ -24,7 +24,7 @@ function isValidMakeWebhook(value: string): boolean {
   if (!candidate || candidate.length > 2048) return false;
   try {
     const url = new URL(candidate);
-    return url.protocol === "https:" && !url.username && !url.password && isMakeWebhookHost(url.hostname) && url.pathname.length > 1;
+    return url.protocol === "https:" && !url.username && !url.password && !url.hash && isMakeWebhookHost(url.hostname) && url.pathname.length > 1;
   } catch {
     return false;
   }
