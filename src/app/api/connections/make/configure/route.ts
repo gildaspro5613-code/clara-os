@@ -15,11 +15,16 @@ function validScenarioKey(value: unknown): value is string {
   return typeof value === "string" && /^[a-zA-Z0-9._:-]{1,120}$/.test(value.trim());
 }
 
+function isMakeWebhookHost(hostname: string): boolean {
+  const host = hostname.toLowerCase();
+  return host === "make.com" || host.endsWith(".make.com") || host === "integromat.com" || host.endsWith(".integromat.com");
+}
+
 function validWebhookUrl(value: unknown): value is string {
   if (typeof value !== "string") return false;
   try {
     const url = new URL(value.trim());
-    return url.protocol === "https:" && !url.username && !url.password;
+    return url.protocol === "https:" && !url.username && !url.password && isMakeWebhookHost(url.hostname);
   } catch {
     return false;
   }
