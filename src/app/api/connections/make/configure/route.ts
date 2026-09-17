@@ -8,38 +8,27 @@ import type { MakeWebhookCredentials } from "@/lib/connectors/make";
 
 type ConfigureMakeRequest = { scenarioKey?: unknown; webhookUrl?: unknown };
 const PRIVATE_HEADERS = { "Cache-Control": "private, no-store" };
-const MAX_SCENARIOS = 100;
-const MAX_HEADERS = 32;
+const MAX_SCENARIOS = 100; const MAX_HEADERS = 32;
 const HEADER_NAME = /^[!#$%&'*+.^_`|~0-9A-Za-z-]{1,128}$/;
 function validScenarioKey(value: unknown): value is string { return typeof value === "string" && /^[a-zA-Z0-9._:-]{1,120}$/.test(value.trim()); }
 function isMakeWebhookHost(hostname: string): boolean { const host = hostname.toLowerCase(); return host === "make.com" || host.endsWith(".make.com") || host === "integromat.com" || host.endsWith(".integromat.com"); }
-function normalizeWebhookUrl(value: unknown): string | null {
-  if (typeof value !== "string") return null; const candidate = value.trim(); if (!candidate || candidate.length > 2048) return null;
-  try { const url = new URL(candidate); if (url.protocol !== "https:" || url.username || url.password || url.hash || url.search || !isMakeWebhookHost(url.hostname) || url.pathname.length <= 1) return null; return url.toString(); } catch { return null; }
+function normalizeWebhookUrl(value: unknown): string | null { if (typeof value !== "string") return null; const candidate = value.trim(); if (!candidate || candidate.length > 2048) return null; try { const url = new URL(candidate); if (url.protocol !== "https:" || url.username || url.password || url.hash || url.search || !isMakeWebhookHost(url.hostname) || url.pathname.length <= 1) return null; return url.toString(); } catch { return null; } }
+function validOptions(scenario: Record<string, unknown>): boolean {
+  if (scenario.headers !== undefined) { if (!scenario.headers || typeof scenario.headers !== "object" || Array.isArray(scenario.headers)) return false; const entries = Object.entries(scenario.headers); if (entries.length > MAX_HEADERS || entries.some(([name, value]) => !HEADER_NAME.test(name) || typeof value !== "string" || value.length > 4096 || /[\r\n]/.test(value))) return false; }
+  return scenario.timeoutMs === undefined || (typeof scenario.timeoutMs === "number" && Number.isFinite(scenario.timeoutMs) && scenario.timeoutMs >= 1_000 && scenario.timeoutMs <= 39_000);
 }
 function scenarioMap(value: MakeWebhookCredentials | null): MakeWebhookCredentials["scenarios"] {
-  if (!value || typeof value.scenarios !== "object" || value.scenarios === null || Array.isArray(value.scenarios)) return {};
-  const scenarios: MakeWebhookCredentials["scenarios"] = {};
-  for (const [key, scenario] of Object.entries(value.scenarios)) {
-    const url = scenario && typeof scenario === "object" ? normalizeWebhookUrl(scenario.url) : null; if (!validScenarioKey(key) || !url) continue;
-    const headerEntries = scenario.headers && typeof scenario.headers === "object" && !Array.isArray(scenario.headers) ? Object.entries(scenario.headers).filter(([name, headerValue]) => HEADER_NAME.test(name) && typeof headerValue === "string" && headerValue.length <= 4096 && !/[\r\n]/.test(headerValue)).slice(0, MAX_HEADERS) : [];
-    const headers = headerEntries.length ? Object.fromEntries(headerEntries) : undefined;
-    const timeoutMs = typeof scenario.timeoutMs === "number" && Number.isFinite(scenario.timeoutMs) ? Math.min(39_000, Math.max(1_000, Math.round(scenario.timeoutMs))) : undefined;
-    scenarios[key] = { url, ...(headers ? { headers } : {}), ...(timeoutMs ? { timeoutMs } : {}) };
-  } return scenarios;
+  if (!value || typeof value.scenarios !== "object" || value.scenarios === null || Array.isArray(value.scenarios)) return {}; const scenarios: MakeWebhookCredentials["scenarios"] = {};
+  for (const [key, scenario] of Object.entries(value.scenarios)) { const url = scenario && typeof scenario === "object" ? normalizeWebhookUrl(scenario.url) : null; if (!validScenarioKey(key) || !url || !validOptions(scenario as unknown as Record<string, unknown>)) continue; scenarios[key] = { ...scenario, url }; } return scenarios;
 }
 export async function POST(request: Request) {
   let body: ConfigureMakeRequest; try { body = (await request.json()) as ConfigureMakeRequest; } catch { return NextResponse.json({ error: "INVALID_REQUEST" }, { status: 400, headers: PRIVATE_HEADERS }); }
   const webhookUrl = normalizeWebhookUrl(body.webhookUrl); if (!validScenarioKey(body.scenarioKey) || !webhookUrl) return NextResponse.json({ error: "INVALID_CONFIGURATION" }, { status: 400, headers: PRIVATE_HEADERS }); const scenarioKey = body.scenarioKey.trim();
   try {
-    const repository = new DatabaseConnectionRepository(); const credentialStore = new CredentialStore(); const existing = await repository.findByWorkspaceAndProvider(CURRENT_WORKSPACE_ID, "make"); const now = new Date();
-    const connection: Connection = existing ?? { id: crypto.randomUUID(), workspaceId: CURRENT_WORKSPACE_ID, provider: "make", status: ConnectionStatus.CONFIGURED, scopes: [], createdAt: now, updatedAt: now };
-    const previousCredentials = existing ? await credentialStore.get<MakeWebhookCredentials>(connection.id) : null;
-    if (existing && !previousCredentials) { await repository.updateStatus(connection.id, ConnectionStatus.RECONNECT_REQUIRED).catch(() => undefined); return NextResponse.json({ error: "EXISTING_CREDENTIALS_UNAVAILABLE" }, { status: 409, headers: PRIVATE_HEADERS }); }
-    const rawScenarios = previousCredentials?.scenarios;
-    if (existing && (typeof rawScenarios !== "object" || rawScenarios === null || Array.isArray(rawScenarios))) { await repository.updateStatus(connection.id, ConnectionStatus.RECONNECT_REQUIRED).catch(() => undefined); return NextResponse.json({ error: "EXISTING_CONFIGURATION_INVALID" }, { status: 409, headers: PRIVATE_HEADERS }); }
-    const previousScenarios = scenarioMap(previousCredentials);
-    if (existing && rawScenarios && Object.keys(rawScenarios).length !== Object.keys(previousScenarios).length) { await repository.updateStatus(connection.id, ConnectionStatus.RECONNECT_REQUIRED).catch(() => undefined); return NextResponse.json({ error: "EXISTING_CONFIGURATION_INVALID" }, { status: 409, headers: PRIVATE_HEADERS }); }
+    const repository = new DatabaseConnectionRepository(); const credentialStore = new CredentialStore(); const existing = await repository.findByWorkspaceAndProvider(CURRENT_WORKSPACE_ID, "make"); const now = new Date(); const connection: Connection = existing ?? { id: crypto.randomUUID(), workspaceId: CURRENT_WORKSPACE_ID, provider: "make", status: ConnectionStatus.CONFIGURED, scopes: [], createdAt: now, updatedAt: now };
+    const previousCredentials = existing ? await credentialStore.get<MakeWebhookCredentials>(connection.id) : null; if (existing && !previousCredentials) { await repository.updateStatus(connection.id, ConnectionStatus.RECONNECT_REQUIRED).catch(() => undefined); return NextResponse.json({ error: "EXISTING_CREDENTIALS_UNAVAILABLE" }, { status: 409, headers: PRIVATE_HEADERS }); }
+    const rawScenarios = previousCredentials?.scenarios; if (existing && (typeof rawScenarios !== "object" || rawScenarios === null || Array.isArray(rawScenarios))) { await repository.updateStatus(connection.id, ConnectionStatus.RECONNECT_REQUIRED).catch(() => undefined); return NextResponse.json({ error: "EXISTING_CONFIGURATION_INVALID" }, { status: 409, headers: PRIVATE_HEADERS }); }
+    const previousScenarios = scenarioMap(previousCredentials); if (existing && rawScenarios && Object.keys(rawScenarios).length !== Object.keys(previousScenarios).length) { await repository.updateStatus(connection.id, ConnectionStatus.RECONNECT_REQUIRED).catch(() => undefined); return NextResponse.json({ error: "EXISTING_CONFIGURATION_INVALID" }, { status: 409, headers: PRIVATE_HEADERS }); }
     if (!(scenarioKey in previousScenarios) && Object.keys(previousScenarios).length >= MAX_SCENARIOS) return NextResponse.json({ error: "SCENARIO_LIMIT_REACHED" }, { status: 409, headers: PRIVATE_HEADERS });
     const previousScenario = previousScenarios[scenarioKey]; const credentials: MakeWebhookCredentials = { scenarios: { ...previousScenarios, [scenarioKey]: { ...(previousScenario?.headers ? { headers: previousScenario.headers } : {}), ...(previousScenario?.timeoutMs ? { timeoutMs: previousScenario.timeoutMs } : {}), url: webhookUrl } } };
     const scopes = new Set(connection.scopes.filter((scope) => !scope.startsWith("make:scenario:"))); for (const key of Object.keys(credentials.scenarios)) scopes.add(`make:scenario:${key}`);
