@@ -49,10 +49,13 @@ function scenarioMap(value: MakeWebhookCredentials | null): MakeWebhookCredentia
           .slice(0, MAX_HEADERS)
       : [];
     const headers = headerEntries.length ? Object.fromEntries(headerEntries) : undefined;
+    const timeoutMs = typeof scenario.timeoutMs === "number" && Number.isFinite(scenario.timeoutMs)
+      ? Math.min(39_000, Math.max(1_000, Math.round(scenario.timeoutMs)))
+      : undefined;
     scenarios[key] = {
       url,
       ...(headers ? { headers } : {}),
-      ...(typeof scenario.timeoutMs === "number" ? { timeoutMs: scenario.timeoutMs } : {}),
+      ...(timeoutMs ? { timeoutMs } : {}),
     };
   }
   return scenarios;
