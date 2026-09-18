@@ -92,7 +92,21 @@
     "emptyDescription": "No hay ninguna fuente de contactos conectada. Clara OS no muestra contactos hasta configurar un directorio real.",
     "availability": "Disponibilidad",
     "noDirectory": "Actualmente no hay ningún directorio ni CRM conectado.",
-    "backendRequired": "Añadir y sincronizar contactos requiere una fuente de datos real."
+    "backendRequired": "Añadir y sincronizar contactos requiere una fuente de datos real.",
+    "notConnected": "Brevo is not connected",
+    "connectBrevo": "Connect Brevo to display Clara OS native commercial directory.",
+    "loadError": "Unable to load Brevo contacts.",
+    "searchPlaceholder": "Search by email…",
+    "search": "Search",
+    "refresh": "Refresh",
+    "directory": "Commercial directory",
+    "contacts": "contacts",
+    "loading": "Loading contacts…",
+    "empty": "No contacts found.",
+    "unnamed": "Unnamed contact",
+    "lists": "lists",
+    "nativeDirectory": "Displayed contacts come directly from the connected Brevo directory.",
+    "nativeBackend": "Clara uses this same native backend to search and manage contacts."
   },
   "automations": {
     "section": "Conectar",
