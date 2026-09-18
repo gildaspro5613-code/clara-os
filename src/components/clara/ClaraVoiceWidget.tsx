@@ -42,13 +42,17 @@ export default function ClaraVoiceWidget() {
 
     setState("speaking");
 
-    await new Promise<void>((resolve, reject) => {
-      audio.onended = () => resolve();
-      audio.onerror = () => reject(new Error("Audio playback failed."));
-      void audio.play().catch(reject);
-    });
-
-    URL.revokeObjectURL(audioUrl);
+    try {
+      await new Promise<void>((resolve, reject) => {
+        audio.onended = () => resolve();
+        audio.onerror = () => reject(new Error("Audio playback failed."));
+        void audio.play().catch(reject);
+      });
+    } finally {
+      audio.pause();
+      audio.src = "";
+      URL.revokeObjectURL(audioUrl);
+    }
   }, []);
 
   const processRecording = useCallback(async (blob: Blob) => {
@@ -115,12 +119,25 @@ export default function ClaraVoiceWidget() {
         if (event.data.size > 0) chunksRef.current.push(event.data);
       };
 
+      recorder.onerror = () => {
+        stopStream();
+        recorderRef.current = null;
+        setState("error");
+      };
+
       recorder.onstop = () => {
         const audioBlob = new Blob(chunksRef.current, {
           type: recorder.mimeType || "audio/webm",
         });
+        chunksRef.current = [];
         stopStream();
         recorderRef.current = null;
+
+        if (audioBlob.size === 0) {
+          setState("error");
+          return;
+        }
+
         void processRecording(audioBlob);
       };
 
