@@ -3,7 +3,7 @@ import type { ClaraSession } from "@/lib/core/session";
 import BriefPanel from "@/components/cockpit/panels/BriefPanel";
 import TasksPanel from "@/components/cockpit/panels/TasksPanel";
 import AgendaPanel from "@/components/cockpit/panels/AgendaPanel";
-import ClaraVoiceWidget from "@/components/cockpit/widgets/voice/ClaraVoiceWidget";
+import ClaraVoiceWidget from "@/components/clara/ClaraVoiceWidget";
 import GlassPanel from "@/components/ui/GlassPanel";
 
 interface StageProps {
