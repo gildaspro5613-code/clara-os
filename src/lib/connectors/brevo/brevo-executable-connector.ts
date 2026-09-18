@@ -37,7 +37,7 @@ export class BrevoExecutableConnector implements ExecutableConnector {
       capability: result.capabilityId,
       ...(result.data !== undefined ? { data: result.data } : {}),
       ...(result.error ? { error: result.error.message } : {}),
-      message: result.success ? "Brevo operation completed successfully." : undefined,
+      ...(result.success ? { message: "Brevo operation completed successfully." } : {}),
       completedAt: new Date(),
     };
   }
