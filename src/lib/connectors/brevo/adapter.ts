@@ -6,9 +6,12 @@ import type {
   BrevoCampaignPreparation,
   BrevoContactSearch,
   BrevoContactUpsert,
+  BrevoListSearch,
+  BrevoListCreate,
   BrevoOAuthCredentials,
   BrevoStatisticsQuery,
   BrevoTemplateSearch,
+  BrevoTemplateCreate,
   BrevoTransactionalEmail,
 } from "./types";
 
@@ -16,12 +19,16 @@ export type BrevoCapabilityInput =
   | { capability: typeof BREVO_CAPABILITIES.CONTACT_SEARCH; input: BrevoContactSearch }
   | { capability: typeof BREVO_CAPABILITIES.CONTACT_UPSERT; input: BrevoContactUpsert }
   | { capability: typeof BREVO_CAPABILITIES.CONTACT_LIST_MANAGE; input: { listId: number; action: "add" | "remove"; emails?: string[]; contactIds?: number[] } }
+  | { capability: typeof BREVO_CAPABILITIES.LIST_READ; input: BrevoListSearch }
+  | { capability: typeof BREVO_CAPABILITIES.LIST_CREATE; input: BrevoListCreate }
   | { capability: typeof BREVO_CAPABILITIES.TEMPLATE_SEARCH; input: BrevoTemplateSearch }
+  | { capability: typeof BREVO_CAPABILITIES.TEMPLATE_CREATE; input: BrevoTemplateCreate }
   | { capability: typeof BREVO_CAPABILITIES.EMAIL_PREPARE; input: BrevoTransactionalEmail }
   | { capability: typeof BREVO_CAPABILITIES.EMAIL_SEND; input: BrevoTransactionalEmail }
   | { capability: typeof BREVO_CAPABILITIES.CAMPAIGN_READ; input: { campaignId?: number; limit?: number; offset?: number; status?: string } }
   | { capability: typeof BREVO_CAPABILITIES.CAMPAIGN_PREPARE; input: BrevoCampaignPreparation }
   | { capability: typeof BREVO_CAPABILITIES.CAMPAIGN_UPDATE; input: { campaignId: number; changes: Partial<BrevoCampaignPreparation> } }
+  | { capability: typeof BREVO_CAPABILITIES.CAMPAIGN_SEND; input: { campaignId: number } }
   | { capability: typeof BREVO_CAPABILITIES.STATS_READ; input: BrevoStatisticsQuery };
 
 function validateEmail(input: BrevoTransactionalEmail): BrevoTransactionalEmail {
@@ -53,7 +60,10 @@ export class BrevoConnectorAdapter {
         case BREVO_CAPABILITIES.CONTACT_SEARCH: data = await client.searchContacts(request.input); break;
         case BREVO_CAPABILITIES.CONTACT_UPSERT: data = await client.upsertContact(request.input); break;
         case BREVO_CAPABILITIES.CONTACT_LIST_MANAGE: data = await client.manageListMembership(request.input); break;
+        case BREVO_CAPABILITIES.LIST_READ: data = await client.readLists(request.input); break;
+        case BREVO_CAPABILITIES.LIST_CREATE: data = await client.createList(request.input); break;
         case BREVO_CAPABILITIES.TEMPLATE_SEARCH: data = await client.searchTemplates(request.input); break;
+        case BREVO_CAPABILITIES.TEMPLATE_CREATE: data = await client.createTemplate(request.input); break;
         case BREVO_CAPABILITIES.EMAIL_PREPARE: data = { prepared: true, email: validateEmail(request.input) }; break;
         case BREVO_CAPABILITIES.EMAIL_SEND: data = await client.sendTransactionalEmail(validateEmail(request.input)); break;
         case BREVO_CAPABILITIES.CAMPAIGN_READ:
@@ -61,6 +71,7 @@ export class BrevoConnectorAdapter {
           break;
         case BREVO_CAPABILITIES.CAMPAIGN_PREPARE: data = await client.createCampaign(request.input); break;
         case BREVO_CAPABILITIES.CAMPAIGN_UPDATE: data = await client.updateCampaign(request.input.campaignId, request.input.changes); break;
+        case BREVO_CAPABILITIES.CAMPAIGN_SEND: data = await client.sendCampaign(request.input.campaignId); break;
         case BREVO_CAPABILITIES.STATS_READ: data = await client.readStatistics(request.input); break;
       }
       const executionId = request.capability === BREVO_CAPABILITIES.EMAIL_SEND && data && typeof data === "object" && "messageId" in data
