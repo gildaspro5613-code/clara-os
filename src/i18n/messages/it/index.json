@@ -92,7 +92,21 @@
     "emptyDescription": "Nessuna fonte di contatti è collegata. Clara OS non mostra contatti finché non viene configurata una rubrica reale.",
     "availability": "Disponibilità",
     "noDirectory": "Nessuna rubrica o CRM è attualmente collegato.",
-    "backendRequired": "Aggiungere e sincronizzare contatti richiede una fonte dati reale."
+    "backendRequired": "Aggiungere e sincronizzare contatti richiede una fonte dati reale.",
+    "notConnected": "Brevo non è connesso",
+    "connectBrevo": "Connetti Brevo per visualizzare la rubrica commerciale nativa di Clara OS.",
+    "loadError": "Impossibile caricare i contatti Brevo.",
+    "searchPlaceholder": "Cerca per e-mail…",
+    "search": "Cerca",
+    "refresh": "Aggiorna",
+    "directory": "Rubrica commerciale",
+    "contacts": "contatti",
+    "loading": "Caricamento dei contatti…",
+    "empty": "Nessun contatto trovato.",
+    "unnamed": "Contatto senza nome",
+    "lists": "liste",
+    "nativeDirectory": "I contatti visualizzati provengono direttamente dalla rubrica Brevo connessa.",
+    "nativeBackend": "Clara utilizza lo stesso backend nativo per cercare e gestire i contatti."
   },
   "automations": {
     "section": "Connettere",

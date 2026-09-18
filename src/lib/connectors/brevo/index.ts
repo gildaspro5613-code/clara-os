@@ -1,4 +1,5 @@
 export { BrevoConnectorAdapter } from "./adapter";
+export { BrevoExecutableConnector } from "./brevo-executable-connector";
 export { BrevoClient } from "./client";
 export { BREVO_CAPABILITIES, BrevoConnectorDefinition } from "./definition";
 export { BrevoApiError } from "./error";

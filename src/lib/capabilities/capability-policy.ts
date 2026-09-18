@@ -16,14 +16,16 @@ const READ_CAPABILITIES = new Set([
   "github.file.read", "github.commit.list", "github.issue.list",
   "github.issue.read", "github.pull_request.list", "github.pull_request.read",
   "github.checks.read",
+  "brevo.contact.search", "brevo.list.read", "brevo.template.search",
+  "brevo.campaign.read", "brevo.stats.read",
 ]);
 
 const PREPARE_CAPABILITIES = new Set([
-  "generate-document", "make.scenario.prepare",
+  "generate-document", "make.scenario.prepare", "brevo.email.prepare",
 ]);
 
 const EXECUTE_CAPABILITIES = new Set([
-  "make.scenario.execute",
+  "make.scenario.execute", "brevo.email.send", "brevo.campaign.send",
 ]);
 
 export function getCapabilityPolicy(capabilityId: string): CapabilityPolicy {

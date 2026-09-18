@@ -26,6 +26,25 @@ export interface BrevoContactUpsert {
   emailBlacklisted?: boolean;
 }
 
+export interface BrevoContactList {
+  id: number;
+  name: string;
+  folderId?: number;
+  uniqueSubscribers?: number;
+}
+
+export interface BrevoListSearch {
+  listId?: number;
+  limit?: number;
+  offset?: number;
+  sort?: "asc" | "desc";
+}
+
+export interface BrevoListCreate {
+  name: string;
+  folderId: number;
+}
+
 export interface BrevoTemplate {
   id: number;
   name: string;
@@ -38,6 +57,18 @@ export interface BrevoTemplateSearch {
   limit?: number;
   offset?: number;
   sort?: "asc" | "desc";
+  templateStatus?: boolean;
+}
+
+export interface BrevoTemplateCreate {
+  templateName: string;
+  subject: string;
+  sender: BrevoEmailAddress;
+  htmlContent?: string;
+  htmlUrl?: string;
+  isActive?: boolean;
+  replyTo?: string;
+  tag?: string;
 }
 
 export interface BrevoEmailAddress {
@@ -55,6 +86,7 @@ export interface BrevoTransactionalEmail {
   sender?: BrevoEmailAddress;
   replyTo?: BrevoEmailAddress;
   tags?: string[];
+  scheduledAt?: string;
 }
 
 export interface BrevoCampaign {
@@ -76,6 +108,7 @@ export interface BrevoCampaignPreparation {
 }
 
 export interface BrevoStatisticsQuery {
+  mode?: "events" | "aggregate" | "campaign";
   campaignId?: number;
   event?: "sent" | "delivered" | "opened" | "clicks" | "hardBounces" | "softBounces" | "blocked" | "unsubscribed";
   startDate?: string;

@@ -25,7 +25,7 @@ function json(body: unknown, status = 200, headers?: HeadersInit) {
   });
 }
 
-test("Brevo definition declares only the V1 capability surface and operation types", () => {
+test("Brevo definition declares the V2 native commercial capability surface and operation types", () => {
   assert.equal(BrevoConnectorDefinition.id, "brevo");
   assert.equal(BrevoConnectorDefinition.name, "Brevo");
   assert.deepEqual(
@@ -149,4 +149,64 @@ test("webhook parser maps supported delivery events to credential-free domain ev
     email: "user@example.com", messageId: "message-3", campaignId: 44, link: undefined,
   });
   assert.equal(parseBrevoWebhook({ event: "unknown", ts: 1 }), null);
+});
+
+
+test("lists can be read, created, and populated natively", async () => {
+  const http = fakeHttp([
+    json({ count: 1, lists: [{ id: 3, name: "Prospects", folderId: 1 }] }),
+    json({ id: 4 }, 201),
+    json({ success: ["ada@example.com"], failure: [] }, 201),
+  ]);
+  const client = new BrevoClient({ accessToken: "token", fetch: http.fetch });
+  assert.equal((await client.readLists({ limit: 10 })).lists[0]?.name, "Prospects");
+  assert.deepEqual(await client.createList({ name: "Clients", folderId: 1 }), { id: 4 });
+  assert.deepEqual(await client.manageListMembership({ listId: 4, action: "add", emails: ["ada@example.com"] }), {
+    listId: 4, action: "add", success: true,
+  });
+  assert.match(http.calls[0]?.url ?? "", /\/contacts\/lists\?limit=10/);
+  assert.equal(http.calls[1]?.init?.method, "POST");
+  assert.match(http.calls[2]?.url ?? "", /\/contacts\/lists\/4\/contacts\/add$/);
+});
+
+test("templates can be filtered and created natively", async () => {
+  const http = fakeHttp([
+    json({ count: 1, templates: [{ id: 9, name: "Welcome", isActive: true }] }),
+    json({ id: 10 }, 201),
+  ]);
+  const client = new BrevoClient({ accessToken: "token", fetch: http.fetch });
+  assert.equal((await client.searchTemplates({ templateStatus: true })).templates[0]?.id, 9);
+  assert.deepEqual(await client.createTemplate({
+    templateName: "Invoice", subject: "Your invoice",
+    sender: { email: "team@example.com" }, htmlContent: "<p>Your invoice is ready.</p>",
+    isActive: true,
+  }), { id: 10 });
+  assert.match(http.calls[0]?.url ?? "", /templateStatus=true/);
+  assert.equal(http.calls[1]?.init?.method, "POST");
+});
+
+test("campaign execution is explicit and uses sendNow", async () => {
+  const http = fakeHttp([new Response(null, { status: 204 })]);
+  const client = new BrevoClient({ accessToken: "token", fetch: http.fetch });
+  assert.deepEqual(await client.sendCampaign(27), { campaignId: 27, accepted: true });
+  assert.equal(http.calls[0]?.url, "https://api.brevo.com/v3/emailCampaigns/27/sendNow");
+  assert.equal(http.calls[0]?.init?.method, "POST");
+  assert.equal(
+    BrevoConnectorDefinition.capabilities.find(({ id }) => id === BREVO_CAPABILITIES.CAMPAIGN_SEND)?.operationType,
+    "EXECUTE",
+  );
+});
+
+test("statistics support aggregate and campaign report modes", async () => {
+  const http = fakeHttp([
+    json({ delivered: 10, opens: 8, clicks: 3 }),
+    json({ id: 27, statistics: { globalStats: { delivered: 10 } } }),
+  ]);
+  const client = new BrevoClient({ accessToken: "token", fetch: http.fetch });
+  const aggregate = await client.readStatistics({ mode: "aggregate", startDate: "2026-09-01", endDate: "2026-09-18" });
+  assert.equal(aggregate.delivered, 10);
+  const campaign = await client.readStatistics({ mode: "campaign", campaignId: 27 });
+  assert.equal(campaign.id, 27);
+  assert.match(http.calls[0]?.url ?? "", /\/smtp\/statistics\/aggregatedReport/);
+  assert.match(http.calls[1]?.url ?? "", /\/emailCampaigns\/27\?statistics=/);
 });

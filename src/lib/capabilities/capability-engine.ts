@@ -19,6 +19,9 @@ import { MAKE_CAPABILITIES } from "@/lib/connectors/make";
 import { ConnectorEngine } from "@/lib/connectors/core/connector-engine";
 import type { ConnectorContext } from "@/lib/connectors/core/connector-context";
 import { GoogleWorkspaceConnector, GOOGLE_WORKSPACE_CAPABILITIES } from "@/lib/connectors/google";
+import { BrevoExecutableConnector, BREVO_CAPABILITIES } from "@/lib/connectors/brevo";
+import { DatabaseConnectionRepository } from "@/lib/connections/connection-repository";
+import { ConnectionStatus } from "@/lib/connections/connection";
 
 export interface CapabilityExecutionRequest {
   readonly capabilityId: string;
@@ -55,6 +58,10 @@ export class CapabilityEngine {
     const capability = this.registry.findById(request.capabilityId);
     if (!capability) {
       return { success: false, message: `Unknown capability: ${request.capabilityId}`, completedAt: new Date() };
+    }
+
+    if ((Object.values(BREVO_CAPABILITIES) as readonly string[]).includes(request.capabilityId)) {
+      return this.executeBrevo(request);
     }
 
     if ((GOOGLE_WORKSPACE_CAPABILITIES as readonly string[]).includes(request.capabilityId)) {
@@ -122,6 +129,29 @@ export class CapabilityEngine {
       default:
         return { success: false, message: "Capability not implemented.", completedAt: new Date() };
     }
+  }
+
+  private async executeBrevo(request: CapabilityExecutionRequest): Promise<CapabilityExecutionResult> {
+    const workspaceId = request.workspaceId ?? "default";
+    const connection = await new DatabaseConnectionRepository().findByWorkspaceAndProvider(workspaceId, "brevo");
+    if (!connection || connection.status !== ConnectionStatus.ACTIVE) {
+      return { success: false, message: "Brevo is not connected for this workspace.", completedAt: new Date() };
+    }
+    const connectorContext: ConnectorContext = {
+      brain: {} as ConnectorContext["brain"], experiences: [], recommendations: [],
+      configuration: { workspaceId }, createdAt: new Date(),
+    };
+    const connector = new BrevoExecutableConnector(connectorContext, connection.id);
+    const result = await this.connectorEngine.execute(connector, {
+      id: crypto.randomUUID(), capability: request.capabilityId, payload: request.context,
+      source: "capability-engine", receivedAt: new Date(),
+    });
+    return {
+      success: result.success,
+      message: result.success ? result.message ?? `${request.capabilityId} executed successfully.` : result.error ?? "Brevo execution failed.",
+      content: result.data === undefined ? undefined : safeStringify(result.data),
+      completedAt: result.completedAt,
+    };
   }
 
   private async executeGoogleWorkspace(request: CapabilityExecutionRequest): Promise<CapabilityExecutionResult> {

@@ -30,8 +30,8 @@ export function createBrevoOAuthProvider(
   http: Fetch = fetch,
   now: () => number = Date.now,
 ): OAuthProviderDefinition {
-  const authorizationEndpoint = config.authorizationEndpoint ?? "https://app.brevo.com/oauth/authorize";
-  const tokenEndpoint = config.tokenEndpoint ?? "https://api.brevo.com/v3/oauth/token";
+  const authorizationEndpoint = config.authorizationEndpoint ?? "https://oauth.brevo.com/realms/partner/oauth/authorize";
+  const tokenEndpoint = config.tokenEndpoint ?? "https://oauth.brevo.com/realms/partner/oauth/token";
   async function token(parameters: Record<string, string>): Promise<OAuthTokenSet> {
     const response = await http(tokenEndpoint, {
       method: "POST",
