@@ -2,8 +2,7 @@ const MAKE_SCENARIO_SCOPE_PREFIX = "make:scenario:";
 
 /**
  * Returns the Make scenario keys explicitly allowed by the workspace connection.
- * When no Make scenario scopes are present, the credential-backed scenario map
- * remains the compatibility authorization boundary.
+ * Make V2 is fail-closed: a scenario must always have an explicit workspace scope.
  */
 export function getAllowedMakeScenarioKeys(scopes: readonly string[]): ReadonlySet<string> {
   const keys = scopes
@@ -18,6 +17,5 @@ export function isMakeScenarioAllowed(
   scopes: readonly string[],
   scenarioKey: string,
 ): boolean {
-  const allowed = getAllowedMakeScenarioKeys(scopes);
-  return allowed.size === 0 || allowed.has(scenarioKey.trim());
+  return getAllowedMakeScenarioKeys(scopes).has(scenarioKey.trim());
 }
