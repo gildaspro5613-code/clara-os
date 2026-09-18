@@ -92,7 +92,21 @@
     "emptyDescription": "Aucune source de contacts n’est connectée à cet espace. Clara OS n’affiche pas de contacts tant qu’un véritable répertoire n’est pas configuré.",
     "availability": "Disponibilité",
     "noDirectory": "Aucun annuaire ou CRM n’est actuellement raccordé.",
-    "backendRequired": "L’ajout et la synchronisation de contacts nécessitent une source de données réelle."
+    "backendRequired": "L’ajout et la synchronisation de contacts nécessitent une source de données réelle.",
+    "notConnected": "Brevo n’est pas connecté",
+    "connectBrevo": "Connectez Brevo pour afficher le répertoire commercial natif de Clara OS.",
+    "loadError": "Impossible de charger les contacts Brevo.",
+    "searchPlaceholder": "Rechercher par e-mail…",
+    "search": "Rechercher",
+    "refresh": "Actualiser",
+    "directory": "Répertoire commercial",
+    "contacts": "contacts",
+    "loading": "Chargement des contacts…",
+    "empty": "Aucun contact trouvé.",
+    "unnamed": "Contact sans nom",
+    "lists": "listes",
+    "nativeDirectory": "Les contacts affichés proviennent directement du répertoire Brevo connecté.",
+    "nativeBackend": "Clara utilise ce même backend natif pour rechercher et gérer les contacts."
   },
   "automations": {
     "section": "Connecter",
