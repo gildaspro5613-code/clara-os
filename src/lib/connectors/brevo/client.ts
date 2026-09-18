@@ -5,9 +5,13 @@ import type {
   BrevoContact,
   BrevoContactSearch,
   BrevoContactUpsert,
+  BrevoContactList,
+  BrevoListSearch,
+  BrevoListCreate,
   BrevoStatisticsQuery,
   BrevoTemplate,
   BrevoTemplateSearch,
+  BrevoTemplateCreate,
   BrevoTransactionalEmail,
 } from "./types";
 
@@ -108,6 +112,22 @@ export class BrevoClient {
     return { listId: input.listId, action: input.action, success: true };
   }
 
+  async readLists(input: BrevoListSearch = {}): Promise<{ lists: BrevoContactList[]; count?: number }> {
+    if (input.listId !== undefined) {
+      const list = await this.request<BrevoContactList>(`/contacts/lists/${input.listId}`);
+      return { lists: [list], count: 1 };
+    }
+    return this.request(`/contacts/lists${queryString({ limit: input.limit, offset: input.offset, sort: input.sort })}`);
+  }
+
+  createList(input: BrevoListCreate): Promise<{ id: number }> {
+    return this.request("/contacts/lists", { method: "POST", body: JSON.stringify(input) });
+  }
+
+  contactsFromList(listId: number, input: { limit?: number; offset?: number; sort?: "asc" | "desc" } = {}): Promise<{ contacts: BrevoContact[]; count: number }> {
+    return this.request(`/contacts/lists/${listId}/contacts${queryString(input)}`);
+  }
+
   async searchTemplates(input: BrevoTemplateSearch): Promise<{ templates: BrevoTemplate[]; count?: number }> {
     if (input.templateId !== undefined) {
       const template = await this.request<BrevoTemplate>(`/smtp/templates/${input.templateId}`);
@@ -117,7 +137,12 @@ export class BrevoClient {
       limit: input.limit,
       offset: input.offset,
       sort: input.sort,
+      templateStatus: input.templateStatus === undefined ? undefined : String(input.templateStatus),
     })}`);
+  }
+
+  createTemplate(input: BrevoTemplateCreate): Promise<{ id: number }> {
+    return this.request("/smtp/templates", { method: "POST", body: JSON.stringify(input) });
   }
 
   async sendTransactionalEmail(input: BrevoTransactionalEmail): Promise<{ messageId: string }> {
@@ -144,10 +169,24 @@ export class BrevoClient {
     return { campaignId, updated: true };
   }
 
+  async sendCampaign(campaignId: number): Promise<{ campaignId: number; accepted: true }> {
+    await this.request<void>(`/emailCampaigns/${campaignId}/sendNow`, { method: "POST" });
+    return { campaignId, accepted: true };
+  }
+
   readStatistics(input: BrevoStatisticsQuery): Promise<Record<string, unknown>> {
-    if (input.campaignId !== undefined) {
-      return this.request(`/emailCampaigns/${input.campaignId}`);
+    if (input.mode === "campaign" || input.campaignId !== undefined) {
+      if (input.campaignId === undefined) throw new Error("campaignId is required for campaign statistics.");
+      return this.request(`/emailCampaigns/${input.campaignId}?statistics=globalStats,linksStats,statsByDomain`);
     }
-    return this.request(`/smtp/statistics/events${queryString(input)}`);
+    if (input.mode === "aggregate") {
+      return this.request(`/smtp/statistics/aggregatedReport${queryString({
+        startDate: input.startDate, endDate: input.endDate,
+      })}`);
+    }
+    return this.request(`/smtp/statistics/events${queryString({
+      event: input.event, startDate: input.startDate, endDate: input.endDate,
+      limit: input.limit, offset: input.offset,
+    })}`);
   }
 }
