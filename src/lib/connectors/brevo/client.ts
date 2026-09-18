@@ -26,7 +26,7 @@ export interface BrevoClientOptions {
 function queryString(values: object): string {
   const query = new URLSearchParams();
   for (const [key, value] of Object.entries(values)) {
-    if (typeof value === "string" || typeof value === "number") {
+    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
       query.set(key, String(value));
     }
   }
@@ -137,7 +137,7 @@ export class BrevoClient {
       limit: input.limit,
       offset: input.offset,
       sort: input.sort,
-      templateStatus: input.templateStatus === undefined ? undefined : String(input.templateStatus),
+      templateStatus: input.templateStatus,
     })}`);
   }
 
