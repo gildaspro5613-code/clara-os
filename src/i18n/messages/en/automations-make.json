@@ -1,0 +1,6 @@
+{
+  "description": "Runs external automations authorized by Clara OS without exposing credentials or webhooks to the browser.",
+  "status": {"ACTIVE":"Configured","CONFIGURED":"Pending validation","PENDING_AUTHENTICATION":"Configuration pending","RECONNECT_REQUIRED":"Reconfiguration required","DISABLED":"Disabled","NOT_CONFIGURED":"Not configured","UNAVAILABLE":"Status unavailable","LOADING":"Loading…"},
+  "configure":"Configure","modify":"Edit","verify":"Validate configuration","scenarioKey":"Scenario key","webhook":"Make HTTPS webhook","save":"Save",
+  "saved":"Configuration saved. Validate its local consistency now.","saveFailed":"The Make configuration could not be saved.","scenarioRequired":"Enter the scenario key to validate.","verified":"Make configuration validated. No scenario was executed.","verifyFailed":"Local validation failed. Check the scenario key and webhook configuration."
+}

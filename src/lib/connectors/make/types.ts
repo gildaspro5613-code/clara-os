@@ -3,6 +3,8 @@ export interface MakeScenarioConfiguration {
   url: string;
   /** Optional secret headers required by the scenario gateway. */
   headers?: Record<string, string>;
+  /** Maximum synchronous wait time; the client applies safe bounds. */
+  timeoutMs?: number;
 }
 
 /** Credentials are resolved by connectionId and never supplied by Clara/user input. */
@@ -23,9 +25,13 @@ export interface PreparedMakeScenarioInvocation {
   payload: Record<string, unknown>;
 }
 
+export type MakeScenarioExecutionStatus = "completed" | "accepted" | "pending";
+
 export interface MakeScenarioExecutionResult {
   ok: true;
   scenarioKey: string;
   status: number;
+  executionStatus: MakeScenarioExecutionStatus;
+  executionId?: string;
   data: unknown;
 }

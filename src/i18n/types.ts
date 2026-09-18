@@ -7,16 +7,8 @@
  * ============================================
  */
 
-/**
- * Supported locales in Clara OS V1.
- * This is the single source of truth — do not redefine elsewhere.
- */
 export type Locale = "fr" | "en" | "es" | "de" | "it";
 
-/**
- * Namespaces available through next-intl.
- * Keep this union aligned with the dictionaries loaded by request.ts.
- */
 export type MessageNamespace =
   | "common"
   | "navigation"
@@ -39,4 +31,5 @@ export type MessageNamespace =
   | "agendaPage"
   | "journalPage"
   | "automationsBrevo"
+  | "automationsMake"
   | "missionsPage";

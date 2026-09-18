@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { CalendarDays, FileText, Mail, Megaphone, Workflow } from "lucide-react";
+import { CalendarDays, FileText, Mail, Megaphone } from "lucide-react";
 
 import MainLayout from "@/components/layout/MainLayout";
+import MakeConnectionStatus from "@/components/automatisations/MakeConnectionStatus";
 
 const capabilities = [
   { key: "calendar", icon: CalendarDays, href: "/agenda" },
@@ -48,12 +49,7 @@ export default async function AutomatisationsPage() {
                 </Link>
               </div>
             </section>
-            <aside className="rounded-3xl border border-white/10 bg-white/[0.025] p-7">
-              <Workflow className="text-white/40" size={22} />
-              <h2 className="mt-5 text-lg font-medium">{t("connectorTitle")}</h2>
-              <p className="mt-3 text-sm leading-7 text-white/50">{t("connectorDescription")}</p>
-              <span className="mt-6 inline-flex rounded-full border border-amber-400/20 bg-amber-400/5 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-amber-300/80">{t("notConnected")}</span>
-            </aside>
+            <MakeConnectionStatus />
           </div>
         </div>
       </main>
