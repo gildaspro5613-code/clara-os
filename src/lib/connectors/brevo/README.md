@@ -1,16 +1,30 @@
-# Brevo connector V1 architecture note
+# Brevo Native Capability Layer V2
+
+Brevo is a native Clara OS provider. Contacts, lists, templates, transactional
+email, campaigns and statistics execute directly against Brevo; none of these
+operations depends on Make.
 
 The adapter reuses `Connection`, `ConnectionRepository`, encrypted
-`CredentialStore`, and the provider-agnostic `ConnectionResolver`. A connection
-contains only public metadata; OAuth credentials are loaded by `connectionId`.
-The declarative definition carries autonomy-relevant READ/PREPARE/WRITE/EXECUTE metadata
-but never grants permission or executes an operation. Runtime and Autonomy Gate
-remain the callers of the adapter.
+`CredentialStore`, and the provider-agnostic `ConnectionResolver`. Runtime
+and the Autonomy Gate remain responsible for authorization before WRITE or
+EXECUTE operations reach the provider boundary.
 
-Brevo now supplies an adapter to the provider-agnostic OAuth authorization-code
-and on-demand refresh foundation. It uses the same normalized credential shape
-as `CredentialStore`; no Brevo-specific repository is introduced. Connect and
-callback routes and commercial onboarding remain deliberately deferred.
+## Native capability surface
 
-Webhook event types and parsing are included for later Journal ingestion. No
-route, polling loop, event bus, signature policy, or Journal wiring is added.
+- contacts: search and upsert
+- lists: add/remove membership
+- templates: search/read
+- transactional email: prepare and send
+- campaigns: read, create/prepare and update
+- statistics: transactional/campaign reads
+
+The adapter returns the shared `OperationalCapabilityResult` envelope introduced
+for connector-backed operational capabilities. `BrevoExecutableConnector`
+provides the generic `ConnectorEngine` boundary.
+
+OAuth uses the shared provider-neutral OAuth foundation and encrypted credential
+storage. Connect/callback routes and the commercial UI remain separate follow-up
+work; they must not introduce a Make dependency.
+
+Webhook parsing remains credential-free and is intended for later Journal
+ingestion (delivery, open, click, bounce, block and unsubscribe events).
