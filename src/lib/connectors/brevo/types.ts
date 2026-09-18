@@ -60,6 +60,17 @@ export interface BrevoTemplateSearch {
   templateStatus?: boolean;
 }
 
+export interface BrevoTemplateCreate {
+  templateName: string;
+  subject: string;
+  sender: BrevoEmailAddress;
+  htmlContent?: string;
+  htmlUrl?: string;
+  isActive?: boolean;
+  replyTo?: string;
+  tag?: string;
+}
+
 export interface BrevoEmailAddress {
   email: string;
   name?: string;
