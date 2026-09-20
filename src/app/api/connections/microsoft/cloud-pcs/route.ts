@@ -4,7 +4,6 @@ import { CredentialStore } from "@/lib/connections/credential-store";
 import { CURRENT_WORKSPACE_ID } from "@/lib/connections/current-workspace";
 import { OAuthRefreshService } from "@/lib/auth/oauth/service";
 import { oauthProviders } from "@/lib/auth/oauth/providers";
-import type { OAuthTokenSet } from "@/lib/auth/oauth/types";
 import { MicrosoftGraphClient } from "@/lib/connectors/microsoft/graph/microsoft-graph-client";
 
 export const dynamic = "force-dynamic";
