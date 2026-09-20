@@ -112,18 +112,26 @@ implements ConnectionRepository {
   }
 }
 
-export function createPendingGoogleConnection(
+export function createPendingConnection(
   workspaceId: string,
+  provider: string,
   scopes: string[],
 ): Connection {
   const now = new Date();
   return {
     id: crypto.randomUUID(),
     workspaceId,
-    provider: "google",
+    provider,
     status: ConnectionStatus.PENDING_AUTHENTICATION,
     scopes,
     createdAt: now,
     updatedAt: now,
   };
+}
+
+export function createPendingGoogleConnection(
+  workspaceId: string,
+  scopes: string[],
+): Connection {
+  return createPendingConnection(workspaceId, "google", scopes);
 }
