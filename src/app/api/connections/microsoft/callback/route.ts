@@ -1,3 +1,4 @@
+import { microsoftWorkspaceGate } from "@/lib/connectors/microsoft/security/workspace-gate";
 import { NextResponse } from "next/server";
 import { DatabaseConnectionRepository } from "@/lib/connections/connection-repository";
 import { CredentialStore } from "@/lib/connections/credential-store";
@@ -25,6 +26,10 @@ function finishRedirect(request: Request, status: string): NextResponse {
 }
 
 export async function GET(request: Request) {
+  return microsoftWorkspaceGate();
+
+  /* Pending authenticated workspace resolver:
+
   const url = new URL(request.url);
   const stateValue = url.searchParams.get("state");
   const code = url.searchParams.get("code");
@@ -73,4 +78,5 @@ export async function GET(request: Request) {
 
     return finishRedirect(request, "oauth_error");
   }
+  */
 }
