@@ -1,3 +1,4 @@
+import { microsoftWorkspaceGate } from "@/lib/connectors/microsoft/security/workspace-gate";
 import { NextResponse } from "next/server";
 import { ConnectionStatus } from "@/lib/connections/connection";
 import {
@@ -15,6 +16,10 @@ export const dynamic = "force-dynamic";
 const MICROSOFT_OAUTH_COOKIE = "clara_microsoft_oauth_nonce";
 
 export async function GET() {
+  return microsoftWorkspaceGate();
+
+  /* Pending authenticated workspace resolver:
+
   const repository = new DatabaseConnectionRepository();
   let connection = await repository.findByWorkspaceAndProvider(
     CURRENT_WORKSPACE_ID,
@@ -61,4 +66,5 @@ export async function GET() {
     path: "/api/connections/microsoft/callback",
   });
   return response;
+  */
 }
