@@ -38,5 +38,17 @@ test("sessions store hashes and support expiry and revocation", () => {
 });
 
 test("migration contains no existing legacy table alteration or data seed", () => {
-  assert.doesNotMatch(migration, /\b(?:ALTER|DROP|TRUNCATE|UPDATE|DELETE|INSERT)\s+/i);
+  // Check SQL statement beginnings only. ON DELETE CASCADE is a valid
+  // foreign-key constraint, not a data-deletion statement.
+  const statements = migration
+    .replace(/^\s*--.*$/gm, "")
+    .split(";")
+    .map((statement) => statement.trim())
+    .filter(Boolean);
+  for (const statement of statements) {
+    assert.doesNotMatch(
+      statement,
+      /^(?:ALTER|DROP|TRUNCATE|UPDATE|DELETE|INSERT)\b/i,
+    );
+  }
 });
