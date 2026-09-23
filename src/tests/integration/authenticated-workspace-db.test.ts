@@ -29,7 +29,9 @@ test("authenticated sessions and workspace permissions in isolated PostgreSQL", 
   const workspaceB = `test-${randomUUID()}`;
   const token = randomBytes(32).toString("base64url");
   const digest = sessionTokenDigest(token);
+  const expiredDigest = sessionTokenDigest(randomBytes(32).toString("base64url"));
   assert.ok(digest);
+  assert.ok(expiredDigest);
 
   try {
     await db`INSERT INTO clara_auth_users (id) VALUES (${userA}), (${userB})`;
@@ -57,14 +59,17 @@ test("authenticated sessions and workspace permissions in isolated PostgreSQL", 
     });
     assert.throws(() => authorizeWorkspace(principal, workspaceB, "connections:read"));
 
-    await db`UPDATE clara_auth_sessions SET expires_at = NOW() - INTERVAL '1 minute'
-      WHERE token_hash = ${digest}`;
+    // An expired session must still satisfy the schema invariant:
+    // expiry occurs after its original creation, not before it.
+    await db`INSERT INTO clara_auth_sessions (token_hash, user_id, created_at, expires_at)
+      VALUES (${expiredDigest}, ${userA}, NOW() - INTERVAL '10 minutes',
+        NOW() - INTERVAL '1 minute')`;
     const expired = await db`SELECT user_id FROM clara_auth_sessions
-      WHERE token_hash = ${digest} AND revoked_at IS NULL AND expires_at > NOW()`;
+      WHERE token_hash = ${expiredDigest} AND revoked_at IS NULL AND expires_at > NOW()`;
     assert.equal(expired.length, 0);
 
-    await db`UPDATE clara_auth_sessions SET expires_at = NOW() + INTERVAL '10 minutes',
-      revoked_at = NOW() WHERE token_hash = ${digest}`;
+    await db`UPDATE clara_auth_sessions SET revoked_at = NOW()
+      WHERE token_hash = ${digest}`;
     const revoked = await db`SELECT user_id FROM clara_auth_sessions
       WHERE token_hash = ${digest} AND revoked_at IS NULL AND expires_at > NOW()`;
     assert.equal(revoked.length, 0);
