@@ -53,6 +53,16 @@ export async function issueAuthenticatedSession(verifiedUserId: string): Promise
   ` as { id: string }[];
   if (users.length !== 1) throw new Error("VERIFIED_USER_NOT_PROVISIONED");
 
+  // Only members of a non-legacy workspace can receive a Clara OS session.
+  const memberships = await sql`
+    SELECT workspace_id FROM clara_workspace_memberships
+    WHERE user_id = ${verifiedUserId}
+      AND workspace_id <> 'default'
+      AND revoked_at IS NULL
+    LIMIT 1
+  ` as { workspace_id: string }[];
+  if (memberships.length !== 1) throw new Error("ACTIVE_WORKSPACE_MEMBERSHIP_REQUIRED");
+
   const token = createOpaqueSessionToken();
   const digest = sessionTokenDigest(token);
   if (!digest) throw new Error("SESSION_GENERATION_FAILED");
