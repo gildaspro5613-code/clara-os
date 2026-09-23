@@ -1,3 +1,4 @@
+import { microsoftWorkspaceGate } from "@/lib/connectors/microsoft/security/workspace-gate";
 import { NextResponse } from "next/server";
 import { DatabaseConnectionRepository } from "@/lib/connections/connection-repository";
 import { CredentialStore } from "@/lib/connections/credential-store";
@@ -9,6 +10,10 @@ import { MicrosoftGraphClient } from "@/lib/connectors/microsoft/graph/microsoft
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  return microsoftWorkspaceGate();
+
+  /* Pending authenticated workspace resolver:
+
   const repository = new DatabaseConnectionRepository();
   const connection = await repository.findByWorkspaceAndProvider(
     CURRENT_WORKSPACE_ID,
@@ -40,4 +45,5 @@ export async function GET() {
     user,
     cloudPcs,
   });
+  */
 }
