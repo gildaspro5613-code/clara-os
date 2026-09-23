@@ -34,7 +34,7 @@ jobs:
         run: npm ci
       - name: Static authentication and Microsoft security tests
         run: |
-          npx tsx --test src/tests/authenticated-workspace-session.test.ts src/tests/authenticated-workspaces-migration.test.ts src/tests/workspace-authorization.test.ts src/tests/microsoft-workspace-gate.test.ts
+          npx tsx --test src/tests/authenticated-workspace-session.test.ts src/tests/authenticated-workspaces-migration.test.ts src/tests/workspace-authorization.test.ts src/tests/microsoft-workspace-gate.test.ts src/tests/microsoft-request-authorization.test.ts
       - name: TypeScript
         run: npx tsc --noEmit --pretty false
       - name: Production build
