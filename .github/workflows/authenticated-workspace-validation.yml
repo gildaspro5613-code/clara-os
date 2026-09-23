@@ -1,0 +1,30 @@
+name: Authenticated workspace validation
+on:
+  push:
+    branches:
+      - feat/authenticated-workspace-lifecycle-v1
+  pull_request:
+    paths:
+      - "src/lib/auth/**"
+      - "src/tests/authenticated-*"
+      - ".github/workflows/authenticated-workspace-validation.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Authentication tests
+        run: npx tsx --test src/tests/authenticated-workspace-session.test.ts src/tests/authenticated-workspaces-migration.test.ts src/tests/authenticated-session-lifecycle.test.ts src/tests/workspace-authorization.test.ts src/tests/microsoft-request-authorization.test.ts src/tests/microsoft-workspace-gate.test.ts
+      - run: npx tsc --noEmit --pretty false
+      - run: npm run build
