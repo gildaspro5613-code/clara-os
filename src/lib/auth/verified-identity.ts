@@ -38,8 +38,8 @@ export async function enrollVerifiedIdentity(identity: VerifiedIdentity): Promis
   const existing = await findVerifiedUser(identity);
   if (existing) return existing;
   const userId = randomUUID();
-  // CTE ensures a concurrently inserted identity wins and orphan users are
-  // not created for a losing enrollment request.
+  // A concurrent enrollment may win the identity unique constraint. In that
+  // case the unused provisional user can be cleaned up separately.
   const rows = await sql`
     WITH inserted_user AS (
       INSERT INTO clara_auth_users (id) VALUES (${userId})
@@ -53,7 +53,9 @@ export async function enrollVerifiedIdentity(identity: VerifiedIdentity): Promis
     SELECT user_id FROM identity_insert
   ` as { user_id: string }[];
   if (rows[0]) return rows[0].user_id;
-  // A concurrent request may have won. No membership or session is granted.
+  // A concurrent request won. Delete only our unused provisional user.
+  await sql`DELETE FROM clara_auth_users WHERE id = ${userId}`;
+  // No membership or session is granted.
   const winner = await findVerifiedUser(identity);
   if (!winner) throw new Error("IDENTITY_ENROLLMENT_UNAVAILABLE");
   return winner;
