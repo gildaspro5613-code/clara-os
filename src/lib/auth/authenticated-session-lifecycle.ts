@@ -3,7 +3,6 @@
  * independent sign-in provider has verified the user's identity. Never expose
  * this function through an unauthenticated route.
  */
-import "server-only";
 import { randomBytes } from "node:crypto";
 import { sql } from "@/lib/core/store/database";
 import { CLARA_AUTH_COOKIE, sessionTokenDigest } from "./authenticated-workspace-session";
