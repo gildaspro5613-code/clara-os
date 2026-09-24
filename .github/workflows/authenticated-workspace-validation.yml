@@ -28,6 +28,6 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Authentication tests
-        run: npx tsx --test src/tests/authenticated-workspace-session.test.ts src/tests/authenticated-workspaces-migration.test.ts src/tests/authenticated-session-lifecycle.test.ts src/tests/session-request-security.test.ts src/tests/verified-identity.test.ts src/tests/verified-sign-in.test.ts src/tests/sign-in-transaction.test.ts src/tests/workspace-authorization.test.ts src/tests/microsoft-request-authorization.test.ts src/tests/microsoft-workspace-gate.test.ts src/tests/microsoft-authenticated-routes.test.ts
+        run: npx tsx --test src/tests/authenticated-workspace-session.test.ts src/tests/authenticated-workspaces-migration.test.ts src/tests/authenticated-session-lifecycle.test.ts src/tests/session-request-security.test.ts src/tests/verified-identity.test.ts src/tests/verified-sign-in.test.ts src/tests/sign-in-transaction.test.ts src/tests/workspace-authorization.test.ts src/tests/microsoft-request-authorization.test.ts src/tests/microsoft-workspace-gate.test.ts src/tests/microsoft-authenticated-routes.test.ts src/tests/microsoft-oauth-policy.test.ts
       - run: npx tsc --noEmit --pretty false
       - run: npm run build
