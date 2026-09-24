@@ -44,12 +44,18 @@ async function exchangeToken(body: URLSearchParams): Promise<OAuthTokenSet> {
     throw new Error(data.error_description ?? "Microsoft OAuth token exchange failed.");
   }
 
+  const grantedScopes = data.scope?.split(" ").filter(Boolean) ?? [];
+  const required = ["User.Read", "CloudPC.Read.All"];
+  if (!required.every((scope) => grantedScopes.some((granted) => granted.toLowerCase() === scope.toLowerCase()))) {
+    throw new Error("Microsoft OAuth did not grant the required Windows 365 scopes.");
+  }
+
   return {
     accessToken: data.access_token,
     refreshToken: data.refresh_token,
     tokenType: data.token_type,
     expiresAt: data.expires_in ? Date.now() + data.expires_in * 1000 : undefined,
-    scope: data.scope?.split(" ").filter(Boolean),
+    scope: grantedScopes,
   };
 }
 
