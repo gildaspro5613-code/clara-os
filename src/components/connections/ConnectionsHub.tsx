@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Cloud, Workflow, CreditCard, Building2, ExternalLink, Settings2, ShieldCheck } from "lucide-react";
 
 type Status = { connected?: boolean; status?: string; error?: string; connectUrl?: string; scopes?: string[]; scenarioKeys?: string[] };
@@ -32,6 +33,11 @@ function detail(id: Provider, state?: Status) {
 
 export default function ConnectionsHub() {
   const [states, setStates] = useState<Partial<Record<Provider, Status>>>({});
+  const searchParams = useSearchParams();
+  const googleResult = searchParams.get("google");
+  const microsoftResult = searchParams.get("microsoft");
+  const oauthResult = googleResult ? { provider: "Google Workspace", status: googleResult } : microsoftResult ? { provider: "Microsoft", status: microsoftResult } : null;
+  const oauthSuccess = oauthResult?.status === "connected";
 
   useEffect(() => {
     const controller = new AbortController();
@@ -48,7 +54,13 @@ export default function ConnectionsHub() {
   }, []);
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <>
+      {oauthResult && (
+        <div className={`mb-5 rounded-2xl border px-5 py-4 text-sm ${oauthSuccess ? "border-emerald-400/20 bg-emerald-400/[0.06] text-emerald-200" : "border-amber-400/20 bg-amber-400/[0.06] text-amber-100"}`} role="status">
+          {oauthSuccess ? `${oauthResult.provider} est maintenant connecté à Clara.` : oauthResult.status === "auth_required" ? "Reconnectez-vous à Clara OS avant de relier Microsoft." : oauthResult.status === "access_denied" ? `Autorisation ${oauthResult.provider} annulée.` : `La connexion ${oauthResult.provider} n’a pas pu être finalisée. Vous pouvez réessayer.`}
+        </div>
+      )}
+      <div className="grid gap-4 md:grid-cols-2">
       {providers.map(({ id, title, description, icon: Icon }) => {
         const state = states[id];
         const connectUrl = id === "microsoft" ? "/api/connections/microsoft/connect" : state?.connectUrl;
@@ -81,6 +93,7 @@ export default function ConnectionsHub() {
         <p className="mt-2 text-sm leading-6 text-white/45">Paiements de Clara Live et des services Mélodie Digital.</p>
         <p className="mt-3 text-xs leading-5 text-white/35">Clara OS n’est pas une interface de paiement. Cette connexion reste réservée aux produits qui en ont besoin.</p>
       </article>
-    </div>
+      </div>
+    </>
   );
 }
