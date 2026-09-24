@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
   const nonce = createOAuthNonce();
   const url = new OAuthAuthorizationService(oauthProviders).create({
     provider: "microsoft", connectionId: connection.id, workspaceId: workspace.workspaceId,
-    nonce, redirectUri: microsoftConfig.redirectUri, redirectPath: "/?microsoft=connected",
+    nonce, redirectUri: microsoftConfig.redirectUri, redirectPath: "/connexions?microsoft=connected",
     scopes: MICROSOFT_OAUTH_SCOPES, parameters: { prompt: "select_account" },
   });
   const response = NextResponse.redirect(url);

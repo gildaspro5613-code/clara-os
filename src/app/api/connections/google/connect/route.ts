@@ -46,7 +46,7 @@ export async function GET() {
     provider: "google", connectionId: connection.id,
     workspaceId: connection.workspaceId, nonce,
     redirectUri: googleConfig.redirectUri,
-    redirectPath: "/?google=connected",
+    redirectPath: "/connexions?google=connected",
     scopes: GOOGLE_OAUTH_SCOPES,
   });
   const response = NextResponse.redirect(url);

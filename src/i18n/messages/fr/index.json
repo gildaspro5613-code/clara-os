@@ -39,7 +39,8 @@
       "connect": "Connecter",
       "know": "Connaître",
       "claraSection": "Clara"
-    }
+    },
+    "connexions": "Connexions"
   },
   "cockpit": {
     "title": "Cockpit",

@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 
 function finishRedirect(request: Request, status: string): NextResponse {
   const base = microsoftConfig.redirectUri || new URL(request.url).origin;
-  const response = NextResponse.redirect(new URL(`/?microsoft=${status}`, base));
+  const response = NextResponse.redirect(new URL(`/connexions?microsoft=${status}`, base));
   response.cookies.set(MICROSOFT_OAUTH_COOKIE, "", {
     httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production",
     maxAge: 0, path: "/api/connections/microsoft/callback",
