@@ -12,6 +12,7 @@ import {
   Users,
   Phone,
   Workflow,
+  Plug,
   FileText,
   CalendarDays,
   Brain,
@@ -32,6 +33,7 @@ const sections = [
   {
     label: "connect",
     items: [
+      { key: "connexions", href: "/connexions", icon: Plug },
       { key: "telephonie", href: "/telephonie", icon: Phone },
       { key: "automatisations", href: "/automatisations", icon: Workflow },
       { key: "agenda", href: "/agenda", icon: CalendarDays },
