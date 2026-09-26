@@ -14,6 +14,7 @@ import { KnowledgeModule } from "./module";
 import { LearnedKnowledge } from "./learned-knowledge";
 
 import { FOUNDATION_MODULE } from "./foundation/module";
+import { CLARA_LIVE_MODULE } from "./clara-live/module";
 
 /**
  * Knowledge Engine.
@@ -25,6 +26,7 @@ export class KnowledgeEngine {
    */
   private readonly modules: KnowledgeModule[] = [
     FOUNDATION_MODULE,
+    CLARA_LIVE_MODULE,
   ];
 
   /**
