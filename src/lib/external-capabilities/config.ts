@@ -5,12 +5,14 @@ export interface ExternalProductConfig {
   readonly workspaceId: string;
   readonly token: string;
   readonly capabilities: readonly string[];
+  readonly callbackBaseUrl?: string;
 }
 
 type RawProductConfig = {
   workspaceId?: unknown;
   token?: unknown;
   capabilities?: unknown;
+  callbackBaseUrl?: unknown;
 };
 
 export class ExternalProductConfigurationError extends Error {
@@ -44,6 +46,10 @@ export function loadExternalProducts(
   for (const [productId, raw] of Object.entries(parsed as Record<string, RawProductConfig>)) {
     const workspaceId = typeof raw?.workspaceId === "string" ? raw.workspaceId.trim() : "";
     const token = typeof raw?.token === "string" ? raw.token.trim() : "";
+    const callbackBaseUrl = typeof raw?.callbackBaseUrl === "string" ? raw.callbackBaseUrl.trim().replace(/\/$/, "") : undefined;
+    if (callbackBaseUrl && !callbackBaseUrl.startsWith("https://")) {
+      throw new ExternalProductConfigurationError(`External product callback must use HTTPS: ${productId}`);
+    }
     const capabilities = Array.isArray(raw?.capabilities)
       ? raw.capabilities.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
       : [];
@@ -59,6 +65,7 @@ export function loadExternalProducts(
       workspaceId,
       token,
       capabilities: capabilities.map((capability) => capability.trim()),
+      callbackBaseUrl,
     });
   }
 
