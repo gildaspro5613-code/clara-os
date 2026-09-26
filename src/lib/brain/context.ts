@@ -17,8 +17,14 @@ import { Context, Event } from "@/types";
 export function buildContext(event: Event): Context {
   return {
     event,
+    userId: event.context?.userId,
+    sessionId: event.context?.sessionId,
     now: new Date(),
-    metadata: {},
+    metadata: {
+      productId: event.context?.productId,
+      workspaceId: event.context?.workspaceId,
+      ...(event.context?.metadata ?? {}),
+    },
   };
 }
 
