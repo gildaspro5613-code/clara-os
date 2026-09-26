@@ -60,6 +60,23 @@ export async function buildBrainContext(
   const capabilities =
     new CapabilityRegistry().getAvailableCapabilities();
 
+  const advertised = Array.isArray(context.metadata?.liveCapabilities)
+    ? context.metadata.liveCapabilities.flatMap((item) => {
+        if (!item || typeof item !== "object") return [];
+        const candidate = item as { name?: unknown; description?: unknown };
+        if (typeof candidate.name !== "string" || !candidate.name.trim()) return [];
+        return [{
+          id: candidate.name.trim(),
+          name: candidate.name.trim(),
+          description: typeof candidate.description === "string"
+            ? candidate.description
+            : "Capability executed by Clara Live.",
+        }];
+      })
+    : [];
+
+  capabilities.push(...advertised);
+
   /*
    * Return the complete cognitive context.
    */
