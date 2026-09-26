@@ -34,6 +34,7 @@ import type {
 export async function executeMissionTask(
   task: MissionTask,
   mission: Mission,
+  workspaceId?: string,
 ): Promise<RuntimeResult> {
 
   const runtime =
@@ -113,6 +114,7 @@ export async function executeMissionTask(
     await engine.run(
       runtime,
       event,
+      workspaceId,
     );
 
   return result;
