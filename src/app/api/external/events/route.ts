@@ -83,7 +83,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Product scope mismatch." }, { status: 403 });
     }
 
-    const key = sessionKey(body.scope);
+    const message = body.message;
+    const scope = body.scope;
+    if (!message || !scope) {
+      return NextResponse.json({ success: false, error: "Invalid Clara Core event." }, { status: 400 });
+    }
+
+    const key = sessionKey(scope);
     const clara = new Clara(key, product.workspaceId);
     const event = {
       id: crypto.randomUUID(),
@@ -92,8 +98,8 @@ export async function POST(request: Request) {
       timestamp: new Date(),
       context: {
         productId: product.productId,
-        workspaceId: body.scope.workspaceId,
-        userId: body.scope.userId,
+        workspaceId: scope.workspaceId,
+        userId: scope.userId,
         sessionId: scope.sessionId,
         metadata: {
           externalProductWorkspaceId: product.workspaceId,
@@ -112,12 +118,6 @@ export async function POST(request: Request) {
         liveCapabilities: body.liveCapabilities ?? [],
       },
     };
-
-    const message = body.message;
-    const scope = body.scope;
-    if (!message || !scope) {
-      return NextResponse.json({ success: false, error: "Invalid Clara Core event." }, { status: 400 });
-    }
 
     const session = await dispatchEvent(clara, event);
     const response = await composeClaraResponse(message, session);
