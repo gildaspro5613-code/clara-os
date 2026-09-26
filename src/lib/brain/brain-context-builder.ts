@@ -57,8 +57,12 @@ export async function buildBrainContext(
   /*
    * Load the capabilities available to Clara.
    */
-  const capabilities: Array<{ id: string; name: string; description?: string }> =
-    new CapabilityRegistry().getAvailableCapabilities();
+  const capabilities: Array<{ id: string; name: string; description: string }> =
+    new CapabilityRegistry().getAvailableCapabilities().map((capability) => ({
+      id: capability.id,
+      name: capability.name,
+      description: capability.description ?? "Capability available to Clara.",
+    }));
 
   const advertised = Array.isArray(context.metadata?.liveCapabilities)
     ? context.metadata.liveCapabilities.flatMap((item) => {

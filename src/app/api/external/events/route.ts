@@ -94,7 +94,7 @@ export async function POST(request: Request) {
         productId: product.productId,
         workspaceId: body.scope.workspaceId,
         userId: body.scope.userId,
-        sessionId: body.scope.sessionId,
+        sessionId: scope.sessionId,
         metadata: {
           externalProductWorkspaceId: product.workspaceId,
           surface: body.context?.surface,
@@ -113,11 +113,17 @@ export async function POST(request: Request) {
       },
     };
 
+    const message = body.message;
+    const scope = body.scope;
+    if (!message || !scope) {
+      return NextResponse.json({ success: false, error: "Invalid Clara Core event." }, { status: 400 });
+    }
+
     const session = await dispatchEvent(clara, event);
-    const response = await composeClaraResponse(body.message, session);
+    const response = await composeClaraResponse(message, session);
     const now = new Date().toISOString();
     const messages: ClaraConversationMessage[] = [
-      { id: crypto.randomUUID(), role: "user", content: body.message, createdAt: now },
+      { id: crypto.randomUUID(), role: "user", content: message, createdAt: now },
       { id: crypto.randomUUID(), role: "clara", content: response, createdAt: new Date().toISOString() },
     ];
     session.conversation = [...session.conversation, ...messages].slice(-MAX_PERSISTED_MESSAGES);
