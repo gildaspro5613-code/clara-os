@@ -38,6 +38,10 @@
   ],
   "exclude": [
     "node_modules",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/*.spec.ts",
+    "src/**/*.spec.tsx",
     ".next",
     "cockpit-debug",
     "cockpit-final",
