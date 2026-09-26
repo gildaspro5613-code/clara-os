@@ -41,4 +41,13 @@ export interface Event {
 
   /** Données associées à l'événement */
   payload?: unknown;
+
+  /** Authenticated execution context. Never inferred from message text. */
+  context?: {
+    productId?: string;
+    workspaceId?: string;
+    userId?: string;
+    sessionId?: string;
+    metadata?: Record<string, unknown>;
+  };
 }

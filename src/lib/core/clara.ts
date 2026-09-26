@@ -39,6 +39,11 @@ import { saveMission } from "@/modules/missions/mission-store";
 
 export class Clara {
 
+  public constructor(
+    private readonly sessionKey: string = "default",
+    private readonly workspaceId?: string,
+  ) {}
+
   /**
    * Current runtime session.
    */
@@ -62,7 +67,7 @@ export class Clara {
    * does not depend on a warm Vercel runtime.
    */
   private async hydrateSession(): Promise<void> {
-    this.session = await loadSession();
+    this.session = await loadSession(this.sessionKey);
 
     if (this.session.mission) {
       const persistedMission = await loadMission(
@@ -101,14 +106,14 @@ export class Clara {
 
     this.session.state = ClaraState.STARTING;
     this.session.updatedAt = new Date();
-    await saveSession(this.session);
+    await saveSession(this.session, this.sessionKey);
 
     this.runtime = RuntimeFactory.create();
     console.log("[CLARA] start: runtime created");
 
     this.session.state = ClaraState.WORKING;
     this.session.updatedAt = new Date();
-    await saveSession(this.session);
+    await saveSession(this.session, this.sessionKey);
 
     return this.session;
 
@@ -123,7 +128,7 @@ export class Clara {
 
     this.session.state = ClaraState.STOPPING;
     this.session.updatedAt = new Date();
-    await saveSession(this.session);
+    await saveSession(this.session, this.sessionKey);
 
     if (this.runtime) {
       this.runtime.active = false;
@@ -131,7 +136,7 @@ export class Clara {
 
     this.session.state = ClaraState.STOPPED;
     this.session.updatedAt = new Date();
-    await saveSession(this.session);
+    await saveSession(this.session, this.sessionKey);
 
   }
 
@@ -232,6 +237,7 @@ export class Clara {
         await executeMissionTask(
           nextExecutableTask,
           missionBeforeExecution,
+          this.workspaceId,
         );
 
       this.session.mission =
@@ -264,7 +270,7 @@ export class Clara {
     }
 
     this.session.updatedAt = new Date();
-    await saveSession(this.session);
+    await saveSession(this.session, this.sessionKey);
 
     if (this.session.recommendation) {
       this.journal.addEntry(

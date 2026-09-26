@@ -24,6 +24,12 @@ export interface MissionTaskExecution {
   capabilityId: string;
   context: unknown;
   autonomous: boolean;
+  executionLocation?: "clara-os" | "external-product";
+  productId?: string;
+  workspaceId?: string;
+  userId?: string;
+  sessionId?: string;
+  risk?: "read" | "prepare" | "write" | "sensitive";
 }
 
 export interface MissionTask {

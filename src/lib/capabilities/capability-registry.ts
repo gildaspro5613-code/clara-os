@@ -54,9 +54,9 @@ import {
   DeleteSheetRowCapabilityDefinition,
 } from "./delete-sheet-row/capability";
 
-import { ReadDocumentCapability } from "./read-document/capability";
+import { ReadDocumentCapability, ReadDocumentCapabilityDefinition } from "./read-document/capability";
 
-import { FindDocumentCapability } from "./find-document/capability";
+import { FindDocumentCapability, FindDocumentCapabilityDefinition } from "./find-document/capability";
 
 import { ReadCalendarCapability } from "./read-calendar/capability";
 
@@ -140,6 +140,8 @@ export class CapabilityRegistry {
     ReadSheetCapabilityDefinition,
     FindSheetRowCapabilityDefinition,
     DeleteSheetRowCapabilityDefinition,
+    ReadDocumentCapabilityDefinition,
+    FindDocumentCapabilityDefinition,
     ReadCalendarCapabilityDefinition,
     ReadGmailCapabilityDefinition,
     CreateCalendarEventCapabilityDefinition,
