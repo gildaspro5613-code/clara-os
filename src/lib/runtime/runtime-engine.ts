@@ -55,6 +55,7 @@ export class RuntimeEngine {
   public async run(
     runtime: Runtime,
     event: RuntimeEvent,
+    workspaceId?: string,
   ): Promise<RuntimeResult> {
 
     const cycles: RuntimeCycle[] = [
@@ -71,6 +72,7 @@ export class RuntimeEngine {
         capabilityId: event.capabilityId,
 
         context: event.context,
+        workspaceId,
 
       });
 
