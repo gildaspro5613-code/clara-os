@@ -57,7 +57,7 @@ export async function buildBrainContext(
   /*
    * Load the capabilities available to Clara.
    */
-  const capabilities =
+  const capabilities: Array<{ id: string; name: string; description?: string }> =
     new CapabilityRegistry().getAvailableCapabilities();
 
   const advertised = Array.isArray(context.metadata?.liveCapabilities)
