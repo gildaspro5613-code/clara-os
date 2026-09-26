@@ -41,6 +41,7 @@ export class Clara {
 
   public constructor(
     private readonly sessionKey: string = "default",
+    private readonly workspaceId?: string,
   ) {}
 
   /**
@@ -236,6 +237,7 @@ export class Clara {
         await executeMissionTask(
           nextExecutableTask,
           missionBeforeExecution,
+          this.workspaceId,
         );
 
       this.session.mission =
