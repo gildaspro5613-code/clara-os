@@ -43,6 +43,56 @@ function normalizeTaskTitle(title: string): string {
   return title.trim().toLocaleLowerCase();
 }
 
+type AdvertisedLiveCapability = {
+  name: string;
+  risk: "read" | "prepare" | "write" | "sensitive";
+};
+
+function advertisedLiveCapabilities(dashboard: BrainDashboard): AdvertisedLiveCapability[] {
+  const metadata = dashboard.context.metadata;
+  if (!Array.isArray(metadata?.liveCapabilities)) return [];
+  return metadata.liveCapabilities.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const candidate = item as { name?: unknown; risk?: unknown };
+    if (typeof candidate.name !== "string" || !candidate.name.trim()) return [];
+    const risk = candidate.risk;
+    return [{
+      name: candidate.name.trim(),
+      risk: risk === "prepare" || risk === "write" || risk === "sensitive" ? risk : "read",
+    }];
+  });
+}
+
+function resolveLiveExecution(title: string, dashboard: BrainDashboard) {
+  const capabilities = advertisedLiveCapabilities(dashboard);
+  const normalized = normalizeTaskTitle(title);
+  const patterns: Record<string, RegExp> = {
+    run_project_computation: /\b(calcul|compute|dmx|canaux|univers|watt|puissance|capacit)/i,
+    get_spatial_readiness: /\b(spatial|géométr|geometr|position|xyz|readiness|implantation)/i,
+    build_preparation_from_project: /\b(prépar|prepar).*(projet|rider|fiche|document)/i,
+    update_preparation_from_project: /\b(mettre à jour|actualiser|modifier).*(prépar|prepar)/i,
+    create_spatial_object: /\b(créer|creer|ajouter).*(structure|projecteur|fixture)/i,
+    update_spatial_fact: /\b(mettre à jour|positionner|orienter|modifier).*(spatial|position|orientation|xyz)/i,
+    prepare_premium_execution: /\b(prépar|prepar).*(exécution|execution|console|show control)/i,
+    export_preparation_pdf: /\b(export|pdf).*(prépar|dossier)|\b(prépar|dossier).*(export|pdf)/i,
+  };
+  const selected = capabilities.find((capability) => patterns[capability.name]?.test(normalized));
+  if (!selected) return undefined;
+  const scope = dashboard.context.event.context;
+  if (!scope?.productId || !scope.workspaceId || !scope.userId || !scope.sessionId) return undefined;
+  return {
+    capabilityId: selected.name,
+    context: { task: title },
+    autonomous: selected.risk === "read" || selected.risk === "prepare",
+    executionLocation: "external-product" as const,
+    productId: scope.productId,
+    workspaceId: scope.workspaceId,
+    userId: scope.userId,
+    sessionId: scope.sessionId,
+    risk: selected.risk,
+  };
+}
+
 function reconcileContinuationTasks(
   previousMission: Mission,
   plannedTasks: MissionTask[],
@@ -148,12 +198,10 @@ export function missionFromBrain(
             dashboard.sources,
           );
 
-        return execution
-          ? {
-              ...execution,
-              autonomous: true,
-            }
-          : undefined;
+        if (execution) {
+          return { ...execution, autonomous: true };
+        }
+        return resolveLiveExecution(task.title, dashboard);
       })(),
     }));
 
