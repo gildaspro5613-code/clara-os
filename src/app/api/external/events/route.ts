@@ -84,7 +84,7 @@ export async function POST(request: Request) {
     }
 
     const key = sessionKey(body.scope);
-    const clara = new Clara(key);
+    const clara = new Clara(key, product.workspaceId);
     const event = {
       id: crypto.randomUUID(),
       type: body.eventType === "USER_MESSAGE" ? EventType.USER_MESSAGE : EventType.DOCUMENT_RECEIVED,
