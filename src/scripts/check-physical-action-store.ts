@@ -3,7 +3,7 @@ import { InMemoryPhysicalActionProposalStore } from "../lib/connectors/clara-liv
 
 const store = new InMemoryPhysicalActionProposalStore();
 const now = new Date();
-const future = new Date("2999-01-01T00:00:00.000Z");
+const future = new Date(8640000000000000 - 1);
 
 await store.create({
   id: "proposal-1",
