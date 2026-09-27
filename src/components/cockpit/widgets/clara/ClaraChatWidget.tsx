@@ -14,6 +14,14 @@ interface PendingApproval {
   expiresAt: string;
 }
 
+interface PhysicalActionProposalView {
+  id: string;
+  connector: string;
+  capability: string;
+  parameters: Record<string, unknown>;
+  confirmation: { required: true };
+}
+
 interface ClaraChatWidgetProps {
   autoFocus?: boolean;
   initialMessages?: ClaraConversationMessage[];
@@ -61,6 +69,7 @@ export default function ClaraChatWidget({
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [approvals, setApprovals] = useState<PendingApproval[]>([]);
+  const [physicalActions, setPhysicalActions] = useState<PhysicalActionProposalView[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -121,6 +130,7 @@ export default function ClaraChatWidget({
         message?: string;
         approvals?: PendingApproval[];
         conversation?: ClaraConversationMessage[];
+        physicalActions?: PhysicalActionProposalView[];
       };
 
       if (!response.ok || !data.success) {
@@ -142,6 +152,7 @@ export default function ClaraChatWidget({
       }
 
       setApprovals((current) => [...current, ...(data.approvals ?? [])]);
+      setPhysicalActions(data.physicalActions ?? []);
 
       router.refresh();
     } catch (error) {
@@ -253,6 +264,41 @@ export default function ClaraChatWidget({
           </div>
         )}
       </div>
+
+      {physicalActions.length > 0 && (
+        <div className="mt-4 space-y-3" aria-live="polite">
+          {physicalActions.map((action) => (
+            <section key={action.id} className="rounded-2xl border border-amber-300/25 bg-amber-300/[0.06] p-4">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-amber-200/80">
+                Action physique — confirmation explicite requise
+              </p>
+              <p className="mt-2 text-sm text-white/80">{action.connector} · {action.capability}</p>
+              <button
+                type="button"
+                disabled={loading}
+                onClick={async () => {
+                  setLoading(true);
+                  try {
+                    const response = await fetch("/api/clara/physical-actions/approve", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ proposalId: action.id, conversationId: "clara-default-conversation" }),
+                    });
+                    const data = await response.json() as { success?: boolean };
+                    if (!response.ok || !data.success) throw new Error("Physical action approval denied.");
+                    setPhysicalActions((current) => current.filter((item) => item.id !== action.id));
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                className="mt-4 inline-flex items-center gap-2 rounded-xl border border-amber-200/30 px-3 py-2 text-xs text-amber-100 disabled:opacity-40"
+              >
+                <Check size={14} /> Confirmer cette action physique
+              </button>
+            </section>
+          ))}
+        </div>
+      )}
 
       {approvals.length > 0 && (
         <div className="mt-4 space-y-3" aria-live="polite">
