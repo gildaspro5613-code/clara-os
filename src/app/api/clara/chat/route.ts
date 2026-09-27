@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { readAuthCookie } from "@/lib/connectors/microsoft/security/request-authorization";
 import { resolveSoleAuthenticatedWorkspace } from "@/lib/auth/sole-authenticated-workspace";
@@ -77,6 +78,7 @@ export async function POST(request: Request) {
       ? buildExecutionPlan(recommendation.decision, "fr", composed.physicalAction)
       : { tasks: [], physicalActions: [] };
 
+    let physicalConversationId: string | null = null;
     if (executionPlan.physicalActions.length > 0) {
       const token = readAuthCookie(request.headers.get("cookie"));
       const principal = await resolveSoleAuthenticatedWorkspace(token, "connections:manage");
@@ -86,7 +88,8 @@ export async function POST(request: Request) {
           { status: 401 },
         );
       }
-      const conversationId = "clara-default-conversation";
+      const conversationId = `clara:${createHash("sha256").update(`${principal.workspaceId}:${principal.userId}`).digest("hex").slice(0, 32)}`;
+      physicalConversationId = conversationId;
       const store = new PostgresPhysicalActionProposalStore(principal.workspaceId);
       const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
       for (const action of executionPlan.physicalActions) {
@@ -150,7 +153,10 @@ export async function POST(request: Request) {
       // Capability approvals will be emitted by the Brain execution boundary,
       // not by the chat route or the response composer.
       approvals: [],
-      physicalActions: executionPlan.physicalActions.map(toPhysicalActionProposalView),
+      physicalActions: executionPlan.physicalActions.map((action) => ({
+        ...toPhysicalActionProposalView(action),
+        conversationId: physicalConversationId,
+      })),
     });
   } catch (error) {
     return NextResponse.json(
