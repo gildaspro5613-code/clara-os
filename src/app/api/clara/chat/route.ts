@@ -16,6 +16,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { OpenAIResponsesEngine } from "@/lib/connectors/internal/openai/responses/openai-responses-engine";
 import { getClaraSystemPrompt } from "@/i18n/prompts";
 import { resolveLocale } from "@/i18n/config";
+import { runBrainDashboard } from "@/lib/brain";
+import { EventType, type Event } from "@/types";
 
 /**
  * POST /api/clara/chat
@@ -51,7 +53,27 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     typeof body.locale === "string" ? body.locale : null,
   );
 
-  const instructions = getClaraSystemPrompt(locale);
+  const brainEvent: Event = {
+    id: crypto.randomUUID(),
+    type: EventType.USER_MESSAGE,
+    source: "clara-chat",
+    timestamp: new Date(),
+    payload: { message, locale },
+  };
+
+  // Every conversational turn now enters the canonical Brain pipeline before
+  // language generation. The Brain may plan/propose, but this route has no
+  // physical authorization or Connector Runtime execution capability.
+  const dashboard = runBrainDashboard(brainEvent);
+
+  const instructions = `${getClaraSystemPrompt(locale)}
+
+## Current Brain context
+Intent: ${dashboard.understanding.intent}
+Summary: ${dashboard.understanding.summary}
+Decision: ${dashboard.decision.summary}
+
+Physical safety boundary: this conversational endpoint may understand and propose actions, but it cannot authorize or execute physical equipment commands. Explicit operator authorization must occur through Clara OS execution authority.`;
 
   const engine = new OpenAIResponsesEngine();
 
@@ -66,6 +88,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       success: result.success,
       content: result.content,
       locale,
+      brain: { decisionId: dashboard.decision.id, taskIds: dashboard.tasks.map((task) => task.id) },
       error: result.success ? undefined : result.message,
     });
   } catch (err) {
