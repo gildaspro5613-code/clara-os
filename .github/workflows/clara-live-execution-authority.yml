@@ -22,5 +22,7 @@ jobs:
         run: npm run connector:clara-live:execution-check
       - name: Physical action store contract
         run: npm run physical-action-store:check
+      - name: PostgreSQL physical proposal contract
+        run: npm run physical-action-postgres:check
       - name: Physical approval route contract
         run: npm run physical-approval-route:check
