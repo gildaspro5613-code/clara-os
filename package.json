@@ -12,7 +12,8 @@
     "connector:clara-live:execution-check": "tsx src/scripts/check-clara-live-execution-authority.ts",
     "physical-action-store:check": "tsx src/scripts/check-physical-action-store.ts",
     "physical-approval-route:check": "tsx src/scripts/check-physical-approval-route.ts",
-    "physical-action-postgres:check": "tsx src/scripts/check-postgres-physical-action-store.ts"
+    "physical-action-postgres:check": "tsx src/scripts/check-postgres-physical-action-store.ts",
+    "physical-action-execution:offline-check": "tsx src/scripts/check-authorized-physical-execution-offline.ts"
   },
   "dependencies": {
     "@elevenlabs/client": "^1.17.0",
