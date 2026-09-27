@@ -27,8 +27,14 @@ function requiredEnv(name: string): string {
   return value;
 }
 
+export type ClaraLiveExecutionTransport = (
+  url: string,
+  init: RequestInit,
+) => Promise<Response>;
+
 export async function authorizeClaraLiveExecution(
   request: ClaraLiveExecuteRequest,
+  transport: ClaraLiveExecutionTransport = fetch,
 ): Promise<ClaraLiveExecuteReceipt> {
   const baseUrl = requiredEnv("CLARA_LIVE_BASE_URL").replace(/\/$/, "");
   if (!baseUrl.startsWith("https://")) {
@@ -38,7 +44,7 @@ export async function authorizeClaraLiveExecution(
   const token = requiredEnv("CLARA_OS_PRODUCT_TOKEN");
   const executionAuthorizationId = `exec_${randomUUID()}`;
 
-  const response = await fetch(
+  const response = await transport(
     `${baseUrl}/api/connector-runtime/os/agents/${encodeURIComponent(request.agentId)}/commands`,
     {
       method: "POST",
