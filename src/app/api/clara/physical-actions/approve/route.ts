@@ -3,6 +3,7 @@ import { resolveAuthenticatedOperator } from "@/lib/auth/authenticated-operator-
 import { isSameOriginRequest } from "@/lib/auth/session-request-security";
 import { PostgresPhysicalActionProposalStore } from "@/lib/connectors/clara-live/postgres-physical-action-store";
 import { consumeApprovedPhysicalAction } from "@/lib/connectors/clara-live/physical-action-approval-service";
+import { executeAuthorizedPhysicalAction } from "@/lib/connectors/clara-live/execute-authorized-physical-action";
 
 /**
  * Physical approval remains fail-closed until the proposal store is durable and
@@ -57,17 +58,45 @@ export async function POST(request: NextRequest) {
       { ownerId: operator.id, conversationId },
     );
 
-    // Authorization is returned to the server-side orchestration boundary.
-    // This HTTP route deliberately does not call ConnectorEngine or hardware.
+    if (process.env.CLARA_PHYSICAL_EXECUTION_ENABLED !== "true") {
+      return NextResponse.json({
+        success: true,
+        authorization: {
+          proposalId: authorized.id,
+          status: authorized.status,
+          authorizedAt: authorized.authorizedAt.toISOString(),
+        },
+        execution: {
+          state: "AUTHORIZED_NOT_EXECUTED",
+          commandSent: false,
+          physicalExecutionConfirmed: false,
+        },
+      }, { headers: { "Cache-Control": "no-store" } });
+    }
+
+    const execution = await executeAuthorizedPhysicalAction(authorized, {
+      brain: {} as never,
+      experiences: [],
+      recommendations: [],
+      configuration: { workspaceId },
+      createdAt: new Date(),
+    });
+
     return NextResponse.json({
-      success: true,
+      success: execution.success,
       authorization: {
         proposalId: authorized.id,
         status: authorized.status,
         authorizedAt: authorized.authorizedAt.toISOString(),
       },
-      execution: { commandSent: false, physicalExecutionConfirmed: false },
-    }, { headers: { "Cache-Control": "no-store" } });
+      execution: {
+        state: execution.success ? "QUEUED" : "FAILED",
+        commandSent: execution.success,
+        physicalExecutionConfirmed: false,
+        receipt: execution.data ?? null,
+        error: execution.error ?? null,
+      },
+    }, { status: execution.success ? 200 : 502, headers: { "Cache-Control": "no-store" } });
   } catch {
     return NextResponse.json(
       { success: false, code: "PHYSICAL_ACTION_APPROVAL_DENIED" },
