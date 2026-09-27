@@ -1,26 +1,30 @@
 import type { PhysicalActionProposal, AuthorizedPhysicalAction } from "./physical-action";
 import { authorizePhysicalAction } from "./physical-action";
+import {
+  requireAuthenticatedOperator,
+  type AuthenticatedOperator,
+} from "@/lib/core/authenticated-operator";
 
 export interface OperatorApproval {
   proposalId: string;
   approved: true;
-  actorId: string;
   confirmedAt: Date;
 }
 
 /**
- * Converts a proposal to AUTHORIZED only from a trusted, authenticated
- * approval record. Conversational text such as "oui" is not an approval.
+ * Converts a proposal to AUTHORIZED only when an explicit approval is paired
+ * with an operator identity supplied by a trusted server-side auth boundary.
+ * Conversational text and client-supplied actor IDs are not authentication.
  */
 export function authorizeApprovedPhysicalAction(
   proposal: PhysicalActionProposal,
   approval: OperatorApproval,
+  operator: AuthenticatedOperator | null | undefined,
 ): AuthorizedPhysicalAction {
+  const authenticatedOperator = requireAuthenticatedOperator(operator);
+
   if (approval.approved !== true) {
     throw new Error("explicit operator approval is required");
-  }
-  if (!approval.actorId.trim()) {
-    throw new Error("authenticated actorId is required");
   }
   if (approval.proposalId !== proposal.id) {
     throw new Error("approval does not match physical action proposal");
@@ -29,5 +33,5 @@ export function authorizeApprovedPhysicalAction(
     throw new Error("valid confirmation timestamp is required");
   }
 
-  return authorizePhysicalAction(proposal, approval.actorId);
+  return authorizePhysicalAction(proposal, authenticatedOperator.id);
 }
