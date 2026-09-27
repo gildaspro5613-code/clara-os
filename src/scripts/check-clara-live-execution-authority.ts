@@ -31,12 +31,17 @@ async function main(): Promise<void> {
 
     assert.equal(receipt.command_id, "cmd-1");
     assert.match(capturedUrl, /\/connector-runtime\/os\/agents\/agent-1\/commands$/);
-    assert.equal(new Headers(capturedInit?.headers).get("Authorization"), "Bearer test-secret");
+    const capturedHeaders = new Headers(capturedInit?.headers);
+    assert.equal(capturedHeaders.get("Authorization"), "Bearer test-secret");
+    assert.equal(capturedHeaders.get("x-clara-product"), "clara-os");
 
     const payload = JSON.parse(String(capturedInit?.body));
     assert.equal(payload.phase, "EXECUTE");
     assert.equal(payload.session_id, "session-1");
     assert.match(payload.execution_authorization_id, /^exec_/);
+    assert.equal(typeof payload.expires_at, "string");
+    const ttlMs = Date.parse(payload.expires_at) - Date.now();
+    assert.ok(ttlMs > 0 && ttlMs <= 2 * 60_000, "execution authority must be short-lived");
 
     const firstAuthorization = payload.execution_authorization_id;
     let secondAuthorization = "";
