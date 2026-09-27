@@ -150,6 +150,7 @@ export async function POST(request: Request) {
       // Capability approvals will be emitted by the Brain execution boundary,
       // not by the chat route or the response composer.
       approvals: [],
+      physicalActions: executionPlan.physicalActions.map(toPhysicalActionProposalView),
     });
   } catch (error) {
     return NextResponse.json(
