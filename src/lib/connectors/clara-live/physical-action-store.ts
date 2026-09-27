@@ -27,14 +27,18 @@ export class InMemoryPhysicalActionProposalStore implements PhysicalActionPropos
   async get(id: string): Promise<StoredPhysicalActionProposal | null> {
     const proposal = this.proposals.get(id);
     if (!proposal) return null;
-    if (proposal.expiresAt.getTime() <= Date.now()) return null;
+    if (proposal.expiresAt.getTime() <= Date.now()) {
+      this.proposals.delete(id);
+      return null;
+    }
     return proposal;
   }
 
   async consume(id: string): Promise<StoredPhysicalActionProposal | null> {
-    const proposal = await this.get(id);
+    const proposal = this.proposals.get(id);
     if (!proposal) return null;
     this.proposals.delete(id);
+    if (proposal.expiresAt.getTime() <= Date.now()) return null;
     return proposal;
   }
 }
