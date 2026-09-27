@@ -9,7 +9,7 @@ export interface PhysicalActionProposalView {
   sessionId: string;
   confirmation: {
     required: true;
-    enabled: false;
+    enabled: true;
     reason: "EXPLICIT_OPERATOR_APPROVAL_REQUIRED";
   };
   execution: {
@@ -34,7 +34,7 @@ export function toPhysicalActionProposalView(
     sessionId: action.sessionId,
     confirmation: {
       required: true,
-      enabled: false,
+      enabled: true,
       reason: "EXPLICIT_OPERATOR_APPROVAL_REQUIRED",
     },
     execution: {
