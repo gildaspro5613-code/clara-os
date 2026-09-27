@@ -10,7 +10,7 @@ export interface PhysicalActionProposalView {
   confirmation: {
     required: true;
     enabled: false;
-    reason: "AUTHENTICATED_OPERATOR_UNAVAILABLE";
+    reason: "EXPLICIT_OPERATOR_APPROVAL_REQUIRED";
   };
   execution: {
     commandSent: false;
@@ -35,7 +35,7 @@ export function toPhysicalActionProposalView(
     confirmation: {
       required: true,
       enabled: false,
-      reason: "AUTHENTICATED_OPERATOR_UNAVAILABLE",
+      reason: "EXPLICIT_OPERATOR_APPROVAL_REQUIRED",
     },
     execution: {
       commandSent: false,
