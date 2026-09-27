@@ -2,7 +2,7 @@ import type { Connector } from "../core/connector";
 import type { ConnectorContext } from "../core/connector-context";
 import type { ConnectorEvent } from "../core/connector-event";
 import type { ConnectorResult } from "../core/connector-result";
-import { authorizeClaraLiveExecution } from "./execution-authority";
+import { authorizeClaraLiveExecution, type ClaraLiveExecutionTransport } from "./execution-authority";
 
 export const CLARA_LIVE_PHYSICAL_CAPABILITIES = [
   "clara.live.connector.execute",
@@ -43,6 +43,7 @@ export class ClaraLivePhysicalConnector implements Connector {
   public constructor(
     public readonly context: ConnectorContext,
     public enabled = true,
+    private readonly transport?: ClaraLiveExecutionTransport,
   ) {}
 
   public async execute(event: ConnectorEvent): Promise<ConnectorResult> {
@@ -57,7 +58,7 @@ export class ClaraLivePhysicalConnector implements Connector {
       capability: payload.capability,
       parameters: payload.parameters,
       sessionId: payload.sessionId,
-    });
+    }, this.transport);
 
     return {
       success: true,
