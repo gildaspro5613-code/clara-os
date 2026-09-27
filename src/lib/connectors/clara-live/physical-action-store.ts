@@ -21,14 +21,14 @@ export class InMemoryPhysicalActionProposalStore implements PhysicalActionPropos
 
   async create(proposal: StoredPhysicalActionProposal): Promise<void> {
     if (this.proposals.has(proposal.id)) throw new Error("physical action proposal already exists");
-    this.proposals.set(proposal.id, { ...proposal, parameters: { ...proposal.parameters } });
+    this.proposals.set(proposal.id, proposal);
   }
 
   async get(id: string): Promise<StoredPhysicalActionProposal | null> {
     const proposal = this.proposals.get(id);
     if (!proposal) return null;
     if (proposal.expiresAt.getTime() <= Date.now()) return null;
-    return { ...proposal, parameters: { ...proposal.parameters } };
+    return proposal;
   }
 
   async consume(id: string): Promise<StoredPhysicalActionProposal | null> {
