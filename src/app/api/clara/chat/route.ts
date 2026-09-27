@@ -19,6 +19,7 @@ import { resolveLocale } from "@/i18n/config";
 import { runBrainDashboard } from "@/lib/brain";
 import { EventType, type Event } from "@/types";
 import { buildExecutionPlan } from "@/lib/brain/planners";
+import { toPhysicalActionProposalView } from "@/lib/clara/physical-action-view";
 import {
   extractPhysicalActionProposal,
   PHYSICAL_ACTION_PROPOSAL_INSTRUCTIONS,
@@ -110,14 +111,7 @@ Physical safety boundary: this conversational endpoint may understand and propos
       brain: {
         decisionId: dashboard.decision.id,
         taskIds: executionPlan.tasks.map((task) => task.id),
-        physicalActions: executionPlan.physicalActions.map((action) => ({
-          id: action.id,
-          status: action.status,
-          connector: action.connector,
-          capability: action.capability,
-          parameters: action.parameters,
-          sessionId: action.sessionId,
-        })),
+        physicalActions: executionPlan.physicalActions.map(toPhysicalActionProposalView),
       },
       error: result.success ? undefined : result.message,
     });
