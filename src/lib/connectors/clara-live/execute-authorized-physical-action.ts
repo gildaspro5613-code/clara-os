@@ -3,6 +3,7 @@ import type { ConnectorEvent } from "../core/connector-event";
 import { ConnectorEngine } from "../core/connector-engine";
 import type { AuthorizedPhysicalAction } from "./physical-action";
 import { ClaraLivePhysicalConnector } from "./clara-live-physical-connector";
+import type { ClaraLiveExecutionTransport } from "./execution-authority";
 
 /**
  * Routes an already-authorized physical action through the canonical Connector
@@ -12,12 +13,13 @@ import { ClaraLivePhysicalConnector } from "./clara-live-physical-connector";
 export async function executeAuthorizedPhysicalAction(
   action: AuthorizedPhysicalAction,
   context: ConnectorContext,
+  transport?: ClaraLiveExecutionTransport,
 ) {
   if (action.status !== "AUTHORIZED") {
     throw new Error("physical action must be AUTHORIZED before execution");
   }
 
-  const connector = new ClaraLivePhysicalConnector(context);
+  const connector = new ClaraLivePhysicalConnector(context, true, transport);
   const engine = new ConnectorEngine();
   const event: ConnectorEvent = {
     id: `physical-${action.id}`,
