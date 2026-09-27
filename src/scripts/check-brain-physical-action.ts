@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { buildExecutionPlan } from "../lib/brain/planners";
 import { authorizePhysicalAction } from "../lib/connectors/clara-live/physical-action";
+import { authorizeApprovedPhysicalAction } from "../lib/connectors/clara-live/operator-approval";
 import { DecisionPriority } from "../types/decision";
 
 const decision = {
@@ -42,3 +43,22 @@ assert.equal(authorized.authorizedBy, "operator-1");
 assert.ok(authorized.authorizedAt instanceof Date);
 
 console.log("Brain physical action proposal contract: OK");
+
+assert.throws(
+  () => authorizeApprovedPhysicalAction(planned.physicalActions[0], {
+    proposalId: "another-proposal",
+    approved: true,
+    actorId: "operator-1",
+    confirmedAt: new Date(),
+  }),
+  /does not match/,
+);
+
+const explicitlyApproved = authorizeApprovedPhysicalAction(planned.physicalActions[0], {
+  proposalId: planned.physicalActions[0].id,
+  approved: true,
+  actorId: "operator-1",
+  confirmedAt: new Date(),
+});
+assert.equal(explicitlyApproved.status, "AUTHORIZED");
+assert.equal(explicitlyApproved.id, planned.physicalActions[0].id);
