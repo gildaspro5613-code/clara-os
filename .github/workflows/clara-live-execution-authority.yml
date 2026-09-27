@@ -20,3 +20,7 @@ jobs:
         run: npx tsc --noEmit
       - name: Execution authority contract
         run: npm run connector:clara-live:execution-check
+      - name: Physical action store contract
+        run: npm run physical-action-store:check
+      - name: Physical approval route contract
+        run: npm run physical-approval-route:check
