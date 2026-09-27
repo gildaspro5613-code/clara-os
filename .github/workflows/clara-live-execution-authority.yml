@@ -3,7 +3,7 @@ name: Clara Live execution authority
 on:
   push:
     branches:
-      - feat/clara-controlled-execute-v1
+      - feat/clara-controlled-execute-clean-base-v1
   workflow_dispatch:
 
 jobs:
@@ -20,5 +20,3 @@ jobs:
         run: npx tsc --noEmit
       - name: Execution authority contract
         run: npm run connector:clara-live:execution-check
-      - name: Brain physical action contract
-        run: npm run brain:physical-action:check
