@@ -19,6 +19,7 @@ interface PhysicalActionProposalView {
   connector: string;
   capability: string;
   parameters: Record<string, unknown>;
+  conversationId: string;
   confirmation: { required: true };
 }
 
@@ -282,7 +283,7 @@ export default function ClaraChatWidget({
                     const response = await fetch("/api/clara/physical-actions/approve", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ proposalId: action.id, conversationId: "clara-default-conversation" }),
+                      body: JSON.stringify({ proposalId: action.id, conversationId: action.conversationId }),
                     });
                     const data = await response.json() as {
                       success?: boolean;
