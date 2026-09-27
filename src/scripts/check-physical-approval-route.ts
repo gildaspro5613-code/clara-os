@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
 
 const source = await readFile(
-  new URL("../app/api/clara/physical-actions/approve/route.ts", import.meta.url),
+  resolve(process.cwd(), "src/app/api/clara/physical-actions/approve/route.ts"),
   "utf8",
 );
 
