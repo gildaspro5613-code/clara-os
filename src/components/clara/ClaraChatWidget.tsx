@@ -19,6 +19,15 @@ import { useTranslations, useLocale } from "next-intl";
 import { Send, Trash2, Loader2 } from "lucide-react";
 import type { Locale } from "@/i18n/types";
 
+interface PhysicalActionProposalView {
+  id: string;
+  status: "PROPOSED";
+  connector: string;
+  capability: string;
+  parameters: Record<string, unknown>;
+  sessionId: string;
+}
+
 interface ChatMessage {
   id: string;
   role: "user" | "clara";
@@ -39,6 +48,8 @@ export default function ClaraChatWidget() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [status, setStatus] = useState<WidgetStatus>("ready");
+  const [pendingPhysicalAction, setPendingPhysicalAction] = useState<PhysicalActionProposalView | null>(null);
+  const conversationIdRef = useRef<string>(crypto.randomUUID());
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -75,7 +86,7 @@ export default function ClaraChatWidget() {
       const response = await fetch("/api/clara/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, locale }),
+        body: JSON.stringify({ message: text, locale, conversationId: conversationIdRef.current }),
       });
 
       if (!response.ok) {
@@ -86,7 +97,20 @@ export default function ClaraChatWidget() {
         success: boolean;
         content: string;
         error?: string;
+        conversationId?: string;
+        brain?: {
+          physicalActions?: PhysicalActionProposalView[];
+        };
       };
+
+      if (data.conversationId) {
+        conversationIdRef.current = data.conversationId;
+      }
+
+      const proposedAction = data.brain?.physicalActions?.find(
+        (action) => action.status === "PROPOSED",
+      ) ?? null;
+      setPendingPhysicalAction(proposedAction);
 
       const claraMessage: ChatMessage = {
         id: crypto.randomUUID(),
@@ -118,6 +142,8 @@ export default function ClaraChatWidget() {
 
   function clearHistory() {
     setMessages([]);
+    conversationIdRef.current = crypto.randomUUID();
+    setPendingPhysicalAction(null);
     setStatus("ready");
     inputRef.current?.focus();
   }
@@ -192,6 +218,36 @@ export default function ClaraChatWidget() {
               <Loader2 size={14} className="animate-spin" />
               <span className="text-sm">{t("thinking")}</span>
             </div>
+          </div>
+        )}
+
+        {pendingPhysicalAction && (
+          <div className="rounded-xl border border-amber-400/30 bg-amber-400/5 p-4">
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <span className="text-xs font-semibold uppercase tracking-wider text-amber-300">
+                Action physique proposée
+              </span>
+              <span className="rounded-full border border-amber-400/30 px-2 py-0.5 text-[10px] font-semibold text-amber-300">
+                PROPOSED
+              </span>
+            </div>
+            <p className="text-sm text-slate-200">
+              {pendingPhysicalAction.connector} · {pendingPhysicalAction.capability}
+            </p>
+            <pre className="mt-2 overflow-x-auto whitespace-pre-wrap break-words rounded-lg bg-black/20 p-2 text-xs text-slate-400">
+              {JSON.stringify(pendingPhysicalAction.parameters, null, 2)}
+            </pre>
+            <p className="mt-3 text-xs text-slate-500">
+              Cette action n’est pas autorisée et aucune commande n’a été envoyée au matériel.
+            </p>
+            <button
+              type="button"
+              disabled
+              title="Disponible uniquement avec une session opérateur authentifiée."
+              className="mt-3 rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-slate-500 opacity-60"
+            >
+              Confirmer l’action — authentification requise
+            </button>
           </div>
         )}
 
