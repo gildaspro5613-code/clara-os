@@ -1,0 +1,24 @@
+name: Clara Live execution authority
+
+on:
+  push:
+    branches:
+      - feat/clara-controlled-execute-v1
+  workflow_dispatch:
+
+jobs:
+  offline-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Execution authority contract
+        run: npm run connector:clara-live:execution-check
+      - name: Brain physical action contract
+        run: npm run brain:physical-action:check
