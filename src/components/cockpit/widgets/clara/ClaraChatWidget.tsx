@@ -284,9 +284,32 @@ export default function ClaraChatWidget({
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({ proposalId: action.id, conversationId: "clara-default-conversation" }),
                     });
-                    const data = await response.json() as { success?: boolean };
+                    const data = await response.json() as {
+                      success?: boolean;
+                      execution?: {
+                        state?: "AUTHORIZED_NOT_EXECUTED" | "QUEUED" | "FAILED";
+                        commandSent?: boolean;
+                        physicalExecutionConfirmed?: boolean;
+                      };
+                    };
                     if (!response.ok || !data.success) throw new Error("Physical action approval denied.");
                     setPhysicalActions((current) => current.filter((item) => item.id !== action.id));
+                    const execution = data.execution;
+                    const content =
+                      execution?.state === "QUEUED"
+                        ? "Action autorisée et transmise au Connector Runtime. La commande a été mise en file d’attente, mais aucun effet physique n’est confirmé."
+                        : execution?.state === "FAILED"
+                          ? "Action autorisée, mais la transmission au Connector Runtime a échoué. Aucun effet physique n’est confirmé."
+                          : "Action autorisée. L’exécution physique est actuellement désactivée : aucune commande n’a été envoyée.";
+                    setMessages((current) => [
+                      ...current,
+                      {
+                        id: crypto.randomUUID(),
+                        role: "clara",
+                        content,
+                        createdAt: new Date().toISOString(),
+                      },
+                    ]);
                   } finally {
                     setLoading(false);
                   }
