@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 
-import { composeClaraResponse } from "@/lib/brain/response-composer";
+import { composeClaraResponseWithProposal } from "@/lib/brain/response-composer";
+import { buildExecutionPlan } from "@/lib/brain/planners";
+import { toPhysicalActionProposalView } from "@/lib/clara/physical-action-view";
 import { dispatchEvent } from "@/lib/core/event-bus";
 import { getRuntime } from "@/lib/core/runtime";
 import {
@@ -66,10 +68,11 @@ export async function POST(request: Request) {
 
     // The composer only gives Clara a conversational voice. It receives the
     // already-decided Brain/session state and cannot call Clara capabilities.
-    const responseMessage = await composeClaraResponse(
-      message,
-      session,
-    );
+    const composed = await composeClaraResponseWithProposal(message, session);
+    const responseMessage = composed.content;
+    const executionPlan = recommendation?.decision
+      ? buildExecutionPlan(recommendation.decision, "fr", composed.physicalAction)
+      : { tasks: [], physicalActions: [] };
 
     const now = new Date().toISOString();
     const newMessages: ClaraConversationMessage[] = [
@@ -107,6 +110,7 @@ export async function POST(request: Request) {
               rationale: recommendation.rationale,
             }
           : null,
+        physicalActions: executionPlan.physicalActions.map(toPhysicalActionProposalView),
         mission: mission
           ? {
               id: mission.id,
