@@ -3,6 +3,7 @@ import { buildExecutionPlan } from "../lib/brain/planners";
 import { authorizePhysicalAction } from "../lib/connectors/clara-live/physical-action";
 import { authorizeApprovedPhysicalAction } from "../lib/connectors/clara-live/operator-approval";
 import { DecisionPriority } from "../types/decision";
+import { InMemoryPhysicalActionProposalStore } from "../lib/connectors/clara-live/physical-action-store";
 
 const decision = {
   id: "decision-1",
@@ -83,5 +84,20 @@ const explicitlyApproved = authorizeApprovedPhysicalAction(
 assert.equal(explicitlyApproved.status, "AUTHORIZED");
 assert.equal(explicitlyApproved.id, planned.physicalActions[0].id);
 assert.equal(explicitlyApproved.authorizedBy, "operator-1");
+
+const store = new InMemoryPhysicalActionProposalStore();
+await store.create({
+  ...planned.physicalActions[0],
+  ownerId: "operator-1",
+  conversationId: "conversation-1",
+  expiresAt: new Date(Date.now() + 60_000),
+});
+const stored = await store.get(planned.physicalActions[0].id);
+assert.equal(stored?.ownerId, "operator-1");
+assert.equal(stored?.conversationId, "conversation-1");
+const consumed = await store.consume(planned.physicalActions[0].id);
+assert.equal(consumed?.id, planned.physicalActions[0].id);
+assert.equal(await store.get(planned.physicalActions[0].id), null);
+assert.equal(await store.consume(planned.physicalActions[0].id), null);
 
 console.log("Brain physical action proposal contract: OK");
