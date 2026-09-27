@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feat/clara-controlled-execute-clean-base-v1
+      - feat/universal-physical-execution-contract-v1
   workflow_dispatch:
 
 jobs:
@@ -20,6 +21,8 @@ jobs:
         run: npx tsc --noEmit
       - name: Execution authority contract
         run: npm run connector:clara-live:execution-check
+      - name: Universal physical execution domain contract
+        run: npm run physical-execution:universal-check
       - name: Physical action store contract
         run: npm run physical-action-store:check
       - name: PostgreSQL physical proposal contract
