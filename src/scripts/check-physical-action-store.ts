@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import { InMemoryPhysicalActionProposalStore } from "../lib/connectors/clara-live/physical-action-store";
 
-const store = new InMemoryPhysicalActionProposalStore();
-const now = new Date();
-const future = new Date(8640000000000000 - 1);
+const clock = Date.parse("2026-09-27T08:00:00.000Z");
+const store = new InMemoryPhysicalActionProposalStore(() => clock);
+const now = new Date(clock);
+const future = new Date(clock + 60_000);
 
 await store.create({
   id: "proposal-1",
@@ -37,7 +38,7 @@ await store.create({
   proposedAt: now,
   ownerId: "operator-1",
   conversationId: "conversation-1",
-  expiresAt: new Date("2000-01-01T00:00:00.000Z"),
+  expiresAt: new Date(clock - 1),
 });
 assert.equal(await store.consume("expired-1"), null);
 
