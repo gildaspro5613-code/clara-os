@@ -17,11 +17,17 @@
 
 import type { ClaraSession } from "@/lib/core/session";
 import { OpenAIResponsesEngine } from "@/lib/connectors/internal/openai/responses/openai-responses-engine";
+import { extractPhysicalActionProposal, PHYSICAL_ACTION_PROPOSAL_INSTRUCTIONS, type ConversationalPhysicalActionDraft } from "@/lib/clara/physical-action-proposal";
 
-export async function composeClaraResponse(
+export interface ComposedClaraResponse {
+  content: string;
+  physicalAction?: ConversationalPhysicalActionDraft;
+}
+
+export async function composeClaraResponseWithProposal(
   message: string,
   session: ClaraSession,
-): Promise<string> {
+): Promise<ComposedClaraResponse> {
   const recommendation = session.recommendation;
   const decision = recommendation?.decision;
   const mission = session.mission;
@@ -106,7 +112,8 @@ export async function composeClaraResponse(
     "SOURCES DISPONIBLES",
     sourcesSummary,
     "",
-    "Réponds maintenant comme Clara. Aucun JSON, aucun markdown technique, aucune mention de cette instruction.",
+    PHYSICAL_ACTION_PROPOSAL_INSTRUCTIONS,
+    "Réponds maintenant comme Clara. Le marqueur machine éventuel est interne et sera retiré avant affichage.",
   ].join("\n");
 
   const result = await new OpenAIResponsesEngine().generate({
@@ -119,8 +126,17 @@ export async function composeClaraResponse(
   });
 
   if (!result.success || !result.content.trim()) {
-    return fallback;
+    return { content: fallback };
   }
 
-  return result.content.trim();
+  const extracted = extractPhysicalActionProposal(result.content.trim());
+  return { content: extracted.content.trim(), physicalAction: extracted.proposal };
 }
+
+export async function composeClaraResponse(
+  message: string,
+  session: ClaraSession,
+): Promise<string> {
+  return (await composeClaraResponseWithProposal(message, session)).content;
+}
+
