@@ -1,4 +1,7 @@
 import { NextResponse } from "next/server";
+import { readAuthCookie } from "@/lib/connectors/microsoft/security/request-authorization";
+import { resolveSoleAuthenticatedWorkspace } from "@/lib/auth/sole-authenticated-workspace";
+import { PostgresPhysicalActionProposalStore } from "@/lib/connectors/clara-live/postgres-physical-action-store";
 
 import { composeClaraResponseWithProposal } from "@/lib/brain/response-composer";
 import { buildExecutionPlan } from "@/lib/brain/planners";
@@ -73,6 +76,28 @@ export async function POST(request: Request) {
     const executionPlan = recommendation?.decision
       ? buildExecutionPlan(recommendation.decision, "fr", composed.physicalAction)
       : { tasks: [], physicalActions: [] };
+
+    if (executionPlan.physicalActions.length > 0) {
+      const token = readAuthCookie(request.headers.get("cookie"));
+      const principal = await resolveSoleAuthenticatedWorkspace(token, "connections:manage");
+      if (!principal) {
+        return NextResponse.json(
+          { success: false, message: "Authenticated operator workspace required for physical action proposals." },
+          { status: 401 },
+        );
+      }
+      const conversationId = "clara-default-conversation";
+      const store = new PostgresPhysicalActionProposalStore(principal.workspaceId);
+      const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+      for (const action of executionPlan.physicalActions) {
+        await store.create({
+          ...action,
+          ownerId: principal.userId,
+          conversationId,
+          expiresAt,
+        });
+      }
+    }
 
     const now = new Date().toISOString();
     const newMessages: ClaraConversationMessage[] = [
