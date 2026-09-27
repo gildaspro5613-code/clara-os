@@ -20,7 +20,10 @@ export async function executeAuthorizedPhysicalAction(
   const connector = new ClaraLivePhysicalConnector(context);
   const engine = new ConnectorEngine();
   const event: ConnectorEvent = {
+    id: `physical-${action.id}`,
     capability: "clara.live.connector.execute",
+    source: "clara-os-authorized-physical-action",
+    receivedAt: new Date(),
     payload: {
       agentId: action.agentId,
       connector: action.connector,
