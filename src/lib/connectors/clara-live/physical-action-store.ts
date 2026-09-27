@@ -19,6 +19,8 @@ export interface PhysicalActionProposalStore {
 export class InMemoryPhysicalActionProposalStore implements PhysicalActionProposalStore {
   private readonly proposals = new Map<string, StoredPhysicalActionProposal>();
 
+  constructor(private readonly now: () => number = Date.now) {}
+
   async create(proposal: StoredPhysicalActionProposal): Promise<void> {
     if (this.proposals.has(proposal.id)) throw new Error("physical action proposal already exists");
     this.proposals.set(proposal.id, proposal);
@@ -27,7 +29,7 @@ export class InMemoryPhysicalActionProposalStore implements PhysicalActionPropos
   async get(id: string): Promise<StoredPhysicalActionProposal | null> {
     const proposal = this.proposals.get(id);
     if (!proposal) return null;
-    if (proposal.expiresAt.getTime() <= Date.now()) {
+    if (proposal.expiresAt.getTime() <= this.now()) {
       this.proposals.delete(id);
       return null;
     }
@@ -38,7 +40,7 @@ export class InMemoryPhysicalActionProposalStore implements PhysicalActionPropos
     const proposal = this.proposals.get(id);
     if (!proposal) return null;
     this.proposals.delete(id);
-    if (proposal.expiresAt.getTime() <= Date.now()) return null;
+    if (proposal.expiresAt.getTime() <= this.now()) return null;
     return proposal;
   }
 }
