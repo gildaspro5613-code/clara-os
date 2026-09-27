@@ -3,6 +3,7 @@ import { InMemoryPhysicalActionProposalStore } from "../lib/connectors/clara-liv
 
 const store = new InMemoryPhysicalActionProposalStore();
 const now = new Date();
+const future = new Date("2999-01-01T00:00:00.000Z");
 
 await store.create({
   id: "proposal-1",
@@ -16,7 +17,7 @@ await store.create({
   proposedAt: now,
   ownerId: "operator-1",
   conversationId: "conversation-1",
-  expiresAt: new Date(Date.now() + 60_000),
+  expiresAt: future,
 });
 
 assert.equal((await store.get("proposal-1"))?.ownerId, "operator-1");
@@ -36,7 +37,7 @@ await store.create({
   proposedAt: now,
   ownerId: "operator-1",
   conversationId: "conversation-1",
-  expiresAt: new Date(Date.now() - 1),
+  expiresAt: new Date("2000-01-01T00:00:00.000Z"),
 });
 assert.equal(await store.consume("expired-1"), null);
 
