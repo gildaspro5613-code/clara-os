@@ -34,10 +34,10 @@ import {
  *   { content: string; success: boolean; locale: string }
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  let body: { message?: unknown; locale?: unknown };
+  let body: { message?: unknown; locale?: unknown; conversationId?: unknown };
 
   try {
-    body = (await request.json()) as { message?: unknown; locale?: unknown };
+    body = (await request.json()) as { message?: unknown; locale?: unknown; conversationId?: unknown };
   } catch {
     return NextResponse.json(
       { success: false, content: "", error: "Invalid request body." },
@@ -54,6 +54,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
   }
 
+  const conversationId =
+    typeof body.conversationId === "string" && body.conversationId.trim()
+      ? body.conversationId.trim()
+      : crypto.randomUUID();
+
   const locale = resolveLocale(
     typeof body.locale === "string" ? body.locale : null,
   );
@@ -63,7 +68,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     type: EventType.USER_MESSAGE,
     source: "clara-chat",
     timestamp: new Date(),
-    payload: { message, locale },
+    payload: { message, locale, conversationId },
   };
 
   // Every conversational turn now enters the canonical Brain pipeline before
@@ -101,6 +106,7 @@ Physical safety boundary: this conversational endpoint may understand and propos
       success: result.success,
       content: extracted.content,
       locale,
+      conversationId,
       brain: {
         decisionId: dashboard.decision.id,
         taskIds: executionPlan.tasks.map((task) => task.id),
