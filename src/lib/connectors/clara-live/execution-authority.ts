@@ -43,6 +43,8 @@ export async function authorizeClaraLiveExecution(
 
   const token = requiredEnv("CLARA_OS_PRODUCT_TOKEN");
   const executionAuthorizationId = `exec_${randomUUID()}`;
+  // Short-lived authority: enough for broker delivery, never a persistent arm.
+  const expiresAt = new Date(Date.now() + 2 * 60_000).toISOString();
 
   const response = await transport(
     `${baseUrl}/api/connector-runtime/os/agents/${encodeURIComponent(request.agentId)}/commands`,
@@ -51,7 +53,7 @@ export async function authorizeClaraLiveExecution(
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
-        "x-clara-product": "clara-live",
+        "x-clara-product": "clara-os",
       },
       body: JSON.stringify({
         connector: request.connector,
@@ -60,6 +62,7 @@ export async function authorizeClaraLiveExecution(
         parameters: request.parameters,
         session_id: request.sessionId,
         execution_authorization_id: executionAuthorizationId,
+        expires_at: expiresAt,
       }),
       cache: "no-store",
     },
