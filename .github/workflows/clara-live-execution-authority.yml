@@ -24,5 +24,7 @@ jobs:
         run: npm run physical-action-store:check
       - name: PostgreSQL physical proposal contract
         run: npm run physical-action-postgres:check
+      - name: Authorized physical execution offline contract
+        run: npm run physical-action-execution:offline-check
       - name: Physical approval route contract
         run: npm run physical-approval-route:check
