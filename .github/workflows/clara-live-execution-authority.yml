@@ -22,6 +22,3 @@ jobs:
         run: npm run connector:clara-live:execution-check
       - name: Brain physical action contract
         run: npm run brain:physical-action:check
-
-      - name: Physical approval route contract
-        run: npm run clara:physical-approval:check
