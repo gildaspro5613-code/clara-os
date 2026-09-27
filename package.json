@@ -12,7 +12,8 @@
     "google:install": "tsx src/lib/connectors/google/installer/google-installer.ts",
     "connector:clara-live:execution-check": "tsx src/scripts/check-clara-live-execution-authority.ts",
     "brain:physical-action:check": "tsx src/scripts/check-brain-physical-action.ts",
-    "clara:physical-approval:check": "tsx src/scripts/check-physical-approval-route.ts"
+    "clara:physical-approval:check": "tsx src/scripts/check-physical-approval-route.ts",
+    "clara:physical-store:check": "tsx src/scripts/check-physical-action-store.ts"
   },
   "dependencies": {
     "@elevenlabs/react": "^1.12.1",
