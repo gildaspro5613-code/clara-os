@@ -37,28 +37,51 @@ assert.throws(
   /authorizedBy is required/,
 );
 
-const authorized = authorizePhysicalAction(planned.physicalActions[0], "operator-1");
-assert.equal(authorized.status, "AUTHORIZED");
-assert.equal(authorized.authorizedBy, "operator-1");
-assert.ok(authorized.authorizedAt instanceof Date);
-
-console.log("Brain physical action proposal contract: OK");
+assert.throws(
+  () => authorizeApprovedPhysicalAction(
+    planned.physicalActions[0],
+    {
+      proposalId: planned.physicalActions[0].id,
+      approved: true,
+      confirmedAt: new Date(),
+    },
+    null,
+  ),
+  /authenticated operator is required/,
+);
 
 assert.throws(
-  () => authorizeApprovedPhysicalAction(planned.physicalActions[0], {
-    proposalId: "another-proposal",
-    approved: true,
-    actorId: "operator-1",
-    confirmedAt: new Date(),
-  }),
+  () => authorizeApprovedPhysicalAction(
+    planned.physicalActions[0],
+    {
+      proposalId: "another-proposal",
+      approved: true,
+      confirmedAt: new Date(),
+    },
+    {
+      id: "operator-1",
+      authenticationSource: "test-auth",
+      authenticatedAt: new Date(),
+    },
+  ),
   /does not match/,
 );
 
-const explicitlyApproved = authorizeApprovedPhysicalAction(planned.physicalActions[0], {
-  proposalId: planned.physicalActions[0].id,
-  approved: true,
-  actorId: "operator-1",
-  confirmedAt: new Date(),
-});
+const explicitlyApproved = authorizeApprovedPhysicalAction(
+  planned.physicalActions[0],
+  {
+    proposalId: planned.physicalActions[0].id,
+    approved: true,
+    confirmedAt: new Date(),
+  },
+  {
+    id: "operator-1",
+    authenticationSource: "test-auth",
+    authenticatedAt: new Date(),
+  },
+);
 assert.equal(explicitlyApproved.status, "AUTHORIZED");
 assert.equal(explicitlyApproved.id, planned.physicalActions[0].id);
+assert.equal(explicitlyApproved.authorizedBy, "operator-1");
+
+console.log("Brain physical action proposal contract: OK");
