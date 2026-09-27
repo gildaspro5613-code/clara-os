@@ -1,20 +1,28 @@
 /**
- * Clara OS -> Clara Live physical execution authority.
+ * Universal physical execution authority contract.
  *
- * Clara OS owns authorization. Clara Live only brokers the already-authorized
- * one-shot command to the local Connector Runtime agent.
+ * Clara OS owns authorization. The current Clara Live broker is only the
+ * transport host for the local Connector Runtime; equipment domains and
+ * provider adapters remain independent from that product boundary.
  */
 import { randomUUID } from "node:crypto";
 
-export interface ClaraLiveExecuteRequest {
+export type PhysicalExecutionDomain =
+  | "LIGHT"
+  | "SOUND"
+  | "SHOW_CONTROL"
+  | "SYSTEM";
+
+export interface PhysicalExecuteRequest {
   agentId: string;
   connector: string;
   capability: string;
   parameters: Record<string, unknown>;
   sessionId: string;
+  domain?: PhysicalExecutionDomain;
 }
 
-export interface ClaraLiveExecuteReceipt {
+export interface PhysicalExecuteReceipt {
   command_id: string;
   state: "QUEUED";
   phase: "EXECUTE";
@@ -27,15 +35,15 @@ function requiredEnv(name: string): string {
   return value;
 }
 
-export type ClaraLiveExecutionTransport = (
+export type PhysicalExecutionTransport = (
   url: string,
   init: RequestInit,
 ) => Promise<Response>;
 
-export async function authorizeClaraLiveExecution(
-  request: ClaraLiveExecuteRequest,
-  transport: ClaraLiveExecutionTransport = fetch,
-): Promise<ClaraLiveExecuteReceipt> {
+export async function authorizePhysicalExecution(
+  request: PhysicalExecuteRequest,
+  transport: PhysicalExecutionTransport = fetch,
+): Promise<PhysicalExecuteReceipt> {
   const baseUrl = requiredEnv("CLARA_LIVE_BASE_URL").replace(/\/$/, "");
   if (!baseUrl.startsWith("https://")) {
     throw new Error("CLARA_LIVE_BASE_URL must use HTTPS.");
@@ -43,7 +51,6 @@ export async function authorizeClaraLiveExecution(
 
   const token = requiredEnv("CLARA_OS_PRODUCT_TOKEN");
   const executionAuthorizationId = `exec_${randomUUID()}`;
-  // Short-lived authority: enough for broker delivery, never a persistent arm.
   const expiresAt = new Date(Date.now() + 2 * 60_000).toISOString();
 
   const response = await transport(
@@ -57,6 +64,7 @@ export async function authorizeClaraLiveExecution(
       },
       body: JSON.stringify({
         connector: request.connector,
+        domain: request.domain,
         phase: "EXECUTE",
         capability: request.capability,
         parameters: request.parameters,
@@ -68,12 +76,12 @@ export async function authorizeClaraLiveExecution(
     },
   );
 
-  const body = (await response.json().catch(() => ({}))) as Partial<ClaraLiveExecuteReceipt> & {
+  const body = (await response.json().catch(() => ({}))) as Partial<PhysicalExecuteReceipt> & {
     detail?: string;
   };
 
   if (!response.ok) {
-    throw new Error(body.detail ?? `Clara Live execution broker returned HTTP ${response.status}.`);
+    throw new Error(body.detail ?? `Connector Runtime broker returned HTTP ${response.status}.`);
   }
 
   if (
@@ -82,8 +90,13 @@ export async function authorizeClaraLiveExecution(
     body.state !== "QUEUED" ||
     typeof body.command_id !== "string"
   ) {
-    throw new Error("Clara Live returned an invalid execution receipt.");
+    throw new Error("Connector Runtime returned an invalid execution receipt.");
   }
 
-  return body as ClaraLiveExecuteReceipt;
+  return body as PhysicalExecuteReceipt;
 }
+
+export type ClaraLiveExecuteRequest = PhysicalExecuteRequest;
+export type ClaraLiveExecuteReceipt = PhysicalExecuteReceipt;
+export type ClaraLiveExecutionTransport = PhysicalExecutionTransport;
+export const authorizeClaraLiveExecution = authorizePhysicalExecution;
