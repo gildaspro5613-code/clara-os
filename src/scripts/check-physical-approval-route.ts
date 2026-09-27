@@ -14,9 +14,12 @@ async function main() {
   assert.ok(source.includes("PostgresPhysicalActionProposalStore"));
   assert.ok(source.includes("consumeApprovedPhysicalAction"));
   assert.ok(source.includes("AUTHENTICATED_OPERATOR_UNAVAILABLE"));
-  assert.equal(source.includes("executeAuthorizedPhysicalAction"), false);
+  assert.ok(source.includes("executeAuthorizedPhysicalAction"));
+  assert.ok(source.includes('CLARA_PHYSICAL_EXECUTION_ENABLED !== "true"'));
+  assert.ok(source.includes('state: "AUTHORIZED_NOT_EXECUTED"'));
   assert.ok(source.includes("commandSent: false"));
   assert.ok(source.includes("physicalExecutionConfirmed: false"));
+  assert.ok(source.includes('state: execution.success ? "QUEUED" : "FAILED"'));
   
   
   console.log("Physical approval route durable authorization boundary: OK");
