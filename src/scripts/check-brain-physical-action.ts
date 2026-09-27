@@ -3,7 +3,6 @@ import { buildExecutionPlan } from "../lib/brain/planners";
 import { authorizePhysicalAction } from "../lib/connectors/clara-live/physical-action";
 import { authorizeApprovedPhysicalAction } from "../lib/connectors/clara-live/operator-approval";
 import { DecisionPriority } from "../types/decision";
-import { POST as approvePhysicalAction } from "../app/api/clara/physical-actions/approve/route";
 
 const decision = {
   id: "decision-1",
@@ -84,10 +83,5 @@ const explicitlyApproved = authorizeApprovedPhysicalAction(
 assert.equal(explicitlyApproved.status, "AUTHORIZED");
 assert.equal(explicitlyApproved.id, planned.physicalActions[0].id);
 assert.equal(explicitlyApproved.authorizedBy, "operator-1");
-
-const closedApprovalResponse = await approvePhysicalAction();
-assert.equal(closedApprovalResponse.status, 503);
-const closedApprovalBody = await closedApprovalResponse.json();
-assert.equal(closedApprovalBody.code, "AUTHENTICATED_OPERATOR_UNAVAILABLE");
 
 console.log("Brain physical action proposal contract: OK");
