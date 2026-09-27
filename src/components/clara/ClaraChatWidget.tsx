@@ -39,6 +39,7 @@ export default function ClaraChatWidget() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [status, setStatus] = useState<WidgetStatus>("ready");
+  const conversationIdRef = useRef<string>(crypto.randomUUID());
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -75,7 +76,7 @@ export default function ClaraChatWidget() {
       const response = await fetch("/api/clara/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, locale }),
+        body: JSON.stringify({ message: text, locale, conversationId: conversationIdRef.current }),
       });
 
       if (!response.ok) {
@@ -86,7 +87,12 @@ export default function ClaraChatWidget() {
         success: boolean;
         content: string;
         error?: string;
+        conversationId?: string;
       };
+
+      if (data.conversationId) {
+        conversationIdRef.current = data.conversationId;
+      }
 
       const claraMessage: ChatMessage = {
         id: crypto.randomUUID(),
@@ -118,6 +124,7 @@ export default function ClaraChatWidget() {
 
   function clearHistory() {
     setMessages([]);
+    conversationIdRef.current = crypto.randomUUID();
     setStatus("ready");
     inputRef.current?.focus();
   }
