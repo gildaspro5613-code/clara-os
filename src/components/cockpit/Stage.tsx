@@ -5,23 +5,26 @@ import TasksPanel from "@/components/cockpit/panels/TasksPanel";
 import AgendaPanel from "@/components/cockpit/panels/AgendaPanel";
 import ClaraVoiceWidget from "@/components/cockpit/widgets/voice/ClaraVoiceWidget";
 import GlassPanel from "@/components/ui/GlassPanel";
+import { getTranslations } from "next-intl/server";
 
 interface StageProps {
   session: ClaraSession;
 }
 
-function EmptyMissionPanel() {
+async function EmptyMissionPanel() {
+  const t = await getTranslations("cockpitUi");
+
   return (
     <GlassPanel>
       <div>
         <p className="text-xs uppercase tracking-[0.20em] text-white/50">
-          Mission actuelle
+          {t("currentMission")}
         </p>
         <p className="mt-2 text-lg font-semibold">
-          Aucune mission active
+          {t("noMission")}
         </p>
         <p className="mt-2 text-sm leading-relaxed text-white/70">
-          Parlez à Clara pour définir un objectif et démarrer une mission.
+          {t("emptyMissionHelp")}
         </p>
       </div>
     </GlassPanel>
@@ -32,7 +35,7 @@ interface MissionPanelProps {
   mission: ClaraSession["mission"];
 }
 
-function MissionPanel({ mission }: MissionPanelProps) {
+async function MissionPanel({ mission }: MissionPanelProps) {
   return mission ? <TasksPanel mission={mission} /> : <EmptyMissionPanel />;
 }
 

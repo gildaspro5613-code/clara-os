@@ -14,6 +14,8 @@ import {
   Task,
   TaskStatus,
 } from "@/types";
+import { proposePhysicalAction, type PhysicalActionProposal } from "@/lib/connectors/clara-live/physical-action";
+import type { ConversationalPhysicalActionDraft } from "@/lib/clara/physical-action-proposal";
 
 const planCopy = {
   fr: {
@@ -77,4 +79,30 @@ export function plan(decision: Decision, locale = "fr"): Task[] {
     status: TaskStatus.TODO,
     createdAt: new Date(),
   }));
+}
+
+
+export interface ExecutionPlan {
+  tasks: Task[];
+  physicalActions: PhysicalActionProposal[];
+}
+
+/**
+ * Adds a physical request to an existing Brain plan only as PROPOSED.
+ * This function has no authorization or execution path.
+ */
+export function buildExecutionPlan(
+  decision: Decision,
+  locale = "fr",
+  physicalAction?: ConversationalPhysicalActionDraft,
+): ExecutionPlan {
+  const tasks = plan(decision, locale);
+  const task = tasks[0];
+
+  return {
+    tasks,
+    physicalActions: physicalAction && task
+      ? [proposePhysicalAction({ taskId: task.id, ...physicalAction })]
+      : [],
+  };
 }

@@ -1,6 +1,12 @@
+import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
+import { readAuthCookie } from "@/lib/connectors/microsoft/security/request-authorization";
+import { resolveSoleAuthenticatedWorkspace } from "@/lib/auth/sole-authenticated-workspace";
+import { PostgresPhysicalActionProposalStore } from "@/lib/connectors/clara-live/postgres-physical-action-store";
 
-import { composeClaraResponse } from "@/lib/brain/response-composer";
+import { composeClaraResponseWithProposal } from "@/lib/brain/response-composer";
+import { buildExecutionPlan } from "@/lib/brain/planners";
+import { toPhysicalActionProposalView } from "@/lib/clara/physical-action-view";
 import { dispatchEvent } from "@/lib/core/event-bus";
 import { getRuntime } from "@/lib/core/runtime";
 import {
@@ -66,10 +72,35 @@ export async function POST(request: Request) {
 
     // The composer only gives Clara a conversational voice. It receives the
     // already-decided Brain/session state and cannot call Clara capabilities.
-    const responseMessage = await composeClaraResponse(
-      message,
-      session,
-    );
+    const composed = await composeClaraResponseWithProposal(message, session);
+    const responseMessage = composed.content;
+    const executionPlan = recommendation?.decision
+      ? buildExecutionPlan(recommendation.decision, "fr", composed.physicalAction)
+      : { tasks: [], physicalActions: [] };
+
+    let physicalConversationId: string | null = null;
+    if (executionPlan.physicalActions.length > 0) {
+      const token = readAuthCookie(request.headers.get("cookie"));
+      const principal = await resolveSoleAuthenticatedWorkspace(token, "connections:manage");
+      if (!principal) {
+        return NextResponse.json(
+          { success: false, message: "Authenticated operator workspace required for physical action proposals." },
+          { status: 401 },
+        );
+      }
+      const conversationId = `clara:${createHash("sha256").update(`${principal.workspaceId}:${principal.userId}`).digest("hex").slice(0, 32)}`;
+      physicalConversationId = conversationId;
+      const store = new PostgresPhysicalActionProposalStore(principal.workspaceId);
+      const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+      for (const action of executionPlan.physicalActions) {
+        await store.create({
+          ...action,
+          ownerId: principal.userId,
+          conversationId,
+          expiresAt,
+        });
+      }
+    }
 
     const now = new Date().toISOString();
     const newMessages: ClaraConversationMessage[] = [
@@ -107,6 +138,7 @@ export async function POST(request: Request) {
               rationale: recommendation.rationale,
             }
           : null,
+        physicalActions: executionPlan.physicalActions.map(toPhysicalActionProposalView),
         mission: mission
           ? {
               id: mission.id,
@@ -121,6 +153,10 @@ export async function POST(request: Request) {
       // Capability approvals will be emitted by the Brain execution boundary,
       // not by the chat route or the response composer.
       approvals: [],
+      physicalActions: executionPlan.physicalActions.map((action) => ({
+        ...toPhysicalActionProposalView(action),
+        conversationId: physicalConversationId,
+      })),
     });
   } catch (error) {
     return NextResponse.json(

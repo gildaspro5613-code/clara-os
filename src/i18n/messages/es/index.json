@@ -256,7 +256,8 @@
     "whereTo": "¿Adónde quieres ir?",
     "destination": "Destino…",
     "navigationTemporarilyUnavailable": "Navegación temporalmente no disponible.",
-    "openWaze": "Abrir en Waze →"
+    "openWaze": "Abrir en Waze →",
+    "emptyMissionHelp": "Habla con Clara para definir un objetivo e iniciar una misión."
   },
   "voice": {
     "connecting": "Conectando con Clara…",
