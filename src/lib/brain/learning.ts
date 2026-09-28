@@ -29,6 +29,7 @@ export function shouldRemember(
     case "PHONE_CALL":
     case "MEETING_CREATED":
     case "DOCUMENT_RECEIVED":
+    case "PROJECT_INTAKE_RECEIVED":
       return true;
 
       default:
