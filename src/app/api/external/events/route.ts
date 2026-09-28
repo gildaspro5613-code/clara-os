@@ -10,6 +10,7 @@ import { dispatchEvent } from "@/lib/core/event-bus";
 import { composeClaraResponse } from "@/lib/brain/response-composer";
 import { saveSession } from "@/lib/core/store/session-store";
 import type { ClaraConversationMessage } from "@/lib/core/session";
+import { OpenAIResponsesEngine } from "@/lib/connectors/internal/openai/responses/openai-responses-engine";
 import { EventType } from "@/types";
 
 export const dynamic = "force-dynamic";
@@ -33,6 +34,110 @@ type ExternalEventBody = {
 };
 
 const MAX_PERSISTED_MESSAGES = 100;
+
+type DocumentAnalysisFact = {
+  entityId: string;
+  property: string;
+  value: string | number | boolean;
+  unit: string | null;
+  locator: string;
+  confidence: number;
+  ambiguity: string | null;
+};
+
+type DocumentAnalysisEntity = {
+  id: string;
+  manufacturer: string | null;
+  model: string | null;
+  category: string | null;
+  name: string;
+};
+
+type DocumentAnalysis = {
+  schemaVersion: "clara.document-analysis.v1";
+  entities: DocumentAnalysisEntity[];
+  facts: DocumentAnalysisFact[];
+  ambiguities: string[];
+  conflicts: string[];
+};
+
+function clampConfidence(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 0;
+}
+
+async function analyzeExternalDocument(body: ExternalEventBody): Promise<DocumentAnalysis | null> {
+  if (body.eventType !== "LIVE_DOCUMENT_ANALYSIS_REQUESTED" || !Array.isArray(body.documents)) return null;
+  const segments = body.documents.flatMap((document) => {
+    if (!document || typeof document !== "object") return [];
+    const candidate = document as { segments?: unknown[] };
+    return Array.isArray(candidate.segments) ? candidate.segments : [];
+  }).slice(0, 250);
+  if (!segments.length) return null;
+
+  const prompt = [
+    "Tu es le moteur cognitif du Brain de Clara. Analyse les extraits documentaires fournis.",
+    "Clara reste l'autorité cognitive; ce résultat est une proposition structurée qui sera vérifiée par les outils métier.",
+    "N'invente rien. Chaque fait doit avoir un locator explicitement présent dans les extraits.",
+    "Distingue les entités, faits, ambiguïtés et conflits. Un fait documenté n'est jamais certifié ni vérifié par cette analyse.",
+    'Retourne UNIQUEMENT un JSON valide: {"entities":[{"id":"...","manufacturer":null,"model":null,"category":null,"name":"..."}],"facts":[{"entityId":"...","property":"...","value":"...","unit":null,"locator":"...","confidence":0.0,"ambiguity":null}],"ambiguities":[],"conflicts":[]}.',
+    "Contexte:",
+    JSON.stringify(body.context ?? {}),
+    "Extraits:",
+    JSON.stringify(segments),
+  ].join("\n");
+
+  const result = await new OpenAIResponsesEngine().generate({
+    prompt,
+    model: process.env.OPENAI_MODEL ?? "gpt-5.5",
+    maxTokens: 6000,
+  });
+  if (!result.success || !result.content.trim()) return null;
+  try {
+    const parsed = JSON.parse(result.content) as Record<string, unknown>;
+    const entities = Array.isArray(parsed.entities) ? parsed.entities.flatMap((raw) => {
+      if (!raw || typeof raw !== "object") return [];
+      const item = raw as Record<string, unknown>;
+      if (typeof item.id !== "string" || typeof item.name !== "string") return [];
+      return [{
+        id: item.id.slice(0, 200),
+        manufacturer: typeof item.manufacturer === "string" ? item.manufacturer.slice(0, 200) : null,
+        model: typeof item.model === "string" ? item.model.slice(0, 200) : null,
+        category: typeof item.category === "string" ? item.category.slice(0, 120) : null,
+        name: item.name.slice(0, 300),
+      }];
+    }) : [];
+    const entityIds = new Set(entities.map((entity) => entity.id));
+    const facts = Array.isArray(parsed.facts) ? parsed.facts.flatMap((raw) => {
+      if (!raw || typeof raw !== "object") return [];
+      const item = raw as Record<string, unknown>;
+      if (typeof item.entityId !== "string" || !entityIds.has(item.entityId) ||
+          typeof item.property !== "string" || typeof item.locator !== "string" ||
+          !["string", "number", "boolean"].includes(typeof item.value)) return [];
+      return [{
+        entityId: item.entityId,
+        property: item.property.slice(0, 200),
+        value: item.value as string | number | boolean,
+        unit: typeof item.unit === "string" ? item.unit.slice(0, 80) : null,
+        locator: item.locator.slice(0, 300),
+        confidence: clampConfidence(item.confidence),
+        ambiguity: typeof item.ambiguity === "string" ? item.ambiguity.slice(0, 500) : null,
+      }];
+    }) : [];
+    const strings = (value: unknown) => Array.isArray(value)
+      ? value.filter((item): item is string => typeof item === "string").map((item) => item.slice(0, 1000)).slice(0, 100)
+      : [];
+    return {
+      schemaVersion: "clara.document-analysis.v1",
+      entities: entities.slice(0, 1000),
+      facts: facts.slice(0, 5000),
+      ambiguities: strings(parsed.ambiguities),
+      conflicts: strings(parsed.conflicts),
+    };
+  } catch {
+    return null;
+  }
+}
+
 
 function opaque(value: unknown, max = 160): value is string {
   return typeof value === "string" &&
@@ -121,6 +226,7 @@ export async function POST(request: Request) {
 
     const session = await dispatchEvent(clara, event);
     const response = await composeClaraResponse(message, session);
+    const documentAnalysis = await analyzeExternalDocument(body);
     const now = new Date().toISOString();
     const messages: ClaraConversationMessage[] = [
       { id: crypto.randomUUID(), role: "user", content: message, createdAt: now },
@@ -152,6 +258,7 @@ export async function POST(request: Request) {
               }
             : null,
           sources: session.sources.map((source) => ({ summary: source.summary })),
+          documentAnalysis,
         },
       },
     });
