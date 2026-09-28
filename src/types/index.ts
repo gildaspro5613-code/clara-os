@@ -15,6 +15,7 @@ export * from "./event";
 export * from "./identity";
 export * from "./memory";
 export * from "./objective";
+export * from "./project-intake";
 export * from "./recommendation";
 export * from "./state";
 export * from "./task";
