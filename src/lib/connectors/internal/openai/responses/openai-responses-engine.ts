@@ -17,7 +17,11 @@ import { OpenAIResponsesResult } from "./openai-responses-result";
 /**
  * OpenAI Responses engine.
  */
-const MAX_PROMPT_CHARS = 120_000;\nconst DEFAULT_MAX_OUTPUT_TOKENS = 1_200;\nconst HARD_MAX_OUTPUT_TOKENS = 2_000;\n\nexport class OpenAIResponsesEngine {
+const MAX_PROMPT_CHARS = 120_000;
+const DEFAULT_MAX_OUTPUT_TOKENS = 1_200;
+const HARD_MAX_OUTPUT_TOKENS = 2_000;
+
+export class OpenAIResponsesEngine {
 
   /**
    * Generates a response using OpenAI.
@@ -61,7 +65,10 @@ const MAX_PROMPT_CHARS = 120_000;\nconst DEFAULT_MAX_OUTPUT_TOKENS = 1_200;\ncon
 
         instructions: context.instructions,
 
-        max_output_tokens: Math.min(\n          context.maxTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,\n          HARD_MAX_OUTPUT_TOKENS,\n        ),
+        max_output_tokens: Math.min(
+          context.maxTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,
+          HARD_MAX_OUTPUT_TOKENS,
+        ),
 
         metadata: context.metadata,
 
