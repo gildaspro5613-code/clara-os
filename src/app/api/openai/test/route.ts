@@ -1,22 +1,19 @@
 import { NextResponse } from "next/server";
 
-import { OpenAIResponsesEngine } from "@/lib/connectors/internal/openai/responses/openai-responses-engine";
-
 /**
- * Test endpoint.
+ * Legacy OpenAI smoke-test endpoint.
+ *
+ * Cost safety: production must never expose a GET route that can trigger a
+ * billable model request. Keep the route as a non-billable diagnostic so old
+ * bookmarks/monitors fail safely instead of consuming OpenAI credits.
  */
 export async function GET() {
-
-  const engine = new OpenAIResponsesEngine();
-
-  const result = await engine.generate({
-
-    prompt: "Présente-toi en une phrase. Tu es Clara OS.",
-
-    model: "gpt-5.5",
-
-  });
-
-  return NextResponse.json(result);
-
+  return NextResponse.json(
+    {
+      success: false,
+      disabled: true,
+      message: "OpenAI billable smoke test is disabled. Use an authenticated Clara workflow for model calls.",
+    },
+    { status: 410 },
+  );
 }
