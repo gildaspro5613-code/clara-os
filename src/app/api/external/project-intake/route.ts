@@ -12,9 +12,15 @@ import { receiveMdProjectIntake } from "@/lib/intake/md-project-intake";
 
 export const dynamic = "force-dynamic";
 
-function intakeSessionKey(payload: unknown): string {
+export function intakeSessionKey(
+  productId: string,
+  workspaceId: string,
+  submissionId: string,
+): string {
   return "external:md-project-intake:" +
-    createHash("sha256").update(JSON.stringify(payload)).digest("hex");
+    createHash("sha256")
+      .update([productId, workspaceId, submissionId].join("\u001f"))
+      .digest("hex");
 }
 
 export async function POST(request: Request) {
@@ -57,7 +63,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const key = intakeSessionKey(received.intake);
+    const key = intakeSessionKey(
+      product.productId,
+      product.workspaceId,
+      received.intake.submissionId,
+    );
     const clara = new Clara(key, product.workspaceId);
     const session = await dispatchEvent(clara, received.event);
     session.updatedAt = new Date();
@@ -67,6 +77,7 @@ export async function POST(request: Request) {
       {
         accepted: true,
         status: "accepted_by_clara_os",
+        submissionId: received.intake.submissionId,
         eventId: received.event.id,
         missionId: session.mission?.id ?? null,
       },
