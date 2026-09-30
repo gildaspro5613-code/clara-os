@@ -2,6 +2,7 @@ export const MD_PROJECT_INTAKE_SCHEMA = "md.project-intake.v1" as const;
 
 export interface MdProjectIntake {
   schema: typeof MD_PROJECT_INTAKE_SCHEMA;
+  submissionId: string;
   source: {
     system: "melodie-digital-site";
     channel: "website";
@@ -31,6 +32,9 @@ export function isMdProjectIntake(value: unknown): value is MdProjectIntake {
   if (!value || typeof value !== "object") return false;
   const data = value as Partial<MdProjectIntake>;
   return data.schema === MD_PROJECT_INTAKE_SCHEMA
+    && typeof data.submissionId === "string"
+    && data.submissionId.trim().length > 0
+    && data.submissionId.length <= 128
     && data.source?.system === "melodie-digital-site"
     && data.source?.channel === "website"
     && data.orchestration?.owner === "clara-os"
