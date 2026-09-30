@@ -42,13 +42,7 @@ export async function orchestrate(
   const dashboard = await runBrainDashboard(
     event,
     activeMission,
-    acquisitionLocale({
-      event,
-      now: new Date(),
-      metadata: event.context?.metadata,
-      userId: event.context?.userId,
-      sessionId: event.context?.sessionId,
-    }),
+    acquisitionLocale(event),
   );
   const recommendation = dashboard.recommendation;
   const mission = missionFromBrain(
