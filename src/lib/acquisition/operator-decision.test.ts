@@ -70,7 +70,10 @@ describe("Acquisition operator decision", () => {
 
   it("refuses a decision outside a decision boundary", async () => {
     loadAcquisitionRecord.mockResolvedValueOnce({
-      ...(await loadAcquisitionRecord()),
+      submissionId: "submission-123",
+      workspaceId: "melodie-digital",
+      qualification: {},
+      decisionBrief: {},
       lifecycle: {
         schema: "clara.acquisition-lifecycle.v1",
         submissionId: "submission-123",
@@ -79,6 +82,8 @@ describe("Acquisition operator decision", () => {
         decisionRequired: false,
         updatedAt: "2026-09-30T03:00:00.000Z",
       },
+      createdAt: new Date("2026-09-30T03:00:00.000Z"),
+      updatedAt: new Date("2026-09-30T03:00:00.000Z"),
     });
 
     const { applyAcquisitionOperatorDecision } = await import("./operator-decision");
