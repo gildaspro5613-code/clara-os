@@ -4,6 +4,7 @@ import { useState } from "react";
 import GlassPanel from "@/components/ui/GlassPanel";
 import type { AcquisitionRecord } from "@/lib/acquisition/acquisition-store";
 import type { AcquisitionOperatorDecision } from "@/lib/acquisition/operator-decision";
+import { useTranslations } from "next-intl";
 
 interface AcquisitionDecisionPanelProps {
   initialDecisions: AcquisitionRecord[];
@@ -12,6 +13,7 @@ interface AcquisitionDecisionPanelProps {
 export default function AcquisitionDecisionPanel({
   initialDecisions,
 }: AcquisitionDecisionPanelProps) {
+  const t = useTranslations("cockpitUi.acquisitionDecision");
   const [decisions, setDecisions] = useState(initialDecisions);
   const [busy, setBusy] = useState<string | null>(null);
   const current = decisions[0];
@@ -37,7 +39,7 @@ export default function AcquisitionDecisionPanel({
   const specialistDecision = current.decisionBrief.decision.kind === "review-specialist-routing";
 
   return (
-    <GlassPanel title="Décision demandée par Clara">
+    <GlassPanel title={t("title")}>
       <div className="space-y-4">
         <div>
           <p className="text-base font-semibold leading-snug text-white/95">
@@ -50,7 +52,7 @@ export default function AcquisitionDecisionPanel({
 
         {current.decisionBrief.proposedSpecialistReview.length > 0 && (
           <p className="text-sm text-white/70">
-            Expertise proposée : {current.decisionBrief.proposedSpecialistReview.join(", ")}
+            {t("specialist")} : {current.decisionBrief.proposedSpecialistReview.join(", ")}
           </p>
         )}
 
@@ -61,7 +63,7 @@ export default function AcquisitionDecisionPanel({
             onClick={() => decide(specialistDecision ? "approve-specialist" : "approve-opportunity")}
             className="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 py-2 text-sm font-medium text-cyan-100 transition hover:bg-cyan-300/15 disabled:opacity-50"
           >
-            Valider
+            {t("approve")}
           </button>
           <button
             type="button"
@@ -69,7 +71,7 @@ export default function AcquisitionDecisionPanel({
             onClick={() => decide("defer")}
             className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/75 transition hover:bg-white/10 disabled:opacity-50"
           >
-            Plus tard
+            {t("later")}
           </button>
           <button
             type="button"
@@ -77,13 +79,13 @@ export default function AcquisitionDecisionPanel({
             onClick={() => decide("reject")}
             className="rounded-full border border-white/10 px-4 py-2 text-sm text-white/55 transition hover:bg-white/5 disabled:opacity-50"
           >
-            Refuser
+            {t("reject")}
           </button>
         </div>
 
         {decisions.length > 1 && (
           <p className="text-xs text-white/45">
-            {decisions.length - 1} autre{decisions.length > 2 ? "s" : ""} décision{decisions.length > 2 ? "s" : ""} en attente.
+            {t("remaining", { count: decisions.length - 1 })}
           </p>
         )}
       </div>
