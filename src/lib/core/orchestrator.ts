@@ -15,6 +15,7 @@ import { Event } from "@/types";
 import { runBrainDashboard } from "@/lib/brain";
 import { missionFromBrain } from "@/modules/missions";
 import { saveMission } from "@/modules/missions/mission-store";
+import { acquisitionLocale } from "@/lib/brain/acquisition-event";
 
 import {
   ClaraSession,
@@ -41,6 +42,13 @@ export async function orchestrate(
   const dashboard = await runBrainDashboard(
     event,
     activeMission,
+    acquisitionLocale({
+      event,
+      now: new Date(),
+      metadata: event.context?.metadata,
+      userId: event.context?.userId,
+      sessionId: event.context?.sessionId,
+    }),
   );
   const recommendation = dashboard.recommendation;
   const mission = missionFromBrain(
