@@ -23,6 +23,7 @@ import type { BrainSourceContext } from "./brain-source";
 import { isMdProjectIntake } from "@/types";
 import { qualifyProjectIntake, type AcquisitionQualification } from "@/lib/acquisition/qualification";
 import { buildAcquisitionDecisionBrief, type AcquisitionDecisionBrief } from "@/lib/acquisition/decision-brief";
+import { advanceAcquisitionLifecycle, initialAcquisitionLifecycle, type AcquisitionLifecycle } from "@/lib/acquisition/lifecycle";
 
 export interface BrainDashboard {
   context: Context;
@@ -34,6 +35,7 @@ export interface BrainDashboard {
   recommendation: Recommendation;
   acquisition?: AcquisitionQualification;
   acquisitionDecisionBrief?: AcquisitionDecisionBrief;
+  acquisitionLifecycle?: AcquisitionLifecycle;
   generatedAt: Date;
 }
 
@@ -58,6 +60,13 @@ export function buildDashboard(
     ? buildAcquisitionDecisionBrief(acquisition)
     : undefined;
 
+  const acquisitionLifecycle = acquisition && acquisitionDecisionBrief
+    ? advanceAcquisitionLifecycle(
+        initialAcquisitionLifecycle(acquisition.submissionId),
+        { type: "qualification-updated", qualification: acquisition, brief: acquisitionDecisionBrief },
+      )
+    : undefined;
+
   return {
     context,
     memory,
@@ -68,6 +77,7 @@ export function buildDashboard(
     recommendation,
     acquisition,
     acquisitionDecisionBrief,
+    acquisitionLifecycle,
     generatedAt: new Date(),
   };
 }
