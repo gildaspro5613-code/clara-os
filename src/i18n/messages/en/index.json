@@ -257,7 +257,15 @@
     "destination": "Destination…",
     "navigationTemporarilyUnavailable": "Navigation temporarily unavailable.",
     "openWaze": "Open in Waze →",
-    "emptyMissionHelp": "Talk to Clara to define an objective and start a mission."
+    "emptyMissionHelp": "Talk to Clara to define an objective and start a mission.",
+    "acquisitionDecision": {
+      "title": "Decision requested by Clara",
+      "specialist": "Proposed expertise",
+      "approve": "Approve",
+      "later": "Later",
+      "reject": "Decline",
+      "remaining": "{count, plural, one {# other decision pending.} other {# other decisions pending.}}"
+    }
   },
   "voice": {
     "connecting": "Connecting to Clara…",
