@@ -22,6 +22,7 @@ import {
 import type { BrainSourceContext } from "./brain-source";
 import { isMdProjectIntake } from "@/types";
 import { qualifyProjectIntake, type AcquisitionQualification } from "@/lib/acquisition/qualification";
+import { buildAcquisitionDecisionBrief, type AcquisitionDecisionBrief } from "@/lib/acquisition/decision-brief";
 
 export interface BrainDashboard {
   context: Context;
@@ -32,6 +33,7 @@ export interface BrainDashboard {
   tasks: Task[];
   recommendation: Recommendation;
   acquisition?: AcquisitionQualification;
+  acquisitionDecisionBrief?: AcquisitionDecisionBrief;
   generatedAt: Date;
 }
 
@@ -52,6 +54,10 @@ export function buildDashboard(
     ? qualifyProjectIntake(context.event.payload, understanding)
     : undefined;
 
+  const acquisitionDecisionBrief = acquisition
+    ? buildAcquisitionDecisionBrief(acquisition)
+    : undefined;
+
   return {
     context,
     memory,
@@ -61,6 +67,7 @@ export function buildDashboard(
     tasks,
     recommendation,
     acquisition,
+    acquisitionDecisionBrief,
     generatedAt: new Date(),
   };
 }
