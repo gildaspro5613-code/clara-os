@@ -1,9 +1,9 @@
-import type { Context } from "@/types";
+import type { Context, Event } from "@/types";
 
 const supportedLocales = new Set(["fr", "en", "es", "de", "it"]);
 
-export function acquisitionLocale(context: Context): string {
-  const locale = context.metadata?.locale;
+export function acquisitionLocale(event: Event): string {
+  const locale = event.context?.metadata?.locale;
   return typeof locale === "string" && supportedLocales.has(locale)
     ? locale
     : "fr";
