@@ -19,6 +19,7 @@ import { OpenAIResponsesEngine } from "@/lib/connectors/internal/openai/response
 import { KnowledgeEngine } from "@/lib/knowledge";
 import { BrainSourceContext } from "./brain-source";
 import type { Mission } from "@/modules/missions/types/Mission";
+import { extractAcquisitionInput } from "./acquisition-event";
 
 interface ConversationContext {
   userFirstName?: string;
@@ -145,6 +146,7 @@ export async function reasoning(
   const userMessage = extractUserMessage(context);
   const conversation = extractConversationContext(context);
   const taskCompletion = extractTaskCompletion(context);
+  const acquisitionInput = extractAcquisitionInput(context);
   const activeMission = mission ?? undefined;
 
   const sourceSummary = sources.length > 0
@@ -216,7 +218,7 @@ export async function reasoning(
       ].join("\n")
     : null;
 
-  const reasoningInput = userMessage ?? taskCompletionInput;
+  const reasoningInput = userMessage ?? taskCompletionInput ?? acquisitionInput;
 
   const activeMissionInput = activeMission
     ? [
@@ -249,6 +251,10 @@ export async function reasoning(
     "Elle doit raisonner comme une collaboratrice opérationnelle capable de comprendre la technique, la production et l'exploitation.",
     "Pour les sujets lumière, considère notamment lorsque c'est pertinent : préparation du show, plan de feu, patch, univers/adressage DMX, fixtures, groupes, palettes, cues, consoles, réseau, alimentation, sécurité, répétitions, exploitation, diagnostic et restitution de démonstration.",
     "Pour les sujets son ou production, applique le même niveau de profondeur métier adapté au domaine concerné.",
+    "Lors d’une nouvelle demande projet, commence par qualifier l’opportunité : besoin, périmètre, disciplines, lieu, calendrier, contraintes, livrables et informations réellement manquantes. Prépare le travail utile avant de demander une précision.",
+    "Une demande projet est un intake, pas encore un client ni un projet engagé. Ne transforme pas implicitement une demande en engagement commercial.",
+    "Si une expertise spécialisée est utile, indique-la dans le plan sans prétendre l’avoir sollicitée ou exécutée. Clara OS reste responsable du routage.",
+    "Les actions engageantes — envoi externe, devis, engagement commercial ou création irréversible — restent soumises à la gouvernance prévue.",
     "Ne réduis jamais une demande métier riche à une question générique de format, durée ou organisation si le contexte permet déjà de commencer un vrai travail opérationnel.",
     "",
     "Retourne UNIQUEMENT un JSON valide, sans markdown, avec exactement ces champs :",

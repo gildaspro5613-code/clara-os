@@ -15,6 +15,8 @@ import { Event } from "@/types";
 import { runBrainDashboard } from "@/lib/brain";
 import { missionFromBrain } from "@/modules/missions";
 import { saveMission } from "@/modules/missions/mission-store";
+import { acquisitionLocale } from "@/lib/brain/acquisition-event";
+import { saveAcquisitionRecord } from "@/lib/acquisition/acquisition-store";
 
 import {
   ClaraSession,
@@ -41,6 +43,7 @@ export async function orchestrate(
   const dashboard = await runBrainDashboard(
     event,
     activeMission,
+    acquisitionLocale(event),
   );
   const recommendation = dashboard.recommendation;
   const mission = missionFromBrain(
@@ -55,6 +58,23 @@ export async function orchestrate(
   session.mission = mission;
 
   await saveMission(mission);
+
+  if (
+    dashboard.acquisition &&
+    dashboard.acquisitionDecisionBrief &&
+    dashboard.acquisitionLifecycle
+  ) {
+    const workspaceId =
+      event.context?.workspaceId?.trim() ||
+      dashboard.acquisition.source.system;
+
+    await saveAcquisitionRecord({
+      workspaceId,
+      qualification: dashboard.acquisition,
+      decisionBrief: dashboard.acquisitionDecisionBrief,
+      lifecycle: dashboard.acquisitionLifecycle,
+    });
+  }
 
   session.sources = dashboard.sources;
   session.updatedAt = new Date();
