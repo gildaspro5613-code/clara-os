@@ -60,6 +60,9 @@ export function advanceAcquisitionLifecycle(
         state = "decision-required";
         nextAction = signal.brief.decision.question;
         decisionRequired = true;
+      } else if (signal.qualification.qualification.specialistNeed === "candidate") {
+        state = "specialist-review";
+        nextAction = "Préparer et lancer l'expertise spécialisée interne non engageante.";
       } else {
         state = "qualified";
         nextAction = signal.qualification.clara.nextAction;

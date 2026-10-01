@@ -68,8 +68,17 @@ export async function POST(request: Request) {
       product.workspaceId,
       received.intake.submissionId,
     );
+    const event = {
+      ...received.event,
+      context: {
+        ...received.event.context,
+        productId: product.productId,
+        workspaceId: product.workspaceId,
+        sessionId: key,
+      },
+    };
     const clara = new Clara(key, product.workspaceId);
-    const session = await dispatchEvent(clara, received.event);
+    const session = await dispatchEvent(clara, event);
     session.updatedAt = new Date();
     await saveSession(session, key);
 
@@ -78,7 +87,7 @@ export async function POST(request: Request) {
         accepted: true,
         status: "accepted_by_clara_os",
         submissionId: received.intake.submissionId,
-        eventId: received.event.id,
+        eventId: event.id,
         missionId: session.mission?.id ?? null,
       },
       { status: 202 },

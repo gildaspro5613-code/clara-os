@@ -70,12 +70,13 @@ export function buildAcquisitionDecisionBrief(
       claraCanContinue: [
         "Structurer le dossier d'opportunité.",
         "Préparer le contexte à transmettre au spécialiste.",
+        "Lancer l'expertise spécialisée interne lorsqu'elle reste préparatoire et non engageante.",
       ],
       proposedSpecialistReview,
       decision: {
-        required: true,
+        required: false,
         kind: "review-specialist-routing",
-        question: "Valider le recours à l'expertise spécialisée proposée avant toute action engageante.",
+        question: "Clara OS peut solliciter l'expertise spécialisée interne sans validation humaine préalable.",
       },
     };
   }

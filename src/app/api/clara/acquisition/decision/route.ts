@@ -3,6 +3,7 @@ import {
   applyAcquisitionOperatorDecision,
   type AcquisitionOperatorDecision,
 } from "@/lib/acquisition/operator-decision";
+import { resumeAcquisitionRuntime } from "@/lib/acquisition/resume-runtime";
 
 const allowed = new Set<AcquisitionOperatorDecision>([
   "approve-specialist",
@@ -11,10 +12,8 @@ const allowed = new Set<AcquisitionOperatorDecision>([
   "reject",
 ]);
 
-function workspaceId(request: Request): string {
-  return request.headers.get("x-clara-workspace")?.trim()
-    || process.env.CLARA_WORKSPACE_ID?.trim()
-    || "melodie-digital";
+function workspaceId(): string {
+  return process.env.CLARA_WORKSPACE_ID?.trim() || "melodie-digital";
 }
 
 export async function POST(request: Request) {
@@ -39,7 +38,7 @@ export async function POST(request: Request) {
     }
 
     const result = await applyAcquisitionOperatorDecision({
-      workspaceId: workspaceId(request),
+      workspaceId: workspaceId(),
       submissionId: body.submissionId.trim(),
       decision: body.decision as AcquisitionOperatorDecision,
     });
@@ -48,11 +47,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: "Dossier d'acquisition introuvable." }, { status: 404 });
     }
 
+    const resumed = result.resumed
+      ? await resumeAcquisitionRuntime(result.record)
+      : false;
+
     return NextResponse.json({
       success: true,
       submissionId: result.record.submissionId,
       lifecycle: result.record.lifecycle,
-      resumed: result.resumed,
+      resumed,
     });
   } catch (error) {
     if (error instanceof Error && error.message === "Acquisition decision is not currently required.") {
