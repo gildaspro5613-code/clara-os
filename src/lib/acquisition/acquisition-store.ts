@@ -28,7 +28,7 @@ async function ensureSchema(): Promise<void> {
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         PRIMARY KEY (workspace_id, submission_id)
       )
-    `.then(() => undefined).catch((error) => {
+    `.then(() => undefined).catch((error: unknown) => {
       schemaReady = null;
       throw error;
     });
