@@ -1,9 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import {
   applyAcquisitionOperatorDecision,
   type AcquisitionOperatorDecision,
 } from "@/lib/acquisition/operator-decision";
 import { resumeAcquisitionRuntime } from "@/lib/acquisition/resume-runtime";
+import { isSameOriginRequest } from "@/lib/auth/session-request-security";
+import { authorizeMicrosoftRequest } from "@/lib/connectors/microsoft/security/request-authorization";
 
 const allowed = new Set<AcquisitionOperatorDecision>([
   "approve-specialist",
@@ -12,15 +14,30 @@ const allowed = new Set<AcquisitionOperatorDecision>([
   "reject",
 ]);
 
-function workspaceId(): string {
-  return process.env.CLARA_WORKSPACE_ID?.trim() || "melodie-digital";
+function configuredWorkspaceId(): string | null {
+  const workspaceId = process.env.CLARA_WORKSPACE_ID?.trim();
+  return workspaceId && workspaceId !== "default" ? workspaceId : null;
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const origin = request.headers.get("origin");
-    if (!origin || origin !== new URL(request.url).origin) {
+    const configuredOrigin = process.env.CLARA_AUTH_APP_ORIGIN;
+    if (!isSameOriginRequest(request.headers.get("origin"), configuredOrigin)) {
       return NextResponse.json({ success: false, message: "Origine de décision non autorisée." }, { status: 403 });
+    }
+
+    const workspaceId = configuredWorkspaceId();
+    if (!workspaceId) {
+      return NextResponse.json({ success: false, message: "Workspace Clara non configuré." }, { status: 503 });
+    }
+
+    const principal = await authorizeMicrosoftRequest(
+      request.headers.get("cookie"),
+      workspaceId,
+      "connections:manage",
+    );
+    if (!principal) {
+      return NextResponse.json({ success: false, message: "Session Clara non autorisée." }, { status: 401 });
     }
 
     const body = await request.json() as {
@@ -38,7 +55,7 @@ export async function POST(request: Request) {
     }
 
     const result = await applyAcquisitionOperatorDecision({
-      workspaceId: workspaceId(),
+      workspaceId: principal.workspaceId,
       submissionId: body.submissionId.trim(),
       decision: body.decision as AcquisitionOperatorDecision,
     });
