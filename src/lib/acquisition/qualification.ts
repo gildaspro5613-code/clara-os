@@ -87,7 +87,7 @@ export function qualifyProjectIntake(
     },
     clara: {
       summary: understanding.summary,
-      nextAction: understanding.nextAction,
+      nextAction: understanding.nextAction ?? "Review the qualified opportunity and determine the next operational step.",
       confidence: understanding.confidence,
     },
     governance: {
