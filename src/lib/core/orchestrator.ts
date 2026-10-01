@@ -30,9 +30,6 @@ export async function orchestrate(
   event: Event,
 ): Promise<ClaraSession> {
 
-  /*
-   * Execute one Brain cycle.
-   */
   const activeMission =
     session.mission &&
     session.mission.status !== "completed" &&
@@ -51,9 +48,6 @@ export async function orchestrate(
     activeMission,
   );
 
-  /*
-   * Update the current session.
-   */
   session.recommendation = recommendation;
   session.mission = mission;
 
@@ -64,15 +58,17 @@ export async function orchestrate(
     dashboard.acquisitionDecisionBrief &&
     dashboard.acquisitionLifecycle
   ) {
-    const workspaceId =
-      event.context?.workspaceId?.trim() ||
-      dashboard.acquisition.source.system;
+    const workspaceId = event.context?.workspaceId?.trim();
+    if (!workspaceId) {
+      throw new Error("Acquisition events require a trusted workspace context.");
+    }
 
     await saveAcquisitionRecord({
       workspaceId,
       qualification: dashboard.acquisition,
       decisionBrief: dashboard.acquisitionDecisionBrief,
       lifecycle: dashboard.acquisitionLifecycle,
+      preserveLifecycle: true,
     });
   }
 
