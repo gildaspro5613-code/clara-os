@@ -41,8 +41,14 @@ export async function saveAcquisitionRecord(input: {
   qualification: AcquisitionQualification;
   decisionBrief: AcquisitionDecisionBrief;
   lifecycle: AcquisitionLifecycle;
+  preserveLifecycle?: boolean;
 }): Promise<void> {
   await ensureSchema();
+  const existing = input.preserveLifecycle
+    ? await loadAcquisitionRecord(input.workspaceId, input.qualification.submissionId)
+    : null;
+  const lifecycle = existing?.lifecycle ?? input.lifecycle;
+
   await sql`
     INSERT INTO clara_acquisition_records (
       submission_id, workspace_id, qualification, decision_brief, lifecycle, updated_at
@@ -52,7 +58,7 @@ export async function saveAcquisitionRecord(input: {
       ${input.workspaceId},
       ${JSON.stringify(input.qualification)},
       ${JSON.stringify(input.decisionBrief)},
-      ${JSON.stringify(input.lifecycle)},
+      ${JSON.stringify(lifecycle)},
       NOW()
     )
     ON CONFLICT (workspace_id, submission_id)
