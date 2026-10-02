@@ -2,6 +2,7 @@ import { createPublicKey, verify } from "node:crypto";
 import { sql } from "@/lib/core/store/database";
 import { completeVerifiedSignIn } from "./verified-sign-in";
 import { enrollVerifiedIdentity, findVerifiedUser, type VerifiedIdentity } from "./verified-identity";
+import { consumeSignInTransaction } from "./sign-in-transaction";
 
 const MICROSOFT_HOST = "https://login.microsoftonline.com";
 
@@ -9,7 +10,6 @@ type JwtHeader = { alg?: string; kid?: string; typ?: string };
 type JwtClaims = {
   aud?: string;
   exp?: number;
-  iat?: number;
   iss?: string;
   nbf?: number;
   nonce?: string;
@@ -37,9 +37,7 @@ function decodePart<T>(part: string): T {
 }
 
 async function signingKey(tenantId: string, kid: string): Promise<MicrosoftJwk> {
-  const response = await fetch(`${MICROSOFT_HOST}/${encodeURIComponent(tenantId)}/discovery/v2.0/keys`, {
-    cache: "no-store",
-  });
+  const response = await fetch(`${MICROSOFT_HOST}/${encodeURIComponent(tenantId)}/discovery/v2.0/keys`, { cache: "no-store" });
   if (!response.ok) throw new Error("MICROSOFT_JWKS_UNAVAILABLE");
   const body = await response.json() as { keys?: MicrosoftJwk[] };
   const key = body.keys?.find((candidate) => candidate.kid === kid && candidate.use !== "enc");
@@ -66,14 +64,7 @@ async function exchangeCode(code: string): Promise<string> {
   const response = await fetch(`${MICROSOFT_HOST}/${encodeURIComponent(tenantId)}/oauth2/v2.0/token`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      client_id: clientId,
-      client_secret: clientSecret,
-      grant_type: "authorization_code",
-      code,
-      redirect_uri: redirectUri,
-      scope: "openid profile email",
-    }),
+    body: new URLSearchParams({ client_id: clientId, client_secret: clientSecret, grant_type: "authorization_code", code, redirect_uri: redirectUri, scope: "openid profile email" }),
     cache: "no-store",
   });
   const body = await response.json() as { id_token?: string };
@@ -88,25 +79,15 @@ async function verifyIdToken(idToken: string, expectedNonce: string): Promise<Jw
   const header = decodePart<JwtHeader>(parts[0]);
   const claims = decodePart<JwtClaims>(parts[1]);
   if (header.alg !== "RS256" || !header.kid) throw new Error("INVALID_MICROSOFT_ID_TOKEN_ALGORITHM");
-
   const key = await signingKey(tenantId, header.kid);
   const publicKey = createPublicKey({ key, format: "jwk" });
-  const signatureOk = verify(
-    "RSA-SHA256",
-    Buffer.from(`${parts[0]}.${parts[1]}`, "utf8"),
-    publicKey,
-    Buffer.from(parts[2], "base64url"),
-  );
+  const signatureOk = verify("RSA-SHA256", Buffer.from(`${parts[0]}.${parts[1]}`, "utf8"), publicKey, Buffer.from(parts[2], "base64url"));
   if (!signatureOk) throw new Error("INVALID_MICROSOFT_ID_TOKEN_SIGNATURE");
 
   const now = Math.floor(Date.now() / 1000);
   const issuer = `${MICROSOFT_HOST}/${tenantId}/v2.0`;
-  if (claims.iss !== issuer || claims.aud !== clientId || claims.tid !== tenantId) {
-    throw new Error("INVALID_MICROSOFT_ID_TOKEN_SCOPE");
-  }
-  if (!claims.exp || claims.exp <= now || (claims.nbf && claims.nbf > now + 60)) {
-    throw new Error("EXPIRED_MICROSOFT_ID_TOKEN");
-  }
+  if (claims.iss !== issuer || claims.aud !== clientId || claims.tid !== tenantId) throw new Error("INVALID_MICROSOFT_ID_TOKEN_SCOPE");
+  if (!claims.exp || claims.exp <= now || (claims.nbf && claims.nbf > now + 60)) throw new Error("EXPIRED_MICROSOFT_ID_TOKEN");
   if (!claims.nonce || claims.nonce !== expectedNonce) throw new Error("INVALID_MICROSOFT_ID_TOKEN_NONCE");
   if (!claims.oid && !claims.sub) throw new Error("INVALID_MICROSOFT_IDENTITY");
   return claims;
@@ -114,33 +95,29 @@ async function verifyIdToken(idToken: string, expectedNonce: string): Promise<Jw
 
 async function bootstrapIfAuthorized(identity: VerifiedIdentity, claims: JwtClaims): Promise<void> {
   if (await findVerifiedUser(identity)) return;
-
   const expectedEmail = process.env.CLARA_AUTH_BOOTSTRAP_EMAIL?.trim().toLowerCase();
   const workspaceId = process.env.CLARA_WORKSPACE_ID?.trim();
   const verifiedEmail = (claims.email ?? claims.preferred_username)?.trim().toLowerCase();
-  if (!expectedEmail || !verifiedEmail || verifiedEmail !== expectedEmail || !workspaceId || workspaceId === "default") {
-    throw new Error("IDENTITY_NOT_ENROLLED");
-  }
+  if (!expectedEmail || !verifiedEmail || verifiedEmail !== expectedEmail || !workspaceId || workspaceId === "default") throw new Error("IDENTITY_NOT_ENROLLED");
 
   const userId = await enrollVerifiedIdentity(identity);
   await sql`INSERT INTO clara_auth_workspaces (id) VALUES (${workspaceId}) ON CONFLICT (id) DO NOTHING`;
   await sql`
     INSERT INTO clara_workspace_memberships (user_id, workspace_id, role)
     VALUES (${userId}, ${workspaceId}, 'owner')
-    ON CONFLICT (user_id, workspace_id) DO UPDATE
-      SET role = 'owner', revoked_at = NULL
+    ON CONFLICT (user_id, workspace_id) DO UPDATE SET role = 'owner', revoked_at = NULL
   `;
 }
 
-export async function completeMicrosoftSignIn(code: string, expectedNonce: string): Promise<string> {
+export async function completeMicrosoftSignIn(code: string, state: string, expectedNonce: string): Promise<string> {
   if (!code.trim()) throw new Error("MICROSOFT_AUTHORIZATION_CODE_REQUIRED");
   const idToken = await exchangeCode(code);
   const claims = await verifyIdToken(idToken, expectedNonce);
+  const consumed = await consumeSignInTransaction("microsoft", state, expectedNonce);
+  if (!consumed) throw new Error("INVALID_OR_REPLAYED_SIGN_IN_TRANSACTION");
+
   const { tenantId } = configuredSignIn();
-  const identity: VerifiedIdentity = {
-    issuer: `${MICROSOFT_HOST}/${tenantId}/v2.0`,
-    subject: claims.oid ?? claims.sub!,
-  };
+  const identity: VerifiedIdentity = { issuer: `${MICROSOFT_HOST}/${tenantId}/v2.0`, subject: claims.oid ?? claims.sub! };
   await bootstrapIfAuthorized(identity, claims);
   return completeVerifiedSignIn(identity);
 }
