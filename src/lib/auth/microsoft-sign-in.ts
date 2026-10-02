@@ -19,7 +19,11 @@ type JwtClaims = {
   email?: string;
   preferred_username?: string;
 };
-type MicrosoftJwk = JsonWebKey & { kid?: string; use?: string };
+type MicrosoftJwk = Record<string, string | string[] | boolean | undefined> & {
+  kty: string;
+  kid?: string;
+  use?: string;
+};
 
 function configuredSignIn() {
   const tenantId = process.env.CLARA_AUTH_MICROSOFT_TENANT_ID?.trim();
