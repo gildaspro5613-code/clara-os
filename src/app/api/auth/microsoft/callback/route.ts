@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { authenticatedSessionCookie } from "@/lib/auth/authenticated-session-lifecycle";
 import { completeMicrosoftSignIn } from "@/lib/auth/microsoft-sign-in";
-import { consumeSignInTransaction, isOpaqueAuthValue } from "@/lib/auth/sign-in-transaction";
+import { isOpaqueAuthValue } from "@/lib/auth/sign-in-transaction";
 
 const NONCE_COOKIE = "clara_auth_microsoft_nonce";
 export const dynamic = "force-dynamic";
@@ -45,17 +45,12 @@ export async function GET(request: NextRequest) {
   const state = url.searchParams.get("state") ?? "";
   const code = url.searchParams.get("code") ?? "";
   const nonce = request.cookies.get(NONCE_COOKIE)?.value ?? "";
-  if (!isOpaqueAuthValue(state) || !isOpaqueAuthValue(nonce) || !code.trim()) {
-    return finish(origin, "invalid_callback");
-  }
+  if (!isOpaqueAuthValue(state) || !isOpaqueAuthValue(nonce) || !code.trim()) return finish(origin, "invalid_callback");
 
   try {
-    // The ID token is cryptographically verified, including its nonce, before
-    // the matching one-time transaction is atomically consumed.
-    const token = await completeMicrosoftSignIn(code, nonce);
-    const consumed = await consumeSignInTransaction("microsoft", state, nonce);
-    if (!consumed) return finish(origin, "invalid_or_replayed_state");
-
+    // Verification order is deliberate: signature/issuer/audience/expiry/nonce,
+    // then atomic state+nonce consumption, then enrollment/session issuance.
+    const token = await completeMicrosoftSignIn(code, state, nonce);
     const response = finish(origin, "connected");
     const session = authenticatedSessionCookie(token, process.env.NODE_ENV === "production");
     response.cookies.set(session.name, session.value, session.options);
