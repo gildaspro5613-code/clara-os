@@ -22,15 +22,35 @@ export class ExternalProductConfigurationError extends Error {
   }
 }
 
+function loadMdStudioProduct(): ExternalProductConfig | null {
+  const token = process.env.CLARA_MD_PRODUCT_TOKEN?.trim();
+  if (!token) return null;
+
+  return {
+    productId: "melodie-digital-site",
+    workspaceId: process.env.CLARA_MD_WORKSPACE_ID?.trim() || "melodie-digital",
+    token,
+    capabilities: ["project-intake"],
+  };
+}
+
 export function loadExternalProducts(
   value = process.env.CLARA_EXTERNAL_PRODUCTS_JSON,
 ): ReadonlyMap<string, ExternalProductConfig> {
-  if (!value?.trim()) return new Map();
+  const products = new Map<string, ExternalProductConfig>();
+  const mdStudio = loadMdStudioProduct();
+  if (mdStudio) products.set(mdStudio.productId, mdStudio);
+
+  if (!value?.trim()) return products;
 
   let parsed: unknown;
   try {
     parsed = JSON.parse(value);
   } catch {
+    // The Studio intake no longer depends on the legacy JSON variable. If its
+    // dedicated credentials are configured, keep Studio available while an
+    // invalid legacy JSON value is repaired or removed.
+    if (mdStudio) return products;
     throw new ExternalProductConfigurationError(
       "CLARA_EXTERNAL_PRODUCTS_JSON must contain valid JSON.",
     );
@@ -42,8 +62,10 @@ export function loadExternalProducts(
     );
   }
 
-  const products = new Map<string, ExternalProductConfig>();
   for (const [productId, raw] of Object.entries(parsed as Record<string, RawProductConfig>)) {
+    // Dedicated Studio credentials take precedence over the legacy JSON entry.
+    if (mdStudio && productId === mdStudio.productId) continue;
+
     const workspaceId = typeof raw?.workspaceId === "string" ? raw.workspaceId.trim() : "";
     const token = typeof raw?.token === "string" ? raw.token.trim() : "";
     const callbackBaseUrl = typeof raw?.callbackBaseUrl === "string" ? raw.callbackBaseUrl.trim().replace(/\/$/, "") : undefined;
