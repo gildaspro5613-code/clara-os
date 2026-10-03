@@ -16,7 +16,7 @@ function positiveInteger(value: string | undefined, fallback: number): number {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
-async function processItem(item: ProjectIntakeInboxItem): Promise<void> {
+async function processItem(item: ProjectIntakeInboxItem): Promise<boolean> {
   try {
     const received = receiveMdProjectIntake(item.intake);
     const event = {
@@ -35,6 +35,7 @@ async function processItem(item: ProjectIntakeInboxItem): Promise<void> {
     session.updatedAt = new Date();
     await saveSession(session, item.sessionKey);
     await markProjectIntakeStatus(item.workspaceId, item.submissionId, "processed");
+    return true;
   } catch (error) {
     await markProjectIntakeStatus(
       item.workspaceId,
@@ -43,6 +44,7 @@ async function processItem(item: ProjectIntakeInboxItem): Promise<void> {
       error instanceof Error ? error.message : "UNKNOWN_PROCESSING_ERROR",
     );
     console.error("[Clara intake worker] processing failed", item.submissionId, error);
+    return false;
   }
 }
 
@@ -65,9 +67,7 @@ export async function runProjectIntakeWorker(): Promise<{
   let failed = 0;
 
   for (const item of items) {
-    await processItem(item);
-    const finalStatus = await item.statusAfterProcessing();
-    if (finalStatus === "processed") processed += 1;
+    if (await processItem(item)) processed += 1;
     else failed += 1;
   }
 
