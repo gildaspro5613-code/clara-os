@@ -23,6 +23,15 @@ export function intakeSessionKey(
       .digest("hex");
 }
 
+function externalProductConfigDiagnostic(error: ExternalProductConfigurationError): string {
+  const message = error.message;
+  if (message.includes("valid JSON")) return "CONFIG_INVALID_JSON";
+  if (message.includes("product configuration object")) return "CONFIG_INVALID_ROOT";
+  if (message.includes("callback must use HTTPS")) return "CONFIG_INVALID_CALLBACK";
+  if (message.includes("Invalid external product configuration")) return "CONFIG_INVALID_PRODUCT";
+  return "CONFIG_INVALID";
+}
+
 export async function POST(request: Request) {
   try {
     const product = authenticateExternalProduct(
@@ -94,8 +103,10 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     if (error instanceof ExternalProductConfigurationError) {
+      const diagnostic = externalProductConfigDiagnostic(error);
+      console.error("[API /external/project-intake] gateway configuration", diagnostic);
       return NextResponse.json(
-        { accepted: false, status: "gateway_not_configured" },
+        { accepted: false, status: "gateway_not_configured", diagnostic },
         { status: 503 },
       );
     }
