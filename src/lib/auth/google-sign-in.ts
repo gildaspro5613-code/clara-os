@@ -110,7 +110,10 @@ async function verifyIdToken(idToken: string, expectedNonce: string): Promise<Jw
 async function bootstrapIfAuthorized(identity: VerifiedIdentity, claims: JwtClaims): Promise<void> {
   if (await findVerifiedUser(identity)) return;
   const expectedEmail = process.env.CLARA_AUTH_BOOTSTRAP_EMAIL?.trim().toLowerCase();
-  const workspaceId = process.env.CLARA_WORKSPACE_ID?.trim();
+  const workspaceId =
+    process.env.CLARA_MD_WORKSPACE_ID?.trim() ||
+    process.env.CLARA_WORKSPACE_ID?.trim() ||
+    "melodie-digital";
   const verifiedEmail = claims.email?.trim().toLowerCase();
   if (
     !expectedEmail ||
