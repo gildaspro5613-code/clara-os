@@ -12,6 +12,15 @@ export interface ProjectIntakeInboxItem {
   intake: MdProjectIntake;
 }
 
+interface ProjectIntakeInboxRow {
+  workspace_id: unknown;
+  submission_id: unknown;
+  product_id: unknown;
+  session_key: unknown;
+  event_id: unknown;
+  intake: unknown;
+}
+
 let schemaReady: Promise<void> | null = null;
 
 async function ensureSchema(): Promise<void> {
@@ -91,7 +100,7 @@ export async function claimProjectIntakes(
               inbox.session_key, inbox.event_id, inbox.intake
   `;
 
-  return rows.map((row) => ({
+  return (rows as ProjectIntakeInboxRow[]).map((row) => ({
     workspaceId: String(row.workspace_id),
     submissionId: String(row.submission_id),
     productId: String(row.product_id),
