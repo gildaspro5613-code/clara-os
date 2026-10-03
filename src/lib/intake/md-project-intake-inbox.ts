@@ -3,6 +3,15 @@ import type { MdProjectIntake } from "@/types";
 
 export type ProjectIntakeInboxStatus = "received" | "processing" | "processed" | "failed";
 
+export interface ProjectIntakeInboxItem {
+  workspaceId: string;
+  submissionId: string;
+  productId: string;
+  sessionKey: string;
+  eventId: string;
+  intake: MdProjectIntake;
+}
+
 let schemaReady: Promise<void> | null = null;
 
 async function ensureSchema(): Promise<void> {
@@ -56,6 +65,40 @@ export async function persistProjectIntake(input: {
     ON CONFLICT (workspace_id, submission_id)
     DO NOTHING
   `;
+}
+
+export async function claimProjectIntakes(
+  limit: number,
+  staleAfterSeconds: number,
+): Promise<ProjectIntakeInboxItem[]> {
+  await ensureSchema();
+  const rows = await sql`
+    WITH candidates AS (
+      SELECT workspace_id, submission_id
+      FROM clara_project_intake_inbox
+      WHERE status = 'received'
+         OR (status = 'processing' AND updated_at < NOW() - (${staleAfterSeconds} * INTERVAL '1 second'))
+      ORDER BY created_at ASC
+      LIMIT ${limit}
+      FOR UPDATE SKIP LOCKED
+    )
+    UPDATE clara_project_intake_inbox AS inbox
+    SET status = 'processing', error = NULL, updated_at = NOW()
+    FROM candidates
+    WHERE inbox.workspace_id = candidates.workspace_id
+      AND inbox.submission_id = candidates.submission_id
+    RETURNING inbox.workspace_id, inbox.submission_id, inbox.product_id,
+              inbox.session_key, inbox.event_id, inbox.intake
+  `;
+
+  return rows.map((row) => ({
+    workspaceId: String(row.workspace_id),
+    submissionId: String(row.submission_id),
+    productId: String(row.product_id),
+    sessionKey: String(row.session_key),
+    eventId: String(row.event_id),
+    intake: row.intake as MdProjectIntake,
+  }));
 }
 
 export async function markProjectIntakeStatus(

@@ -1,18 +1,13 @@
 import { createHash } from "node:crypto";
 import { after, NextResponse } from "next/server";
 
-import { Clara } from "@/lib/core/clara";
-import { dispatchEvent } from "@/lib/core/event-bus";
-import { saveSession } from "@/lib/core/store/session-store";
 import {
   authenticateExternalProduct,
   ExternalProductConfigurationError,
 } from "@/lib/external-capabilities/config";
 import { receiveMdProjectIntake } from "@/lib/intake/md-project-intake";
-import {
-  markProjectIntakeStatus,
-  persistProjectIntake,
-} from "@/lib/intake/md-project-intake-inbox";
+import { persistProjectIntake } from "@/lib/intake/md-project-intake-inbox";
+import { runProjectIntakeWorker } from "@/lib/intake/md-project-intake-worker";
 
 export const dynamic = "force-dynamic";
 
@@ -91,8 +86,6 @@ export async function POST(request: Request) {
       },
     };
 
-    // The public acknowledgement means "durably received", not "Clara finished".
-    // Persist first so a successful 202 can never depend on the cognitive cycle.
     await persistProjectIntake({
       workspaceId: product.workspaceId,
       submissionId: received.intake.submissionId,
@@ -102,33 +95,12 @@ export async function POST(request: Request) {
       intake: received.intake,
     });
 
+    // Best-effort immediate processing. Durability lives in the inbox; the worker
+    // can safely reclaim an interrupted processing item later.
     after(async () => {
-      try {
-        await markProjectIntakeStatus(
-          product.workspaceId,
-          received.intake.submissionId,
-          "processing",
-        );
-        const clara = new Clara(key, product.workspaceId);
-        const session = await dispatchEvent(clara, event);
-        session.updatedAt = new Date();
-        await saveSession(session, key);
-        await markProjectIntakeStatus(
-          product.workspaceId,
-          received.intake.submissionId,
-          "processed",
-        );
-      } catch (error) {
-        console.error("[API /external/project-intake] deferred Clara processing", error);
-        await markProjectIntakeStatus(
-          product.workspaceId,
-          received.intake.submissionId,
-          "failed",
-          error instanceof Error ? error.message : "UNKNOWN_PROCESSING_ERROR",
-        ).catch((statusError) => {
-          console.error("[API /external/project-intake] failed to persist deferred status", statusError);
-        });
-      }
+      await runProjectIntakeWorker().catch((error) => {
+        console.error("[API /external/project-intake] durable worker", error);
+      });
     });
 
     return NextResponse.json(
