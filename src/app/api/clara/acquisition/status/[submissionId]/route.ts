@@ -9,7 +9,10 @@ import { loadSession } from "@/lib/core/store/session-store";
 export const dynamic = "force-dynamic";
 
 function configuredWorkspaceId(): string | null {
-  const workspaceId = process.env.CLARA_WORKSPACE_ID?.trim();
+  const workspaceId =
+    process.env.CLARA_MD_WORKSPACE_ID?.trim() ||
+    process.env.CLARA_WORKSPACE_ID?.trim() ||
+    "melodie-digital";
   return workspaceId && workspaceId !== "default" ? workspaceId : null;
 }
 
