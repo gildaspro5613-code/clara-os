@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 
 import { Clara } from "@/lib/core/clara";
 import { dispatchEvent } from "@/lib/core/event-bus";
@@ -9,6 +9,10 @@ import {
   ExternalProductConfigurationError,
 } from "@/lib/external-capabilities/config";
 import { receiveMdProjectIntake } from "@/lib/intake/md-project-intake";
+import {
+  markProjectIntakeStatus,
+  persistProjectIntake,
+} from "@/lib/intake/md-project-intake-inbox";
 
 export const dynamic = "force-dynamic";
 
@@ -86,10 +90,46 @@ export async function POST(request: Request) {
         sessionId: key,
       },
     };
-    const clara = new Clara(key, product.workspaceId);
-    const session = await dispatchEvent(clara, event);
-    session.updatedAt = new Date();
-    await saveSession(session, key);
+
+    // The public acknowledgement means "durably received", not "Clara finished".
+    // Persist first so a successful 202 can never depend on the cognitive cycle.
+    await persistProjectIntake({
+      workspaceId: product.workspaceId,
+      submissionId: received.intake.submissionId,
+      productId: product.productId,
+      sessionKey: key,
+      eventId: event.id,
+      intake: received.intake,
+    });
+
+    after(async () => {
+      try {
+        await markProjectIntakeStatus(
+          product.workspaceId,
+          received.intake.submissionId,
+          "processing",
+        );
+        const clara = new Clara(key, product.workspaceId);
+        const session = await dispatchEvent(clara, event);
+        session.updatedAt = new Date();
+        await saveSession(session, key);
+        await markProjectIntakeStatus(
+          product.workspaceId,
+          received.intake.submissionId,
+          "processed",
+        );
+      } catch (error) {
+        console.error("[API /external/project-intake] deferred Clara processing", error);
+        await markProjectIntakeStatus(
+          product.workspaceId,
+          received.intake.submissionId,
+          "failed",
+          error instanceof Error ? error.message : "UNKNOWN_PROCESSING_ERROR",
+        ).catch((statusError) => {
+          console.error("[API /external/project-intake] failed to persist deferred status", statusError);
+        });
+      }
+    });
 
     return NextResponse.json(
       {
@@ -97,7 +137,7 @@ export async function POST(request: Request) {
         status: "accepted_by_clara_os",
         submissionId: received.intake.submissionId,
         eventId: event.id,
-        missionId: session.mission?.id ?? null,
+        missionId: null,
       },
       { status: 202 },
     );
