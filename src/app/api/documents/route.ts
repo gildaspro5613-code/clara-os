@@ -92,7 +92,8 @@ export async function GET(request: Request) {
         throw new Error("Le contenu téléchargé est indisponible.");
       }
 
-      return new Response(result.content, {
+      const body = new Blob([new Uint8Array(result.content)]);
+      return new Response(body, {
         headers: {
           "Content-Type": result.mimeType || "application/octet-stream",
           "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(result.fileName || fileName || "document")}`,
