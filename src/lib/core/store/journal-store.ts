@@ -1,32 +1,37 @@
-import { query } from "./database";
+import { sql } from "./database";
 import type { JournalEntry } from "../journal-entry";
 
-let initialized = false;
+let schemaReady: Promise<void> | null = null;
 
 async function ensureJournalTable(): Promise<void> {
-  if (initialized) return;
+  if (!schemaReady) {
+    schemaReady = (async () => {
+      await sql`
+        CREATE TABLE IF NOT EXISTS clara_journal_entries (
+          id TEXT PRIMARY KEY,
+          entry JSONB NOT NULL,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+      `;
+    })().catch((error) => {
+      schemaReady = null;
+      throw error;
+    });
+  }
 
-  await query(`
-    CREATE TABLE IF NOT EXISTS clara_journal_entries (
-      id TEXT PRIMARY KEY,
-      entry JSONB NOT NULL,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )
-  `);
-
-  initialized = true;
+  await schemaReady;
 }
 
 export async function loadJournalEntries(): Promise<JournalEntry[]> {
   await ensureJournalTable();
 
-  const result = await query<{ entry: JournalEntry }>(`
+  const rows = await sql`
     SELECT entry
     FROM clara_journal_entries
     ORDER BY created_at ASC
-  `);
+  `;
 
-  return result.rows.map(({ entry }) => ({
+  return (rows as Array<{ entry: JournalEntry }>).map(({ entry }) => ({
     ...entry,
     createdAt: new Date(entry.createdAt),
   }));
@@ -35,18 +40,17 @@ export async function loadJournalEntries(): Promise<JournalEntry[]> {
 export async function saveJournalEntry(entry: JournalEntry): Promise<void> {
   await ensureJournalTable();
 
-  await query(
-    `
-      INSERT INTO clara_journal_entries (id, entry, created_at)
-      VALUES ($1, $2::jsonb, $3)
-      ON CONFLICT (id)
-      DO UPDATE SET entry = EXCLUDED.entry, created_at = EXCLUDED.created_at
-    `,
-    [entry.id, JSON.stringify(entry), entry.createdAt],
-  );
+  await sql`
+    INSERT INTO clara_journal_entries (id, entry, created_at)
+    VALUES (${entry.id}, ${JSON.stringify(entry)}, ${entry.createdAt})
+    ON CONFLICT (id)
+    DO UPDATE SET
+      entry = EXCLUDED.entry,
+      created_at = EXCLUDED.created_at
+  `;
 }
 
 export async function clearJournalEntries(): Promise<void> {
   await ensureJournalTable();
-  await query("DELETE FROM clara_journal_entries");
+  await sql`DELETE FROM clara_journal_entries`;
 }
