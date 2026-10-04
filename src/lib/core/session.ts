@@ -9,6 +9,7 @@
 
 import type { Recommendation } from "@/types";
 import type { BrainSourceContext } from "@/lib/brain/brain-source";
+import type { BrainDashboard } from "@/lib/brain/dashboard";
 import type { Mission } from "@/modules/missions/types/Mission";
 import { ClaraState } from "./state";
 
@@ -36,58 +37,25 @@ function resolveDefaultUser(): ClaraUserIdentity {
 }
 
 export interface ClaraSession {
-  /**
-   * Current operational state.
-   */
   state: ClaraState;
-
-  /**
-   * Current recommendation produced
-   * by Clara's Brain.
-   */
   recommendation: Recommendation | null;
-
-  /**
-   * Current operational mission produced
-   * by Clara's Brain.
-   */
+  /** Latest complete dashboard produced by a real Brain execution cycle. */
+  brainDashboard: BrainDashboard | null;
   mission: Mission | null;
-
-  /**
-   * External information sources available during the current cycle.
-   */
   sources: BrainSourceContext[];
-
-  /**
-   * User identity available to Clara's conversational surfaces.
-   */
   user: ClaraUserIdentity;
-
-  /**
-   * Shared persisted Clara conversation used by every chat surface.
-   */
   conversation: ClaraConversationMessage[];
-
-  /**
-   * Session creation date.
-   */
   startedAt: Date;
-
-  /**
-   * Last update.
-   */
   updatedAt: Date;
 }
 
-/**
- * Creates a new Clara session.
- */
 export function createSession(): ClaraSession {
   const now = new Date();
 
   return {
     state: ClaraState.STARTING,
     recommendation: null,
+    brainDashboard: null,
     mission: null,
     sources: [],
     user: resolveDefaultUser(),
@@ -98,8 +66,8 @@ export function createSession(): ClaraSession {
 }
 
 /**
- * Supplies V1 defaults when loading sessions created before conversation and
- * identity became first-class Clara session state.
+ * Supplies V1 defaults when loading sessions created before conversation,
+ * identity and the latest Brain dashboard became first-class session state.
  */
 export function normalizeSession(
   session: ClaraSession,
@@ -108,6 +76,7 @@ export function normalizeSession(
 
   return {
     ...session,
+    brainDashboard: session.brainDashboard ?? null,
     user: session.user ?? defaults.user,
     conversation: Array.isArray(session.conversation)
       ? session.conversation
