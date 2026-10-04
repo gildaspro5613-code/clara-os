@@ -18,18 +18,13 @@ import { saveMission } from "@/modules/missions/mission-store";
 import { acquisitionLocale } from "@/lib/brain/acquisition-event";
 import { saveAcquisitionRecord } from "@/lib/acquisition/acquisition-store";
 
-import {
-  ClaraSession,
-} from "./session";
+import { ClaraSession } from "./session";
 
-/**
- * Executes one complete Clara reasoning cycle.
- */
+/** Executes one complete Clara reasoning cycle. */
 export async function orchestrate(
   session: ClaraSession,
   event: Event,
 ): Promise<ClaraSession> {
-
   const activeMission =
     session.mission &&
     session.mission.status !== "completed" &&
@@ -43,11 +38,11 @@ export async function orchestrate(
     acquisitionLocale(event),
   );
   const recommendation = dashboard.recommendation;
-  const mission = missionFromBrain(
-    dashboard,
-    activeMission,
-  );
+  const mission = missionFromBrain(dashboard, activeMission);
 
+  // Keep the exact dashboard produced by this real cycle so every surface
+  // observes Clara's latest understanding instead of re-running a preview event.
+  session.brainDashboard = dashboard;
   session.recommendation = recommendation;
   session.mission = mission;
 
@@ -76,5 +71,4 @@ export async function orchestrate(
   session.updatedAt = new Date();
 
   return session;
-
 }
