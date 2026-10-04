@@ -1,11 +1,16 @@
 import { getTranslations } from "next-intl/server";
 import MainLayout from "@/components/layout/MainLayout";
 import ClaraChatWidget from "@/components/cockpit/widgets/clara/ClaraChatWidget";
+import { loadSession } from "@/lib/core/store/session-store";
 
 export const dynamic = "force-dynamic";
 
 export default async function ConversationsPage() {
-  const t = await getTranslations("pages");
+  const [t, session] = await Promise.all([
+    getTranslations("pages"),
+    loadSession(),
+  ]);
+
   return (
     <MainLayout>
       <div className="w-full px-8 py-10 text-white">
@@ -25,7 +30,10 @@ export default async function ConversationsPage() {
           </div>
 
           <div className="max-w-5xl">
-            <ClaraChatWidget />
+            <ClaraChatWidget
+              initialMessages={session.conversation}
+              userFirstName={session.user.firstName}
+            />
           </div>
         </div>
       </div>
