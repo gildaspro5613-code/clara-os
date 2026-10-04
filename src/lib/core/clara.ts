@@ -26,6 +26,7 @@ import {
   completeMissionTask,
   canExecuteAutonomously,
 } from "@/modules/missions";
+import { getCurrentMission } from "@/modules/missions/current-mission";
 import { dispatchEvent } from "./event-bus";
 import { Journal } from "./journal";
 import type { JournalEntry } from "./journal-entry";
@@ -69,31 +70,37 @@ export class Clara {
   private async hydrateSession(): Promise<void> {
     this.session = await loadSession(this.sessionKey);
 
-    if (this.session.mission) {
-      const persistedMission = await loadMission(
-        this.session.mission.id,
+    // First preserve the session-linked mission when it still exists. If that
+    // pointer is absent or stale, fall back to the same durable resolver used
+    // by the Cockpit/Missions surfaces. This restores one mission source of
+    // truth across Clara, Brain and the UI without creating another store.
+    let persistedMission = this.session.mission
+      ? await loadMission(this.session.mission.id)
+      : null;
+
+    if (!persistedMission) {
+      persistedMission = await getCurrentMission();
+    }
+
+    if (persistedMission) {
+      const nextPendingTask = persistedMission.tasks.find(
+        (task) => !task.completed,
       );
 
-      if (persistedMission) {
-        const nextPendingTask = persistedMission.tasks.find(
-          (task) => !task.completed,
-        );
-
-        // Legacy V1 behaviour marked any non-autonomous task as "blocked",
-        // including ordinary conversational/manual mission steps with no
-        // execution contract. Those steps are still active work and should not
-        // be presented as an execution/approval blockage.
-        if (
-          persistedMission.status === "blocked" &&
-          nextPendingTask &&
-          !nextPendingTask.execution
-        ) {
-          persistedMission.status = "active";
-          await saveMission(persistedMission);
-        }
-
-        this.session.mission = persistedMission;
+      // Legacy V1 behaviour marked any non-autonomous task as "blocked",
+      // including ordinary conversational/manual mission steps with no
+      // execution contract. Those steps are still active work and should not
+      // be presented as an execution/approval blockage.
+      if (
+        persistedMission.status === "blocked" &&
+        nextPendingTask &&
+        !nextPendingTask.execution
+      ) {
+        persistedMission.status = "active";
+        await saveMission(persistedMission);
       }
+
+      this.session.mission = persistedMission;
     }
   }
 
