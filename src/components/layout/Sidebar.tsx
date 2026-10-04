@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   Bot,
   ClipboardList,
+  MessageCircle,
   Users,
   Phone,
   Workflow,
@@ -27,6 +28,7 @@ const sections = [
     items: [
       { key: "cockpit", href: "/", icon: LayoutDashboard },
       { key: "missions", href: "/missions", icon: ClipboardList },
+      { key: "conversations", href: "/conversations", icon: MessageCircle },
       { key: "contacts", href: "/contacts", icon: Users },
     ],
   },
@@ -121,7 +123,7 @@ export default function Sidebar() {
                     <Link
                       key={item.key}
                       href={item.href}
-                        onClick={() => setOpen(false)}
+                      onClick={() => setOpen(false)}
                       className={`
                         group
                         relative

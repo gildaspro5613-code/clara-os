@@ -17,15 +17,9 @@ async function EmptyMissionPanel() {
   return (
     <GlassPanel>
       <div>
-        <p className="text-xs uppercase tracking-[0.20em] text-white/50">
-          {t("currentMission")}
-        </p>
-        <p className="mt-2 text-lg font-semibold">
-          {t("noMission")}
-        </p>
-        <p className="mt-2 text-sm leading-relaxed text-white/70">
-          {t("emptyMissionHelp")}
-        </p>
+        <p className="text-xs uppercase tracking-[0.20em] text-white/50">{t("currentMission")}</p>
+        <p className="mt-2 text-lg font-semibold">{t("noMission")}</p>
+        <p className="mt-2 text-sm leading-relaxed text-white/70">{t("emptyMissionHelp")}</p>
       </div>
     </GlassPanel>
   );
@@ -40,113 +34,33 @@ async function MissionPanel({ mission }: MissionPanelProps) {
 }
 
 export default async function Stage({ session }: StageProps) {
-  // HomePage has already resolved the durable Mission Store into the shared
-  // operational session. Every Cockpit surface must consume that same value.
   const mission = session.mission;
-  const firstName = session.user.firstName;
 
   return (
     <>
-      {/* Desktop / laptop: briefing and agenda anchor the upper Hero while
-          voice and mission settle lower into the workspace. */}
-      <div
-        className="
-          pointer-events-auto
-          absolute
-          left-[5%]
-          top-[12%]
-          z-20
-          hidden
-          w-[25%]
-          max-w-[360px]
-          lg:block
-        "
-      >
-        <BriefPanel firstName={firstName} />
+      <div className="pointer-events-auto absolute left-[5%] top-[12%] z-20 hidden w-[25%] max-w-[360px] lg:block">
+        <BriefPanel session={session} />
       </div>
 
-      <div
-        className="
-          pointer-events-auto
-          absolute
-          left-[6%]
-          top-[61%]
-          z-20
-          hidden
-          w-[23%]
-          max-w-[330px]
-          lg:block
-        "
-      >
+      <div className="pointer-events-auto absolute left-[6%] top-[61%] z-20 hidden w-[23%] max-w-[330px] lg:block">
         <ClaraVoiceWidget />
       </div>
 
-      <div
-        className="
-          pointer-events-auto
-          absolute
-          right-[5%]
-          top-[7%]
-          z-20
-          hidden
-          w-[28%]
-          max-w-[420px]
-          lg:block
-        "
-      >
+      <div className="pointer-events-auto absolute right-[5%] top-[7%] z-20 hidden w-[28%] max-w-[420px] lg:block">
         <AgendaPanel />
       </div>
 
-      <div
-        className="
-          pointer-events-auto
-          absolute
-          right-[5%]
-          top-[61%]
-          z-20
-          hidden
-          w-[28%]
-          max-w-[420px]
-          lg:block
-        "
-      >
+      <div className="pointer-events-auto absolute right-[5%] top-[61%] z-20 hidden w-[28%] max-w-[420px] lg:block">
         <MissionPanel mission={mission} />
       </div>
 
-      {/* Mobile */}
-      <div
-        className="
-          pointer-events-none
-          absolute
-          left-4
-          right-4
-          top-[12%]
-          z-20
-          flex
-          flex-col
-          gap-3
-          lg:hidden
-        "
-      >
+      <div className="pointer-events-none absolute left-4 right-4 top-[12%] z-20 flex flex-col gap-3 lg:hidden">
         <div className="pointer-events-auto">
-          <BriefPanel firstName={firstName} />
+          <BriefPanel session={session} />
         </div>
       </div>
 
-      <div
-        className="
-          pointer-events-none
-          absolute
-          left-4
-          right-4
-          top-[58%]
-          z-20
-          flex
-          flex-col
-          gap-3
-          lg:hidden
-        "
-      >
+      <div className="pointer-events-none absolute left-4 right-4 top-[58%] z-20 flex flex-col gap-3 lg:hidden">
         <div className="pointer-events-auto">
           <MissionPanel mission={mission} />
         </div>
