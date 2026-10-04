@@ -70,25 +70,16 @@ export default async function AcquisitionQualificationPanel({
         </div>
 
         {draft && (
-          <div className="rounded-xl border border-amber-200/20 bg-amber-200/[0.04] p-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <p className="text-xs uppercase tracking-wide text-amber-100/70">Communication préparée par Clara</p>
-                <p className="mt-1 text-xs text-white/45">Brouillon en attente de validation · aucun envoi automatique</p>
-              </div>
-              <span className="rounded-full border border-amber-200/20 px-3 py-1 text-xs text-amber-100/80">
-                Validation requise
-              </span>
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200/20 bg-amber-200/[0.04] p-4">
+            <div>
+              <p className="text-xs uppercase tracking-wide text-amber-100/70">Communication commerciale prête</p>
+              <p className="mt-1 text-sm text-white/65">
+                Brouillon préparé pour {draft.recipient.name}. Clara attend votre validation avant toute action externe.
+              </p>
             </div>
-
-            <div className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
-              <p className="text-white/60">De : <span className="text-white/85">{draft.sender.name} &lt;{draft.sender.email}&gt;</span></p>
-              <p className="text-white/60">À : <span className="text-white/85">{draft.recipient.name} &lt;{draft.recipient.email}&gt;</span></p>
-            </div>
-            <p className="mt-3 text-sm text-white/60">Objet : <span className="text-white/90">{draft.subject}</span></p>
-            <div className="mt-3 whitespace-pre-line rounded-lg border border-white/10 bg-black/10 p-4 text-sm leading-relaxed text-white/80">
-              {draft.body}
-            </div>
+            <span className="rounded-full border border-amber-200/20 px-3 py-1 text-xs text-amber-100/80">
+              Validation requise
+            </span>
           </div>
         )}
 
