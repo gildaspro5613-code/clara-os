@@ -11,7 +11,7 @@ const labels: Record<string,string> = {
 };
 
 export default async function JournalPage() {
-  const runtimeEntries = getRuntime().getJournal();
+  const runtimeEntries = await getRuntime().getJournal();
   let brevoEntries: JournalEntry[] = [];
   try {
     const events = await listBrevoEvents(CURRENT_WORKSPACE_ID);
