@@ -89,6 +89,26 @@ export async function saveAcquisitionRecord(input: {
   `;
 }
 
+function mapRecord(row: {
+  submission_id: string;
+  workspace_id: string;
+  qualification: AcquisitionQualification;
+  decision_brief: AcquisitionDecisionBrief;
+  lifecycle: AcquisitionLifecycle;
+  created_at: string | Date;
+  updated_at: string | Date;
+}): AcquisitionRecord {
+  return {
+    submissionId: row.submission_id,
+    workspaceId: row.workspace_id,
+    qualification: row.qualification,
+    decisionBrief: row.decision_brief,
+    lifecycle: row.lifecycle,
+    createdAt: new Date(row.created_at),
+    updatedAt: new Date(row.updated_at),
+  };
+}
+
 export async function loadAcquisitionRecord(
   workspaceId: string,
   submissionId: string,
@@ -110,16 +130,7 @@ export async function loadAcquisitionRecord(
   }>;
 
   const row = rows[0];
-  if (!row) return null;
-  return {
-    submissionId: row.submission_id,
-    workspaceId: row.workspace_id,
-    qualification: row.qualification,
-    decisionBrief: row.decision_brief,
-    lifecycle: row.lifecycle,
-    createdAt: new Date(row.created_at),
-    updatedAt: new Date(row.updated_at),
-  };
+  return row ? mapRecord(row) : null;
 }
 
 export async function loadAcquisitionDecisionQueue(
@@ -142,13 +153,28 @@ export async function loadAcquisitionDecisionQueue(
     updated_at: string | Date;
   }>;
 
-  return rows.map((row) => ({
-    submissionId: row.submission_id,
-    workspaceId: row.workspace_id,
-    qualification: row.qualification,
-    decisionBrief: row.decision_brief,
-    lifecycle: row.lifecycle,
-    createdAt: new Date(row.created_at),
-    updatedAt: new Date(row.updated_at),
-  }));
+  return rows.map(mapRecord);
+}
+
+export async function loadActiveAcquisitionQualifications(
+  workspaceId: string,
+): Promise<AcquisitionRecord[]> {
+  await ensureSchema();
+  const rows = await sql`
+    SELECT submission_id, workspace_id, qualification, decision_brief, lifecycle, created_at, updated_at
+    FROM clara_acquisition_records
+    WHERE workspace_id = ${workspaceId}
+      AND lifecycle->>'state' = 'qualifying'
+    ORDER BY updated_at DESC
+  ` as Array<{
+    submission_id: string;
+    workspace_id: string;
+    qualification: AcquisitionQualification;
+    decision_brief: AcquisitionDecisionBrief;
+    lifecycle: AcquisitionLifecycle;
+    created_at: string | Date;
+    updated_at: string | Date;
+  }>;
+
+  return rows.map(mapRecord);
 }
