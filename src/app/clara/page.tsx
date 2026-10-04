@@ -3,6 +3,7 @@ import MainLayout from "@/components/layout/MainLayout";
 import ClaraVoiceWidget from "@/components/clara/ClaraVoiceWidget";
 import ClaraChatWidget from "@/components/cockpit/widgets/clara/ClaraChatWidget";
 import { loadSession } from "@/lib/core/store/session-store";
+import { getCurrentMission } from "@/modules/missions/current-mission";
 
 export const dynamic = "force-dynamic";
 
@@ -17,8 +18,11 @@ export default async function ClaraPage({
 }: ClaraPageProps) {
   const t = await getTranslations("pages");
   const params = await searchParams;
-  const session = await loadSession();
-  const mission = session.mission;
+  const [session, durableMission] = await Promise.all([
+    loadSession(),
+    getCurrentMission(),
+  ]);
+  const mission = durableMission ?? session.mission;
   const intent = typeof params?.intent === "string" ? params.intent : undefined;
   const focusClaraInput = intent === "new-mission" || intent === "email";
 
