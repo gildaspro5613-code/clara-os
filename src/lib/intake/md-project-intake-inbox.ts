@@ -76,6 +76,31 @@ export async function persistProjectIntake(input: {
   `;
 }
 
+export async function loadProjectIntake(
+  workspaceId: string,
+  submissionId: string,
+): Promise<ProjectIntakeInboxItem | null> {
+  await ensureSchema();
+  const rows = await sql`
+    SELECT workspace_id, submission_id, product_id, session_key, event_id, intake
+    FROM clara_project_intake_inbox
+    WHERE workspace_id = ${workspaceId} AND submission_id = ${submissionId}
+    LIMIT 1
+  ` as ProjectIntakeInboxRow[];
+
+  const row = rows[0];
+  if (!row) return null;
+
+  return {
+    workspaceId: String(row.workspace_id),
+    submissionId: String(row.submission_id),
+    productId: String(row.product_id),
+    sessionKey: String(row.session_key),
+    eventId: String(row.event_id),
+    intake: row.intake as MdProjectIntake,
+  };
+}
+
 export async function claimProjectIntakes(
   limit: number,
   staleAfterSeconds: number,
