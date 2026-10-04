@@ -6,6 +6,7 @@ import AgendaPanel from "@/components/cockpit/panels/AgendaPanel";
 import ClaraVoiceWidget from "@/components/cockpit/widgets/voice/ClaraVoiceWidget";
 import GlassPanel from "@/components/ui/GlassPanel";
 import { getTranslations } from "next-intl/server";
+import { getCurrentMission } from "@/modules/missions/current-mission";
 
 interface StageProps {
   session: ClaraSession;
@@ -39,8 +40,12 @@ async function MissionPanel({ mission }: MissionPanelProps) {
   return mission ? <TasksPanel mission={mission} /> : <EmptyMissionPanel />;
 }
 
-export default function Stage({ session }: StageProps) {
-  const mission = session.mission;
+export default async function Stage({ session }: StageProps) {
+  // Operational Missions are durable independently from the Clara session.
+  // Restore the validated contract: the Hero reads the same clara_missions
+  // source of truth as the Missions workspace instead of assuming that a
+  // session created before the mission already contains the mission pointer.
+  const mission = await getCurrentMission();
   const firstName = session.user.firstName;
 
   return (
