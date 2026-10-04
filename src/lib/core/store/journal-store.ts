@@ -28,7 +28,7 @@ export async function loadJournalEntries(): Promise<JournalEntry[]> {
 
   return result.rows.map(({ entry }) => ({
     ...entry,
-    timestamp: new Date(entry.timestamp),
+    createdAt: new Date(entry.createdAt),
   }));
 }
 
@@ -42,7 +42,7 @@ export async function saveJournalEntry(entry: JournalEntry): Promise<void> {
       ON CONFLICT (id)
       DO UPDATE SET entry = EXCLUDED.entry, created_at = EXCLUDED.created_at
     `,
-    [entry.id, JSON.stringify(entry), entry.timestamp],
+    [entry.id, JSON.stringify(entry), entry.createdAt],
   );
 }
 
