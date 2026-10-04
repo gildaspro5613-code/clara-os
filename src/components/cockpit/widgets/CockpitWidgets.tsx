@@ -14,6 +14,8 @@ import {
   loadAcquisitionDecisionQueue,
   loadActiveAcquisitionQualifications,
 } from "@/lib/acquisition/acquisition-store";
+import { loadMissions } from "@/modules/missions/mission-store";
+import { orchestrateMissions } from "@/modules/missions/mission-orchestrator";
 import type { ClaraSession } from "@/lib/core/session";
 import { getTranslations } from "next-intl/server";
 
@@ -21,39 +23,29 @@ interface CockpitWidgetsProps {
   session: ClaraSession;
 }
 
-export default async function CockpitWidgets({
-  session,
-}: CockpitWidgetsProps) {
+export default async function CockpitWidgets({ session }: CockpitWidgetsProps) {
   const t = await getTranslations("cockpitUi");
   const workspaceId = process.env.CLARA_MD_WORKSPACE_ID?.trim()
     || process.env.CLARA_WORKSPACE_ID?.trim()
     || "melodie-digital";
-  const [acquisitionDecisions, acquisitionQualifications] = await Promise.all([
+
+  const [acquisitionDecisions, acquisitionQualifications, missions] = await Promise.all([
     loadAcquisitionDecisionQueue(workspaceId),
     loadActiveAcquisitionQualifications(workspaceId),
+    loadMissions().catch(() => []),
   ]);
+  const orchestration = orchestrateMissions(missions);
 
   return (
-    <section
-      aria-label={t("widgets")}
-      className="w-full overflow-hidden bg-[#070B12]"
-    >
+    <section aria-label={t("widgets")} className="w-full overflow-hidden bg-[#070B12]">
       <div className="mx-auto w-full max-w-[1600px] px-4 py-8 sm:px-6 sm:py-10 xl:px-8 xl:py-14">
-
-        {/* ============================================
-            OVERVIEW
-            Clara session is the shared source of truth.
-            ============================================ */}
-
         <div className="grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-3">
           <div className="min-w-0 md:col-span-2 xl:col-span-1">
             <SummaryPanel session={session} />
           </div>
-
           <div className="min-w-0">
-            <AttentionPanel mission={session.mission} />
+            <AttentionPanel mission={orchestration.interventionRequired[0] ?? orchestration.current} />
           </div>
-
           <div className="min-w-0">
             <QuickActionsPanel />
           </div>
@@ -71,50 +63,30 @@ export default async function CockpitWidgets({
           </div>
         )}
 
-        {/* ============================================
-            ACTIVITY
-            ============================================ */}
-
         <div className="mt-5 grid items-stretch gap-5 lg:grid-cols-[1.35fr_1fr]">
           <div className="min-w-0">
             <ConversationsPanel session={session} />
           </div>
-
           <div className="min-w-0">
             <AgendaWidget />
           </div>
         </div>
 
-        {/* ============================================
-            CONFORT & OPÉRATION
-            ============================================ */}
-
         <div className="mt-5 grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-[1.35fr_1fr_1fr]">
           <div className="min-w-0 md:col-span-2 xl:col-span-1">
-            <MissionWidget mission={session.mission} />
+            <MissionWidget
+              mission={orchestration.current}
+              activeCount={orchestration.active.length}
+              blockedCount={orchestration.blocked.length}
+            />
           </div>
-
-          <div className="min-w-0">
-            <WazeWidget />
-          </div>
-
-          <div className="min-w-0">
-            <WeatherWidget />
-          </div>
+          <div className="min-w-0"><WazeWidget /></div>
+          <div className="min-w-0"><WeatherWidget /></div>
         </div>
-
-        {/* ============================================
-            CLARA
-            Same durable conversation as /clara.
-            ============================================ */}
 
         <div className="mt-5">
-          <ClaraChatWidget
-            initialMessages={session.conversation}
-            userFirstName={session.user.firstName}
-          />
+          <ClaraChatWidget initialMessages={session.conversation} userFirstName={session.user.firstName} />
         </div>
-
       </div>
     </section>
   );
