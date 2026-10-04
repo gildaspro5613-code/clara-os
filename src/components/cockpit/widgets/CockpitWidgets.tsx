@@ -9,7 +9,11 @@ import QuickActionsPanel from "../panels/QuickActionsPanel";
 import SummaryPanel from "../panels/SummaryPanel";
 import ConversationsPanel from "../panels/ConversationsPanel";
 import AcquisitionDecisionPanel from "../panels/AcquisitionDecisionPanel";
-import { loadAcquisitionDecisionQueue } from "@/lib/acquisition/acquisition-store";
+import AcquisitionQualificationPanel from "../panels/AcquisitionQualificationPanel";
+import {
+  loadAcquisitionDecisionQueue,
+  loadActiveAcquisitionQualifications,
+} from "@/lib/acquisition/acquisition-store";
 import type { ClaraSession } from "@/lib/core/session";
 import { getTranslations } from "next-intl/server";
 
@@ -21,8 +25,14 @@ export default async function CockpitWidgets({
   session,
 }: CockpitWidgetsProps) {
   const t = await getTranslations("cockpitUi");
-  const workspaceId = process.env.CLARA_WORKSPACE_ID?.trim() || "melodie-digital";
-  const acquisitionDecisions = await loadAcquisitionDecisionQueue(workspaceId);
+  const workspaceId = process.env.CLARA_MD_WORKSPACE_ID?.trim()
+    || process.env.CLARA_WORKSPACE_ID?.trim()
+    || "melodie-digital";
+  const [acquisitionDecisions, acquisitionQualifications] = await Promise.all([
+    loadAcquisitionDecisionQueue(workspaceId),
+    loadActiveAcquisitionQualifications(workspaceId),
+  ]);
+
   return (
     <section
       aria-label={t("widgets")}
@@ -48,6 +58,12 @@ export default async function CockpitWidgets({
             <QuickActionsPanel />
           </div>
         </div>
+
+        {acquisitionQualifications.length > 0 && (
+          <div className="mt-5">
+            <AcquisitionQualificationPanel qualifications={acquisitionQualifications} />
+          </div>
+        )}
 
         {acquisitionDecisions.length > 0 && (
           <div className="mt-5">
