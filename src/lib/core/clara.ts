@@ -26,6 +26,7 @@ import {
   completeMissionTask,
   canExecuteAutonomously,
 } from "@/modules/missions";
+import { getCurrentMission } from "@/modules/missions/current-mission";
 import { dispatchEvent } from "./event-bus";
 import { Journal } from "./journal";
 import type { JournalEntry } from "./journal-entry";
@@ -44,66 +45,41 @@ export class Clara {
     private readonly workspaceId?: string,
   ) {}
 
-  /**
-   * Current runtime session.
-   */
   private session: ClaraSession = createSession();
-
-  /**
-   * Active Clara Runtime.
-   */
   private runtime: Runtime | null = null;
-
-  /**
-   * Clara's operational journal.
-   */
   private readonly journal = new Journal();
 
-  /**
-   * Reload the durable session before a cognitive cycle.
-   *
-   * Serverless requests are not guaranteed to reuse the same module instance.
-   * Treat the database as the source of truth so mission/conversation continuity
-   * does not depend on a warm Vercel runtime.
-   */
   private async hydrateSession(): Promise<void> {
     this.session = await loadSession(this.sessionKey);
 
-    if (this.session.mission) {
-      const persistedMission = await loadMission(
-        this.session.mission.id,
+    let persistedMission = this.session.mission
+      ? await loadMission(this.session.mission.id)
+      : null;
+
+    if (!persistedMission) {
+      persistedMission = await getCurrentMission();
+    }
+
+    if (persistedMission) {
+      const nextPendingTask = persistedMission.tasks.find(
+        (task) => !task.completed,
       );
 
-      if (persistedMission) {
-        const nextPendingTask = persistedMission.tasks.find(
-          (task) => !task.completed,
-        );
-
-        // Legacy V1 behaviour marked any non-autonomous task as "blocked",
-        // including ordinary conversational/manual mission steps with no
-        // execution contract. Those steps are still active work and should not
-        // be presented as an execution/approval blockage.
-        if (
-          persistedMission.status === "blocked" &&
-          nextPendingTask &&
-          !nextPendingTask.execution
-        ) {
-          persistedMission.status = "active";
-          await saveMission(persistedMission);
-        }
-
-        this.session.mission = persistedMission;
+      if (
+        persistedMission.status === "blocked" &&
+        nextPendingTask &&
+        !nextPendingTask.execution
+      ) {
+        persistedMission.status = "active";
+        await saveMission(persistedMission);
       }
+
+      this.session.mission = persistedMission;
     }
   }
 
-  /**
-   * Starts Clara.
-   */
   public async start(): Promise<ClaraSession> {
-
     await this.hydrateSession();
-
     this.session.state = ClaraState.STARTING;
     this.session.updatedAt = new Date();
     await saveSession(this.session, this.sessionKey);
@@ -114,47 +90,26 @@ export class Clara {
     this.session.state = ClaraState.WORKING;
     this.session.updatedAt = new Date();
     await saveSession(this.session, this.sessionKey);
-
     return this.session;
-
   }
 
-  /**
-   * Stops Clara.
-   */
   public async stop(): Promise<void> {
-
     await this.hydrateSession();
-
     this.session.state = ClaraState.STOPPING;
     this.session.updatedAt = new Date();
     await saveSession(this.session, this.sessionKey);
 
-    if (this.runtime) {
-      this.runtime.active = false;
-    }
+    if (this.runtime) this.runtime.active = false;
 
     this.session.state = ClaraState.STOPPED;
     this.session.updatedAt = new Date();
     await saveSession(this.session, this.sessionKey);
-
   }
 
-  /**
-   * Processes one incoming event.
-   */
-  public async processEvent(
-    event: Event,
-  ): Promise<ClaraSession> {
-
-    // Never rely on an in-memory singleton for continuity. A new serverless
-    // invocation must resume the same durable Clara state and active mission.
+  public async processEvent(event: Event): Promise<ClaraSession> {
     await this.hydrateSession();
 
-    this.session = await orchestrate(
-      this.session,
-      event,
-    );
+    this.session = await orchestrate(this.session, event);
 
     if (
       event.type === EventType.MISSION_RESUMED &&
@@ -162,8 +117,7 @@ export class Clara {
       this.session.mission.status === "blocked"
     ) {
       const payload =
-        typeof event.payload === "object" &&
-        event.payload !== null
+        typeof event.payload === "object" && event.payload !== null
           ? event.payload as { missionId?: unknown }
           : undefined;
 
@@ -176,32 +130,23 @@ export class Clara {
           status: "active",
           result: undefined,
         };
-
         await saveMission(this.session.mission);
       }
     }
 
     const MAX_AUTONOMOUS_TASKS_PER_EVENT = 10;
-
     let autonomousTasksExecuted = 0;
 
     while (
       this.session.mission &&
-      autonomousTasksExecuted <
-        MAX_AUTONOMOUS_TASKS_PER_EVENT
+      autonomousTasksExecuted < MAX_AUTONOMOUS_TASKS_PER_EVENT
     ) {
-      const nextPendingTask =
-        this.session.mission.tasks.find(
-          (task) => !task.completed,
-        );
+      const nextPendingTask = this.session.mission.tasks.find(
+        (task) => !task.completed,
+      );
 
-      if (!nextPendingTask) {
-        break;
-      }
+      if (!nextPendingTask) break;
 
-      // A task with no execution contract is a normal conversational/manual
-      // step. Clara can keep conducting the mission without pretending that an
-      // execution approval or external intervention is required.
       if (!nextPendingTask.execution) {
         if (this.session.mission.status !== "active") {
           this.session.mission = {
@@ -210,59 +155,36 @@ export class Clara {
           };
           await saveMission(this.session.mission);
         }
-
         break;
       }
 
-      // "blocked" is reserved for an actual execution task that exists but is
-      // not currently authorized for autonomous execution.
       if (!canExecuteAutonomously(nextPendingTask)) {
         this.session.mission = {
           ...this.session.mission,
           status: "blocked",
         };
-
         await saveMission(this.session.mission);
-
         break;
       }
 
-      const nextExecutableTask =
-        nextPendingTask;
+      const missionBeforeExecution = this.session.mission;
+      const result = await executeMissionTask(
+        nextPendingTask,
+        missionBeforeExecution,
+        this.workspaceId,
+      );
 
-      const missionBeforeExecution =
-        this.session.mission;
+      this.session.mission = completeMissionTask(
+        missionBeforeExecution,
+        nextPendingTask.id,
+        result,
+      );
 
-      const result =
-        await executeMissionTask(
-          nextExecutableTask,
-          missionBeforeExecution,
-          this.workspaceId,
-        );
-
-      this.session.mission =
-        completeMissionTask(
-          missionBeforeExecution,
-          nextExecutableTask.id,
-          result,
-        );
-
-      if (this.session.mission) {
-        await saveMission(this.session.mission);
-      }
-
+      if (this.session.mission) await saveMission(this.session.mission);
       autonomousTasksExecuted += 1;
 
-      if (!result.success) {
-        break;
-      }
-
-      if (
-        !this.session.mission ||
-        this.session.mission.status === "completed"
-      ) {
-        break;
-      }
+      if (!result.success) break;
+      if (!this.session.mission || this.session.mission.status === "completed") break;
     }
 
     if (this.session.state === ClaraState.STARTING) {
@@ -273,34 +195,22 @@ export class Clara {
     await saveSession(this.session, this.sessionKey);
 
     if (this.session.recommendation) {
-      this.journal.addEntry(
-        writeCognitiveEntry(
-          this.session.recommendation,
-        ),
+      await this.journal.addEntry(
+        writeCognitiveEntry(this.session.recommendation),
       );
     }
 
     return this.session;
-
   }
 
-  /**
-   * Returns Clara's operational journal.
-   */
-  public getJournal(): readonly JournalEntry[] {
+  public async getJournal(): Promise<readonly JournalEntry[]> {
     return this.journal.getEntries();
   }
 
-  /**
-   * Returns current state.
-   */
   public getState(): ClaraState {
     return this.session.state;
   }
 
-  /**
-   * Returns current session.
-   */
   public getSession(): ClaraSession {
     return this.session;
   }
