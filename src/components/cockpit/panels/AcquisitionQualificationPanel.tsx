@@ -1,11 +1,13 @@
 import GlassPanel from "@/components/ui/GlassPanel";
 import type { AcquisitionRecord } from "@/lib/acquisition/acquisition-store";
+import { buildCommercialQualificationDraft } from "@/lib/acquisition/commercial-communication-draft";
+import { loadProjectIntake } from "@/lib/intake/md-project-intake-inbox";
 
 interface AcquisitionQualificationPanelProps {
   qualifications: AcquisitionRecord[];
 }
 
-export default function AcquisitionQualificationPanel({
+export default async function AcquisitionQualificationPanel({
   qualifications,
 }: AcquisitionQualificationPanelProps) {
   const current = qualifications[0];
@@ -13,6 +15,8 @@ export default function AcquisitionQualificationPanel({
 
   const opportunity = current.qualification.opportunity;
   const state = current.qualification.qualification;
+  const intake = await loadProjectIntake(current.workspaceId, current.submissionId).catch(() => null);
+  const draft = intake ? buildCommercialQualificationDraft(current, intake.intake) : null;
 
   return (
     <GlassPanel title="Qualification commerciale">
@@ -64,6 +68,29 @@ export default function AcquisitionQualificationPanel({
           <p className="text-xs uppercase tracking-wide text-cyan-100/55">Prochaine action Clara</p>
           <p className="mt-1 text-sm leading-relaxed text-white/80">{current.lifecycle.nextAction}</p>
         </div>
+
+        {draft && (
+          <div className="rounded-xl border border-amber-200/20 bg-amber-200/[0.04] p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-amber-100/70">Communication préparée par Clara</p>
+                <p className="mt-1 text-xs text-white/45">Brouillon en attente de validation · aucun envoi automatique</p>
+              </div>
+              <span className="rounded-full border border-amber-200/20 px-3 py-1 text-xs text-amber-100/80">
+                Validation requise
+              </span>
+            </div>
+
+            <div className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
+              <p className="text-white/60">De : <span className="text-white/85">{draft.sender.name} &lt;{draft.sender.email}&gt;</span></p>
+              <p className="text-white/60">À : <span className="text-white/85">{draft.recipient.name} &lt;{draft.recipient.email}&gt;</span></p>
+            </div>
+            <p className="mt-3 text-sm text-white/60">Objet : <span className="text-white/90">{draft.subject}</span></p>
+            <div className="mt-3 whitespace-pre-line rounded-lg border border-white/10 bg-black/10 p-4 text-sm leading-relaxed text-white/80">
+              {draft.body}
+            </div>
+          </div>
+        )}
 
         {qualifications.length > 1 && (
           <p className="text-xs text-white/40">
