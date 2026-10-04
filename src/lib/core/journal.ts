@@ -12,56 +12,45 @@
 import {
   JournalEntry,
 } from "./journal-entry";
+import {
+  clearJournalEntries,
+  loadJournalEntries,
+  saveJournalEntry,
+} from "./store/journal-store";
 
 /**
  * Clara's operational journal.
  */
 export class Journal {
-
-  /**
-   * Stored entries.
-   */
   private readonly entries: JournalEntry[] = [];
+  private hydrated = false;
 
-  /**
-   * Adds one entry.
-   */
-  public addEntry(
-    entry: JournalEntry,
-  ): void {
-
-    this.entries.push(
-      entry,
-    );
-
+  public async hydrate(): Promise<void> {
+    if (this.hydrated) return;
+    const entries = await loadJournalEntries();
+    this.entries.splice(0, this.entries.length, ...entries);
+    this.hydrated = true;
   }
 
-  /**
-   * Returns every entry.
-   */
-  public getEntries(): readonly JournalEntry[] {
+  public async addEntry(entry: JournalEntry): Promise<void> {
+    await this.hydrate();
+    this.entries.push(entry);
+    await saveJournalEntry(entry);
+  }
 
+  public async getEntries(): Promise<readonly JournalEntry[]> {
+    await this.hydrate();
     return this.entries;
-
   }
 
-  /**
-   * Returns the latest entry.
-   */
-  public getLatestEntry():
-    JournalEntry | undefined {
-
+  public async getLatestEntry(): Promise<JournalEntry | undefined> {
+    await this.hydrate();
     return this.entries.at(-1);
-
   }
 
-  /**
-   * Clears the journal.
-   */
-  public clear(): void {
-
+  public async clear(): Promise<void> {
+    await this.hydrate();
     this.entries.length = 0;
-
+    await clearJournalEntries();
   }
-
 }
