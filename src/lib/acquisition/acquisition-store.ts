@@ -2,6 +2,7 @@ import { sql } from "@/lib/core/store/database";
 import type { AcquisitionDecisionBrief } from "./decision-brief";
 import type { AcquisitionLifecycle } from "./lifecycle";
 import type { AcquisitionQualification } from "./qualification";
+import type { CommercialCommunicationDraft } from "./commercial-communication-draft";
 
 export interface AcquisitionRecord {
   submissionId: string;
@@ -9,6 +10,7 @@ export interface AcquisitionRecord {
   qualification: AcquisitionQualification;
   decisionBrief: AcquisitionDecisionBrief;
   lifecycle: AcquisitionLifecycle;
+  commercialDraft?: CommercialCommunicationDraft | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -24,11 +26,14 @@ async function ensureSchema(): Promise<void> {
         qualification JSONB NOT NULL,
         decision_brief JSONB NOT NULL,
         lifecycle JSONB NOT NULL,
+        commercial_draft JSONB,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         PRIMARY KEY (workspace_id, submission_id)
       )
-    `.then(() => undefined).catch((error: unknown) => {
+    `.then(async () => {
+      await sql`ALTER TABLE clara_acquisition_records ADD COLUMN IF NOT EXISTS commercial_draft JSONB`;
+    }).catch((error: unknown) => {
       schemaReady = null;
       throw error;
     });
@@ -95,6 +100,7 @@ function mapRecord(row: {
   qualification: AcquisitionQualification;
   decision_brief: AcquisitionDecisionBrief;
   lifecycle: AcquisitionLifecycle;
+  commercial_draft: CommercialCommunicationDraft | null;
   created_at: string | Date;
   updated_at: string | Date;
 }): AcquisitionRecord {
@@ -104,6 +110,7 @@ function mapRecord(row: {
     qualification: row.qualification,
     decisionBrief: row.decision_brief,
     lifecycle: row.lifecycle,
+    commercialDraft: row.commercial_draft ?? null,
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),
   };
@@ -115,7 +122,7 @@ export async function loadAcquisitionRecord(
 ): Promise<AcquisitionRecord | null> {
   await ensureSchema();
   const rows = await sql`
-    SELECT submission_id, workspace_id, qualification, decision_brief, lifecycle, created_at, updated_at
+    SELECT submission_id, workspace_id, qualification, decision_brief, lifecycle, commercial_draft, created_at, updated_at
     FROM clara_acquisition_records
     WHERE workspace_id = ${workspaceId} AND submission_id = ${submissionId}
     LIMIT 1
@@ -125,6 +132,7 @@ export async function loadAcquisitionRecord(
     qualification: AcquisitionQualification;
     decision_brief: AcquisitionDecisionBrief;
     lifecycle: AcquisitionLifecycle;
+    commercial_draft: CommercialCommunicationDraft | null;
     created_at: string | Date;
     updated_at: string | Date;
   }>;
@@ -138,7 +146,7 @@ export async function loadAcquisitionDecisionQueue(
 ): Promise<AcquisitionRecord[]> {
   await ensureSchema();
   const rows = await sql`
-    SELECT submission_id, workspace_id, qualification, decision_brief, lifecycle, created_at, updated_at
+    SELECT submission_id, workspace_id, qualification, decision_brief, lifecycle, commercial_draft, created_at, updated_at
     FROM clara_acquisition_records
     WHERE workspace_id = ${workspaceId}
       AND lifecycle->>'decisionRequired' = 'true'
@@ -149,6 +157,7 @@ export async function loadAcquisitionDecisionQueue(
     qualification: AcquisitionQualification;
     decision_brief: AcquisitionDecisionBrief;
     lifecycle: AcquisitionLifecycle;
+    commercial_draft: CommercialCommunicationDraft | null;
     created_at: string | Date;
     updated_at: string | Date;
   }>;
@@ -161,7 +170,7 @@ export async function loadActiveAcquisitionQualifications(
 ): Promise<AcquisitionRecord[]> {
   await ensureSchema();
   const rows = await sql`
-    SELECT submission_id, workspace_id, qualification, decision_brief, lifecycle, created_at, updated_at
+    SELECT submission_id, workspace_id, qualification, decision_brief, lifecycle, commercial_draft, created_at, updated_at
     FROM clara_acquisition_records
     WHERE workspace_id = ${workspaceId}
       AND lifecycle->>'state' = 'qualifying'
@@ -172,9 +181,25 @@ export async function loadActiveAcquisitionQualifications(
     qualification: AcquisitionQualification;
     decision_brief: AcquisitionDecisionBrief;
     lifecycle: AcquisitionLifecycle;
+    commercial_draft: CommercialCommunicationDraft | null;
     created_at: string | Date;
     updated_at: string | Date;
   }>;
 
   return rows.map(mapRecord);
+}
+
+export async function saveCommercialDraft(
+  workspaceId: string,
+  submissionId: string,
+  draft: CommercialCommunicationDraft,
+): Promise<CommercialCommunicationDraft | null> {
+  await ensureSchema();
+  const rows = await sql`
+    UPDATE clara_acquisition_records
+    SET commercial_draft = ${JSON.stringify(draft)}, updated_at = NOW()
+    WHERE workspace_id = ${workspaceId} AND submission_id = ${submissionId}
+    RETURNING commercial_draft
+  ` as Array<{ commercial_draft: CommercialCommunicationDraft }>;
+  return rows[0]?.commercial_draft ?? null;
 }

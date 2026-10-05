@@ -117,7 +117,7 @@ export class DatabaseToolApprovalRepository implements ToolApprovalWriter {
     id: string,
     token: string,
     principal: CapabilityExecutionPrincipal,
-  ): Promise<boolean> {
+  ): Promise<ConsumableToolApproval | null> {
     await this.initialize();
     const rows = await sql`
       UPDATE clara_tool_approvals
@@ -128,8 +128,14 @@ export class DatabaseToolApprovalRepository implements ToolApprovalWriter {
         AND workspace_id = ${principal.workspaceId}
         AND status = 'PENDING'
         AND expires_at > NOW()
-      RETURNING id
-    ` as Array<{ id: string }>;
-    return rows.length === 1;
+      RETURNING id, call_id, capability_id, arguments
+    ` as Array<{ id: string; call_id: string; capability_id: string; arguments: string }>;
+    const row = rows[0];
+    return row ? {
+      id: row.id,
+      callId: row.call_id,
+      capabilityId: row.capability_id,
+      arguments: row.arguments,
+    } : null;
   }
 }

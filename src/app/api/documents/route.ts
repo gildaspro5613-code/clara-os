@@ -13,8 +13,13 @@ import { NextResponse } from "next/server";
 import { GoogleDriveEngine } from "@/lib/connectors/internal/google/drive/google-drive-engine";
 import { googleReauthResponse } from "@/lib/connectors/google/auth/google-api-error-response";
 import { dispatchEvent } from "@/lib/core/event-bus";
+import { Clara } from "@/lib/core/clara";
 import { getRuntime } from "@/lib/core/runtime";
+import { resolveOperationalContext } from "@/lib/core/operational-context";
+import { DEFAULT_SESSION_KEY } from "@/lib/core/store/session-store";
 import { EventType } from "@/types";
+import { Journal } from "@/lib/core/journal";
+import { writeActionEntry } from "@/lib/core/journal-writer";
 
 const MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
 
@@ -55,7 +60,11 @@ export async function GET(request: Request) {
         }, { status: 422 });
       }
 
-      const session = await dispatchEvent(getRuntime(), {
+      const operational = await resolveOperationalContext();
+      const runtime = operational.sessionKey === DEFAULT_SESSION_KEY
+        ? getRuntime()
+        : new Clara(operational.sessionKey, operational.acquisition?.workspaceId);
+      const session = await dispatchEvent(runtime, {
         id: crypto.randomUUID(),
         type: EventType.DOCUMENT_RECEIVED,
         source: "CLARA_DOCUMENTS",
@@ -66,7 +75,20 @@ export async function GET(request: Request) {
           mimeType: result.mimeType ?? mimeType,
           textContent: result.textContent,
         },
+        context: operational.acquisition
+          ? {
+              workspaceId: operational.acquisition.workspaceId,
+              sessionId: operational.sessionKey,
+              metadata: {
+                acquisitionSubmissionId: operational.acquisition.submissionId,
+              },
+            }
+          : undefined,
       });
+      await new Journal().addEntry(writeActionEntry(
+        `Document lu avec Clara · ${fileName || fileId}`,
+        `Google Drive ${fileId} a produit un événement DOCUMENT_RECEIVED réel.`,
+      ));
 
       return NextResponse.json({
         success: true,
@@ -142,6 +164,10 @@ export async function POST(request: Request) {
       mimeType: upload.type || "application/octet-stream",
       content,
     });
+    await new Journal().addEntry(writeActionEntry(
+      `Document importé · ${upload.name}`,
+      `Google Drive ${result.fileId}`,
+    ));
 
     return NextResponse.json({
       success: true,

@@ -8,8 +8,14 @@
 import type { ClaraSession } from "../session";
 import { createSession, normalizeSession } from "../session";
 import { sql } from "./database";
+import { DEFAULT_SESSION_KEY } from "../session-key";
 
-export const DEFAULT_SESSION_KEY = "default";
+export { DEFAULT_SESSION_KEY } from "../session-key";
+
+export interface StoredClaraSession {
+  key: string;
+  session: ClaraSession;
+}
 
 function normalizeKey(sessionKey?: string): string {
   const key = sessionKey?.trim() || DEFAULT_SESSION_KEY;
@@ -46,5 +52,37 @@ export async function loadSession(
     ...parsed,
     startedAt: new Date(parsed.startedAt),
     updatedAt: new Date(parsed.updatedAt),
+  };
+}
+
+/**
+ * Finds the durable session that owns a Mission without copying that session
+ * into the default workspace. Contextual product/acquisition sessions remain
+ * the source of truth for their conversation and latest real Brain cycle.
+ */
+export async function loadSessionOwningMission(
+  missionId: string,
+): Promise<StoredClaraSession | null> {
+  const id = missionId.trim();
+  if (!id) return null;
+
+  const rows = await sql`
+    SELECT id, data
+    FROM clara_sessions
+    WHERE data->'mission'->>'id' = ${id}
+    ORDER BY (id = ${DEFAULT_SESSION_KEY}) ASC, updated_at DESC
+    LIMIT 1
+  ` as Array<{ id: string; data: ClaraSession }>;
+  const row = rows[0];
+  if (!row) return null;
+
+  const session = normalizeSession(row.data);
+  return {
+    key: row.id,
+    session: {
+      ...session,
+      startedAt: new Date(session.startedAt),
+      updatedAt: new Date(session.updatedAt),
+    },
   };
 }

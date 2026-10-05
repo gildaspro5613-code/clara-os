@@ -4,17 +4,33 @@ import { readAuthCookie } from "@/lib/connectors/microsoft/security/request-auth
 import { resolveSoleAuthenticatedWorkspace } from "@/lib/auth/sole-authenticated-workspace";
 import { PostgresPhysicalActionProposalStore } from "@/lib/connectors/clara-live/postgres-physical-action-store";
 
-import { composeClaraResponseWithProposal } from "@/lib/brain/response-composer";
+import {
+  composeClaraResponseWithProposal,
+  composeCommercialDraftRevision,
+} from "@/lib/brain/response-composer";
 import { buildExecutionPlan } from "@/lib/brain/planners";
 import { toPhysicalActionProposalView } from "@/lib/clara/physical-action-view";
 import { dispatchEvent } from "@/lib/core/event-bus";
+import { Clara } from "@/lib/core/clara";
 import { getRuntime } from "@/lib/core/runtime";
 import {
-  loadSession,
+  DEFAULT_SESSION_KEY,
   saveSession,
 } from "@/lib/core/store/session-store";
+import { resolveOperationalContext } from "@/lib/core/operational-context";
 import type { ClaraConversationMessage } from "@/lib/core/session";
 import { EventType } from "@/types";
+import { CapabilityToolBridge } from "@/lib/capabilities/capability-tool-bridge";
+import type { ClaraPlan } from "@/lib/capabilities/capability-policy";
+import {
+  classifyCommercialConversationIntent,
+  createCommercialSendProposal,
+  resolveCommercialDraft,
+  reviseCommercialDraft,
+} from "@/lib/acquisition/commercial-communication-service";
+import { Journal } from "@/lib/core/journal";
+import { writeActionEntry } from "@/lib/core/journal-writer";
+import { saveMission } from "@/modules/missions/mission-store";
 
 interface ChatRequest {
   message?: string;
@@ -44,7 +60,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const persistedBeforeCycle = await loadSession();
+    const operational = await resolveOperationalContext();
+    const persistedBeforeCycle = operational.session;
     const recentConversation = persistedBeforeCycle.conversation
       .slice(-MAX_REASONING_HISTORY)
       .map(({ role, content }) => ({ role, content }));
@@ -59,13 +76,26 @@ export async function POST(request: Request) {
         userFirstName: persistedBeforeCycle.user.firstName,
         conversationHistory: recentConversation,
       },
+      context: operational.acquisition
+        ? {
+            workspaceId: operational.acquisition.workspaceId,
+            sessionId: operational.sessionKey,
+            metadata: {
+              acquisitionSubmissionId: operational.acquisition.submissionId,
+            },
+          }
+        : undefined,
     };
 
     // One user request = one Clara/Brain decision cycle.
-    const session = await dispatchEvent(
-      getRuntime(),
-      event,
-    );
+    const workspaceId = operational.acquisition?.workspaceId
+      ?? (typeof persistedBeforeCycle.brainDashboard?.context.metadata?.workspaceId === "string"
+        ? persistedBeforeCycle.brainDashboard.context.metadata.workspaceId
+        : undefined);
+    const clara = operational.sessionKey === DEFAULT_SESSION_KEY
+      ? getRuntime()
+      : new Clara(operational.sessionKey, workspaceId);
+    const session = await dispatchEvent(clara, event);
 
     const recommendation = session.recommendation;
     const mission = session.mission;
@@ -73,12 +103,19 @@ export async function POST(request: Request) {
     // The composer only gives Clara a conversational voice. It receives the
     // already-decided Brain/session state and cannot call Clara capabilities.
     const composed = await composeClaraResponseWithProposal(message, session);
-    const responseMessage = composed.content;
+    let responseMessage = composed.content;
     const executionPlan = recommendation?.decision
       ? buildExecutionPlan(recommendation.decision, "fr", composed.physicalAction)
       : { tasks: [], physicalActions: [] };
 
     let physicalConversationId: string | null = null;
+    const approvals = [] as Array<{
+      id: string;
+      token: string;
+      capabilityId: string;
+      summary: string;
+      expiresAt: string;
+    }>;
     if (executionPlan.physicalActions.length > 0) {
       const token = readAuthCookie(request.headers.get("cookie"));
       const principal = await resolveSoleAuthenticatedWorkspace(token, "connections:manage");
@@ -99,6 +136,91 @@ export async function POST(request: Request) {
           conversationId,
           expiresAt,
         });
+      }
+    }
+
+    if (operational.acquisition) {
+      const commercialIntent = classifyCommercialConversationIntent(message);
+      if (commercialIntent.kind === "revise") {
+        const current = await resolveCommercialDraft(
+          operational.acquisition.workspaceId,
+          operational.acquisition.submissionId,
+        );
+        const revision = current
+          ? await composeCommercialDraftRevision(
+              commercialIntent.instruction,
+              current.draft,
+              session,
+            )
+          : null;
+        const draft = revision
+          ? await reviseCommercialDraft({
+              workspaceId: operational.acquisition.workspaceId,
+              submissionId: operational.acquisition.submissionId,
+              ...revision,
+            })
+          : null;
+        if (draft) {
+          responseMessage = `J’ai mis à jour le même brouillon commercial (révision ${draft.revision}). Il reste en attente de validation et aucun e-mail n’a été envoyé.`;
+          if (session.mission) {
+            session.mission.lastAction = "Révision conversationnelle du brouillon commercial";
+            session.mission.nextAction = "Valider la communication commerciale avec Clara.";
+            await saveMission(session.mission);
+          }
+          await new Journal().addEntry(writeActionEntry(
+            "Brouillon commercial révisé avec Clara",
+            `Dossier ${draft.submissionId} · révision ${draft.revision}.`,
+          ));
+        } else {
+          responseMessage = current
+            ? "Je n’ai pas pu produire une révision fiable du brouillon. Je l’ai laissé inchangé et aucun e-mail n’a été envoyé."
+            : "Je ne trouve aucun brouillon commercial dans le dossier courant. Aucun e-mail n’a été envoyé.";
+        }
+      } else if (commercialIntent.kind === "send-confirmation") {
+        const token = readAuthCookie(request.headers.get("cookie"));
+        const principal = await resolveSoleAuthenticatedWorkspace(token, "connections:manage");
+        if (!principal || principal.workspaceId !== operational.acquisition.workspaceId) {
+          return NextResponse.json(
+            { success: false, message: "La validation commerciale exige la session opérateur du workspace propriétaire." },
+            { status: 401 },
+          );
+        }
+        const resolved = await resolveCommercialDraft(principal.workspaceId, operational.acquisition.submissionId);
+        if (resolved) {
+          const configuredPlan = process.env.CLARA_PLAN;
+          const plan: ClaraPlan = configuredPlan === "essential" || configuredPlan === "pro"
+            ? configuredPlan
+            : "premium";
+          const proposal = await createCommercialSendProposal({
+            context: {
+              workspaceId: principal.workspaceId,
+              submissionId: resolved.draft.submissionId,
+              sessionKey: operational.sessionKey,
+              missionId: session.mission?.id,
+              recipientEmail: resolved.draft.recipient.email,
+              draftRevision: resolved.draft.revision,
+            },
+            principal: {
+              actorId: principal.userId,
+              workspaceId: principal.workspaceId,
+              plan,
+              approvedCapabilityIds: [],
+            },
+          }, new CapabilityToolBridge());
+          if (proposal.approvalRequest) approvals.push(proposal.approvalRequest);
+          responseMessage = proposal.approvalRequest
+            ? `J’ai préparé la validation du brouillon destiné à ${resolved.draft.recipient.email}. Confirmez l’autorisation ci-dessous. Cela ne déclenchera aucun envoi tant que le transport IONOS clara@melodie.digital n’est pas configuré.`
+            : proposal.message;
+          if (proposal.approvalRequest && session.mission) {
+            session.mission.lastAction = "Demande de validation de la communication commerciale";
+            session.mission.nextAction = "Approuver ou refuser la communication préparée.";
+            await saveMission(session.mission);
+          }
+          await new Journal().addEntry(writeActionEntry(
+            "Validation commerciale demandée",
+            `Dossier ${resolved.draft.submissionId} · destinataire ${resolved.draft.recipient.email} · aucun envoi.`,
+          ));
+        }
       }
     }
 
@@ -123,7 +245,7 @@ export async function POST(request: Request) {
       ...newMessages,
     ].slice(-MAX_PERSISTED_MESSAGES);
     session.updatedAt = new Date();
-    await saveSession(session);
+    await saveSession(session, operational.sessionKey);
 
     return NextResponse.json({
       success: true,
@@ -152,7 +274,7 @@ export async function POST(request: Request) {
       },
       // Capability approvals will be emitted by the Brain execution boundary,
       // not by the chat route or the response composer.
-      approvals: [],
+      approvals,
       physicalActions: executionPlan.physicalActions.map((action) => ({
         ...toPhysicalActionProposalView(action),
         conversationId: physicalConversationId,

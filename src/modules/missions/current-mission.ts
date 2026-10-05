@@ -1,4 +1,5 @@
 import { loadMissions } from "./mission-store";
+import { orchestrateMissions } from "./mission-orchestrator";
 import type { Mission } from "./types/Mission";
 
 /**
@@ -7,14 +8,7 @@ import type { Mission } from "./types/Mission";
  */
 export async function getCurrentMission(): Promise<Mission | null> {
   try {
-    const missions = await loadMissions();
-
-    return (
-      missions.find((mission) => mission.status === "active") ??
-      missions.find((mission) => mission.status === "blocked") ??
-      missions.find((mission) => mission.status === "planned") ??
-      null
-    );
+    return orchestrateMissions(await loadMissions()).current;
   } catch {
     return null;
   }

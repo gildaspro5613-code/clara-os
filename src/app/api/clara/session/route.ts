@@ -8,19 +8,17 @@
 // ============================================
 
 import { NextResponse } from "next/server";
-import { loadSession } from "@/lib/core/store/session-store";
-import { getCurrentMission } from "@/modules/missions/current-mission";
+import { resolveOperationalContext } from "@/lib/core/operational-context";
 
 export async function GET() {
-  const [session, durableMission] = await Promise.all([
-    loadSession(),
-    getCurrentMission(),
-  ]);
+  const { session, acquisition } = await resolveOperationalContext();
 
   return NextResponse.json({
     state: session.state,
     recommendation: session.recommendation,
-    mission: durableMission ?? session.mission,
+    mission: session.mission,
+    brainDashboard: session.brainDashboard,
+    acquisition,
     startedAt: session.startedAt,
     updatedAt: session.updatedAt,
   });

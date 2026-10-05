@@ -3,20 +3,10 @@ export const dynamic = "force-dynamic";
 import MainLayout from "@/components/layout/MainLayout";
 import MissionsStage from "@/modules/missions/MissionsStage";
 import { loadMissions } from "@/modules/missions/mission-store";
-import { loadSession } from "@/lib/core/store/session-store";
+import { orchestrateMissions } from "@/modules/missions/mission-orchestrator";
 
 export default async function MissionsPage() {
   let missions: Awaited<ReturnType<typeof loadMissions>> = [];
-  let currentMissionId: string | null = null;
-
-  try {
-    const session = await loadSession();
-    currentMissionId = session.mission?.id ?? null;
-  } catch {
-    // Keep the Missions route available even if session persistence is
-    // temporarily unavailable. Mission data can still render independently.
-    console.warn("[missions] session store unavailable; continuing without current mission context");
-  }
 
   try {
     missions = await loadMissions();
@@ -27,6 +17,8 @@ export default async function MissionsPage() {
     // details that should not be exposed in application logs.
     console.warn("[missions] persistent store unavailable; rendering empty state");
   }
+
+  const currentMissionId = orchestrateMissions(missions).current?.id ?? null;
 
   // Compatibility repair for missions persisted before conversational/manual
   // steps were distinguished from blocked execution steps. Only the mission
@@ -53,7 +45,7 @@ export default async function MissionsPage() {
 
   return (
     <MainLayout>
-      <MissionsStage initialMissions={missions} />
+      <MissionsStage initialMissions={missions} currentMissionId={currentMissionId} />
     </MainLayout>
   );
 }

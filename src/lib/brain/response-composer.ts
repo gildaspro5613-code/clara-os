@@ -16,12 +16,81 @@
  */
 
 import type { ClaraSession } from "@/lib/core/session";
+import type { CommercialCommunicationDraft } from "@/lib/acquisition/commercial-communication-draft";
 import { OpenAIResponsesEngine } from "@/lib/connectors/internal/openai/responses/openai-responses-engine";
 import { extractPhysicalActionProposal, PHYSICAL_ACTION_PROPOSAL_INSTRUCTIONS, type ConversationalPhysicalActionDraft } from "@/lib/clara/physical-action-proposal";
 
 export interface ComposedClaraResponse {
   content: string;
   physicalAction?: ConversationalPhysicalActionDraft;
+}
+
+export interface CommercialDraftRevision {
+  subject: string;
+  body: string;
+}
+
+function parseJsonObject(content: string): unknown {
+  const trimmed = content.trim();
+  const fenced = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+  return JSON.parse(fenced?.[1] ?? trimmed);
+}
+
+export function parseCommercialDraftRevision(
+  content: string,
+): CommercialDraftRevision | null {
+  try {
+    const parsed = parseJsonObject(content);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
+    const candidate = parsed as Record<string, unknown>;
+    if (
+      typeof candidate.subject !== "string" || !candidate.subject.trim() ||
+      typeof candidate.body !== "string" || !candidate.body.trim()
+    ) {
+      return null;
+    }
+    return {
+      subject: candidate.subject.trim(),
+      body: candidate.body.trim(),
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Revises the acquisition-owned draft after the canonical Brain cycle has
+ * interpreted the user's request. This composer has no tools and cannot save
+ * or send anything; the acquisition service remains the sole persistence
+ * boundary for the returned subject/body.
+ */
+export async function composeCommercialDraftRevision(
+  instruction: string,
+  draft: CommercialCommunicationDraft,
+  session: ClaraSession,
+): Promise<CommercialDraftRevision | null> {
+  const result = await new OpenAIResponsesEngine().generate({
+    prompt: [
+      "Tu es Clara. Le Brain a déjà traité la demande de l'utilisateur.",
+      "Révise uniquement le brouillon commercial fourni selon l'instruction.",
+      "Conserve les faits, le destinataire, la signature et les questions utiles.",
+      "N'ajoute aucune promesse, donnée, pièce jointe ou action qui n'existe pas dans le brouillon.",
+      "Ne prétends jamais envoyer le message.",
+      "Réponds uniquement avec un objet JSON valide contenant exactement les clés subject et body.",
+      "",
+      `Instruction : ${instruction}`,
+      `Décision Brain : ${session.recommendation?.summary ?? "non disponible"}`,
+      `Mission : ${session.mission?.objective ?? "non disponible"}`,
+      `Objet actuel : ${draft.subject}`,
+      "Corps actuel :",
+      draft.body,
+    ].join("\n"),
+    model: process.env.OPENAI_MODEL ?? "gpt-5.5",
+    maxTokens: 1400,
+  });
+
+  if (!result.success || !result.content.trim()) return null;
+  return parseCommercialDraftRevision(result.content);
 }
 
 export async function composeClaraResponseWithProposal(
@@ -139,4 +208,3 @@ export async function composeClaraResponse(
 ): Promise<string> {
   return (await composeClaraResponseWithProposal(message, session)).content;
 }
-
