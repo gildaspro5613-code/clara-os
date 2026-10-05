@@ -45,3 +45,16 @@ export function writeCognitiveEntry(
   };
 
 }
+
+export function writeActionEntry(
+  summary: string,
+  details?: string,
+): JournalEntry {
+  return {
+    id: crypto.randomUUID(),
+    type: JournalEntryType.ACTION,
+    createdAt: new Date(),
+    summary,
+    details,
+  };
+}

@@ -92,6 +92,7 @@ import {
   type GitHubReadCapability,
 } from "./github-read/capability";
 import { BrevoCommercialCapabilityDefinitions, type BrevoCommercialCapability } from "./brevo-commercial/capability";
+import { CommercialEmailSendCapabilityDefinition, type CommercialEmailCapability } from "./commercial-email/capability";
 import {
   MakeScenarioExecuteCapabilityDefinition,
   MakeScenarioPrepareCapabilityDefinition,
@@ -124,7 +125,8 @@ export type CapabilityDefinition =
   | SendGmailCapability
   | GitHubReadCapability
   | MakeScenarioCapability
-  | BrevoCommercialCapability;
+  | BrevoCommercialCapability
+  | CommercialEmailCapability;
 
 /**
  * Capability Registry.
@@ -152,6 +154,7 @@ export class CapabilityRegistry {
     MakeScenarioPrepareCapabilityDefinition,
     MakeScenarioExecuteCapabilityDefinition,
     ...BrevoCommercialCapabilityDefinitions,
+    CommercialEmailSendCapabilityDefinition,
   ];
 
   public getAll(): CapabilityDefinition[] {

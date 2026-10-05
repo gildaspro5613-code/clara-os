@@ -16,13 +16,15 @@ export interface CommercialCommunicationDraft {
   };
   subject: string;
   body: string;
+  revision: number;
+  updatedAt: string;
   approval: {
     required: true;
-    status: "pending";
+    status: "pending" | "approved" | "rejected";
   };
   delivery: {
     allowed: false;
-    reason: "operator-approval-required";
+    reason: "operator-approval-required" | "transport-not-configured" | "operator-rejected";
   };
 }
 
@@ -90,6 +92,8 @@ export function buildCommercialQualificationDraft(
     },
     subject: `Votre projet ${record.qualification.opportunity.projectType} — précisions complémentaires`,
     body,
+    revision: 1,
+    updatedAt: new Date().toISOString(),
     approval: {
       required: true,
       status: "pending",

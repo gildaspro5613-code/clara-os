@@ -19,9 +19,13 @@ import type { Mission } from "./types/Mission";
 
 interface MissionsStageProps {
   initialMissions?: Mission[];
+  currentMissionId?: string | null;
 }
 
-export default function MissionsStage({ initialMissions = [] }: MissionsStageProps) {
+export default function MissionsStage({
+  initialMissions = [],
+  currentMissionId = null,
+}: MissionsStageProps) {
   const t = useTranslations("missionsPage");
   const [missions, setMissions] = useState<Mission[]>(initialMissions);
   const [selectedMissionId, setSelectedMissionId] = useState<string | null>(null);
@@ -29,7 +33,10 @@ export default function MissionsStage({ initialMissions = [] }: MissionsStagePro
   const activeMissions = missions.filter((mission) => mission.status === "active");
   const plannedMissions = missions.filter((mission) => mission.status === "planned");
   const blockedMissions = missions.filter((mission) => mission.status === "blocked");
-  const activeMission = activeMissions[0];
+  const activeMission = missions.find((mission) => mission.id === currentMissionId)
+    ?? activeMissions[0];
+  const otherPlannedMissions = plannedMissions.filter((mission) => mission.id !== activeMission?.id);
+  const otherBlockedMissions = blockedMissions.filter((mission) => mission.id !== activeMission?.id);
   const selectedMission = missions.find((mission) => mission.id === selectedMissionId);
 
   function updateMission(updatedMission: Mission) {
@@ -146,7 +153,7 @@ export default function MissionsStage({ initialMissions = [] }: MissionsStagePro
               </section>
             )}
 
-            {blockedMissions.length > 0 && (
+            {otherBlockedMissions.length > 0 && (
               <section className="mb-12">
                 <div className="mb-5">
                   <span className="text-[11px] uppercase tracking-[0.25em] text-amber-400/70">{t("blockedEyebrow")}</span>
@@ -154,7 +161,7 @@ export default function MissionsStage({ initialMissions = [] }: MissionsStagePro
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-white/40">{t("blockedDescription")}</p>
                 </div>
                 <div className="grid gap-5 lg:grid-cols-2">
-                  {blockedMissions.map((mission) => (
+                  {otherBlockedMissions.map((mission) => (
                     <MissionCard key={mission.id} mission={mission} onSelect={(selected) => setSelectedMissionId(selected.id)} />
                   ))}
                 </div>
@@ -167,7 +174,7 @@ export default function MissionsStage({ initialMissions = [] }: MissionsStagePro
                 <h2 className="mt-2 text-xl font-medium">{t("plannedTitle")}</h2>
               </div>
               <div className="grid gap-5 lg:grid-cols-2">
-                {plannedMissions.map((mission) => (
+                {otherPlannedMissions.map((mission) => (
                   <MissionCard key={mission.id} mission={mission} onSelect={(selected) => setSelectedMissionId(selected.id)} />
                 ))}
               </div>

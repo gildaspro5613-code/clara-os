@@ -41,7 +41,7 @@ export default function SummaryPanel({
         <div className="h-px bg-white/10" />
 
         <div className="flex items-center justify-between">
-          <span className="text-white/70">{t("conversations")}</span>
+          <span className="text-white/70">{t("conversationTurns")}</span>
           <span className="font-semibold">{userTurns}</span>
         </div>
 

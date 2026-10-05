@@ -9,12 +9,12 @@
 
 import MainLayout from "@/components/layout/MainLayout";
 import BrainStage from "@/modules/brain/BrainStage";
-import { loadSession } from "@/lib/core/store/session-store";
+import { resolveOperationalContext } from "@/lib/core/operational-context";
 
 export const dynamic = "force-dynamic";
 
 export default async function BrainPage() {
-  const session = await loadSession();
+  const { session } = await resolveOperationalContext();
   const dashboard = session.brainDashboard;
 
   return (
