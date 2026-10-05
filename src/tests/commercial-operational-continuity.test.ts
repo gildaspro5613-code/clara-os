@@ -83,6 +83,32 @@ test("Clara revises the same durable draft from a conversational instruction", a
   assert.equal(memory.read().body, revised?.body);
 });
 
+test("conversation rewrite persists revision 2 in the acquisition record and survives reload", async () => {
+  const memory = repository();
+  const message = "Clara, peux-tu raccourcir et reformuler ce brouillon ?";
+  const intent = classifyCommercialConversationIntent(message);
+  assert.deepEqual(intent, { kind: "revise", instruction: message });
+
+  const claraRevision = parseCommercialDraftRevision(JSON.stringify({
+    subject: "Votre projet — date à confirmer",
+    body: "Bonjour,\n\nPouvez-vous confirmer la date de votre événement ?\n\nBien cordialement,\nClara\nMélodie Digital",
+  }));
+  assert.ok(claraRevision);
+
+  const persisted = await reviseCommercialDraft({
+    workspaceId: "melodie-digital",
+    submissionId: "submission-1",
+    ...claraRevision,
+  }, memory.repository);
+  assert.equal(persisted?.revision, 2);
+
+  const reloadedRecord = await memory.repository.load("melodie-digital", "submission-1");
+  assert.equal(reloadedRecord?.commercialDraft?.revision, 2);
+  assert.equal(reloadedRecord?.commercialDraft?.subject, claraRevision.subject);
+  assert.equal(reloadedRecord?.commercialDraft?.body, claraRevision.body);
+  assert.notEqual(reloadedRecord?.commercialDraft?.body, draft().body);
+});
+
 test("commercial confirmation creates an approval and remains fail-closed without Gmail or Brevo", async () => {
   assert.deepEqual(classifyCommercialConversationIntent("Oui Clara, envoie-le."), { kind: "send-confirmation" });
   const approvals: Array<{ capabilityId: string; arguments: string }> = [];
