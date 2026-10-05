@@ -26,6 +26,7 @@ const PREPARE_CAPABILITIES = new Set([
 
 const EXECUTE_CAPABILITIES = new Set([
   "make.scenario.execute", "brevo.email.send", "brevo.campaign.send",
+  "commercial-email.send",
 ]);
 
 export function getCapabilityPolicy(capabilityId: string): CapabilityPolicy {

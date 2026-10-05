@@ -22,6 +22,11 @@ import { GoogleWorkspaceConnector, GOOGLE_WORKSPACE_CAPABILITIES } from "@/lib/c
 import { BrevoExecutableConnector, BREVO_CAPABILITIES } from "@/lib/connectors/brevo";
 import { DatabaseConnectionRepository } from "@/lib/connections/connection-repository";
 import { ConnectionStatus } from "@/lib/connections/connection";
+import {
+  COMMERCIAL_EMAIL_SEND_CAPABILITY,
+  executeCommercialTransportBoundary,
+  type CommercialSendContext,
+} from "@/lib/acquisition/commercial-communication-service";
 
 export interface CapabilityExecutionRequest {
   readonly capabilityId: string;
@@ -69,6 +74,24 @@ export class CapabilityEngine {
     }
 
     switch (request.capabilityId) {
+      case COMMERCIAL_EMAIL_SEND_CAPABILITY: {
+        const context = request.context as CommercialSendContext;
+        if (!request.workspaceId || context.workspaceId !== request.workspaceId) {
+          return {
+            success: false,
+            message: "Commercial draft workspace does not match the authenticated capability workspace.",
+            completedAt: new Date(),
+          };
+        }
+        const result = await executeCommercialTransportBoundary(context);
+        return {
+          success: result.success,
+          message: result.message,
+          content: JSON.stringify({ code: result.code }),
+          completedAt: new Date(),
+        };
+      }
+
       case MAKE_CAPABILITIES.SCENARIO_PREPARE:
       case MAKE_CAPABILITIES.SCENARIO_EXECUTE: {
         const result = await this.makeCapability.execute(

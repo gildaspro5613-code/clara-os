@@ -1,12 +1,14 @@
 import type { ClaraSession } from "@/lib/core/session";
+import type { AcquisitionRecord } from "@/lib/acquisition/acquisition-store";
 
 import Stage from "../Stage";
 
 interface HeroProps {
   session: ClaraSession;
+  acquisition?: AcquisitionRecord | null;
 }
 
-export default function Hero({ session }: HeroProps) {
+export default function Hero({ session, acquisition }: HeroProps) {
   return (
     <section className="relative h-full min-h-[720px] overflow-hidden bg-[#020914]">
       {/*
@@ -31,7 +33,7 @@ export default function Hero({ session }: HeroProps) {
         <div className="absolute bottom-0 left-0 right-0 h-[34%] bg-[linear-gradient(180deg,rgba(2,9,20,0),rgba(1,6,14,0.78))]" />
       </div>
 
-      <Stage session={session} />
+      <Stage session={session} acquisition={acquisition} />
     </section>
   );
 }

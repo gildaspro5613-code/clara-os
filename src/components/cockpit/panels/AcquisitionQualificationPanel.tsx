@@ -2,6 +2,7 @@ import GlassPanel from "@/components/ui/GlassPanel";
 import type { AcquisitionRecord } from "@/lib/acquisition/acquisition-store";
 import { buildCommercialQualificationDraft } from "@/lib/acquisition/commercial-communication-draft";
 import { loadProjectIntake } from "@/lib/intake/md-project-intake-inbox";
+import CommercialDraftEditor from "./CommercialDraftEditor";
 
 interface AcquisitionQualificationPanelProps {
   qualifications: AcquisitionRecord[];
@@ -16,7 +17,8 @@ export default async function AcquisitionQualificationPanel({
   const opportunity = current.qualification.opportunity;
   const state = current.qualification.qualification;
   const intake = await loadProjectIntake(current.workspaceId, current.submissionId).catch(() => null);
-  const draft = intake ? buildCommercialQualificationDraft(current, intake.intake) : null;
+  const draft = current.commercialDraft
+    ?? (intake ? buildCommercialQualificationDraft(current, intake.intake) : null);
 
   return (
     <GlassPanel title="Qualification commerciale">
@@ -70,17 +72,10 @@ export default async function AcquisitionQualificationPanel({
         </div>
 
         {draft && (
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200/20 bg-amber-200/[0.04] p-4">
-            <div>
-              <p className="text-xs uppercase tracking-wide text-amber-100/70">Communication commerciale prête</p>
-              <p className="mt-1 text-sm text-white/65">
-                Brouillon préparé pour {draft.recipient.name}. Clara attend votre validation avant toute action externe.
-              </p>
-            </div>
-            <span className="rounded-full border border-amber-200/20 px-3 py-1 text-xs text-amber-100/80">
-              Validation requise
-            </span>
-          </div>
+          <CommercialDraftEditor
+            key={`${draft.revision}-${draft.approval.status}-${draft.delivery.reason}`}
+            initialDraft={draft}
+          />
         )}
 
         {qualifications.length > 1 && (

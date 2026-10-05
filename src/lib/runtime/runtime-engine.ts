@@ -14,9 +14,7 @@ import { CapabilityEngine } from "@/lib/capabilities/capability-engine";
 import { ExperienceEngine } from "@/lib/experience/experience-engine";
 import { runBrainDashboard } from "@/lib/brain/brain";
 import { WisdomEngine } from "@/lib/wisdom/wisdom-engine";
-import { buildDashboard } from "@/lib/brain/dashboard";
 import {
-  DecisionPriority,
   EventType,
 } from "@/types";
 
@@ -24,6 +22,8 @@ import { Runtime } from "./runtime";
 import { RuntimeCycle } from "./runtime-cycle";
 import { RuntimeEvent } from "./runtime-event";
 import { RuntimeResult } from "./runtime-result";
+import { Journal } from "@/lib/core/journal";
+import { writeRuntimeResultToJournal } from "./runtime-journal";
 
 /**
  * Runtime Engine.
@@ -35,6 +35,7 @@ export class RuntimeEngine {
    */
   public constructor(
     private readonly capabilityEngine = new CapabilityEngine(),
+    private readonly journal: Pick<Journal, "addEntry"> = new Journal(),
   ) {}
 
   /**
@@ -75,6 +76,8 @@ export class RuntimeEngine {
         workspaceId,
 
       });
+
+    await writeRuntimeResultToJournal(this.journal, event.capabilityId, result);
 
     cycles.push(
       RuntimeCycle.EXECUTE,

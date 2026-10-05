@@ -17,13 +17,15 @@ import {
 import { loadMissions } from "@/modules/missions/mission-store";
 import { orchestrateMissions } from "@/modules/missions/mission-orchestrator";
 import type { ClaraSession } from "@/lib/core/session";
+import type { AcquisitionRecord } from "@/lib/acquisition/acquisition-store";
 import { getTranslations } from "next-intl/server";
 
 interface CockpitWidgetsProps {
   session: ClaraSession;
+  acquisition?: AcquisitionRecord | null;
 }
 
-export default async function CockpitWidgets({ session }: CockpitWidgetsProps) {
+export default async function CockpitWidgets({ session, acquisition }: CockpitWidgetsProps) {
   const t = await getTranslations("cockpitUi");
   const workspaceId = process.env.CLARA_MD_WORKSPACE_ID?.trim()
     || process.env.CLARA_WORKSPACE_ID?.trim()
@@ -35,6 +37,15 @@ export default async function CockpitWidgets({ session }: CockpitWidgetsProps) {
     loadMissions().catch(() => []),
   ]);
   const orchestration = orchestrateMissions(missions);
+  const currentMission = session.mission;
+  const orderedQualifications = acquisition
+    ? [
+        acquisition,
+        ...acquisitionQualifications.filter(
+          (item) => item.submissionId !== acquisition.submissionId,
+        ),
+      ]
+    : acquisitionQualifications;
 
   return (
     <section aria-label={t("widgets")} className="w-full overflow-hidden bg-[#070B12]">
@@ -44,16 +55,16 @@ export default async function CockpitWidgets({ session }: CockpitWidgetsProps) {
             <SummaryPanel session={session} />
           </div>
           <div className="min-w-0">
-            <AttentionPanel mission={orchestration.interventionRequired[0] ?? orchestration.current} />
+            <AttentionPanel mission={currentMission} />
           </div>
           <div className="min-w-0">
             <QuickActionsPanel />
           </div>
         </div>
 
-        {acquisitionQualifications.length > 0 && (
-          <div className="mt-5">
-            <AcquisitionQualificationPanel qualifications={acquisitionQualifications} />
+        {orderedQualifications.length > 0 && (
+          <div id="acquisition" className="mt-5 scroll-mt-6">
+            <AcquisitionQualificationPanel qualifications={orderedQualifications} />
           </div>
         )}
 
@@ -75,7 +86,7 @@ export default async function CockpitWidgets({ session }: CockpitWidgetsProps) {
         <div className="mt-5 grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-[1.35fr_1fr_1fr]">
           <div className="min-w-0 md:col-span-2 xl:col-span-1">
             <MissionWidget
-              mission={orchestration.current}
+              mission={currentMission}
               activeCount={orchestration.active.length}
               blockedCount={orchestration.blocked.length}
             />

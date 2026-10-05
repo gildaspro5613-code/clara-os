@@ -12,10 +12,13 @@
 
 import GlassPanel from "@/components/ui/GlassPanel";
 import type { ClaraSession } from "@/lib/core/session";
+import type { AcquisitionRecord } from "@/lib/acquisition/acquisition-store";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 
 interface BriefPanelProps {
   session: ClaraSession;
+  acquisition?: AcquisitionRecord | null;
 }
 
 function personalizeGreeting(
@@ -30,12 +33,17 @@ function personalizeGreeting(
   );
 }
 
-export default function BriefPanel({ session }: BriefPanelProps) {
+export default function BriefPanel({ session, acquisition }: BriefPanelProps) {
   const t = useTranslations("cockpitUi");
   const mission = session.mission;
   const latestClaraMessage = [...session.conversation]
     .reverse()
     .find((message) => message.role === "clara")?.content;
+  const understanding = session.brainDashboard?.understanding.summary;
+  const needsAttention = mission?.status === "blocked" || Boolean(
+    mission?.tasks.find((task) => !task.completed)?.execution?.autonomous === false,
+  );
+  const documentEvent = session.brainDashboard?.context.event.type === "DOCUMENT_RECEIVED";
 
   return (
     <GlassPanel className="max-w-[18rem] px-6 py-5 bg-[#07111f]/55 border-white/[0.08] shadow-[0_2px_18px_rgba(0,0,0,0.18)] backdrop-blur-[18px]">
@@ -54,6 +62,16 @@ export default function BriefPanel({ session }: BriefPanelProps) {
           <p className="mt-3 text-sm leading-normal text-white/62">
             {mission.nextAction || mission.objective}
           </p>
+          {understanding && (
+            <p className="mt-3 line-clamp-3 text-xs leading-relaxed text-cyan-50/60">
+              {understanding}
+            </p>
+          )}
+          {needsAttention && (
+            <p className="mt-3 text-xs font-medium text-amber-200/80">
+              {t("attention")}: {mission.nextAction || t("noNextStep")}
+            </p>
+          )}
         </>
       ) : latestClaraMessage ? (
         <p className="text-sm leading-normal text-white/68">
@@ -64,6 +82,14 @@ export default function BriefPanel({ session }: BriefPanelProps) {
           {t("noMission")}
         </p>
       )}
+
+      <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-white/10 pt-3 text-xs">
+        {mission && <Link href="/missions" className="text-cyan-300/80 hover:text-cyan-200">{t("viewMissions")}</Link>}
+        <Link href="/clara" className="text-cyan-300/80 hover:text-cyan-200">Clara →</Link>
+        {session.conversation.length > 0 && <Link href="/conversations" className="text-cyan-300/80 hover:text-cyan-200">{t("latestConversations")} →</Link>}
+        {acquisition && <a href="#acquisition" className="text-amber-200/80 hover:text-amber-100">Dossier commercial ↓</a>}
+        {documentEvent && <Link href="/documents" className="text-cyan-300/80 hover:text-cyan-200">Documents →</Link>}
+      </div>
     </GlassPanel>
   );
 }

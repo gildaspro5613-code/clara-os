@@ -13,6 +13,7 @@
 import GlassPanel from "@/components/ui/GlassPanel";
 import type { ClaraSession } from "@/lib/core/session";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 
 interface ConversationsPanelProps {
   session: ClaraSession;
@@ -53,10 +54,13 @@ export default function ConversationsPanel({
         ) : (
           <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
             <p className="text-sm text-white/65">
-              {session.mission?.objective ?? t("conversationCockpit")}
+              {t("noConversationHistory")}
             </p>
           </div>
         )}
+        <Link href={recentMessages.length > 0 ? "/conversations" : "/clara"} className="inline-flex text-xs text-cyan-400 transition hover:text-cyan-300">
+          {recentMessages.length > 0 ? t("openConversationHistory") : t("startConversation")}
+        </Link>
       </div>
     </GlassPanel>
   );

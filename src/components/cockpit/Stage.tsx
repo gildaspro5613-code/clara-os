@@ -1,4 +1,5 @@
 import type { ClaraSession } from "@/lib/core/session";
+import type { AcquisitionRecord } from "@/lib/acquisition/acquisition-store";
 
 import BriefPanel from "@/components/cockpit/panels/BriefPanel";
 import TasksPanel from "@/components/cockpit/panels/TasksPanel";
@@ -9,6 +10,7 @@ import { getTranslations } from "next-intl/server";
 
 interface StageProps {
   session: ClaraSession;
+  acquisition?: AcquisitionRecord | null;
 }
 
 async function EmptyMissionPanel() {
@@ -33,13 +35,13 @@ async function MissionPanel({ mission }: MissionPanelProps) {
   return mission ? <TasksPanel mission={mission} /> : <EmptyMissionPanel />;
 }
 
-export default async function Stage({ session }: StageProps) {
+export default async function Stage({ session, acquisition }: StageProps) {
   const mission = session.mission;
 
   return (
     <>
       <div className="pointer-events-auto absolute left-[5%] top-[12%] z-20 hidden w-[25%] max-w-[360px] lg:block">
-        <BriefPanel session={session} />
+        <BriefPanel session={session} acquisition={acquisition} />
       </div>
 
       <div className="pointer-events-auto absolute left-[6%] top-[61%] z-20 hidden w-[23%] max-w-[330px] lg:block">
@@ -56,7 +58,7 @@ export default async function Stage({ session }: StageProps) {
 
       <div className="pointer-events-none absolute left-4 right-4 top-[12%] z-20 flex flex-col gap-3 lg:hidden">
         <div className="pointer-events-auto">
-          <BriefPanel session={session} />
+          <BriefPanel session={session} acquisition={acquisition} />
         </div>
       </div>
 

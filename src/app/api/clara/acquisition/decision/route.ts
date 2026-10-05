@@ -6,6 +6,8 @@ import {
 import { resumeAcquisitionRuntime } from "@/lib/acquisition/resume-runtime";
 import { isSameOriginRequest } from "@/lib/auth/session-request-security";
 import { authorizeMicrosoftRequest } from "@/lib/connectors/microsoft/security/request-authorization";
+import { Journal } from "@/lib/core/journal";
+import { writeActionEntry } from "@/lib/core/journal-writer";
 
 const allowed = new Set<AcquisitionOperatorDecision>([
   "approve-specialist",
@@ -67,6 +69,10 @@ export async function POST(request: NextRequest) {
     const resumed = result.resumed
       ? await resumeAcquisitionRuntime(result.record)
       : false;
+    await new Journal().addEntry(writeActionEntry(
+      `Décision acquisition · ${body.decision}`,
+      `Dossier ${result.record.submissionId} · reprise Runtime ${resumed ? "effectuée" : "non requise"}.`,
+    ));
 
     return NextResponse.json({
       success: true,
