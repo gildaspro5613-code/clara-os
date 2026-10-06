@@ -75,6 +75,21 @@ export function googleSignInAuthorizationUrl(state: string, nonce: string): stri
   return url.toString();
 }
 
+function googleExchangeFailureCategory(description?: string): string {
+  if (!description?.trim()) return "provider_description_absent";
+  const normalized = description.toLowerCase();
+  if (normalized.includes("secret") && (normalized.includes("invalid") || normalized.includes("incorrect"))) {
+    return "client_secret_rejected";
+  }
+  if (normalized.includes("client id") && (normalized.includes("invalid") || normalized.includes("incorrect"))) {
+    return "client_id_rejected";
+  }
+  if (normalized.includes("deleted")) return "oauth_client_deleted";
+  if (normalized.includes("not found")) return "oauth_client_not_found";
+  if (normalized.includes("unauthorized")) return "client_unauthorized";
+  return "provider_description_present";
+}
+
 async function exchangeCode(code: string): Promise<string> {
   const { clientId, clientSecret, redirectUri } = configuredSignIn();
   const response = await fetch(GOOGLE_TOKEN_ENDPOINT, {
@@ -92,11 +107,12 @@ async function exchangeCode(code: string): Promise<string> {
   const body = await response.json() as GoogleTokenResponse;
   if (!response.ok || !body.id_token) {
     const oauthError = typeof body.error === "string" && body.error ? body.error : "unknown_error";
-    // Intentionally log only Google's public OAuth error classification and HTTP status.
-    // Never log the authorization code, client secret, tokens, or provider response body.
+    // Log only a fixed, normalized provider-description category. Never log the
+    // description itself, authorization code, client ID/secret, tokens, or body.
     console.error("[Clara auth Google token exchange]", {
       status: response.status,
       error: oauthError,
+      subtype: googleExchangeFailureCategory(body.error_description),
     });
     throw new Error(`GOOGLE_SIGN_IN_EXCHANGE_FAILED:${oauthError}`);
   }
