@@ -27,6 +27,11 @@ type GoogleJwk = Record<string, string | string[] | boolean | undefined> & {
   kid?: string;
   use?: string;
 };
+type GoogleTokenResponse = {
+  id_token?: string;
+  error?: string;
+  error_description?: string;
+};
 
 function configuredSignIn() {
   const clientId = process.env.CLARA_AUTH_GOOGLE_CLIENT_ID?.trim();
@@ -76,8 +81,17 @@ async function exchangeCode(code: string): Promise<string> {
     }),
     cache: "no-store",
   });
-  const body = await response.json() as { id_token?: string };
-  if (!response.ok || !body.id_token) throw new Error("GOOGLE_SIGN_IN_EXCHANGE_FAILED");
+  const body = await response.json() as GoogleTokenResponse;
+  if (!response.ok || !body.id_token) {
+    const oauthError = typeof body.error === "string" && body.error ? body.error : "unknown_error";
+    // Intentionally log only Google's public OAuth error classification and HTTP status.
+    // Never log the authorization code, client secret, tokens, or provider response body.
+    console.error("[Clara auth Google token exchange]", {
+      status: response.status,
+      error: oauthError,
+    });
+    throw new Error(`GOOGLE_SIGN_IN_EXCHANGE_FAILED:${oauthError}`);
+  }
   return body.id_token;
 }
 
