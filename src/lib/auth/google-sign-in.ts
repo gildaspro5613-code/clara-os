@@ -33,9 +33,17 @@ type GoogleTokenResponse = {
   error_description?: string;
 };
 
+/**
+ * Clara user sign-in deliberately reuses the canonical Google OAuth client
+ * already used by the Google Workspace connector. Identity/session handling
+ * remains separate: only the OAuth client credentials are shared.
+ *
+ * The sign-in callback URI remains dedicated to the authentication flow, so
+ * Google Workspace keeps its existing connector callback unchanged.
+ */
 function configuredSignIn() {
-  const clientId = process.env.CLARA_AUTH_GOOGLE_CLIENT_ID?.trim();
-  const clientSecret = process.env.CLARA_AUTH_GOOGLE_CLIENT_SECRET?.trim();
+  const clientId = process.env.GOOGLE_CLIENT_ID?.trim();
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET?.trim();
   const redirectUri = process.env.CLARA_AUTH_GOOGLE_REDIRECT_URI?.trim();
   if (!clientId || !clientSecret || !redirectUri) throw new Error("CLARA_GOOGLE_SIGN_IN_NOT_CONFIGURED");
   return { clientId, clientSecret, redirectUri };
