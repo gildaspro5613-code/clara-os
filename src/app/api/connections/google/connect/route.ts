@@ -4,7 +4,7 @@ import {
   createPendingGoogleConnection,
   DatabaseConnectionRepository,
 } from "@/lib/connections/connection-repository";
-import { resolveAuthenticatedConnectionWorkspace } from "@/lib/connections/authenticated-connection-workspace";
+import { CURRENT_WORKSPACE_ID } from "@/lib/connections/current-workspace";
 import { OAuthAuthorizationService } from "@/lib/auth/oauth/service";
 import { oauthProviders } from "@/lib/auth/oauth/providers";
 import { googleConfig } from "@/lib/config/google";
@@ -15,19 +15,14 @@ export const dynamic = "force-dynamic";
 const GOOGLE_OAUTH_COOKIE = "clara_google_oauth_nonce";
 
 export async function GET() {
-  const authenticated = await resolveAuthenticatedConnectionWorkspace("connections:manage");
-  if (!authenticated) {
-    return NextResponse.redirect(new URL("/connexions?google=authentication_required", process.env.CLARA_AUTH_APP_ORIGIN));
-  }
-
   const repository = new DatabaseConnectionRepository();
   let connection = await repository.findByWorkspaceAndProvider(
-    authenticated.workspaceId,
+    CURRENT_WORKSPACE_ID,
     "google",
   );
   if (!connection) {
     connection = createPendingGoogleConnection(
-      authenticated.workspaceId,
+      CURRENT_WORKSPACE_ID,
       [...GOOGLE_OAUTH_SCOPES],
     );
   } else {

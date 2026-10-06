@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { DatabaseConnectionRepository } from "@/lib/connections/connection-repository";
 import { CredentialStore } from "@/lib/connections/credential-store";
-import { resolveAuthenticatedConnectionWorkspace } from "@/lib/connections/authenticated-connection-workspace";
+import { CURRENT_WORKSPACE_ID } from "@/lib/connections/current-workspace";
 import { OAuthCallbackService } from "@/lib/auth/oauth/service";
 import { OAuthError } from "@/lib/auth/oauth/error";
 import { oauthProviders } from "@/lib/auth/oauth/providers";
@@ -24,9 +24,6 @@ function finishRedirect(request: Request, status: string): NextResponse {
 }
 
 export async function GET(request: Request) {
-  const authenticated = await resolveAuthenticatedConnectionWorkspace("connections:manage");
-  if (!authenticated) return finishRedirect(request, "authentication_required");
-
   const url = new URL(request.url);
   const stateValue = url.searchParams.get("state");
   const code = url.searchParams.get("code");
@@ -41,7 +38,7 @@ export async function GET(request: Request) {
     const credentialStore = new CredentialStore();
     await new OAuthCallbackService(oauthProviders, repository, credentialStore).complete({
       provider: "google", state: stateValue, nonce: decodeURIComponent(nonce), code,
-      redirectUri: googleConfig.redirectUri, workspaceId: authenticated.workspaceId,
+      redirectUri: googleConfig.redirectUri, workspaceId: CURRENT_WORKSPACE_ID,
     });
     return finishRedirect(request, "connected");
   } catch (error) {
