@@ -88,6 +88,7 @@ export async function composeCommercialDraftRevision(
       `Instruction : ${instruction}`,
       "Historique récent — utilise-le pour résoudre les références comme « cette version », « ce message » ou « le texte précédent » :",
       recentConversation,
+      "Si l'instruction désigne une version déjà formulée par Clara dans cet historique, reprends cette version comme contenu de remplacement au lieu de demander à l'utilisateur de la recoller.",
       `Décision Brain : ${session.recommendation?.summary ?? "non disponible"}`,
       `Mission : ${session.mission?.objective ?? "non disponible"}`,
       `Objet actuel : ${draft.subject}`,
