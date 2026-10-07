@@ -1,5 +1,5 @@
 import type { AcquisitionRecord } from "@/lib/acquisition/acquisition-store";
-import { loadAcquisitionRecord } from "@/lib/acquisition/acquisition-store";
+import { loadAcquisitionRecord, loadActiveAcquisitionQualifications } from "@/lib/acquisition/acquisition-store";
 import type { ClaraSession } from "./session";
 import {
   loadSession,
@@ -36,9 +36,29 @@ export async function resolveOperationalContext(): Promise<OperationalContext> {
     ?? stringMetadata(dashboard?.context.metadata?.acquisitionSubmissionId);
   const workspaceId = stringMetadata(dashboard?.context.metadata?.workspaceId)
     ?? stringMetadata(dashboard?.context.event.context?.workspaceId);
-  const acquisition = submissionId && workspaceId
+  let acquisition = submissionId && workspaceId
     ? await loadAcquisitionRecord(workspaceId, submissionId).catch(() => null)
     : null;
+
+  // Mission projections created from older owner sessions can lose the
+  // acquisition metadata even though the current commercial qualification is
+  // still durable in Neon. Recover it only when the workspace has exactly one
+  // active commercial qualification with a prepared draft; never guess among
+  // multiple prospects.
+  if (!acquisition) {
+    const configuredWorkspaceId = (
+      process.env.CLARA_WORKSPACE_ID
+      ?? process.env.CLARA_MD_WORKSPACE_ID
+      ?? ""
+    ).trim();
+    if (configuredWorkspaceId && configuredWorkspaceId !== "default") {
+      const active = await loadActiveAcquisitionQualifications(configuredWorkspaceId).catch(() => []);
+      const candidates = active.filter((record) => record.commercialDraft);
+      if (candidates.length === 1) {
+        acquisition = candidates[0];
+      }
+    }
+  }
 
   return { sessionKey, session, acquisition };
 }
