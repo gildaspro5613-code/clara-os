@@ -1,10 +1,9 @@
 "use client";
 
-import { Bell, LogIn, Search } from "lucide-react";
+import { Bell, Search } from "lucide-react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
 
 import LocaleSwitcher from "@/components/ui/LocaleSwitcher";
 import type { Locale } from "@/i18n/types";
@@ -23,29 +22,13 @@ const pageTitleKeys: Record<string, string> = {
   "/brain": "brain",
 };
 
-type AuthStatus = { authenticated: boolean };
-
 export default function Header() {
   const pathname = usePathname();
   const locale = useLocale() as Locale;
-  const [authenticated, setAuthenticated] = useState<boolean | null>(null);
 
   const tn = useTranslations("navigation");
   const tc = useTranslations("common");
   const tclara = useTranslations("clara");
-
-  useEffect(() => {
-    let active = true;
-    fetch("/api/auth/session/status", { cache: "no-store", credentials: "same-origin" })
-      .then((response) => response.ok ? response.json() as Promise<AuthStatus> : null)
-      .then((status) => {
-        if (active) setAuthenticated(status?.authenticated === true);
-      })
-      .catch(() => {
-        if (active) setAuthenticated(false);
-      });
-    return () => { active = false; };
-  }, []);
 
   const pageTitleKey = pageTitleKeys[pathname];
   const pageTitle = pageTitleKey
@@ -80,25 +63,14 @@ export default function Header() {
 
         <LocaleSwitcher currentLocale={locale} />
 
-        {authenticated === false && (
-          <Link
-            href="/api/auth/google/start"
-            className="flex h-9 items-center gap-2 rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-3 text-xs font-medium text-cyan-100 transition hover:bg-cyan-400/20"
-            title="Se connecter à Clara"
-          >
-            <LogIn size={15} />
-            <span className="hidden sm:inline">Se connecter</span>
-          </Link>
-        )}
-
         <button type="button" aria-label={tc("notifications")} className="rounded-lg p-2 text-slate-400 transition hover:bg-white/10 hover:text-white">
           <Bell size={19} />
         </button>
 
         <div
-          aria-label={authenticated ? "Session Clara authentifiée" : tc("profile")}
-          title={authenticated ? "Session Clara authentifiée" : "Profil local — connexion Clara requise"}
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white ${authenticated ? "bg-emerald-500" : "bg-cyan-500"}`}
+          aria-label={tc("profile")}
+          title="Profil Clara OS"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cyan-500 text-sm font-semibold text-white"
         >
           G
         </div>
