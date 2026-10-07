@@ -69,6 +69,13 @@ export async function composeCommercialDraftRevision(
   draft: CommercialCommunicationDraft,
   session: ClaraSession,
 ): Promise<CommercialDraftRevision | null> {
+  const recentConversation = session.conversation.length > 0
+    ? session.conversation
+        .slice(-12)
+        .map((entry) => `${entry.role === "user" ? "Utilisateur" : "Clara"}: ${entry.content}`)
+        .join("\n")
+    : "Aucun échange antérieur persisté.";
+
   const result = await new OpenAIResponsesEngine().generate({
     prompt: [
       "Tu es Clara. Le Brain a déjà traité la demande de l'utilisateur.",
@@ -79,6 +86,8 @@ export async function composeCommercialDraftRevision(
       "Réponds uniquement avec un objet JSON valide contenant exactement les clés subject et body.",
       "",
       `Instruction : ${instruction}`,
+      "Historique récent — utilise-le pour résoudre les références comme « cette version », « ce message » ou « le texte précédent » :",
+      recentConversation,
       `Décision Brain : ${session.recommendation?.summary ?? "non disponible"}`,
       `Mission : ${session.mission?.objective ?? "non disponible"}`,
       `Objet actuel : ${draft.subject}`,
