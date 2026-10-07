@@ -109,6 +109,22 @@ test("conversation rewrite persists revision 2 in the acquisition record and sur
   assert.notEqual(reloadedRecord?.commercialDraft?.body, draft().body);
 });
 
+test("exact E2E replacement phrase is classified as a durable commercial revision", () => {
+  const message = "Oui Clara, remplace la communication préparée par cette nouvelle version.";
+  assert.deepEqual(
+    classifyCommercialConversationIntent(message),
+    { kind: "revise", instruction: message },
+  );
+});
+
+test("commercial substitution wording is also classified as a revision", () => {
+  const message = "Clara, substitue ce message par la version précédente.";
+  assert.deepEqual(
+    classifyCommercialConversationIntent(message),
+    { kind: "revise", instruction: message },
+  );
+});
+
 test("commercial confirmation creates an approval and remains fail-closed without Gmail or Brevo", async () => {
   assert.deepEqual(classifyCommercialConversationIntent("Oui Clara, envoie-le."), { kind: "send-confirmation" });
   const approvals: Array<{ capabilityId: string; arguments: string }> = [];
