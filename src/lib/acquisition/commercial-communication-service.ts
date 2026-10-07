@@ -98,7 +98,7 @@ export function classifyCommercialConversationIntent(message: string): Commercia
     return { kind: "send-confirmation" };
   }
   const referencesCommercialDraft = /\b(brouillon|communication|message|mail|e-?mail)\b/.test(normalized);
-  const asksForRevision = /\b(reformul(?:e|er|ez)?|réécri(?:s|re|vez)?|reecri(?:s|re|vez)?|modifi(?:e|er|ez)?|raccourci(?:s|r|ssez)?|condens(?:e|er|ez)?|simplifi(?:e|er|ez)?)\b/.test(normalized);
+  const asksForRevision = /\b(reformul(?:e|er|ez)?|réécri(?:s|re|vez)?|reecri(?:s|re|vez)?|modifi(?:e|er|ez)?|raccourci(?:s|r|ssez)?|condens(?:e|er|ez)?|simplifi(?:e|er|ez)?|rempla(?:ce|cer|cez)?|substitu(?:e|er|ez)?)\b/.test(normalized);
   const asksForStyleChange = /\bplus\s+(direct|concis|court|simple)|\bmoins\s+(long|formel)/.test(normalized);
   if ((referencesCommercialDraft && asksForRevision) || asksForStyleChange) {
     return { kind: "revise", instruction: message.trim() };
