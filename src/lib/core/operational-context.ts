@@ -3,6 +3,7 @@ import { loadAcquisitionRecord, loadActiveAcquisitionQualifications } from "@/li
 import type { ClaraSession } from "./session";
 import {
   loadSession,
+  loadMostRecentMissionSession,
   loadSessionOwningMission,
 } from "./store/session-store";
 import { getCurrentMission } from "@/modules/missions/current-mission";
@@ -23,10 +24,12 @@ function stringMetadata(value: unknown): string | null {
  * It never merges sessions and never persists the projection into `default`.
  */
 export async function resolveOperationalContext(): Promise<OperationalContext> {
-  const mission = await getCurrentMission();
-  const owner = mission
-    ? await loadSessionOwningMission(mission.id).catch(() => null)
-    : null;
+  // Resume the most recently persisted operational thread first. Mission
+  // orchestration is a fallback for work that has no durable Clara session yet.
+  const recentOwner = await loadMostRecentMissionSession().catch(() => null);
+  const mission = recentOwner?.session.mission ?? await getCurrentMission();
+  const owner = recentOwner
+    ?? (mission ? await loadSessionOwningMission(mission.id).catch(() => null) : null);
   const defaultSession = owner?.session ?? await loadSession();
   const projected = projectOwnedSession(mission, owner, defaultSession);
   const { sessionKey, session } = projected;

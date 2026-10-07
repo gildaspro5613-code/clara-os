@@ -38,6 +38,33 @@ export async function saveSession(
   `;
 }
 
+/**
+ * Returns the most recently persisted session that still owns an operational
+ * mission. This preserves the user's active Clara thread across a page refresh
+ * instead of recomputing focus from the global mission priority queue.
+ */
+export async function loadMostRecentMissionSession(): Promise<StoredClaraSession | null> {
+  const rows = await sql`
+    SELECT id, data
+    FROM clara_sessions
+    WHERE data->'mission'->>'id' IS NOT NULL
+    ORDER BY updated_at DESC
+    LIMIT 1
+  ` as Array<{ id: string; data: ClaraSession }>;
+  const row = rows[0];
+  if (!row) return null;
+
+  const session = normalizeSession(row.data);
+  return {
+    key: row.id,
+    session: {
+      ...session,
+      startedAt: new Date(session.startedAt),
+      updatedAt: new Date(session.updatedAt),
+    },
+  };
+}
+
 export async function loadSession(
   sessionKey: string = DEFAULT_SESSION_KEY,
 ): Promise<ClaraSession> {
