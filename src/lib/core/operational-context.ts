@@ -53,10 +53,12 @@ export async function resolveOperationalContext(): Promise<OperationalContext> {
     ).trim();
     if (configuredWorkspaceId && configuredWorkspaceId !== "default") {
       const active = await loadActiveAcquisitionQualifications(configuredWorkspaceId).catch(() => []);
-      const candidates = active.filter((record) => record.commercialDraft);
-      if (candidates.length === 1) {
-        acquisition = candidates[0];
-      }
+      // The Cockpit defines the current qualification as active[0]
+      // (the most recently updated active record). Use that same deterministic
+      // selection so Clara and the visible commercial panel always address the
+      // same prospect. Never select a different record merely because it owns
+      // a draft.
+      acquisition = active[0] ?? null;
     }
   }
 
