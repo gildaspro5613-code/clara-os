@@ -87,7 +87,20 @@ export async function POST(request: Request) {
         : undefined,
     };
 
-    // One user request = one Clara/Brain decision cycle.
+    const commercialIntent = operational.acquisition
+      ? classifyCommercialConversationIntent(message)
+      : { kind: "none" as const };
+
+    // A commercial rewrite/send confirmation is a command inside the current
+    // acquisition workflow, not a new operational objective. Handle it against
+    // the durable draft before the generic Brain cycle so a phrase such as
+    // "remplace cette version" cannot rename/re-plan the active mission.
+    const isCommercialCommand =
+      commercialIntent.kind === "revise" ||
+      commercialIntent.kind === "send-confirmation";
+
+    // One user request = one Clara/Brain decision cycle, except bounded
+    // commercial commands which keep the existing mission/session unchanged.
     const workspaceId = operational.acquisition?.workspaceId
       ?? (typeof persistedBeforeCycle.brainDashboard?.context.metadata?.workspaceId === "string"
         ? persistedBeforeCycle.brainDashboard.context.metadata.workspaceId
@@ -95,7 +108,9 @@ export async function POST(request: Request) {
     const clara = operational.sessionKey === DEFAULT_SESSION_KEY
       ? getRuntime()
       : new Clara(operational.sessionKey, workspaceId);
-    const session = await dispatchEvent(clara, event);
+    const session = isCommercialCommand
+      ? persistedBeforeCycle
+      : await dispatchEvent(clara, event);
 
     const recommendation = session.recommendation;
     const mission = session.mission;
@@ -140,7 +155,6 @@ export async function POST(request: Request) {
     }
 
     if (operational.acquisition) {
-      const commercialIntent = classifyCommercialConversationIntent(message);
       if (commercialIntent.kind === "revise") {
         const current = await resolveCommercialDraft(
           operational.acquisition.workspaceId,
