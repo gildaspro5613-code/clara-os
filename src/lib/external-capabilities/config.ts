@@ -34,12 +34,37 @@ function loadMdStudioProduct(): ExternalProductConfig | null {
   };
 }
 
+function loadClaraLiveProduct(): ExternalProductConfig | null {
+  const names = ["CLARA_LIVE_PRODUCT_TOKEN", "CLARA_LIVE_WORKSPACE_ID", "CLARA_LIVE_CAPABILITIES"] as const;
+  // Empty configured variables are partial configuration, not legacy fallback.
+  if (names.every((name) => process.env[name] === undefined)) return null;
+  const token = process.env.CLARA_LIVE_PRODUCT_TOKEN?.trim();
+  const workspaceId = process.env.CLARA_LIVE_WORKSPACE_ID?.trim();
+  let capabilities: unknown;
+  try {
+    capabilities = JSON.parse(process.env.CLARA_LIVE_CAPABILITIES ?? "");
+  } catch {
+    throw new ExternalProductConfigurationError("Invalid dedicated Clara Live configuration.");
+  }
+  if (!token || !workspaceId || workspaceId.length > 160 || /[\\/\0]/.test(workspaceId) ||
+      !Array.isArray(capabilities) || capabilities.length === 0 ||
+      capabilities.some((item) => typeof item !== "string" || !item.trim())) {
+    throw new ExternalProductConfigurationError("Invalid dedicated Clara Live configuration.");
+  }
+  return {
+    productId: "clara-live", workspaceId, token,
+    capabilities: [...new Set((capabilities as string[]).map((item) => item.trim()))],
+  };
+}
+
 export function loadExternalProducts(
   value = process.env.CLARA_EXTERNAL_PRODUCTS_JSON,
 ): ReadonlyMap<string, ExternalProductConfig> {
   const products = new Map<string, ExternalProductConfig>();
   const mdStudio = loadMdStudioProduct();
   if (mdStudio) products.set(mdStudio.productId, mdStudio);
+  const claraLive = loadClaraLiveProduct();
+  if (claraLive) products.set(claraLive.productId, claraLive);
 
   if (!value?.trim()) return products;
 
@@ -47,10 +72,9 @@ export function loadExternalProducts(
   try {
     parsed = JSON.parse(value);
   } catch {
-    // The Studio intake no longer depends on the legacy JSON variable. If its
-    // dedicated credentials are configured, keep Studio available while an
-    // invalid legacy JSON value is repaired or removed.
-    if (mdStudio) return products;
+    // Dedicated products do not depend on legacy JSON syntax. Preserve the
+    // existing Studio fallback, now also supporting dedicated Clara Live.
+    if (mdStudio || claraLive) return products;
     throw new ExternalProductConfigurationError(
       "CLARA_EXTERNAL_PRODUCTS_JSON must contain valid JSON.",
     );
@@ -65,6 +89,18 @@ export function loadExternalProducts(
   for (const [productId, raw] of Object.entries(parsed as Record<string, RawProductConfig>)) {
     // Dedicated Studio credentials take precedence over the legacy JSON entry.
     if (mdStudio && productId === mdStudio.productId) continue;
+
+    if (claraLive && productId === claraLive.productId) {
+      // Retain the existing callback destination, but never legacy credentials
+      // or grants. OS callbacks use the same newly configured product token.
+      const callbackBaseUrl = typeof raw?.callbackBaseUrl === "string"
+        ? raw.callbackBaseUrl.trim().replace(/\/$/, "") : undefined;
+      if (callbackBaseUrl && !callbackBaseUrl.startsWith("https://")) {
+        throw new ExternalProductConfigurationError("External product callback must use HTTPS: clara-live");
+      }
+      products.set(claraLive.productId, { ...claraLive, callbackBaseUrl });
+      continue;
+    }
 
     const workspaceId = typeof raw?.workspaceId === "string" ? raw.workspaceId.trim() : "";
     const token = typeof raw?.token === "string" ? raw.token.trim() : "";
