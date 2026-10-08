@@ -167,35 +167,59 @@ function sessionKey(scope: Scope): string {
 }
 
 export async function POST(request: Request) {
+  const incomingId = request.headers.get("x-clara-correlation-id");
+  const correlationId = incomingId && /^[a-f0-9]{32}$/.test(incomingId) ? incomingId : crypto.randomUUID().replaceAll("-", "");
+  const started = performance.now();
+  let phase = "authentication";
+  let phaseStarted = started;
+  let httpStatus: number | null = null;
+  let operation = "unknown_event";
+  const log = (event: string, extra: Record<string, unknown> = {}) => console.info("External Core call", JSON.stringify({
+    correlation_id: correlationId, event, phase, operation, ...extra,
+  }));
+  const advance = (next: string) => {
+    log("phase_end", { duration_ms: Math.round(performance.now() - phaseStarted) });
+    phase = next;
+    phaseStarted = performance.now();
+    log("phase_start");
+  };
+  const respond = (body: unknown, status: number) => {
+    httpStatus = status;
+    return NextResponse.json(body, { status });
+  };
+  log("start");
   try {
     const product = authenticateExternalProduct(
       request.headers.get("x-clara-product"),
       request.headers.get("authorization"),
     );
     if (!product) {
-      return NextResponse.json({ success: false, error: "Unauthorized external product." }, { status: 401 });
+      return respond({ success: false, error: "Unauthorized external product." }, 401);
     }
 
+    advance("body_validation");
     let raw: unknown;
     try { raw = await request.json(); }
     catch {
-      return NextResponse.json({ success: false, error: "Invalid JSON request body." }, { status: 400 });
+      return respond({ success: false, error: "Invalid JSON request body." }, 400);
     }
     const body = parseBody(raw);
     if (!body || !body.scope) {
-      return NextResponse.json({ success: false, error: "Invalid Clara Core event." }, { status: 400 });
+      return respond({ success: false, error: "Invalid Clara Core event." }, 400);
     }
+    operation = body.eventType === "USER_MESSAGE" ? "user_message" :
+      body.eventType === "LIVE_DOCUMENT_ANALYSIS_REQUESTED" ? "document_analysis" : "external_event";
 
     // Product identity is authenticated by the server-side credential and may
     // never be overridden by the caller's event body.
     if (body.scope.productId !== product.productId) {
-      return NextResponse.json({ success: false, error: "Product scope mismatch." }, { status: 403 });
+      return respond({ success: false, error: "Product scope mismatch." }, 403);
     }
 
     const message = body.message;
     const scope = body.scope;
     if (!message || !scope) {
-      return NextResponse.json({ success: false, error: "Invalid Clara Core event." }, { status: 400 });
+      return respond({ success: false, error: "Invalid Clara Core event." }, 400);
     }
 
     const key = sessionKey(scope);
@@ -228,9 +252,13 @@ export async function POST(request: Request) {
       },
     };
 
+    advance("core_dispatch");
     const session = await dispatchEvent(clara, event);
+    advance("response_composition");
     const response = await composeClaraResponse(message, session);
+    advance("document_analysis");
     const documentAnalysis = await analyzeExternalDocument(body);
+    advance("session_persistence");
     const now = new Date().toISOString();
     const messages: ClaraConversationMessage[] = [
       { id: crypto.randomUUID(), role: "user", content: message, createdAt: now },
@@ -240,7 +268,7 @@ export async function POST(request: Request) {
     session.updatedAt = new Date();
     await saveSession(session, key);
 
-    return NextResponse.json({
+    return respond({
       success: true,
       data: {
         response,
@@ -265,12 +293,16 @@ export async function POST(request: Request) {
           documentAnalysis,
         },
       },
-    });
+    }, 200);
   } catch (error) {
     if (error instanceof ExternalProductConfigurationError) {
-      return NextResponse.json({ success: false, error: "External product gateway is not configured." }, { status: 503 });
+      return respond({ success: false, error: "External product gateway is not configured." }, 503);
     }
-    console.error("[API /external/events]", error);
-    return NextResponse.json({ success: false, error: "Clara Core event processing failed." }, { status: 500 });
+    log("processing_failed");
+    return respond({ success: false, error: "Clara Core event processing failed." }, 500);
+  } finally {
+    log("phase_end", { duration_ms: Math.round(performance.now() - phaseStarted) });
+    log("end", { duration_ms: Math.round(performance.now() - started), http_status: httpStatus,
+      outcome: httpStatus === 200 ? "completed" : "rejected_or_failed" });
   }
 }

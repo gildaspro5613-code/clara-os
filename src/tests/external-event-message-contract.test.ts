@@ -10,13 +10,14 @@ import { authenticateExternalProduct, ExternalProductConfigurationError } from "
 // production f917529 (unchanged at 207ee8a), using synthetic project facts.
 const fixture = JSON.parse(readFileSync(new URL("./live-work-cycle-event.fixture.json", import.meta.url), "utf8"));
 
-function routeHarness() {
+function routeHarness(failDispatch = false) {
   const products = new Map([
     ["clara-live", { productId: "clara-live", workspaceId: "os-workspace", token: "test-credential", capabilities: [] }],
     ["other-product", { productId: "other-product", workspaceId: "other-os-workspace", token: "other-test-credential", capabilities: ["existing-grant"] }],
   ]);
   const received: Record<string, unknown>[] = [];
   const workspaces: string[] = [];
+  const logs: Record<string, unknown>[] = [];
   const require = createRequire(import.meta.url);
   const modules: Record<string, unknown> = {
     "next/server": { NextResponse: Response },
@@ -24,6 +25,7 @@ function routeHarness() {
       authenticateExternalProduct: (id: string | null, auth: string | null) => authenticateExternalProduct(id, auth, products) },
     "@/lib/core/clara": { Clara: class { constructor(_key: string, workspace: string) { workspaces.push(workspace); } } },
     "@/lib/core/event-bus": { dispatchEvent: async (_clara: unknown, event: Record<string, unknown>) => {
+      if (failDispatch) throw new Error("confidential-downstream-error");
       received.push(event); return { conversation: [], sources: [], state: "WORKING" };
     } },
     "@/lib/brain/response-composer": { composeClaraResponse: async () => "Contract accepted." },
@@ -37,8 +39,9 @@ function routeHarness() {
   const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   const exports: Record<string, unknown> = {};
   vm.runInNewContext(compiled, { exports, require: (name: string) => modules[name] ?? require(name),
-    Response, crypto: globalThis.crypto, console });
-  return { post: exports.POST as (request: Request) => Promise<Response>, received, workspaces };
+    Response, crypto: globalThis.crypto, performance,
+    console: { ...console, info: (_label: string, data: string) => logs.push(JSON.parse(data)) } });
+  return { post: exports.POST as (request: Request) => Promise<Response>, received, workspaces, logs };
 }
 
 function request(body: unknown, credential = "test-credential", productId = "clara-live") {
@@ -92,4 +95,38 @@ test("authentication precedes event validation and other product isolation is un
   const other = { ...fixture, scope: { ...fixture.scope, productId: "other-product" } };
   assert.equal((await route.post(request(other, "other-test-credential", "other-product"))).status, 200);
   assert.deepEqual(route.workspaces, ["other-os-workspace"]);
+});
+
+test("correlated phase logs preserve status and exclude credentials and message contents", async () => {
+  const route = routeHarness();
+  const req = request({ ...fixture, message: "confidential-project-content" });
+  req.headers.set("x-clara-correlation-id", "a".repeat(32));
+  assert.equal((await route.post(req)).status, 200);
+  assert.ok(route.logs.every((row) => row.correlation_id === "a".repeat(32)));
+  for (const phase of ["authentication", "body_validation", "core_dispatch", "response_composition", "document_analysis", "session_persistence"]) {
+    assert.ok(route.logs.some((row) => row.phase === phase && row.event === "phase_end" && typeof row.duration_ms === "number"));
+  }
+  assert.equal(route.logs.at(-1)?.http_status, 200);
+  const serialized = JSON.stringify(route.logs);
+  assert.ok(!serialized.includes("test-credential"));
+  assert.ok(!serialized.includes("confidential-project-content"));
+});
+
+test("untrusted correlation headers are replaced and auth failures remain observable", async () => {
+  const route = routeHarness();
+  const req = request(fixture, "incorrect");
+  req.headers.set("x-clara-correlation-id", "untrusted-private-value");
+  assert.equal((await route.post(req)).status, 401);
+  assert.match(String(route.logs[0].correlation_id), /^[a-f0-9]{32}$/);
+  assert.equal(route.logs.at(-1)?.http_status, 401);
+  assert.ok(!JSON.stringify(route.logs).includes("untrusted-private-value"));
+});
+
+test("Core failures identify the failed phase and real 500 without logging exception contents", async () => {
+  const route = routeHarness(true);
+  assert.equal((await route.post(request(fixture))).status, 500);
+  assert.equal(route.logs.at(-1)?.phase, "core_dispatch");
+  assert.equal(route.logs.at(-1)?.http_status, 500);
+  assert.equal(route.logs.at(-1)?.outcome, "rejected_or_failed");
+  assert.ok(!JSON.stringify(route.logs).includes("confidential-downstream-error"));
 });
