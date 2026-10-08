@@ -150,7 +150,11 @@ function parseBody(value: unknown): ExternalEventBody | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   const body = value as ExternalEventBody;
   if (body.schemaVersion !== "clara.unified-core.event.v1") return null;
-  if (!opaque(body.eventType, 120) || !opaque(body.message, 100_000)) return null;
+  if (!opaque(body.eventType, 120)) return null;
+  // Conversation text is not an opaque identifier: Live includes slash-bearing
+  // domain names, source names and JSON escapes in its effective-state message.
+  if (typeof body.message !== "string" || !body.message.trim() ||
+      body.message.length > 100_000 || body.message.includes("\0")) return null;
   const scope = body.scope;
   if (!scope || !opaque(scope.productId, 80) || !opaque(scope.workspaceId) ||
       !opaque(scope.userId) || !opaque(scope.sessionId)) return null;
