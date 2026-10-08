@@ -1,4 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
+import { isIP } from "node:net";
 
 export interface ExternalProductConfig {
   readonly productId: string;
@@ -34,10 +35,28 @@ function loadMdStudioProduct(): ExternalProductConfig | null {
   };
 }
 
+function loadClaraLiveCallback(): string | undefined {
+  const value = process.env.CLARA_LIVE_CALLBACK_BASE_URL;
+  if (value === undefined) return undefined;
+  const invalid = () => new ExternalProductConfigurationError("Invalid dedicated Clara Live callback URL.");
+  const trimmed = value.trim();
+  if (!trimmed || /[\x00-\x20\\?#]/.test(trimmed)) throw invalid();
+  let url: URL;
+  try { url = new URL(trimmed); } catch { throw invalid(); }
+  const host = url.hostname.replace(/\.$/, "");
+  if (url.protocol !== "https:" || url.username || url.password || url.search || url.hash ||
+      !host.includes(".") || isIP(host) || host.startsWith("[") ||
+      host.split(".").some((label) => !/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(label)) ||
+      /(^|\.)(localhost|local|internal|lan|home|invalid)$/.test(host) ||
+      url.pathname.replace(/\/+$/, "").endsWith("/api/core/capabilities/execute")) throw invalid();
+  return url.href.replace(/\/+$/, "");
+}
+
 function loadClaraLiveProduct(): ExternalProductConfig | null {
   const names = ["CLARA_LIVE_PRODUCT_TOKEN", "CLARA_LIVE_WORKSPACE_ID", "CLARA_LIVE_CAPABILITIES"] as const;
   // Empty configured variables are partial configuration, not legacy fallback.
-  if (names.every((name) => process.env[name] === undefined)) return null;
+  if (names.every((name) => process.env[name] === undefined) &&
+      process.env.CLARA_LIVE_CALLBACK_BASE_URL === undefined) return null;
   const token = process.env.CLARA_LIVE_PRODUCT_TOKEN?.trim();
   const workspaceId = process.env.CLARA_LIVE_WORKSPACE_ID?.trim();
   let capabilities: unknown;
@@ -54,6 +73,7 @@ function loadClaraLiveProduct(): ExternalProductConfig | null {
   return {
     productId: "clara-live", workspaceId, token,
     capabilities: [...new Set((capabilities as string[]).map((item) => item.trim()))],
+    callbackBaseUrl: loadClaraLiveCallback(),
   };
 }
 
@@ -91,6 +111,7 @@ export function loadExternalProducts(
     if (mdStudio && productId === mdStudio.productId) continue;
 
     if (claraLive && productId === claraLive.productId) {
+      if (claraLive.callbackBaseUrl !== undefined) continue;
       // Retain the existing callback destination, but never legacy credentials
       // or grants. OS callbacks use the same newly configured product token.
       const callbackBaseUrl = typeof raw?.callbackBaseUrl === "string"

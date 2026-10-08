@@ -2,8 +2,9 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { authenticateExternalProduct, ExternalProductConfigurationError, loadExternalProducts } from "@/lib/external-capabilities/config";
 import { ExternalCapabilityGateway, ExternalCapabilityGatewayError } from "@/lib/external-capabilities/gateway";
+import { executeExternalProductCapability } from "@/lib/external-capabilities/product-callback";
 
-const names = ["CLARA_LIVE_PRODUCT_TOKEN", "CLARA_LIVE_WORKSPACE_ID", "CLARA_LIVE_CAPABILITIES", "CLARA_MD_PRODUCT_TOKEN", "CLARA_MD_WORKSPACE_ID"];
+const names = ["CLARA_LIVE_PRODUCT_TOKEN", "CLARA_LIVE_WORKSPACE_ID", "CLARA_LIVE_CAPABILITIES", "CLARA_LIVE_CALLBACK_BASE_URL", "CLARA_MD_PRODUCT_TOKEN", "CLARA_MD_WORKSPACE_ID"];
 const fixtureCredential = "unit-test-credential";
 const legacy = JSON.stringify({
   "clara-live": { workspaceId: "legacy-live", token: "legacy-test-credential", capabilities: ["old-grant"], callbackBaseUrl: "https://live.example/" },
@@ -139,4 +140,60 @@ test("existing Live event headers and unified scope authenticate without contrac
     assert.ok(product?.workspaceId !== event.scope.workspaceId);
     assert.ok(!JSON.stringify(event).includes(fixtureCredential));
   });
+});
+
+test("dedicated HTTPS callback is independent of JSON and overrides only Live's destination", () => {
+  withEnv({ ...dedicated, CLARA_LIVE_CAPABILITIES: "[]", CLARA_LIVE_CALLBACK_BASE_URL: "https://live.example.com///" }, () => {
+    assert.equal(loadExternalProducts("").get("clara-live")?.callbackBaseUrl, "https://live.example.com");
+    const config = JSON.parse(legacy);
+    config["other-product"].callbackBaseUrl = "https://other.example.com/";
+    config["clara-live"].callbackBaseUrl = "http://obsolete.example.com";
+    const products = loadExternalProducts(JSON.stringify(config));
+    assert.equal(products.get("clara-live")?.callbackBaseUrl, "https://live.example.com");
+    assert.equal(products.get("other-product")?.callbackBaseUrl, "https://other.example.com");
+    assert.deepEqual(products.get("clara-live")?.capabilities, []);
+  });
+});
+
+test("malformed or unsafe dedicated callbacks are refused without disclosing URL contents", () => {
+  const invalid = ["", "not-a-url", "http://live.example.com", "https://user:private-value@live.example.com",
+    "https://live.example.com?credential=private-value", "https://live.example.com#private-value",
+    "https://live.example.com?", "https://live.example.com#",
+    "https://localhost", "https://service.local", "https://metadata.google.internal",
+    "https://127.0.0.1", "https://10.1.2.3", "https://169.254.169.254", "https://[::1]",
+    "https://2130706433", "https://bad..example.com", "https://live.example.com\\private-value",
+    "https://live.example.com/api/core/capabilities/execute/", "https://live.example.com/\nprivate-value"];
+  for (const url of invalid) withEnv({ ...dedicated, CLARA_LIVE_CALLBACK_BASE_URL: url }, () => {
+    assert.throws(() => loadExternalProducts(legacy), (error: unknown) => {
+      assert.ok(error instanceof ExternalProductConfigurationError);
+      assert.equal(error.message, "Invalid dedicated Clara Live callback URL.");
+      return true;
+    });
+  });
+  withEnv({ CLARA_LIVE_CALLBACK_BASE_URL: "https://live.example.com" }, () => {
+    assert.throws(() => loadExternalProducts(legacy), ExternalProductConfigurationError);
+  });
+});
+
+test("callback transport appends the existing route exactly once with unchanged product authentication", async () => {
+  let product: ReturnType<typeof authenticateExternalProduct> = null;
+  withEnv({ ...dedicated, CLARA_LIVE_CAPABILITIES: "[]", CLARA_LIVE_CALLBACK_BASE_URL: "https://live.example.com/" }, () => {
+    product = loadExternalProducts("").get("clara-live")!;
+  });
+  const original = globalThis.fetch;
+  try {
+    globalThis.fetch = async (input, init) => {
+      assert.equal(input, "https://live.example.com/api/core/capabilities/execute");
+      assert.equal(init?.method, "POST");
+      const headers = new Headers(init?.headers);
+      assert.ok(headers.get("Authorization") === `Bearer ${fixtureCredential}`);
+      assert.equal(headers.get("x-clara-product"), "clara-live");
+      assert.ok(!String(init?.body).includes(fixtureCredential));
+      return Response.json({ success: true, result: { readiness: "available" } });
+    };
+    const result = await executeExternalProductCapability(product!, {
+      capability: "get_spatial_readiness", userId: "live-user", workspaceId: "live-project", sessionId: "live-session", context: {},
+    });
+    assert.equal(result.success, true);
+  } finally { globalThis.fetch = original; }
 });
