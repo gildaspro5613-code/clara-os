@@ -47,7 +47,7 @@ function loadClaraLiveProduct(): ExternalProductConfig | null {
     throw new ExternalProductConfigurationError("Invalid dedicated Clara Live configuration.");
   }
   if (!token || !workspaceId || workspaceId.length > 160 || /[\\/\0]/.test(workspaceId) ||
-      !Array.isArray(capabilities) || capabilities.length === 0 ||
+      !Array.isArray(capabilities) ||
       capabilities.some((item) => typeof item !== "string" || !item.trim())) {
     throw new ExternalProductConfigurationError("Invalid dedicated Clara Live configuration.");
   }

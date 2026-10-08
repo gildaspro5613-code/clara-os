@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { authenticateExternalProduct, ExternalProductConfigurationError, loadExternalProducts } from "@/lib/external-capabilities/config";
+import { ExternalCapabilityGateway, ExternalCapabilityGatewayError } from "@/lib/external-capabilities/gateway";
 
 const names = ["CLARA_LIVE_PRODUCT_TOKEN", "CLARA_LIVE_WORKSPACE_ID", "CLARA_LIVE_CAPABILITIES", "CLARA_MD_PRODUCT_TOKEN", "CLARA_MD_WORKSPACE_ID"];
 const fixtureCredential = "unit-test-credential";
@@ -68,7 +69,9 @@ test("partial or invalid dedicated configuration never falls back or leaks suppl
     { ...dedicated, CLARA_LIVE_WORKSPACE_ID: " " },
     { ...dedicated, CLARA_LIVE_WORKSPACE_ID: "unsafe/workspace" },
     { ...dedicated, CLARA_LIVE_CAPABILITIES: "invalid-json" },
-    { ...dedicated, CLARA_LIVE_CAPABILITIES: "[]" },
+    { ...dedicated, CLARA_LIVE_CAPABILITIES: "" },
+    { ...dedicated, CLARA_LIVE_CAPABILITIES: "{}" },
+    { ...dedicated, CLARA_LIVE_CAPABILITIES: "null" },
     { ...dedicated, CLARA_LIVE_CAPABILITIES: '["read",false]' },
     { ...dedicated, CLARA_LIVE_CAPABILITIES: '[" "]' },
   ];
@@ -79,6 +82,33 @@ test("partial or invalid dedicated configuration never falls back or leaks suppl
       assert.ok(!error.message.includes(fixtureCredential));
       return true;
     });
+  });
+});
+
+test("empty dedicated grants authenticate but cannot execute any gateway capability", async () => {
+  let product: ReturnType<typeof authenticateExternalProduct> = null;
+  withEnv({ ...dedicated, CLARA_LIVE_CAPABILITIES: "[]" }, () => {
+    product = authenticateExternalProduct("clara-live", `Bearer ${fixtureCredential}`, loadExternalProducts(legacy));
+    assert.ok(product);
+    assert.deepEqual(product.capabilities, []);
+  });
+  assert.ok(product);
+  let executions = 0;
+  const gateway = new ExternalCapabilityGateway({ async execute() { executions++; return {}; } });
+  for (const capability of ["stripe.subscription.read", "stripe.checkout.session.create", "run_project_computation", "unknown"]) {
+    await assert.rejects(() => gateway.execute(product!, { capability, input: {} }),
+      (error: unknown) => error instanceof ExternalCapabilityGatewayError && error.code === "CAPABILITY_NOT_ALLOWED");
+  }
+  assert.equal(executions, 0);
+});
+
+test("empty JSON grants remain invalid for Live and other legacy products", () => {
+  withEnv({}, () => {
+    for (const productId of ["clara-live", "other-product"]) {
+      assert.throws(() => loadExternalProducts(JSON.stringify({ [productId]: {
+        workspaceId: "test-workspace", token: fixtureCredential, capabilities: [],
+      } })), ExternalProductConfigurationError);
+    }
   });
 });
 
