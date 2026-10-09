@@ -175,3 +175,18 @@ test("new registry fails closed while legacy consumers do not require its migrat
   for (const operationId of ["bad", 12, null]) assert.equal((await route.post(request({ ...docEvent, operationId }))).status, 400);
   assert.equal((await route.post(request({ ...fixture, operationId: docEvent.operationId }))).status, 400);
 });
+
+
+test("incomplete document output persists failure, never a fake completed result or a duplicate analysis", async () => {
+  const store = memoryRegistry();
+  const route = routeHarness(false, store, false, async () => ({ success: true,
+    content: '{"entities":', responseStatus: "incomplete", incompleteReason: "max_output_tokens" }));
+  assert.equal((await route.post(request(docEvent))).status, 500);
+  const status = await route.statusPost(request({ operationId: docEvent.operationId, scope: docEvent.scope }));
+  const data = (await status.json()).data;
+  assert.equal(data.status, "failed");
+  assert.equal(data.result, null);
+  assert.equal((await route.post(request(docEvent))).status, 202);
+  assert.equal(route.metrics.documentAnalyses, 1);
+  assert.equal(route.logs.find(row => row.event === "processing_failed")?.failure_category, "output_truncated");
+});

@@ -6,7 +6,7 @@ import { authenticateExternalProduct, ExternalProductConfigurationError } from "
 import { documentOperations, operationScopeKey, operationFingerprint } from "@/lib/external-capabilities/document-operations";
 
 export function routeHarness(failDispatch = false, store = documentOperations, failSession = false,
-  generate?: () => Promise<{ success: boolean; content: string }>) {
+  generate?: () => Promise<{ success: boolean; content: string; responseStatus?: "completed" | "incomplete" | "failed" | "other"; incompleteReason?: "max_output_tokens" | "content_filter" | "other"; failureCategory?: "provider_timeout" | "provider_auth" | "provider_rate_limit"; providerHttpStatus?: number; outputTokens?: number }>) {
   const metrics = { documentAnalyses: 0 };
   const products = new Map([
     ["clara-live", { productId: "clara-live", workspaceId: "os-workspace", token: "test-credential", capabilities: [] }],

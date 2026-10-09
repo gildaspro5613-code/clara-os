@@ -68,6 +68,13 @@ function clampConfidence(value: unknown): number {
   return typeof value === "number" && Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 0;
 }
 
+type DocumentFailureCategory = "missing_segments" | "provider_auth" | "provider_rate_limit" | "provider_timeout" | "provider_connection" | "provider_server" | "provider_request" | "provider_unknown" | "output_truncated" | "output_filtered" | "provider_incomplete" | "provider_failed" | "empty_output" | "invalid_json" | "invalid_structure";
+class DocumentAnalysisError extends Error {
+  constructor(readonly category: DocumentFailureCategory, readonly diagnostics: Record<string, number | string> = {}) {
+    super("Document analysis failed.");
+  }
+}
+
 async function analyzeExternalDocument(body: ExternalEventBody): Promise<DocumentAnalysis | null> {
   if (body.eventType !== "LIVE_DOCUMENT_ANALYSIS_REQUESTED" || !Array.isArray(body.documents)) return null;
   const segments = body.documents.flatMap((document) => {
@@ -75,7 +82,7 @@ async function analyzeExternalDocument(body: ExternalEventBody): Promise<Documen
     const candidate = document as { segments?: unknown[] };
     return Array.isArray(candidate.segments) ? candidate.segments : [];
   }).slice(0, 250);
-  if (!segments.length) return null;
+  if (!segments.length) throw new DocumentAnalysisError("missing_segments");
 
   const prompt = [
     "Tu es le moteur cognitif du Brain de Clara. Analyse les extraits documentaires fournis.",
@@ -93,10 +100,23 @@ async function analyzeExternalDocument(body: ExternalEventBody): Promise<Documen
     prompt,
     model: process.env.OPENAI_MODEL ?? "gpt-5.5",
     maxTokens: 6000,
+    outputProfile: "document_analysis",
   });
-  if (!result.success || !result.content.trim()) return null;
+  const diagnostics: Record<string, number | string> = { segment_count: segments.length, prompt_chars: prompt.length, requested_output_tokens: 6000 };
+  if (typeof result.providerHttpStatus === "number") diagnostics.provider_http_status = result.providerHttpStatus;
+  if (typeof result.outputTokens === "number") diagnostics.output_tokens = result.outputTokens;
+  if (!result.success) throw new DocumentAnalysisError(result.failureCategory ?? "provider_unknown", diagnostics);
+  if (result.responseStatus === "incomplete") throw new DocumentAnalysisError(result.incompleteReason === "max_output_tokens" ? "output_truncated" : result.incompleteReason === "content_filter" ? "output_filtered" : "provider_incomplete", diagnostics);
+  if (result.responseStatus === "failed" || result.responseStatus === "other") throw new DocumentAnalysisError("provider_failed", diagnostics);
+  if (!result.content.trim()) throw new DocumentAnalysisError("empty_output", diagnostics);
+  let parsed: Record<string, unknown>;
+  try { parsed = JSON.parse(result.content); }
+  catch { throw new DocumentAnalysisError("invalid_json", diagnostics); }
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed) ||
+      ![parsed.entities, parsed.facts, parsed.ambiguities, parsed.conflicts].every(Array.isArray)) {
+    throw new DocumentAnalysisError("invalid_structure", diagnostics);
+  }
   try {
-    const parsed = JSON.parse(result.content) as Record<string, unknown>;
     const entities = Array.isArray(parsed.entities) ? parsed.entities.flatMap((raw) => {
       if (!raw || typeof raw !== "object") return [];
       const item = raw as Record<string, unknown>;
@@ -137,7 +157,7 @@ async function analyzeExternalDocument(body: ExternalEventBody): Promise<Documen
       conflicts: strings(parsed.conflicts),
     };
   } catch {
-    return null;
+    throw new DocumentAnalysisError("invalid_structure", diagnostics);
   }
 }
 
@@ -330,7 +350,9 @@ export async function POST(request: Request) {
     if (error instanceof ExternalProductConfigurationError) {
       return respond({ success: false, error: "External product gateway is not configured." }, 503);
     }
-    log("processing_failed");
+    log("processing_failed", error instanceof DocumentAnalysisError
+      ? { failure_category: error.category, ...error.diagnostics }
+      : phase === "document_analysis" ? { failure_category: "unexpected_exception" } : {});
     return respond({ success: false, error: "Clara Core event processing failed." }, 500);
   } finally {
     log("phase_end", { duration_ms: Math.round(performance.now() - phaseStarted) });
