@@ -14,7 +14,8 @@ Neon-console SQL procedure is also run on its local `neondb` database with full
 rollback. **Neither database is hosted on Neon.** No Neon connection or secret
 is read. The administrator reports migration 005 already validated on Neon
 `neondb`, branch `test/document-operations-005`, parent `main`, expiry 2026-10-16.
-That report does not establish that our functional tests ran on Neon.
+The administrator also confirms the synthetic SQL transaction passed on that
+TEST branch. This does not establish that our local API/E2E tests ran on Neon.
 
 The cross-repository test uses the actual OS routes, actual PostgreSQL registry,
 actual Live HTTP client and Work Cycle. OS cognition/session saving and Live
@@ -113,18 +114,14 @@ cleanup of *unread* expired results requires a daily execution of
 returns a count, preserves fresh/processing/failed/uncertain rows and is repeatable.
 There is no DELETE/TRUNCATE of operations. Never delete tombstones to permit reruns.
 
-The existing `.github/workflows/neon-preview-cleanup.yml` deletes an exact
-`preview/` Neon branch when a PR targeting `clara-os-commercial-finish` closes.
-It is event-driven branch cleanup, not daily SQL/result purge. Its API credential
-binding does not establish SQL access; it is left unchanged. No daily scheduler
-or document purge job was found in the repository. Neon
-scheduler/maintenance status is not accessible here. An administrator must confirm
-an **existing** approved daily SQL maintenance mechanism and add this file only
-after authorization. `pg_cron` existence alone is not evidence of a purge job;
-do not install an extension/job automatically. PostgreSQL autovacuum reclaims old
-versions but does not implement this business expiry predicate. If no approved
-maintenance runner exists, scheduled physical expiry is **unconfirmed**: resolve
-that operational condition before activation without adding another service.
+The existing `.github/workflows/neon-preview-cleanup.yml` deletes preview branches
+on PR closure; it does not purge result JSON. No pre-existing daily SQL runner
+was verified. PR #161 now prepares a daily Vercel Cron on the existing OS project
+(plan Pro confirmed by the administrator), authenticated with the existing
+`CRON_SECRET` mechanism. See [daily purge activation](document-operations-daily-purge.md).
+No scheduler or secret has been activated/changed in production. Validate project
+quota, enabled state, credential presence and deployed SQL asset before activation.
+Neon `pg_cron` is not assumed active or installed; avoid duplicate scheduling.
 
 With daily maintenance, active-row JSON may remain up to 24 hours past the
 seven-day API cutoff. Nulling active-row JSON is not immediate erasure of all
@@ -140,7 +137,8 @@ VACUUM FULL, backup deletion or production purge is performed by this patch.
    `main`**, database `neondb`, retention/restore window and a recoverable point
    before migration. Verify restore capability using existing approved procedures;
    do not copy production documents or expose database credentials. Record deployed
-   OS/Live commit IDs and confirm the existing maintenance runner.
+   OS/Live commit IDs and validate the prepared daily Vercel Cron prerequisites
+   in `docs/document-operations-daily-purge.md`.
 2. Apply the reviewed `db/migrations/005_document_operations.sql` in the secured
    SQL editor for production `main/neondb`, **only after migration approval**.
    Execute the entire transactional file. On error, `ROLLBACK;` and stop.
@@ -185,7 +183,9 @@ For rollback, revert Live first; keep OS's table/status endpoint available for
 in-flight operations. Never drop the registry or reset failed/uncertain/expired
 operations. If execution dies before its durable result write, the operation is
 uncertain: investigate, do not silently reanalyze. Pause activation on absent
-backup evidence, failed Neon validation or unconfirmed daily purge.
+backup evidence, failed Neon validation or unconfirmed daily purge. The administrator
+subsequently confirmed TEST-branch synthetic SQL passed; actual production activation
+is still subject to the daily-purge checklist.
 
 ## Repeatable local commands
 

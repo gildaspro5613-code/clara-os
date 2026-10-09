@@ -57,8 +57,10 @@ cleared on lookup and cannot be returned. Minimal tombstones (scope hash, ID,
 fingerprint, status, ownership nonce and timestamps; no document text/result or
 credential) remain indefinitely to prevent accidental reanalysis. Live's existing
 checkpoint/project data retention is unchanged.
-Physical deletion of unconsulted expired JSON requires an administrator to
-execute `db/maintenance/purge_document_operations.sql` in existing daily database maintenance, with no new service. The equivalent predicate is:
+Clearing unconsulted expired JSON is prepared through the authenticated daily
+Vercel Cron described in `docs/document-operations-daily-purge.md`, reusing
+`db/maintenance/purge_document_operations.sql` without a new service. Human
+authorization and production configuration checks remain required. The equivalent predicate is:
 
 ```sql
 UPDATE clara_document_operations
@@ -125,7 +127,9 @@ segmenter and `ClaraCoreEvent.wire_payload`, with synthetic source content.
 See [the controlled Neon procedure](document-operations-neon-rollout.md) for
 TEST-branch SQL validation with rollback, real HTTP/PostgreSQL recovery testing,
 maintenance prerequisites and exact authorized production rollout. The checked-in
-purge procedure is prepared, not scheduled or run in production. No existing daily
-scheduler was found in this repository (the existing preview-branch cleanup does not purge results); Neon maintenance must be confirmed by an
-administrator. Daily active-row cleanup may lag API expiry by up to 24 hours, and
-MVCC/backup history follows existing retention policy.
+purge procedure and a daily authenticated Vercel Cron are prepared, not activated
+in production. The Pro plan is administrator-confirmed; actual project quota,
+credential presence, packaged SQL asset and schedule execution remain to verify.
+See [daily purge activation](document-operations-daily-purge.md). Daily active-row
+cleanup may lag API expiry by up to 24 hours, and MVCC/backup history follows
+existing retention policy.

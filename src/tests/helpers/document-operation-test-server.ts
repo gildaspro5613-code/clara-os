@@ -2,6 +2,8 @@
 import { createServer } from "node:http";
 import { routeHarness } from "./external-event-route-harness";
 import { isolatedPostgres } from "./isolated-postgres";
+import { purgeDocumentOperations } from "@/lib/maintenance/document-operations-purge";
+import { purgeRouteHarness } from "./document-operations-purge-route-harness";
 import { createDocumentOperationStore, operationScopeKey } from "@/lib/external-capabilities/document-operations";
 
 async function main() {
@@ -16,6 +18,8 @@ async function main() {
     await finished;
     return { success: true, content: JSON.stringify({ entities: [], facts: [], ambiguities: [], conflicts: [] }) };
   });
+  const maintenance = purgeRouteHarness(() => purgeDocumentOperations(async (strings) =>
+    [{ expired_results_cleared: (await runSql(strings[0])).trim() }]), "synthetic-maintenance-credential");
   const server = createServer(async (incoming, outgoing) => {
     try {
       if (incoming.url === "/test/metrics" && incoming.method === "GET") {
@@ -34,6 +38,9 @@ async function main() {
         const key = operationScopeKey(body.scope, "os-workspace");
         await query`UPDATE clara_document_operations SET expires_at = clock_timestamp() - interval '1 second'
           WHERE scope_key = ${key} AND operation_id = ${body.operationId} AND status = 'completed'`;
+        const purged = await maintenance.get(new Request("http://127.0.0.1/api/internal/document-operations-purge",
+          { headers: { authorization: "Bearer synthetic-maintenance-credential" } }));
+        if (purged.status !== 200) throw new Error("Synthetic scheduled purge failed");
         outgoing.end("ok"); return;
       }
       if (incoming.method !== "POST" || !["/api/external/events", "/api/external/document-operations/status"].includes(incoming.url ?? "")) {

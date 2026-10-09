@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { purgeDocumentOperations } from "@/lib/maintenance/document-operations-purge";
+import { purgeRouteHarness } from "./helpers/document-operations-purge-route-harness";
 import { isolatedPostgres } from "./helpers/isolated-postgres";
 import { createDocumentOperationStore, operationFingerprint, operationScopeKey } from "@/lib/external-capabilities/document-operations";
 
@@ -93,4 +95,42 @@ test("Neon console procedure is validated locally on neondb and rolls back all s
   const before = await consoleSql("SELECT count(*) FROM clara_document_operations");
   await consoleSql(readFileSync(new URL("../../db/validation/document_operations_005_synthetic.sql", import.meta.url), "utf8"));
   assert.equal(await consoleSql("SELECT count(*) FROM clara_document_operations"), before);
+});
+
+
+test("authenticated scheduled route executes reviewed purge on real PostgreSQL without touching active/failed/uncertain operations", { skip: !container }, async () => {
+  const store = createDocumentOperationStore(query);
+  const key = "7".repeat(64);
+  const fingerprint = "8".repeat(64);
+  const result = { response: "confidential-synthetic-document", sessionId: "synthetic", structuredResult: {} };
+  const expired = (await store.reserve(key, "6".repeat(64), fingerprint)).operation;
+  const fresh = (await store.reserve(key, "7".repeat(64), fingerprint)).operation;
+  const processing = (await store.reserve(key, "8".repeat(64), fingerprint)).operation;
+  const failed = (await store.reserve(key, "9".repeat(64), fingerprint)).operation;
+  const uncertain = (await store.reserve(key, "0".repeat(64), fingerprint)).operation;
+  await store.complete(expired, result); await store.complete(fresh, result); await store.fail(failed);
+  await runSql(`UPDATE clara_document_operations SET status = 'uncertain' WHERE scope_key = '${key}' AND operation_id = '${uncertain.operation_id}'`);
+  await runSql(`UPDATE clara_document_operations SET expires_at = clock_timestamp() - interval '1 second' WHERE scope_key = '${key}' AND operation_id = '${expired.operation_id}'`);
+  let executions = 0;
+  const purge = () => purgeDocumentOperations(async (strings, ...values) => {
+    assert.equal(values.length, 0); executions++;
+    return [{ expired_results_cleared: (await runSql(strings[0])).trim() }];
+  });
+  const route = purgeRouteHarness(purge, "synthetic-cron-credential");
+  const request = (auth?: string) => new Request("https://os.example/api/internal/document-operations-purge", { headers: auth ? { authorization: auth } : {} });
+  assert.equal((await route.get(request())).status, 401); assert.equal(executions, 0);
+  const first = await route.get(request("Bearer synthetic-cron-credential"));
+  assert.equal(first.status, 200); assert.equal((await first.json()).expired_results_cleared, 1);
+  const rows = await query`SELECT * FROM clara_document_operations WHERE scope_key = ${key}`;
+  assert.equal(rows.length, 5);
+  const tombstone = rows.find((row) => row.operation_id === expired.operation_id)!;
+  assert.equal(tombstone.status, "expired"); assert.equal(tombstone.result, null); assert.equal(tombstone.fingerprint, fingerprint);
+  assert.deepEqual(rows.find((row) => row.operation_id === fresh.operation_id)!.result, result);
+  for (const [operation, status] of [[processing, "processing"], [failed, "failed"], [uncertain, "uncertain"]] as const) {
+    assert.equal(rows.find((row) => row.operation_id === operation.operation_id)!.status, status);
+  }
+  assert.equal((await (await route.get(request("Bearer synthetic-cron-credential"))).json()).expired_results_cleared, 0);
+  assert.equal((await store.reserve(key, expired.operation_id, fingerprint)).owned, false);
+  const logs = JSON.stringify(route.logs);
+  assert.ok(!logs.includes("synthetic-cron-credential") && !logs.includes("confidential-synthetic-document"));
 });
