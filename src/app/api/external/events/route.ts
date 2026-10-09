@@ -13,7 +13,7 @@ import type { ClaraConversationMessage } from "@/lib/core/session";
 import { OpenAIResponsesEngine } from "@/lib/connectors/internal/openai/responses/openai-responses-engine";
 import { EventType } from "@/types";
 
-import { documentOperations, operationScopeKey, operationFingerprint, type DocumentOperation } from "@/lib/external-capabilities/document-operations";
+import { DocumentRetryAuthorizationError, documentOperations, operationScopeKey, operationFingerprint, type DocumentOperation } from "@/lib/external-capabilities/document-operations";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +26,7 @@ type Scope = {
 
 type ExternalEventBody = {
   operationId?: string;
+  retryOf?: string;
   schemaVersion?: string;
   eventType?: string;
   scope?: Scope;
@@ -180,6 +181,8 @@ function parseBody(value: unknown): ExternalEventBody | null {
       body.message.length > 100_000 || body.message.includes("\0")) return null;
   if (body.operationId !== undefined && (typeof body.operationId !== "string" ||
       !/^[a-f0-9]{64}$/.test(body.operationId) || body.eventType !== "LIVE_DOCUMENT_ANALYSIS_REQUESTED")) return null;
+  if (body.retryOf !== undefined && (!body.operationId || typeof body.retryOf !== "string" ||
+      !/^[a-f0-9]{64}$/.test(body.retryOf) || body.retryOf === body.operationId)) return null;
   const scope = body.scope;
   if (!scope || !opaque(scope.productId, 80) || !opaque(scope.workspaceId) ||
       !opaque(scope.userId) || !opaque(scope.sessionId)) return null;
@@ -249,12 +252,20 @@ export async function POST(request: Request) {
       return respond({ success: false, error: "Invalid Clara Core event." }, 400);
     }
 
+    if (body.retryOf && product.productId !== "clara-live") {
+      return respond({ success: false, error: "Product not eligible for document retry." }, 403);
+    }
     if (body.operationId) {
       advance("operation_reservation");
       const fingerprint = operationFingerprint(body as Record<string, unknown>);
       let reservation;
-      try { reservation = await documentOperations.reserve(operationScopeKey(scope, product.workspaceId), body.operationId, fingerprint); }
-      catch { return respond({ success: false, code: "DOCUMENT_REGISTRY_UNAVAILABLE", error: "Document operation registry unavailable." }, 503); }
+      try { reservation = body.retryOf
+        ? await documentOperations.reserveRetry(operationScopeKey(scope, product.workspaceId), body.operationId, body.retryOf, fingerprint)
+        : await documentOperations.reserve(operationScopeKey(scope, product.workspaceId), body.operationId, fingerprint, product.productId === "clara-live"); }
+      catch (error) {
+        if (error instanceof DocumentRetryAuthorizationError) return respond({ success: false, code: "DOCUMENT_RETRY_AUTHORIZATION_REQUIRED", error: "Retry parent required." }, 409);
+        return respond({ success: false, code: "DOCUMENT_REGISTRY_UNAVAILABLE", error: "Document operation registry unavailable." }, 503);
+      }
       if (reservation.operation.fingerprint !== fingerprint) {
         return respond({ success: false, code: "DOCUMENT_OPERATION_CONFLICT", error: "Document operation payload conflict." }, 409);
       }

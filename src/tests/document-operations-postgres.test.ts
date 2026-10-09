@@ -15,7 +15,8 @@ test("real PostgreSQL: additive migration, concurrency, fencing, crash recovery,
   const migration = readFileSync(new URL("../../db/migrations/005_document_operations.sql", import.meta.url), "utf8");
   await runSql(migration);
   await runSql(migration); // Repeatable additive migration.
-  await runSql("TRUNCATE clara_document_operations"); // Isolated synthetic database only.
+  await runSql(readFileSync(new URL("../../db/migrations/006_document_operation_retries.sql", import.meta.url), "utf8"));
+  await runSql("TRUNCATE clara_document_operation_retries, clara_document_operations"); // Isolated synthetic database only.
   const store = createDocumentOperationStore(query);
   const scope = { productId: "clara-live", workspaceId: "project-a", userId: "user-a", sessionId: "session-a" };
   const key = operationScopeKey(scope, "default");

@@ -14,7 +14,9 @@ async function main() {
   const finished = new Promise<void>((resolve) => { finish = resolve; });
   let notifyDocumentFinished!: () => void;
   const documentFinished = new Promise<void>((resolve) => { notifyDocumentFinished = resolve; });
+  let failFirst = false;
   const route = routeHarness(false, createDocumentOperationStore(query), false, async () => {
+    if (failFirst) { failFirst = false; return { success: false, content: "" }; }
     await finished;
     return { success: true, content: JSON.stringify({ entities: [], facts: [], ambiguities: [], conflicts: [] }) };
   });
@@ -26,6 +28,9 @@ async function main() {
         outgoing.setHeader("Content-Type", "application/json");
         outgoing.end(JSON.stringify(route.metrics));
         return;
+      }
+      if (incoming.url === "/test/fail-first" && incoming.method === "POST") {
+        failFirst = true; outgoing.end("ok"); return;
       }
       if (incoming.url === "/test/finish" && incoming.method === "POST") {
         finish(); await documentFinished; outgoing.end("ok"); return;
@@ -43,7 +48,7 @@ async function main() {
         if (purged.status !== 200) throw new Error("Synthetic scheduled purge failed");
         outgoing.end("ok"); return;
       }
-      if (incoming.method !== "POST" || !["/api/external/events", "/api/external/document-operations/status"].includes(incoming.url ?? "")) {
+      if (incoming.method !== "POST" || !["/api/external/events", "/api/external/document-operations/status", "/api/external/document-operations/recovery"].includes(incoming.url ?? "")) {
         outgoing.writeHead(404); outgoing.end(); return;
       }
       const chunks: Buffer[] = [];
@@ -51,7 +56,7 @@ async function main() {
       const headers = new Headers();
       for (const [name, value] of Object.entries(incoming.headers)) if (value !== undefined) headers.set(name, Array.isArray(value) ? value.join(",") : value);
       const request = new Request("http://127.0.0.1" + incoming.url, { method: "POST", headers, body: Buffer.concat(chunks).toString("utf8") });
-      const response = await (incoming.url!.endsWith("/status") ? route.statusPost(request) : route.post(request));
+      const response = await (incoming.url!.endsWith("/status") ? route.statusPost(request) : incoming.url!.endsWith("/recovery") ? route.recoveryPost(request) : route.post(request));
       if (incoming.url === "/api/external/events" && route.metrics.documentAnalyses > 0) notifyDocumentFinished();
       outgoing.writeHead(response.status, Object.fromEntries(response.headers));
       outgoing.end(await response.text());
