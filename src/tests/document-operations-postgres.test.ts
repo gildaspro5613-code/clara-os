@@ -1,29 +1,13 @@
 import assert from "node:assert/strict";
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { createDocumentOperationStore, operationFingerprint, operationScopeKey, type DocumentOperation } from "@/lib/external-capabilities/document-operations";
+import { isolatedPostgres } from "./helpers/isolated-postgres";
+import { createDocumentOperationStore, operationFingerprint, operationScopeKey } from "@/lib/external-capabilities/document-operations";
 
 // Only an explicitly named, isolated Docker test database is supported here.
 // Never reads DATABASE_URL, POSTGRES_URL, credentials or production records.
 const container = process.env.DOCUMENT_OPERATION_TEST_CONTAINER;
-const exec = promisify(execFile);
-async function runSql(statement: string) {
-  if (!container || !/^clara-document-registry-test(?:-[a-z0-9]+)?$/.test(container)) throw new Error("Invalid isolated test container");
-  const { stdout } = await exec("docker", ["exec", "-i", container, "psql", "-U", "postgres", "-d", "postgres", "-qAt", "-v", "ON_ERROR_STOP=1", "-c", statement]);
-  return stdout;
-}
-async function query(strings: TemplateStringsArray, ...values: unknown[]): Promise<DocumentOperation[]> {
-  const statement = strings.reduce((text, segment, index) => text + segment + (index < values.length
-    ? "'" + String(values[index]).replaceAll("'", "''") + "'" : ""), "").trim();
-  const returnsRows = /RETURNING \*/.test(statement) || /^SELECT /.test(statement);
-  const sql = returnsRows ? (statement.startsWith("SELECT")
-    ? `SELECT row_to_json(rows) FROM (${statement}) rows`
-    : `WITH rows AS (${statement}) SELECT row_to_json(rows) FROM rows`) : statement;
-  const output = await runSql(sql);
-  return returnsRows ? output.trim().split("\n").filter(Boolean).map((line) => JSON.parse(line)) : [];
-}
+const { runSql, query } = isolatedPostgres(container);
 
 test("real PostgreSQL: additive migration, concurrency, fencing, crash recovery, scope, conflicts and retention", { skip: !container }, async () => {
   const migration = readFileSync(new URL("../../db/migrations/005_document_operations.sql", import.meta.url), "utf8");
@@ -65,4 +49,48 @@ test("real PostgreSQL: additive migration, concurrency, fencing, crash recovery,
 test("canonical fingerprints ignore transport ordering and operation ID but cover scope and source changes", () => {
   assert.equal(operationFingerprint({ a: 1, b: { y: 2, x: 3 }, operationId: "a" }), operationFingerprint({ b: { x: 3, y: 2 }, a: 1 }));
   assert.notEqual(operationFingerprint({ documents: [{ text: "one" }] }), operationFingerprint({ documents: [{ text: "two" }] }));
+});
+
+
+test("real PostgreSQL: daily purge clears only expired JSON, preserves tombstones and is repeatable", { skip: !container }, async () => {
+  await runSql(readFileSync(new URL("../../db/migrations/005_document_operations.sql", import.meta.url), "utf8"));
+  const store = createDocumentOperationStore(query);
+  const key = "d".repeat(64);
+  const fingerprint = "e".repeat(64);
+  const result = { response: "synthetic", sessionId: "synthetic-session", structuredResult: { documentAnalysis: { facts: [] } } };
+  const expired = (await store.reserve(key, "1".repeat(64), fingerprint)).operation;
+  const fresh = (await store.reserve(key, "2".repeat(64), fingerprint)).operation;
+  const processing = (await store.reserve(key, "3".repeat(64), fingerprint)).operation;
+  const failed = (await store.reserve(key, "4".repeat(64), fingerprint)).operation;
+  const uncertain = (await store.reserve(key, "5".repeat(64), fingerprint)).operation;
+  await store.complete(expired, result);
+  await store.complete(fresh, result);
+  await store.fail(failed);
+  await runSql(`UPDATE clara_document_operations SET status = 'uncertain' WHERE scope_key = '${key}' AND operation_id = '${uncertain.operation_id}'`);
+  await runSql(`UPDATE clara_document_operations SET expires_at = clock_timestamp() - interval '1 second' WHERE scope_key = '${key}' AND operation_id = '${expired.operation_id}'`);
+  const maintenance = readFileSync(new URL("../../db/maintenance/purge_document_operations.sql", import.meta.url), "utf8");
+  assert.equal((await runSql(maintenance)).trim(), "1");
+  const rows = await query`SELECT * FROM clara_document_operations WHERE scope_key = ${key}`;
+  const purged = rows.find((row) => row.operation_id === expired.operation_id)!;
+  assert.equal(purged.result, null);
+  assert.equal(purged.status, "expired");
+  assert.equal(purged.fingerprint, fingerprint);
+  assert.equal(rows.length, 5);
+  assert.deepEqual(rows.find((row) => row.operation_id === fresh.operation_id)!.result, result);
+  assert.equal(rows.find((row) => row.operation_id === processing.operation_id)!.status, "processing");
+  assert.equal(rows.find((row) => row.operation_id === failed.operation_id)!.status, "failed");
+  assert.equal(rows.find((row) => row.operation_id === uncertain.operation_id)!.status, "uncertain");
+  assert.equal((await runSql(maintenance)).trim(), "0");
+  assert.equal((await store.reserve(key, expired.operation_id, fingerprint)).owned, false);
+  await assert.rejects(store.complete(expired, result));
+});
+
+
+test("Neon console procedure is validated locally on neondb and rolls back all synthetic rows", { skip: !container }, async () => {
+  if (!(await runSql("SELECT 1 FROM pg_database WHERE datname = 'neondb'")).trim()) await runSql("CREATE DATABASE neondb");
+  const { runSql: consoleSql } = isolatedPostgres(container, "neondb");
+  await consoleSql(readFileSync(new URL("../../db/migrations/005_document_operations.sql", import.meta.url), "utf8"));
+  const before = await consoleSql("SELECT count(*) FROM clara_document_operations");
+  await consoleSql(readFileSync(new URL("../../db/validation/document_operations_005_synthetic.sql", import.meta.url), "utf8"));
+  assert.equal(await consoleSql("SELECT count(*) FROM clara_document_operations"), before);
 });

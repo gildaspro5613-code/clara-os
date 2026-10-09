@@ -58,7 +58,7 @@ fingerprint, status, ownership nonce and timestamps; no document text/result or
 credential) remain indefinitely to prevent accidental reanalysis. Live's existing
 checkpoint/project data retention is unchanged.
 Physical deletion of unconsulted expired JSON requires an administrator to
-include this SQL in existing daily database maintenance, with no new service:
+execute `db/maintenance/purge_document_operations.sql` in existing daily database maintenance, with no new service. The equivalent predicate is:
 
 ```sql
 UPDATE clara_document_operations
@@ -119,3 +119,13 @@ fencing, uncertainty, immutable recovery, scoped access and expiry. Its TRUNCATE
 is confined to that explicit disposable test container, never DATABASE_URL.
 The documentary route fixture was emitted by Live's real instruction, source
 segmenter and `ClaraCoreEvent.wire_payload`, with synthetic source content.
+
+## Neon validation and PR #161 / PR #274 rollout
+
+See [the controlled Neon procedure](document-operations-neon-rollout.md) for
+TEST-branch SQL validation with rollback, real HTTP/PostgreSQL recovery testing,
+maintenance prerequisites and exact authorized production rollout. The checked-in
+purge procedure is prepared, not scheduled or run in production. No existing daily
+scheduler was found in this repository (the existing preview-branch cleanup does not purge results); Neon maintenance must be confirmed by an
+administrator. Daily active-row cleanup may lag API expiry by up to 24 hours, and
+MVCC/backup history follows existing retention policy.
