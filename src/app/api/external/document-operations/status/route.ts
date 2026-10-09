@@ -8,7 +8,19 @@ export const dynamic = "force-dynamic";
 export async function POST(request: Request) {
   try {
     const product = authenticateExternalProduct(request.headers.get("x-clara-product"), request.headers.get("authorization"));
-    if (!product) return NextResponse.json({ success: false, error: "Unauthorized external product." }, { status: 401 });
+    if (!product) {
+      // Internal-only classification. Never log tokens, token fingerprints,
+      // authorization header values, workspace IDs or request bodies.
+      const productId = request.headers.get("x-clara-product");
+      const authorization = request.headers.get("authorization");
+      const reason = !productId ? "missing_product_header"
+        : productId !== "clara-live" ? "unrecognized_product_header"
+        : !authorization ? "missing_authorization"
+        : !authorization.startsWith("Bearer ") ? "invalid_authorization_scheme"
+        : "credential_rejected";
+      console.warn("external_document_operation_auth_denied", { reason });
+      return NextResponse.json({ success: false, error: "Unauthorized external product." }, { status: 401 });
+    }
     let body;
     try { body = await request.json(); }
     catch { return NextResponse.json({ success: false, error: "Invalid JSON request body." }, { status: 400 }); }
