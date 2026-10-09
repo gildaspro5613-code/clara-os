@@ -37,6 +37,13 @@ export interface OpenAIResponsesResult {
    */
   readonly success: boolean;
 
+  /** Allowlisted technical diagnostics only; never provider messages/content. */
+  readonly failureCategory?: "provider_auth" | "provider_rate_limit" | "provider_timeout" | "provider_connection" | "provider_server" | "provider_request" | "provider_unknown";
+  readonly providerHttpStatus?: number;
+  readonly responseStatus?: "completed" | "incomplete" | "failed" | "other";
+  readonly incompleteReason?: "max_output_tokens" | "content_filter" | "other";
+  readonly outputTokens?: number;
+
   /**
    * Generated content.
    */

@@ -17,7 +17,6 @@ import { OpenAIResponsesResult } from "./openai-responses-result";
 /**
  * OpenAI Responses engine.
  */
-const MAX_PROMPT_CHARS = 120_000;
 const DEFAULT_MAX_OUTPUT_TOKENS = 1_200;
 const HARD_MAX_OUTPUT_TOKENS = 2_000;
 
@@ -67,7 +66,7 @@ export class OpenAIResponsesEngine {
 
         max_output_tokens: Math.min(
           context.maxTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,
-          HARD_MAX_OUTPUT_TOKENS,
+          context.outputProfile === "document_analysis" ? 6_000 : HARD_MAX_OUTPUT_TOKENS,
         ),
 
         metadata: context.metadata,
@@ -101,6 +100,10 @@ export class OpenAIResponsesEngine {
 
         success: true,
 
+        responseStatus: response.status === "completed" || response.status === "incomplete" || response.status === "failed" ? response.status : "other",
+        incompleteReason: response.incomplete_details ? (response.incomplete_details.reason === "max_output_tokens" || response.incomplete_details.reason === "content_filter" ? response.incomplete_details.reason : "other") : undefined,
+        outputTokens: response.usage?.output_tokens,
+
         content: response.output_text,
 
         responseId: response.id,
@@ -131,6 +134,13 @@ export class OpenAIResponsesEngine {
       return {
 
         success: false,
+
+        failureCategory: error instanceof OpenAI.APIConnectionTimeoutError ? "provider_timeout"
+          : error instanceof OpenAI.APIConnectionError ? "provider_connection"
+          : error instanceof OpenAI.APIError ? (error.status === 401 || error.status === 403 ? "provider_auth"
+            : error.status === 429 ? "provider_rate_limit" : error.status && error.status >= 500 ? "provider_server" : "provider_request")
+          : "provider_unknown",
+        providerHttpStatus: error instanceof OpenAI.APIError && Number.isInteger(error.status) && error.status! >= 400 && error.status! <= 599 ? error.status : undefined,
 
         content: "",
 

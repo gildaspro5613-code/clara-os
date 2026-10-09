@@ -51,6 +51,9 @@ export interface OpenAIResponsesContext {
    */
   maxTokens?: number;
 
+  /** Dedicated output budget; other callers retain the existing ceiling. */
+  outputProfile?: "document_analysis";
+
   /**
    * Temperature.
    */
