@@ -13,6 +13,8 @@ import type { ClaraConversationMessage } from "@/lib/core/session";
 import { OpenAIResponsesEngine } from "@/lib/connectors/internal/openai/responses/openai-responses-engine";
 import { EventType } from "@/types";
 
+import { documentOperations, operationScopeKey, operationFingerprint, type DocumentOperation } from "@/lib/external-capabilities/document-operations";
+
 export const dynamic = "force-dynamic";
 
 type Scope = {
@@ -23,6 +25,7 @@ type Scope = {
 };
 
 type ExternalEventBody = {
+  operationId?: string;
   schemaVersion?: string;
   eventType?: string;
   scope?: Scope;
@@ -155,6 +158,8 @@ function parseBody(value: unknown): ExternalEventBody | null {
   // domain names, source names and JSON escapes in its effective-state message.
   if (typeof body.message !== "string" || !body.message.trim() ||
       body.message.length > 100_000 || body.message.includes("\0")) return null;
+  if (body.operationId !== undefined && (typeof body.operationId !== "string" ||
+      !/^[a-f0-9]{64}$/.test(body.operationId) || body.eventType !== "LIVE_DOCUMENT_ANALYSIS_REQUESTED")) return null;
   const scope = body.scope;
   if (!scope || !opaque(scope.productId, 80) || !opaque(scope.workspaceId) ||
       !opaque(scope.userId) || !opaque(scope.sessionId)) return null;
@@ -174,6 +179,8 @@ export async function POST(request: Request) {
   let phaseStarted = started;
   let httpStatus: number | null = null;
   let operation = "unknown_event";
+  let reserved: DocumentOperation | null = null;
+  let resultPersisted = false;
   const log = (event: string, extra: Record<string, unknown> = {}) => console.info("External Core call", JSON.stringify({
     correlation_id: correlationId, event, phase, operation, ...extra,
   }));
@@ -222,6 +229,22 @@ export async function POST(request: Request) {
       return respond({ success: false, error: "Invalid Clara Core event." }, 400);
     }
 
+    if (body.operationId) {
+      advance("operation_reservation");
+      const fingerprint = operationFingerprint(body as Record<string, unknown>);
+      let reservation;
+      try { reservation = await documentOperations.reserve(operationScopeKey(scope, product.workspaceId), body.operationId, fingerprint); }
+      catch { return respond({ success: false, code: "DOCUMENT_REGISTRY_UNAVAILABLE", error: "Document operation registry unavailable." }, 503); }
+      if (reservation.operation.fingerprint !== fingerprint) {
+        return respond({ success: false, code: "DOCUMENT_OPERATION_CONFLICT", error: "Document operation payload conflict." }, 409);
+      }
+      if (!reservation.owned) {
+        const existing = reservation.operation;
+        if (existing.status === "completed") return respond({ success: true, data: existing.result }, 200);
+        return respond({ success: true, data: { operationId: existing.operation_id, status: existing.status, result: null } }, 202);
+      }
+      reserved = reservation.operation;
+    }
     const key = sessionKey(scope);
     const clara = new Clara(key, product.workspaceId);
     const event = {
@@ -258,6 +281,35 @@ export async function POST(request: Request) {
     const response = await composeClaraResponse(message, session);
     advance("document_analysis");
     const documentAnalysis = await analyzeExternalDocument(body);
+    if (reserved && !documentAnalysis) throw new Error("Document analysis unavailable.");
+    const data = {
+      response,
+      sessionId: body.scope.sessionId,
+      missionId: session.mission?.id ?? null,
+      structuredResult: {
+        state: session.state,
+        recommendation: session.recommendation
+          ? { summary: session.recommendation.summary, rationale: session.recommendation.rationale }
+          : null,
+        mission: session.mission
+          ? {
+              id: session.mission.id,
+              title: session.mission.title,
+              objective: session.mission.objective,
+              status: session.mission.status,
+              progress: session.mission.progress,
+              nextAction: session.mission.nextAction,
+            }
+          : null,
+        sources: session.sources.map((source) => ({ summary: source.summary })),
+        documentAnalysis,
+      },
+    };
+    if (reserved) {
+      advance("operation_persistence");
+      await documentOperations.complete(reserved, data);
+      resultPersisted = true;
+    }
     advance("session_persistence");
     const now = new Date().toISOString();
     const messages: ClaraConversationMessage[] = [
@@ -268,33 +320,13 @@ export async function POST(request: Request) {
     session.updatedAt = new Date();
     await saveSession(session, key);
 
-    return respond({
-      success: true,
-      data: {
-        response,
-        sessionId: body.scope.sessionId,
-        missionId: session.mission?.id ?? null,
-        structuredResult: {
-          state: session.state,
-          recommendation: session.recommendation
-            ? { summary: session.recommendation.summary, rationale: session.recommendation.rationale }
-            : null,
-          mission: session.mission
-            ? {
-                id: session.mission.id,
-                title: session.mission.title,
-                objective: session.mission.objective,
-                status: session.mission.status,
-                progress: session.mission.progress,
-                nextAction: session.mission.nextAction,
-              }
-            : null,
-          sources: session.sources.map((source) => ({ summary: source.summary })),
-          documentAnalysis,
-        },
-      },
-    }, 200);
+    return respond({ success: true, data }, 200);
   } catch (error) {
+    if (reserved && !resultPersisted) {
+      // A failed storage write remains processing/uncertain if this update also
+      // fails. Neither case grants another invocation permission to execute.
+      try { await documentOperations.fail(reserved); } catch { /* fail closed */ }
+    }
     if (error instanceof ExternalProductConfigurationError) {
       return respond({ success: false, error: "External product gateway is not configured." }, 503);
     }

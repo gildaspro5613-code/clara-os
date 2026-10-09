@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "clara.unified-core.event.v1",
+  "eventType": "LIVE_DOCUMENT_ANALYSIS_REQUESTED",
+  "scope": {
+    "productId": "clara-live",
+    "workspaceId": "project-a",
+    "userId": "user-a",
+    "sessionId": "session-a"
+  },
+  "message": "Analyse les sources FR/EN/DE/ES/IT ou mixtes sans inventer de faits. Conserve locator, confidence, ambiguïtés et conflits. Canonicalise les concepts sound.console (valeur fabricant/modèle), sound.inputs_total (nombre entier), sound.input_patch (valeur chaîne JSON d'une liste de {channelStart, channelEnd, source}). Les numéros de canaux ne sont jamais des quantités. Chaque paire stéréo occupe ses deux canaux. Ne pose pas de questions pendant cette analyse documentaire.",
+  "context": {
+    "surface": "clara-live",
+    "documentBatch": 1,
+    "sourceRevision": "48db75a2b427994e9b798ead37ce486a0f020cc805aca00579792e019f28d3e4",
+    "certificationRule": "DOCUMENTED_MUST_NOT_BECOME_VERIFIED"
+  },
+  "documents": [
+    {
+      "documentId": "synthetic-doc",
+      "filename": "synthetic.txt",
+      "sourceKind": "project_document",
+      "segments": [
+        {
+          "document_id": "synthetic-doc",
+          "filename": "synthetic.txt",
+          "locator": "document:chars 0-30",
+          "text": "synthetic confidential content"
+        }
+      ]
+    }
+  ],
+  "liveCapabilities": [],
+  "operationId": "32076facfea366756699db76764dda5a7b13812d9aab2ba9ff0026c3e4dbdd79"
+}

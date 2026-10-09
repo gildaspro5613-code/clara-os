@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
+import { documentOperations, operationScopeKey, operationFingerprint, type DocumentOperation } from "@/lib/external-capabilities/document-operations";
 import vm from "node:vm";
 import ts from "typescript";
 import { authenticateExternalProduct, ExternalProductConfigurationError } from "@/lib/external-capabilities/config";
@@ -10,7 +11,7 @@ import { authenticateExternalProduct, ExternalProductConfigurationError } from "
 // production f917529 (unchanged at 207ee8a), using synthetic project facts.
 const fixture = JSON.parse(readFileSync(new URL("./live-work-cycle-event.fixture.json", import.meta.url), "utf8"));
 
-function routeHarness(failDispatch = false) {
+function routeHarness(failDispatch = false, store = documentOperations, failSession = false) {
   const products = new Map([
     ["clara-live", { productId: "clara-live", workspaceId: "os-workspace", token: "test-credential", capabilities: [] }],
     ["other-product", { productId: "other-product", workspaceId: "other-os-workspace", token: "other-test-credential", capabilities: ["existing-grant"] }],
@@ -20,6 +21,7 @@ function routeHarness(failDispatch = false) {
   const logs: Record<string, unknown>[] = [];
   const require = createRequire(import.meta.url);
   const modules: Record<string, unknown> = {
+    "@/lib/external-capabilities/document-operations": { documentOperations: store, operationScopeKey, operationFingerprint },
     "next/server": { NextResponse: Response },
     "@/lib/external-capabilities/config": { ExternalProductConfigurationError,
       authenticateExternalProduct: (id: string | null, auth: string | null) => authenticateExternalProduct(id, auth, products) },
@@ -29,8 +31,8 @@ function routeHarness(failDispatch = false) {
       received.push(event); return { conversation: [], sources: [], state: "WORKING" };
     } },
     "@/lib/brain/response-composer": { composeClaraResponse: async () => "Contract accepted." },
-    "@/lib/core/store/session-store": { saveSession: async () => {} },
-    "@/lib/connectors/internal/openai/responses/openai-responses-engine": { OpenAIResponsesEngine: class {} },
+    "@/lib/core/store/session-store": { saveSession: async () => { if (failSession) throw new Error("private-storage-error"); } },
+    "@/lib/connectors/internal/openai/responses/openai-responses-engine": { OpenAIResponsesEngine: class { async generate() { return { success: true, content: JSON.stringify({ entities: [], facts: [], ambiguities: [], conflicts: [] }) }; } } },
     "@/types": { EventType: { USER_MESSAGE: "USER_MESSAGE", DOCUMENT_RECEIVED: "DOCUMENT_RECEIVED" } },
   };
   // Execute the actual route, substituting only downstream cognition/storage.
@@ -39,9 +41,14 @@ function routeHarness(failDispatch = false) {
   const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   const exports: Record<string, unknown> = {};
   vm.runInNewContext(compiled, { exports, require: (name: string) => modules[name] ?? require(name),
-    Response, crypto: globalThis.crypto, performance,
+    Response, crypto: globalThis.crypto, performance, process: { env: {} },
     console: { ...console, info: (_label: string, data: string) => logs.push(JSON.parse(data)) } });
-  return { post: exports.POST as (request: Request) => Promise<Response>, received, workspaces, logs };
+  const statusSource = readFileSync(new URL("../app/api/external/document-operations/status/route.ts", import.meta.url), "utf8");
+  const statusExports: Record<string, unknown> = {};
+  vm.runInNewContext(ts.transpileModule(statusSource, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText,
+    { exports: statusExports, require: (name: string) => modules[name] ?? require(name) });
+  return { post: exports.POST as (request: Request) => Promise<Response>,
+    statusPost: statusExports.POST as (request: Request) => Promise<Response>, received, workspaces, logs };
 }
 
 function request(body: unknown, credential = "test-credential", productId = "clara-live") {
@@ -129,4 +136,84 @@ test("Core failures identify the failed phase and real 500 without logging excep
   assert.equal(route.logs.at(-1)?.http_status, 500);
   assert.equal(route.logs.at(-1)?.outcome, "rejected_or_failed");
   assert.ok(!JSON.stringify(route.logs).includes("confidential-downstream-error"));
+});
+
+function memoryRegistry() {
+  const rows = new Map<string, DocumentOperation>();
+  return {
+    rows,
+    async lookup(scope: string, id: string) { return rows.get(scope + id) ?? null; },
+    async reserve(scope: string, id: string, fingerprint: string) {
+      const key = scope + id;
+      if (rows.has(key)) return { owned: false, operation: rows.get(key) };
+      const operation: DocumentOperation = { scope_key: scope, operation_id: id, fingerprint, owner_token: crypto.randomUUID(), status: "processing", result: null };
+      rows.set(key, operation);
+      return { owned: true, operation };
+    },
+    async complete(operation: DocumentOperation, result: Record<string, unknown>) { operation.status = "completed"; operation.result = result; },
+    async fail(operation: DocumentOperation) { if (operation.status !== "completed") operation.status = "failed"; },
+  };
+}
+// Generated from Live's real DOCUMENT_INSTRUCTION, source_segments and wire_payload.
+const docEvent = JSON.parse(readFileSync(new URL("./live-document-operation.fixture.json", import.meta.url), "utf8"));
+
+test("durable documentary calls reserve once under concurrency and recover the stored result", async () => {
+  const store = memoryRegistry();
+  const route = routeHarness(false, store);
+  const responses = await Promise.all(Array.from({ length: 10 }, () => route.post(request(docEvent))));
+  assert.equal(route.received.length, 1);
+  assert.ok(responses.every((response) => [200, 202].includes(response.status)));
+  const response = await route.statusPost(request({ operationId: docEvent.operationId, scope: docEvent.scope }));
+  assert.equal(response.status, 200);
+  const data = (await response.json()).data;
+  assert.equal(data.status, "completed");
+  assert.equal(data.result.sessionId, docEvent.scope.sessionId);
+  assert.equal(data.result.structuredResult.documentAnalysis.schemaVersion, "clara.document-analysis.v1");
+  assert.equal((await route.post(request(docEvent))).status, 200);
+  assert.equal(route.received.length, 1);
+  assert.ok(!JSON.stringify(route.logs).includes("synthetic confidential content"));
+});
+
+test("operation IDs conflict on changed payload and status access is scoped and authenticated", async () => {
+  const route = routeHarness(false, memoryRegistry());
+  assert.equal((await route.post(request(docEvent))).status, 200);
+  const conflict = await route.post(request({ ...docEvent, message: "different instruction" }));
+  assert.equal(conflict.status, 409);
+  assert.equal((await conflict.json()).code, "DOCUMENT_OPERATION_CONFLICT");
+  assert.equal((await route.statusPost(request({}, "wrong"))).status, 401);
+  for (const key of ["workspaceId", "userId", "sessionId"]) {
+    assert.equal((await route.statusPost(request({ operationId: docEvent.operationId,
+      scope: { ...docEvent.scope, [key]: "other" } }))).status, 404);
+  }
+  assert.equal((await route.statusPost(request({ operationId: docEvent.operationId, scope: docEvent.scope },
+    "other-test-credential", "other-product"))).status, 403);
+  const other = { ...docEvent.scope, productId: "other-product" };
+  assert.equal((await route.statusPost(request({ operationId: docEvent.operationId, scope: other },
+    "other-test-credential", "other-product"))).status, 404);
+  assert.equal(route.received.length, 1);
+});
+
+test("a crash never authorizes another analysis and session failure cannot erase the completed document result", async () => {
+  const failedStore = memoryRegistry();
+  const failed = routeHarness(true, failedStore);
+  assert.equal((await failed.post(request(docEvent))).status, 500);
+  assert.equal((await failed.post(request(docEvent))).status, 202);
+  assert.equal((await (await failed.statusPost(request({ operationId: docEvent.operationId, scope: docEvent.scope }))).json()).data.status, "failed");
+  const route = routeHarness(false, memoryRegistry(), true);
+  assert.equal((await route.post(request(docEvent))).status, 500);
+  const recovered = await route.statusPost(request({ operationId: docEvent.operationId, scope: docEvent.scope }));
+  assert.equal((await recovered.json()).data.status, "completed");
+  assert.equal((await route.post(request(docEvent))).status, 200);
+  assert.equal(route.received.length, 1);
+});
+
+test("new registry fails closed while legacy consumers do not require its migration", async () => {
+  const store = memoryRegistry();
+  store.reserve = async () => { throw new Error("private database configuration"); };
+  const route = routeHarness(false, store);
+  assert.equal((await route.post(request(docEvent))).status, 503);
+  assert.equal(route.received.length, 0);
+  assert.equal((await route.post(request(fixture))).status, 200);
+  for (const operationId of ["bad", 12, null]) assert.equal((await route.post(request({ ...docEvent, operationId }))).status, 400);
+  assert.equal((await route.post(request({ ...fixture, operationId: docEvent.operationId }))).status, 400);
 });
