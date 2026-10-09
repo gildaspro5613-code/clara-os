@@ -1,0 +1,23 @@
+name: Clara Live external auth contract
+on:
+  pull_request:
+    branches:
+      - consolidation/clara-os-clean-base
+    paths:
+      - 'src/lib/external-capabilities/config.ts'
+      - 'src/scripts/check-clara-live-auth-contract.ts'
+      - '.github/workflows/clara-live-auth-contract.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline-auth-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npx tsx src/scripts/check-clara-live-auth-contract.ts
