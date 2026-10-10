@@ -1,16 +1,30 @@
+import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { authenticateExternalProduct } from "@/lib/external-capabilities/config";
 import { documentOperations, operationScopeKey, operationFingerprint, type DocumentOperationScope } from "@/lib/external-capabilities/document-operations";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
-  const reply = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: { "Cache-Control": "no-store" } });
+  const supplied = request.headers.get("x-clara-correlation-id") ?? "";
+  const correlationId = /^[a-f0-9]{32}$/.test(supplied) ? supplied : randomUUID().replaceAll("-", "");
+  const started = performance.now();
+  let action = "unknown";
+  const reply = (body: Record<string, unknown>, status = 200) => {
+    const data = body.data as Record<string, unknown> | undefined;
+    console.info(JSON.stringify({ event: "document_recovery", correlation_id: correlationId,
+      action, http_status: status, code: body.code ?? (status >= 400 ? "DOCUMENT_RECOVERY_REFUSED" :
+        data?.status === "authorized" ? "DOCUMENT_RETRY_AUTHORIZED" : "DOCUMENT_STATUS_CHECKED"), state: data?.status ?? null,
+      duration_ms: Math.round(performance.now() - started) }));
+    return NextResponse.json({ ...body, correlationId }, { status,
+      headers: { "Cache-Control": "no-store", "x-clara-correlation-id": correlationId } });
+  };
   try {
     const product = authenticateExternalProduct(request.headers.get("x-clara-product"), request.headers.get("authorization"));
     if (!product) return reply({ success: false, error: "Unauthorized external product." }, 401);
     if (product.productId !== "clara-live") return reply({ success: false, error: "Product not eligible." }, 403);
     let body;
     try { body = await request.json(); } catch { return reply({ success: false, error: "Invalid request." }, 400); }
+    action = ["inspect", "authorize"].includes(body?.action) ? body.action : "invalid";
     const event = body?.event;
     const scope = event?.scope as DocumentOperationScope | undefined;
     if (!["inspect", "authorize"].includes(body?.action) || typeof body?.operationId !== "string" || !/^[a-f0-9]{64}$/.test(body.operationId) ||
@@ -30,7 +44,10 @@ export async function POST(request: Request) {
       const attemptId = await documentOperations.authorizeRetry(key, body.operationId, operation.fingerprint, scope.userId);
       return reply({ success: true, data: { operationId: body.operationId, attemptId, status: "authorized" } });
     }
+    const attemptId = matches && eligible
+      ? await documentOperations.inspectRetry(key, body.operationId, operation.fingerprint) : null;
     return reply({ success: true, data: { operationId: body.operationId, status: operation.status,
+      authorization: attemptId ? { attemptId, parentOperationId: body.operationId, status: "authorized" } : null,
       fingerprintMatches: matches, hasResult: operation.result !== null, retryEligible: eligible,
       result: operation.result } });
   } catch {

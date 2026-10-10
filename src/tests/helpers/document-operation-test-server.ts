@@ -15,8 +15,9 @@ async function main() {
   let notifyDocumentFinished!: () => void;
   const documentFinished = new Promise<void>((resolve) => { notifyDocumentFinished = resolve; });
   let failFirst = false;
+  let loseAuthorization = false;
   const route = routeHarness(false, createDocumentOperationStore(query), false, async () => {
-    if (failFirst) { failFirst = false; return { success: false, content: "" }; }
+    if (failFirst) { failFirst = false; return { success: false, content: "", failureCategory: "provider_timeout" }; }
     await finished;
     return { success: true, content: JSON.stringify({ entities: [], facts: [], ambiguities: [], conflicts: [] }) };
   });
@@ -28,6 +29,9 @@ async function main() {
         outgoing.setHeader("Content-Type", "application/json");
         outgoing.end(JSON.stringify(route.metrics));
         return;
+      }
+      if (incoming.url === "/test/lose-next-authorization" && incoming.method === "POST") {
+        loseAuthorization = true; outgoing.end("ok"); return;
       }
       if (incoming.url === "/test/fail-first" && incoming.method === "POST") {
         failFirst = true; outgoing.end("ok"); return;
@@ -58,6 +62,9 @@ async function main() {
       const request = new Request("http://127.0.0.1" + incoming.url, { method: "POST", headers, body: Buffer.concat(chunks).toString("utf8") });
       const response = await (incoming.url!.endsWith("/status") ? route.statusPost(request) : incoming.url!.endsWith("/recovery") ? route.recoveryPost(request) : route.post(request));
       if (incoming.url === "/api/external/events" && route.metrics.documentAnalyses > 0) notifyDocumentFinished();
+      if (loseAuthorization && incoming.url!.endsWith("/recovery") && JSON.parse(Buffer.concat(chunks).toString("utf8")).action === "authorize" && response.status === 200) {
+        loseAuthorization = false; outgoing.destroy(); return; // OS committed; the real HTTP acknowledgement is lost.
+      }
       outgoing.writeHead(response.status, Object.fromEntries(response.headers));
       outgoing.end(await response.text());
     } catch {

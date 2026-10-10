@@ -43,6 +43,16 @@ test("real PostgreSQL: pure reconciliation and immutable retry authorization, on
     const ids = await Promise.all(responses.map(async r => { assert.equal(r.status, 200); return (await r.json()).data.attemptId; }));
     assert.equal(new Set(ids).size, 1);
     const attemptId = ids[0];
+    const registryBefore = await runSql(`SELECT row_to_json(r) FROM clara_document_operation_retries r WHERE scope_key='${scopeKey}'`);
+    const recovered = await route.recoveryPost(request({ action: "inspect", event, operationId: parentId }));
+    assert.deepEqual((await recovered.json()).data.authorization, { status: "authorized", parentOperationId: parentId, attemptId });
+    assert.equal(await runSql(`SELECT row_to_json(r) FROM clara_document_operation_retries r WHERE scope_key='${scopeKey}'`), registryBefore);
+    assert.equal(await store.inspectRetry(scopeKey, parentId, "b".repeat(64)), null);
+    assert.equal(await store.inspectRetry("a".repeat(64), parentId, fingerprint), null);
+    const mismatch = await route.recoveryPost(request({ action: "inspect", event: { ...event, message: "changed" }, operationId: parentId }));
+    assert.equal((await mismatch.json()).data.authorization, null);
+    assert.ok(route.logs.some(log => log.event === "document_recovery" && /^[a-f0-9]{32}$/.test(String(log.correlation_id))));
+    assert.ok(!JSON.stringify(route.logs).includes("test-credential"));
     assert.notEqual(attemptId, parentId);
     assert.equal((await route.post(request({ ...event, operationId: attemptId }))).status, 409);
     assert.equal(route.metrics.documentAnalyses, 0);

@@ -46,7 +46,8 @@ export function routeHarness(failDispatch = false, store = documentOperations, f
   const recoverySource = readFileSync(new URL("../../app/api/external/document-operations/recovery/route.ts", import.meta.url), "utf8");
   const recoveryExports: Record<string, unknown> = {};
   vm.runInNewContext(ts.transpileModule(recoverySource, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText,
-    { exports: recoveryExports, require: (name: string) => modules[name] ?? require(name) });
+    { exports: recoveryExports, require: (name: string) => modules[name] ?? require(name), performance,
+      console: { info: (data: string) => logs.push(JSON.parse(data)) } });
   return { post: exports.POST as (request: Request) => Promise<Response>,
     recoveryPost: recoveryExports.POST as (request: Request) => Promise<Response>,
     statusPost: statusExports.POST as (request: Request) => Promise<Response>, received, workspaces, logs, metrics };
