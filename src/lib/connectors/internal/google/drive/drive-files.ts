@@ -125,7 +125,7 @@ export class DriveFiles {
 
     const response = await this.drive.files.list({
       fields:
-        "nextPageToken,files(id,name,mimeType,webViewLink)",
+        "nextPageToken,files(id,name,mimeType,webViewLink,parents)",
       includeItemsFromAllDrives: true,
       supportsAllDrives: true,
       pageSize: options.pageSize,
