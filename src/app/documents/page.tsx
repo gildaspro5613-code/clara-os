@@ -18,6 +18,7 @@ interface DocumentFile {
 interface DocumentsResponse {
   success: boolean;
   files?: DocumentFile[];
+  nextPageToken?: string | null;
   message?: string;
   extractable?: boolean;
   textContent?: string;
@@ -34,6 +35,8 @@ export default function DocumentsPage() {
   const [folderTrail, setFolderTrail] = useState<{ id: string; name: string }[]>([]);
   const [selected, setSelected] = useState<{ name: string; content: string; recommendation?: string | null } | null>(null);
   const [files, setFiles] = useState<DocumentFile[]>([]);
+  const [nextPageToken, setNextPageToken] = useState<string | null>(null);
+  const [destinationPageToken, setDestinationPageToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [working, setWorking] = useState<string | null>(null);
@@ -54,6 +57,7 @@ export default function DocumentsPage() {
       const data = (await response.json()) as DocumentsResponse;
       if (!response.ok || !data.success) throw new Error(data.message ?? t("loadError"));
       setFiles(data.files ?? []);
+      setNextPageToken(data.nextPageToken ?? null);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("loadError"));
     } finally {
@@ -62,6 +66,23 @@ export default function DocumentsPage() {
   }
 
   useEffect(() => { void loadDocuments(); }, []);
+
+  async function loadMore() {
+    if (!nextPageToken || loading) return;
+    try {
+      setLoading(true);
+      const params = new URLSearchParams({ pageToken: nextPageToken });
+      if (query.trim()) params.set("query", query.trim());
+      else if (folderTrail.length) params.set("folderId", folderTrail[folderTrail.length - 1].id);
+      const response = await fetch(`/api/documents?${params}`, { cache: "no-store" });
+      const data = await response.json() as DocumentsResponse;
+      if (!response.ok || !data.success) throw new Error(data.message ?? "Chargement impossible.");
+      setFiles(prev => [...prev, ...(data.files ?? []).filter(file => !prev.some(existing => existing.id === file.id))]);
+      setNextPageToken(data.nextPageToken ?? null);
+    } catch (err) { setError(err instanceof Error ? err.message : "Chargement impossible."); }
+    finally { setLoading(false); }
+  }
+
 
   function openFolder(file: DocumentFile) {
     const next = [...folderTrail, { id: file.id, name: file.name }];
@@ -90,15 +111,18 @@ export default function DocumentsPage() {
     finally { setWorking(null); }
   }
 
-  async function browseDestination(folderId = "") {
+  async function browseDestination(folderId = "", pageToken?: string) {
     setDestinationLoading(true);
     try {
       const params = new URLSearchParams();
       if (folderId) params.set("folderId", folderId);
+      if (pageToken) params.set("pageToken", pageToken);
       const response = await fetch(`/api/documents?${params}`, { cache: "no-store" });
       const data = await response.json() as DocumentsResponse;
       if (!response.ok || !data.success) throw new Error(data.message ?? "Impossible de consulter les dossiers.");
-      setDestinations((data.files ?? []).filter(item => item.mimeType === "application/vnd.google-apps.folder"));
+      const folders = (data.files ?? []).filter(item => item.mimeType === "application/vnd.google-apps.folder");
+      setDestinations(prev => pageToken ? [...prev, ...folders.filter(folder => !prev.some(existing => existing.id === folder.id))] : folders);
+      setDestinationPageToken(data.nextPageToken ?? null);
     } catch (err) { setError(err instanceof Error ? err.message : "Impossible de consulter les dossiers."); }
     finally { setDestinationLoading(false); }
   }
@@ -215,6 +239,7 @@ export default function DocumentsPage() {
               {destinationTrail.map((folder, index) => <button type="button" key={folder.id} className="text-cyan-300" onClick={() => { const next = destinationTrail.slice(0, index + 1); setDestinationTrail(next); void browseDestination(folder.id); }}>/ {folder.name}</button>)}
             </div>
             {destinationLoading ? <p className="mt-3 text-sm text-white/60">Chargement des dossiers…</p> : <div className="mt-3 grid gap-2 sm:grid-cols-2">{destinations.map(folder => <button type="button" key={folder.id} onClick={() => { setDestinationTrail(prev => [...prev, { id: folder.id, name: folder.name }]); void browseDestination(folder.id); }} className="flex items-center gap-2 rounded-lg border border-white/10 p-3 text-left text-sm"><Folder size={16} className="text-cyan-300"/>{folder.name}</button>)}</div>}
+            {destinationPageToken && <button type="button" disabled={destinationLoading} onClick={() => void browseDestination(destinationTrail.at(-1)?.id ?? "", destinationPageToken)} className="mt-3 rounded-lg border border-white/15 px-3 py-2 text-sm">Afficher davantage de dossiers</button>}
             <button type="button" disabled={!destinationTrail.length || destinationTrail.at(-1)?.id === moveTarget.parentId || working !== null} onClick={() => void confirmMove()} className="mt-4 rounded-lg bg-cyan-800 px-4 py-2 text-sm disabled:opacity-40">Confirmer le déplacement dans ce dossier</button>
           </section>}
           {selected && <section className="mb-6 rounded-xl border border-cyan-300/20 p-5"><div className="flex justify-between gap-4"><h2 className="font-semibold">{selected.name}</h2><button type="button" onClick={() => setSelected(null)}>Fermer</button></div>{selected.recommendation && <p className="mt-3 text-cyan-200">{selected.recommendation}</p>}<pre className="mt-4 max-h-80 overflow-auto whitespace-pre-wrap text-sm text-white/70">{selected.content}</pre></section>}
@@ -257,6 +282,7 @@ export default function DocumentsPage() {
               ))}
             </div>
           )}
+          {nextPageToken && <button type="button" disabled={loading} onClick={() => void loadMore()} className="mt-6 rounded-xl border border-white/15 px-5 py-3 text-sm text-cyan-100 disabled:opacity-40">Afficher davantage de fichiers et dossiers</button>}
         </div>
       </div>
     </MainLayout>
