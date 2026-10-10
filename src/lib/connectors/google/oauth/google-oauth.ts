@@ -71,11 +71,23 @@ export const googleOAuthProvider: OAuthProviderDefinition = {
     }));
   },
   async exchangeCode(request) {
-    const { tokens } = await createGoogleOAuthClient().getToken({
-      code: request.code,
-      redirect_uri: request.redirectUri,
-    });
-    return normalizeGoogleCredentials(tokens);
+    try {
+      const { tokens } = await createGoogleOAuthClient().getToken({
+        code: request.code,
+        redirect_uri: request.redirectUri,
+      });
+      return normalizeGoogleCredentials(tokens);
+    } catch (error) {
+      // Log configuration properties only; never emit values or provider payloads.
+      console.error("[Google Workspace OAuth config check]", {
+        clientIdHasOuterWhitespace: googleConfig.clientId !== googleConfig.clientId.trim(),
+        clientSecretHasOuterWhitespace: googleConfig.clientSecret !== googleConfig.clientSecret.trim(),
+        redirectHasOuterWhitespace: googleConfig.redirectUri !== googleConfig.redirectUri.trim(),
+        redirectMatchesCallback: googleConfig.redirectUri === "https://os.melodie.digital/api/connections/google/callback",
+        redirectMatchesExchange: googleConfig.redirectUri === request.redirectUri,
+      });
+      throw error;
+    }
   },
   async refresh(request) {
     const client = createGoogleOAuthClient();
