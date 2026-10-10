@@ -66,7 +66,8 @@ test("runtime reuses the exact reviewed SQL file as one atomic query with no req
 
 test("one daily UTC cron targets only maintenance; SQL asset tracing is explicitly configured", () => {
   const config = JSON.parse(readFileSync(new URL("../../vercel.json", import.meta.url), "utf8"));
-  assert.deepEqual(config.crons, [{ path: "/api/internal/document-operations-purge", schedule: "0 3 * * *" }]);
+  assert.deepEqual(config.crons, [{ path: "/api/internal/document-operations-purge", schedule: "0 3 * * *" },
+    { path: "/api/internal/event-jobs-run", schedule: "* * * * *" }]);
   const next = readFileSync(new URL("../../next.config.ts", import.meta.url), "utf8");
   assert.ok(next.includes('"/api/internal/document-operations-purge": ["./db/maintenance/purge_document_operations.sql"]'));
 });
