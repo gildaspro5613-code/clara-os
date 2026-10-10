@@ -166,6 +166,7 @@ export default function DocumentsPage() {
       setError(null);
       const body = new FormData();
       body.set("file", file);
+      if (folderTrail.length) body.set("folderId", folderTrail[folderTrail.length - 1].id);
       const response = await fetch("/api/documents", { method: "POST", body });
       const data = (await response.json()) as DocumentsResponse;
       if (!response.ok || !data.success) throw new Error(data.message ?? "Import impossible.");
