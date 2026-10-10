@@ -125,7 +125,7 @@ export class DriveFiles {
 
     const response = await this.drive.files.list({
       fields:
-        "nextPageToken,files(id,name,mimeType,webViewLink)",
+        "nextPageToken,files(id,name,mimeType,webViewLink,parents)",
       includeItemsFromAllDrives: true,
       supportsAllDrives: true,
       pageSize: options.pageSize,
@@ -205,6 +205,26 @@ export class DriveFiles {
         mimeType: actualMimeType,
       };
 
+    }
+
+    if (actualMimeType === "text/plain" || actualMimeType === "text/markdown" || actualMimeType === "text/csv") {
+      const size = await this.drive.files.get({
+        fileId,
+        fields: "size",
+        supportsAllDrives: true,
+      });
+      if (Number(size.data.size ?? 0) > 2 * 1024 * 1024) {
+        throw new Error("Lecture limitée aux documents texte de 2 Mo maximum.");
+      }
+      const response = await this.drive.files.get(
+        { fileId, alt: "media", supportsAllDrives: true },
+        { responseType: "arraybuffer" },
+      );
+      const content = Buffer.from(response.data as ArrayBuffer);
+      if (content.byteLength > 2 * 1024 * 1024) {
+        throw new Error("Lecture limitée aux documents texte de 2 Mo maximum.");
+      }
+      return { textContent: content.toString("utf8"), mimeType: actualMimeType };
     }
 
     return {

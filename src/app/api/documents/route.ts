@@ -11,6 +11,7 @@
 import { NextResponse } from "next/server";
 
 import { GoogleDriveEngine } from "@/lib/connectors/internal/google/drive/google-drive-engine";
+import { DriveClient } from "@/lib/connectors/internal/google/drive/drive-client";
 import { googleReauthResponse } from "@/lib/connectors/google/auth/google-api-error-response";
 import { dispatchEvent } from "@/lib/core/event-bus";
 import { Clara } from "@/lib/core/clara";
@@ -42,6 +43,8 @@ export async function GET(request: Request) {
     const action = searchParams.get("action")?.trim() ?? "list";
     const fileId = searchParams.get("fileId")?.trim() ?? "";
     const fileName = searchParams.get("fileName")?.trim() ?? "";
+    const folderId = searchParams.get("folderId")?.trim() ?? "";
+    const pageToken = searchParams.get("pageToken")?.trim() || undefined;
     const mimeType = searchParams.get("mimeType")?.trim() || undefined;
 
     const engine = new GoogleDriveEngine();
@@ -124,20 +127,24 @@ export async function GET(request: Request) {
       });
     }
 
-    const driveQuery = query
-      ? `name contains '${query.replace(/'/g, "\\'")}' and trashed = false`
-      : "trashed = false";
+    const escapeDrive = (value: string) => value.replaceAll("\\", "\\\\").replaceAll("'", "\\'");
+    const driveQuery = [
+      "trashed = false",
+      query ? `name contains '${escapeDrive(query)}'` : folderId ? `'${escapeDrive(folderId)}' in parents` : "'root' in parents",
+    ].join(" and ");
 
-    const result = await engine.list({ pageSize: 50, query: driveQuery });
+    const result = await engine.list({ pageSize: 100, query: driveQuery, pageToken });
 
     return NextResponse.json({
       success: true,
       query,
+      nextPageToken: result.nextPageToken ?? null,
       files: result.files.map((file) => ({
         id: file.fileId,
         name: file.fileName,
         mimeType: file.mimeType,
         url: file.url,
+        parentId: file.parents?.[0] ?? null,
       })),
     });
   } catch (error) {
@@ -147,6 +154,58 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const contentType = request.headers.get("content-type") ?? "";
+    if (contentType.includes("application/json")) {
+      const body = await request.json() as { action?: string; fileId?: string; destinationId?: string; name?: string; parentId?: string };
+      const drive = await new DriveClient().create();
+      if (body.action === "createFolder") {
+        const name = body.name?.trim();
+        if (!name || name.length > 150) return NextResponse.json({ success: false, message: "Nom de dossier invalide." }, { status: 400 });
+        if (body.parentId) {
+          const parent = await drive.files.get({ fileId: body.parentId, fields: "id,mimeType", supportsAllDrives: true });
+          if (parent.data.mimeType !== "application/vnd.google-apps.folder") {
+            return NextResponse.json({ success: false, message: "Le parent doit être un dossier Google Drive." }, { status: 400 });
+          }
+        }
+        const created = await drive.files.create({
+          requestBody: { name, mimeType: "application/vnd.google-apps.folder", parents: body.parentId ? [body.parentId] : undefined },
+          fields: "id,name", supportsAllDrives: true,
+        });
+        return NextResponse.json({ success: true, folder: { id: created.data.id, name: created.data.name } });
+      }
+      if (body.action === "move") {
+        if (!body.fileId || !body.destinationId || body.fileId === body.destinationId) {
+          return NextResponse.json({ success: false, message: "Déplacement invalide." }, { status: 400 });
+        }
+        const [source, destination] = await Promise.all([
+          drive.files.get({ fileId: body.fileId, fields: "id,name,parents,mimeType", supportsAllDrives: true }),
+          drive.files.get({ fileId: body.destinationId, fields: "id,mimeType", supportsAllDrives: true }),
+        ]);
+        if (destination.data.mimeType !== "application/vnd.google-apps.folder") {
+          return NextResponse.json({ success: false, message: "La destination doit être un dossier." }, { status: 400 });
+        }
+        if (source.data.mimeType === "application/vnd.google-apps.folder") {
+          return NextResponse.json({ success: false, message: "Le déplacement de dossiers n'est pas encore autorisé." }, { status: 400 });
+        }
+        if (!source.data.parents?.length) {
+          return NextResponse.json({ success: false, message: "Impossible de déplacer un fichier sans dossier parent connu." }, { status: 409 });
+        }
+        if (source.data.parents.includes(body.destinationId)) {
+          return NextResponse.json({ success: false, message: "Ce fichier se trouve déjà dans le dossier choisi." }, { status: 409 });
+        }
+        await drive.files.update({
+          fileId: body.fileId, addParents: body.destinationId,
+          removeParents: (source.data.parents ?? []).join(","),
+          requestBody: {}, fields: "id,name,parents", supportsAllDrives: true,
+        });
+        await new Journal().addEntry(writeActionEntry(
+          `Document déplacé · ${source.data.name ?? body.fileId}`,
+          `Google Drive : déplacement confirmé vers ${body.destinationId}.`,
+        ));
+        return NextResponse.json({ success: true });
+      }
+      return NextResponse.json({ success: false, message: "Action inconnue." }, { status: 400 });
+    }
     const formData = await request.formData();
     const upload = formData.get("file");
 
@@ -157,12 +216,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: "Fichier trop volumineux (20 Mo maximum)." }, { status: 413 });
     }
 
+    const folderValue = formData.get("folderId");
+    const uploadFolderId = typeof folderValue === "string" ? folderValue.trim() : "";
+    if (uploadFolderId) {
+      const drive = await new DriveClient().create();
+      const parent = await drive.files.get({ fileId: uploadFolderId, fields: "id,mimeType", supportsAllDrives: true });
+      if (parent.data.mimeType !== "application/vnd.google-apps.folder") {
+        return NextResponse.json({ success: false, message: "Dossier de destination invalide." }, { status: 400 });
+      }
+    }
     const content = Buffer.from(await upload.arrayBuffer());
     const engine = new GoogleDriveEngine();
     const result = await engine.upload({
       fileName: upload.name,
       mimeType: upload.type || "application/octet-stream",
       content,
+      folderId: uploadFolderId || undefined,
     });
     await new Journal().addEntry(writeActionEntry(
       `Document importé · ${upload.name}`,
