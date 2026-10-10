@@ -64,6 +64,15 @@ export function createDocumentOperationStore(query: Query) {
     .update("clara-document-retry.v1:" + scopeKey + ":" + parentId).digest("hex");
   return {
     lookup, inspect, retryId,
+    async inspectRetry(scopeKey: string, parentId: string, fingerprint: string) {
+      // Read the existing authorization only. Never insert, reserve or steal a lease.
+      const rows = await query`SELECT a.operation_id FROM clara_document_operation_retries a
+        JOIN clara_document_operations p ON p.scope_key = a.scope_key AND p.operation_id = a.parent_operation_id
+        WHERE a.scope_key = ${scopeKey} AND a.parent_operation_id = ${parentId}
+          AND a.fingerprint = ${fingerprint} AND p.fingerprint = a.fingerprint
+          AND p.status = 'failed' AND p.result IS NULL`;
+      return rows[0]?.operation_id ?? null;
+    },
     async authorizeRetry(scopeKey: string, parentId: string, fingerprint: string, operatorId: string) {
       const childId = retryId(scopeKey, parentId);
       const operatorHash = createHash("sha256").update(operatorId).digest("hex");

@@ -72,7 +72,12 @@ test("document failures retain real 500 and safe correlated categories, never fa
   ];
   for (const { result, category } of cases) {
     const route = routeHarness(false, undefined, false, async () => result);
-    assert.equal((await route.post(request())).status, 500);
+    const response = await route.post(request());
+    assert.equal(response.status, 500);
+    const body = await response.json();
+    assert.equal(body.code, "DOCUMENT_ANALYSIS_FAILED");
+    assert.equal(body.failureCategory, category);
+    assert.ok(!JSON.stringify(body).includes("private-malformed-output"));
     const failure = route.logs.find(row => row.event === "processing_failed");
     assert.equal(failure?.failure_category, category);
     assert.equal(failure?.phase, "document_analysis");

@@ -364,7 +364,9 @@ export async function POST(request: Request) {
     log("processing_failed", error instanceof DocumentAnalysisError
       ? { failure_category: error.category, ...error.diagnostics }
       : phase === "document_analysis" ? { failure_category: "unexpected_exception" } : {});
-    return respond({ success: false, error: "Clara Core event processing failed." }, 500);
+    return respond({ success: false, error: "Clara Core event processing failed.",
+      code: error instanceof DocumentAnalysisError ? "DOCUMENT_ANALYSIS_FAILED" : "CORE_EVENT_PROCESSING_FAILED",
+      ...(error instanceof DocumentAnalysisError ? { failureCategory: error.category } : {}) }, 500);
   } finally {
     log("phase_end", { duration_ms: Math.round(performance.now() - phaseStarted) });
     log("end", { duration_ms: Math.round(performance.now() - started), http_status: httpStatus,
