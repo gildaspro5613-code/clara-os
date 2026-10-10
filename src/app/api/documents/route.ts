@@ -126,7 +126,7 @@ export async function GET(request: Request) {
       });
     }
 
-    const escapeDrive = (value: string) => value.replaceAll("'", "\\'");
+    const escapeDrive = (value: string) => value.replaceAll("\\", "\\\\").replaceAll("'", "\\'");
     const driveQuery = [
       "trashed = false",
       query ? `name contains '${escapeDrive(query)}'` : folderId ? `'${escapeDrive(folderId)}' in parents` : "'root' in parents",
@@ -159,6 +159,12 @@ export async function POST(request: Request) {
       if (body.action === "createFolder") {
         const name = body.name?.trim();
         if (!name || name.length > 150) return NextResponse.json({ success: false, message: "Nom de dossier invalide." }, { status: 400 });
+        if (body.parentId) {
+          const parent = await drive.files.get({ fileId: body.parentId, fields: "id,mimeType", supportsAllDrives: true });
+          if (parent.data.mimeType !== "application/vnd.google-apps.folder") {
+            return NextResponse.json({ success: false, message: "Le parent doit être un dossier Google Drive." }, { status: 400 });
+          }
+        }
         const created = await drive.files.create({
           requestBody: { name, mimeType: "application/vnd.google-apps.folder", parents: body.parentId ? [body.parentId] : undefined },
           fields: "id,name", supportsAllDrives: true,
@@ -178,6 +184,12 @@ export async function POST(request: Request) {
         }
         if (source.data.mimeType === "application/vnd.google-apps.folder") {
           return NextResponse.json({ success: false, message: "Le déplacement de dossiers n'est pas encore autorisé." }, { status: 400 });
+        }
+        if (!source.data.parents?.length) {
+          return NextResponse.json({ success: false, message: "Impossible de déplacer un fichier sans dossier parent connu." }, { status: 409 });
+        }
+        if (source.data.parents.includes(body.destinationId)) {
+          return NextResponse.json({ success: false, message: "Ce fichier se trouve déjà dans le dossier choisi." }, { status: 409 });
         }
         await drive.files.update({
           fileId: body.fileId, addParents: body.destinationId,
