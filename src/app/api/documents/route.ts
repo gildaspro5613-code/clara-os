@@ -216,12 +216,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: "Fichier trop volumineux (20 Mo maximum)." }, { status: 413 });
     }
 
+    const folderValue = formData.get("folderId");
+    const uploadFolderId = typeof folderValue === "string" ? folderValue.trim() : "";
+    if (uploadFolderId) {
+      const drive = await new DriveClient().create();
+      const parent = await drive.files.get({ fileId: uploadFolderId, fields: "id,mimeType", supportsAllDrives: true });
+      if (parent.data.mimeType !== "application/vnd.google-apps.folder") {
+        return NextResponse.json({ success: false, message: "Dossier de destination invalide." }, { status: 400 });
+      }
+    }
     const content = Buffer.from(await upload.arrayBuffer());
     const engine = new GoogleDriveEngine();
     const result = await engine.upload({
       fileName: upload.name,
       mimeType: upload.type || "application/octet-stream",
       content,
+      folderId: uploadFolderId || undefined,
     });
     await new Journal().addEntry(writeActionEntry(
       `Document importé · ${upload.name}`,
