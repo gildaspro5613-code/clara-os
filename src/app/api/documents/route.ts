@@ -44,6 +44,7 @@ export async function GET(request: Request) {
     const fileId = searchParams.get("fileId")?.trim() ?? "";
     const fileName = searchParams.get("fileName")?.trim() ?? "";
     const folderId = searchParams.get("folderId")?.trim() ?? "";
+    const pageToken = searchParams.get("pageToken")?.trim() || undefined;
     const mimeType = searchParams.get("mimeType")?.trim() || undefined;
 
     const engine = new GoogleDriveEngine();
@@ -132,11 +133,12 @@ export async function GET(request: Request) {
       query ? `name contains '${escapeDrive(query)}'` : folderId ? `'${escapeDrive(folderId)}' in parents` : "'root' in parents",
     ].join(" and ");
 
-    const result = await engine.list({ pageSize: 50, query: driveQuery });
+    const result = await engine.list({ pageSize: 100, query: driveQuery, pageToken });
 
     return NextResponse.json({
       success: true,
       query,
+      nextPageToken: result.nextPageToken ?? null,
       files: result.files.map((file) => ({
         id: file.fileId,
         name: file.fileName,
