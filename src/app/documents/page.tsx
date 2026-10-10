@@ -38,6 +38,10 @@ export default function DocumentsPage() {
   const [error, setError] = useState<string | null>(null);
   const [working, setWorking] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
+  const [moveTarget, setMoveTarget] = useState<DocumentFile | null>(null);
+  const [destinationTrail, setDestinationTrail] = useState<{ id: string; name: string }[]>([]);
+  const [destinations, setDestinations] = useState<DocumentFile[]>([]);
+  const [destinationLoading, setDestinationLoading] = useState(false);
 
   async function loadDocuments(search = "", folderId = folderTrail.at(-1)?.id ?? "") {
     try {
@@ -86,15 +90,40 @@ export default function DocumentsPage() {
     finally { setWorking(null); }
   }
 
-  async function moveFile(file: DocumentFile) {
-    const destinationId = window.prompt(`Identifiant du dossier Google Drive de destination pour « ${file.name} » :`)?.trim();
-    if (!destinationId || !window.confirm(`Déplacer « ${file.name} » vers le dossier ${destinationId} ?`)) return;
+  async function browseDestination(folderId = "") {
+    setDestinationLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (folderId) params.set("folderId", folderId);
+      const response = await fetch(`/api/documents?${params}`, { cache: "no-store" });
+      const data = await response.json() as DocumentsResponse;
+      if (!response.ok || !data.success) throw new Error(data.message ?? "Impossible de consulter les dossiers.");
+      setDestinations((data.files ?? []).filter(item => item.mimeType === "application/vnd.google-apps.folder"));
+    } catch (err) { setError(err instanceof Error ? err.message : "Impossible de consulter les dossiers."); }
+    finally { setDestinationLoading(false); }
+  }
+
+  function startMove(file: DocumentFile) {
+    setMoveTarget(file);
+    setDestinationTrail([]);
+    void browseDestination();
+  }
+
+  async function confirmMove() {
+    const destination = destinationTrail.at(-1);
+    const file = moveTarget;
+    if (!destination || !file || destination.id === file.parentId) return;
+    if (!window.confirm(`Déplacer « ${file.name} » vers « ${destination.name} » ?`)) return;
     try {
       setWorking(`move:${file.id}`); setError(null);
-      const response = await fetch("/api/documents", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "move", fileId: file.id, destinationId }) });
+      const response = await fetch("/api/documents", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "move", fileId: file.id, destinationId: destination.id }),
+      });
       const data = await response.json() as DocumentsResponse;
       if (!response.ok || !data.success) throw new Error(data.message ?? "Déplacement impossible.");
-      setStatus(`${file.name} a été déplacé après confirmation.`);
+      setMoveTarget(null);
+      setStatus(`${file.name} a été déplacé vers ${destination.name}.`);
       await loadDocuments(query.trim());
     } catch (err) { setError(err instanceof Error ? err.message : "Déplacement impossible."); }
     finally { setWorking(null); }
@@ -180,6 +209,14 @@ export default function DocumentsPage() {
             {folderTrail.map((folder, index) => <span key={folder.id} className="flex items-center gap-2"><span className="text-white/30">/</span><button type="button" onClick={() => navigateTo(index)} className="text-cyan-300">{folder.name}</button></span>)}
             <button type="button" onClick={() => void createFolder()} disabled={working === "create"} className="ml-auto flex items-center gap-2 rounded-lg border border-white/15 px-3 py-2"><FolderPlus size={15}/>Nouveau dossier</button>
           </div>
+          {moveTarget && <section role="dialog" aria-label="Choisir le dossier de destination" className="mb-6 rounded-xl border border-cyan-300/25 bg-[#101827] p-5">
+            <div className="flex items-center justify-between gap-4"><h2 className="font-semibold">Déplacer « {moveTarget.name} »</h2><button type="button" onClick={() => setMoveTarget(null)}>Annuler</button></div>
+            <div className="mt-3 flex flex-wrap gap-2 text-sm"><button type="button" onClick={() => { setDestinationTrail([]); void browseDestination(); }} className="text-cyan-300">Mon Drive</button>
+              {destinationTrail.map((folder, index) => <button type="button" key={folder.id} className="text-cyan-300" onClick={() => { const next = destinationTrail.slice(0, index + 1); setDestinationTrail(next); void browseDestination(folder.id); }}>/ {folder.name}</button>)}
+            </div>
+            {destinationLoading ? <p className="mt-3 text-sm text-white/60">Chargement des dossiers…</p> : <div className="mt-3 grid gap-2 sm:grid-cols-2">{destinations.map(folder => <button type="button" key={folder.id} onClick={() => { setDestinationTrail(prev => [...prev, { id: folder.id, name: folder.name }]); void browseDestination(folder.id); }} className="flex items-center gap-2 rounded-lg border border-white/10 p-3 text-left text-sm"><Folder size={16} className="text-cyan-300"/>{folder.name}</button>)}</div>}
+            <button type="button" disabled={!destinationTrail.length || destinationTrail.at(-1)?.id === moveTarget.parentId || working !== null} onClick={() => void confirmMove()} className="mt-4 rounded-lg bg-cyan-800 px-4 py-2 text-sm disabled:opacity-40">Confirmer le déplacement dans ce dossier</button>
+          </section>}
           {selected && <section className="mb-6 rounded-xl border border-cyan-300/20 p-5"><div className="flex justify-between gap-4"><h2 className="font-semibold">{selected.name}</h2><button type="button" onClick={() => setSelected(null)}>Fermer</button></div>{selected.recommendation && <p className="mt-3 text-cyan-200">{selected.recommendation}</p>}<pre className="mt-4 max-h-80 overflow-auto whitespace-pre-wrap text-sm text-white/70">{selected.content}</pre></section>}
           <form onSubmit={handleSubmit} className="mb-6 flex max-w-2xl gap-2">
             <div className="relative flex-1">
@@ -207,12 +244,14 @@ export default function DocumentsPage() {
                     </div>
                   </div>
 
-                  <div className="mt-5 grid gap-2">\n                    {file.mimeType === "application/vnd.google-apps.folder" ? <button type="button" onClick={() => openFolder(file)} className="rounded-xl border border-cyan-300/20 px-4 py-2.5 text-left text-xs text-cyan-100">Ouvrir le dossier</button> : <>
+                  <div className="mt-5 grid gap-2">
+                    {file.mimeType === "application/vnd.google-apps.folder" ? <button type="button" onClick={() => openFolder(file)} className="rounded-xl border border-cyan-300/20 px-4 py-2.5 text-left text-xs text-cyan-100">Ouvrir le dossier</button> : <>
                     <button type="button" disabled={working === `read:${file.id}`} onClick={() => void handleAnalyze(file)} className="flex items-center justify-between rounded-xl border border-cyan-300/15 bg-cyan-300/[0.04] px-4 py-2.5 text-xs text-cyan-50/75 transition hover:bg-cyan-300/[0.08] disabled:opacity-50">
                       {working === `read:${file.id}` ? "Lecture…" : "Lire avec Clara"}<Brain size={14} />
                     </button>
                     <a href={downloadHref(file)} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-xs text-white/60 transition hover:bg-white/[0.06] hover:text-white">Télécharger<Download size={14} /></a>
-                    {file.url && <a href={file.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-xs text-white/60 transition hover:bg-white/[0.06] hover:text-white">{t("open")}<ExternalLink size={14} /></a>}\n                    <button type="button" onClick={() => void moveFile(file)} className="rounded-xl border border-white/10 px-4 py-2.5 text-left text-xs text-white/60">Déplacer vers un dossier…</button></>}
+                    {file.url && <a href={file.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-xs text-white/60 transition hover:bg-white/[0.06] hover:text-white">{t("open")}<ExternalLink size={14} /></a>}
+                    <button type="button" onClick={() => startMove(file)} className="rounded-xl border border-white/10 px-4 py-2.5 text-left text-xs text-white/60">Déplacer vers un dossier…</button></>}
                   </div>
                 </article>
               ))}
