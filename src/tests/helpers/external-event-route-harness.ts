@@ -3,7 +3,7 @@ import { createRequire } from "node:module";
 import vm from "node:vm";
 import ts from "typescript";
 import { authenticateExternalProduct, ExternalProductConfigurationError } from "@/lib/external-capabilities/config";
-import { documentOperations, operationScopeKey, operationFingerprint } from "@/lib/external-capabilities/document-operations";
+import { DocumentRetryAuthorizationError, documentOperations, operationScopeKey, operationFingerprint } from "@/lib/external-capabilities/document-operations";
 
 export function routeHarness(failDispatch = false, store = documentOperations, failSession = false,
   generate?: () => Promise<{ success: boolean; content: string; responseStatus?: "completed" | "incomplete" | "failed" | "other"; incompleteReason?: "max_output_tokens" | "content_filter" | "other"; failureCategory?: "provider_timeout" | "provider_auth" | "provider_rate_limit"; providerHttpStatus?: number; outputTokens?: number }>) {
@@ -17,7 +17,7 @@ export function routeHarness(failDispatch = false, store = documentOperations, f
   const logs: Record<string, unknown>[] = [];
   const require = createRequire(import.meta.url);
   const modules: Record<string, unknown> = {
-    "@/lib/external-capabilities/document-operations": { documentOperations: store, operationScopeKey, operationFingerprint },
+    "@/lib/external-capabilities/document-operations": { DocumentRetryAuthorizationError, documentOperations: store, operationScopeKey, operationFingerprint },
     "next/server": { NextResponse: Response },
     "@/lib/external-capabilities/config": { ExternalProductConfigurationError,
       authenticateExternalProduct: (id: string | null, auth: string | null) => authenticateExternalProduct(id, auth, products) },
@@ -43,7 +43,12 @@ export function routeHarness(failDispatch = false, store = documentOperations, f
   const statusExports: Record<string, unknown> = {};
   vm.runInNewContext(ts.transpileModule(statusSource, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText,
     { exports: statusExports, require: (name: string) => modules[name] ?? require(name) });
+  const recoverySource = readFileSync(new URL("../../app/api/external/document-operations/recovery/route.ts", import.meta.url), "utf8");
+  const recoveryExports: Record<string, unknown> = {};
+  vm.runInNewContext(ts.transpileModule(recoverySource, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText,
+    { exports: recoveryExports, require: (name: string) => modules[name] ?? require(name) });
   return { post: exports.POST as (request: Request) => Promise<Response>,
+    recoveryPost: recoveryExports.POST as (request: Request) => Promise<Response>,
     statusPost: statusExports.POST as (request: Request) => Promise<Response>, received, workspaces, logs, metrics };
 }
 
