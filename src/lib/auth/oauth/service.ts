@@ -52,6 +52,23 @@ export class OAuthCallbackService {
     try {
       update = await this.providers.get(input.provider).exchangeCode({ code: input.code, redirectUri: input.redirectUri });
     } catch (error) {
+      // Provider response fields are untrusted. Emit only an allowlisted error
+      // category; never log the response body, request, tokens or credentials.
+      const providerCode = (() => {
+        if (!error || typeof error !== "object") return "unknown";
+        const candidate = error as { response?: { data?: { error?: unknown } } };
+        const code = candidate.response?.data?.error;
+        return typeof code === "string" && [
+          "invalid_client", "invalid_grant", "invalid_request",
+          "unauthorized_client", "access_denied", "unsupported_grant_type",
+        ].includes(code) ? code : "unknown";
+      })();
+      if (input.provider === "google") {
+        console.error("[Google Workspace OAuth token exchange]", {
+          category: providerCode,
+          phase: "code_exchange",
+        });
+      }
       throw new OAuthError(isInvalidGrant(error) ? "INVALID_GRANT" : "CODE_EXCHANGE_FAILED");
     }
     const provider = this.providers.get(input.provider);
