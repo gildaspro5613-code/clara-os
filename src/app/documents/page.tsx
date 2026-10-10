@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { ArrowLeft, Brain, Download, ExternalLink, FileText, Search, Upload } from "lucide-react";
+import { ArrowLeft, Brain, Download, ExternalLink, FileText, Folder, FolderPlus, Search, Upload } from "lucide-react";
 
 import MainLayout from "@/components/layout/MainLayout";
 
@@ -12,6 +12,7 @@ interface DocumentFile {
   name: string;
   mimeType?: string;
   url?: string;
+  parentId?: string | null;
 }
 
 interface DocumentsResponse {
@@ -30,17 +31,22 @@ export default function DocumentsPage() {
   const fileInput = useRef<HTMLInputElement>(null);
 
   const [query, setQuery] = useState("");
+  const [folderTrail, setFolderTrail] = useState<{ id: string; name: string }[]>([]);
+  const [selected, setSelected] = useState<{ name: string; content: string; recommendation?: string | null } | null>(null);
   const [files, setFiles] = useState<DocumentFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [working, setWorking] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
 
-  async function loadDocuments(search = "") {
+  async function loadDocuments(search = "", folderId = folderTrail.at(-1)?.id ?? "") {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(`/api/documents?query=${encodeURIComponent(search)}`, { cache: "no-store" });
+      const params = new URLSearchParams();
+      if (search) params.set("query", search);
+      else if (folderId) params.set("folderId", folderId);
+      const response = await fetch(`/api/documents?${params}`, { cache: "no-store" });
       const data = (await response.json()) as DocumentsResponse;
       if (!response.ok || !data.success) throw new Error(data.message ?? t("loadError"));
       setFiles(data.files ?? []);
@@ -52,6 +58,47 @@ export default function DocumentsPage() {
   }
 
   useEffect(() => { void loadDocuments(); }, []);
+
+  function openFolder(file: DocumentFile) {
+    const next = [...folderTrail, { id: file.id, name: file.name }];
+    setFolderTrail(next);
+    setQuery("");
+    void loadDocuments("", file.id);
+  }
+
+  function navigateTo(index: number) {
+    const next = folderTrail.slice(0, index + 1);
+    setFolderTrail(next);
+    setQuery("");
+    void loadDocuments("", next.at(-1)?.id ?? "");
+  }
+
+  async function createFolder() {
+    const name = window.prompt("Nom du nouveau dossier :")?.trim();
+    if (!name) return;
+    try {
+      setWorking("create"); setError(null);
+      const response = await fetch("/api/documents", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "createFolder", name, parentId: folderTrail.at(-1)?.id }) });
+      const data = await response.json() as DocumentsResponse;
+      if (!response.ok || !data.success) throw new Error(data.message ?? "Création impossible.");
+      await loadDocuments("", folderTrail.at(-1)?.id ?? "");
+    } catch (err) { setError(err instanceof Error ? err.message : "Création impossible."); }
+    finally { setWorking(null); }
+  }
+
+  async function moveFile(file: DocumentFile) {
+    const destinationId = window.prompt(`Identifiant du dossier Google Drive de destination pour « ${file.name} » :`)?.trim();
+    if (!destinationId || !window.confirm(`Déplacer « ${file.name} » vers le dossier ${destinationId} ?`)) return;
+    try {
+      setWorking(`move:${file.id}`); setError(null);
+      const response = await fetch("/api/documents", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "move", fileId: file.id, destinationId }) });
+      const data = await response.json() as DocumentsResponse;
+      if (!response.ok || !data.success) throw new Error(data.message ?? "Déplacement impossible.");
+      setStatus(`${file.name} a été déplacé après confirmation.`);
+      await loadDocuments(query.trim());
+    } catch (err) { setError(err instanceof Error ? err.message : "Déplacement impossible."); }
+    finally { setWorking(null); }
+  }
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -89,6 +136,7 @@ export default function DocumentsPage() {
       const response = await fetch(`/api/documents?${params.toString()}`, { cache: "no-store" });
       const data = (await response.json()) as DocumentsResponse;
       if (!response.ok || !data.success) throw new Error(data.message ?? "Lecture impossible.");
+      setSelected({ name: file.name, content: data.textContent ?? "", recommendation: data.brain?.recommendation });
       setStatus(data.brain?.recommendation
         ? `Clara a lu ${file.name}. ${data.brain.recommendation}`
         : `Clara a lu ${file.name} et l’a transmis au Brain.`);
@@ -127,6 +175,12 @@ export default function DocumentsPage() {
             </div>
           </div>
 
+          <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
+            <button type="button" onClick={() => navigateTo(-1)} className="text-cyan-300">Mon Drive</button>
+            {folderTrail.map((folder, index) => <span key={folder.id} className="flex items-center gap-2"><span className="text-white/30">/</span><button type="button" onClick={() => navigateTo(index)} className="text-cyan-300">{folder.name}</button></span>)}
+            <button type="button" onClick={() => void createFolder()} disabled={working === "create"} className="ml-auto flex items-center gap-2 rounded-lg border border-white/15 px-3 py-2"><FolderPlus size={15}/>Nouveau dossier</button>
+          </div>
+          {selected && <section className="mb-6 rounded-xl border border-cyan-300/20 p-5"><div className="flex justify-between gap-4"><h2 className="font-semibold">{selected.name}</h2><button type="button" onClick={() => setSelected(null)}>Fermer</button></div>{selected.recommendation && <p className="mt-3 text-cyan-200">{selected.recommendation}</p>}<pre className="mt-4 max-h-80 overflow-auto whitespace-pre-wrap text-sm text-white/70">{selected.content}</pre></section>}
           <form onSubmit={handleSubmit} className="mb-6 flex max-w-2xl gap-2">
             <div className="relative flex-1">
               <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-white/35" />
@@ -146,19 +200,19 @@ export default function DocumentsPage() {
                 <article key={file.id} className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#0F1522] p-5 transition hover:border-white/15 hover:bg-[#131A28]">
                   <span className="absolute inset-y-0 left-0 w-[2px] bg-cyan-400/70" />
                   <div className="flex items-start gap-4">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5"><FileText size={18} strokeWidth={1.7} className="text-white/55" /></div>
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">{file.mimeType === "application/vnd.google-apps.folder" ? <Folder size={18} className="text-cyan-300" /> : <FileText size={18} strokeWidth={1.7} className="text-white/55" />}</div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-white/85">{file.name}</p>
                       {file.mimeType && <p className="mt-1 truncate text-xs text-white/30">{file.mimeType}</p>}
                     </div>
                   </div>
 
-                  <div className="mt-5 grid gap-2">
+                  <div className="mt-5 grid gap-2">\n                    {file.mimeType === "application/vnd.google-apps.folder" ? <button type="button" onClick={() => openFolder(file)} className="rounded-xl border border-cyan-300/20 px-4 py-2.5 text-left text-xs text-cyan-100">Ouvrir le dossier</button> : <>
                     <button type="button" disabled={working === `read:${file.id}`} onClick={() => void handleAnalyze(file)} className="flex items-center justify-between rounded-xl border border-cyan-300/15 bg-cyan-300/[0.04] px-4 py-2.5 text-xs text-cyan-50/75 transition hover:bg-cyan-300/[0.08] disabled:opacity-50">
                       {working === `read:${file.id}` ? "Lecture…" : "Lire avec Clara"}<Brain size={14} />
                     </button>
                     <a href={downloadHref(file)} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-xs text-white/60 transition hover:bg-white/[0.06] hover:text-white">Télécharger<Download size={14} /></a>
-                    {file.url && <a href={file.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-xs text-white/60 transition hover:bg-white/[0.06] hover:text-white">{t("open")}<ExternalLink size={14} /></a>}
+                    {file.url && <a href={file.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-xs text-white/60 transition hover:bg-white/[0.06] hover:text-white">{t("open")}<ExternalLink size={14} /></a>}\n                    <button type="button" onClick={() => void moveFile(file)} className="rounded-xl border border-white/10 px-4 py-2.5 text-left text-xs text-white/60">Déplacer vers un dossier…</button></>}
                   </div>
                 </article>
               ))}
