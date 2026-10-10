@@ -1,0 +1,42 @@
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import { randomUUID } from 'node:crypto';
+import { createEventJobStore, EventJobConflict } from '@/lib/external-capabilities/event-jobs';
+import { isolatedPostgres } from './helpers/isolated-postgres';
+
+const container = process.env.DOCUMENT_OPERATION_TEST_CONTAINER;
+test('durable event queue: atomic ownership, session serialization, uncertainty, retention and atomic session/result commit', { skip: !container }, async () => {
+  const pg = isolatedPostgres(container);
+  const store = createEventJobStore(pg.query as unknown as Parameters<typeof createEventJobStore>[0]);
+  const id = () => randomUUID().replaceAll('-','') + randomUUID().replaceAll('-','');
+  const scope = id(); const firstId = id(); const secondId = id(); const correlation = randomUUID().replaceAll('-','');
+  const body = { scope: { productId:'clara-live',workspaceId:'synthetic',userId:'synthetic',sessionId:'synthetic' }, eventType:'USER_MESSAGE',message:'Synthetic payload.' };
+  await Promise.all(Array.from({length:8}, () => store.enqueue(scope,firstId,'clara-live','os-workspace',body,correlation)));
+  await assert.rejects(() => store.enqueue(scope, firstId, 'clara-live','os-workspace',{...body,message:'conflict'},correlation), EventJobConflict);
+  await assert.rejects(() => store.enqueue(id(), firstId, 'clara-live','os-workspace',body,correlation), EventJobConflict);
+  await store.enqueue(scope, secondId,'clara-live','os-workspace',body,correlation);
+  const claims = await Promise.all(Array.from({length:8}, () => store.claim(firstId)));
+  const owner = claims.find(Boolean)!;
+  assert.equal(claims.filter(Boolean).length,1);
+  assert.equal(await store.claim(secondId),null);
+  await pg.query`UPDATE clara_external_event_jobs SET started_at = clock_timestamp() - interval '11 minutes' WHERE job_id = ${firstId}`;
+  await store.maintain();
+  assert.equal((await store.lookup(scope,firstId))?.status,'uncertain');
+  assert.equal(await store.claim(secondId),null);
+  await assert.rejects(() => store.completeWithSession({...owner,owner_token:randomUUID()},{response:'wrong'}, {}, 'synthetic:'+firstId));
+  await store.completeWithSession(owner,{response:'Synthetic durable response',sessionId:'synthetic'}, {conversation:[]}, 'synthetic:'+firstId);
+  assert.equal((await store.lookup(scope,firstId))?.status,'completed');
+  assert.equal((await pg.runSql(`SELECT count(*) FROM clara_sessions WHERE id = 'synthetic:${firstId}'`)).trim(),'1');
+  // Lost completion acknowledgement is safe; repeated completion is idempotent.
+  await store.completeWithSession(owner,{response:'Synthetic durable response',sessionId:'synthetic'},{conversation:[]},'synthetic:'+firstId);
+  const next = await store.claim(secondId);assert.ok(next);
+  await store.fail(next,'CORE_EVENT_PROCESSING_FAILED',null);
+  assert.equal((await store.lookup(scope,secondId))?.status,'failed');
+  assert.equal(await store.claim(secondId),null);
+  await pg.query`UPDATE clara_external_event_jobs SET expires_at = clock_timestamp() - interval '1 second' WHERE job_id = ${firstId}`;
+  await store.maintain();
+  const tombstone = await store.lookup(scope,firstId);
+  assert.equal(tombstone?.status,'expired');assert.equal(tombstone?.request,null);assert.equal(tombstone?.result,null);
+  assert.equal((await store.enqueue(scope,firstId,'clara-live','os-workspace',body,correlation)).status,'expired');
+  assert.equal(await store.claim(firstId),null);
+});

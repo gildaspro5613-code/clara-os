@@ -12,7 +12,7 @@ async function runSql(statement: string) {
 }
 async function query(strings: TemplateStringsArray, ...values: unknown[]): Promise<DocumentOperation[]> {
   const statement = strings.reduce((text, segment, index) => text + segment + (index < values.length
-    ? "'" + String(values[index]).replaceAll("'", "''") + "'" : ""), "").trim();
+    ? (values[index] === null ? "NULL" : "'" + String(values[index]).replaceAll("'", "''") + "'") : ""), "").trim();
   const returnsRows = /RETURNING \*/.test(statement) || /^SELECT /.test(statement);
   const sql = returnsRows ? (statement.startsWith("SELECT")
     ? `SELECT row_to_json(rows) FROM (${statement}) rows`
