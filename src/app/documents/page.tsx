@@ -174,8 +174,8 @@ export default function DocumentsPage() {
       const response = await fetch("/api/documents", { method: "POST", body });
       const data = (await response.json()) as DocumentsResponse;
       if (!response.ok || !data.success) throw new Error(data.message ?? "Import impossible.");
-      setStatus(`${file.name} a été importé dans Google Drive.`);
-      await loadDocuments(query.trim());
+      setStatus(`${file.name} a été importé dans le dossier sélectionné.`);
+      await loadDocuments("", folderTrail.at(-1)?.id ?? "");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Import impossible.");
     } finally {
