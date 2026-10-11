@@ -70,7 +70,7 @@ export async function listLiveArchiveReferences(
   clientId: string,
   limit = 100,
 ): Promise<LiveArchiveReference[]> {
-  if (!workspaceId.trim() || !clientId.trim()) throw new Error("Archive scope required");
+  if (!workspaceId.trim() || !clientId.trim() || !Number.isFinite(limit)) throw new Error("Archive scope and finite limit required");
   await ensureSchema();
   const safeLimit = Math.min(100, Math.max(1, Math.trunc(limit)));
   const rows = await sql`
