@@ -15,6 +15,7 @@ Toutes les validations ci-dessous ont été exécutées. Elles utilisent uniquem
 | Chromium archives OS | 1 scénario réussi : noms client/projet, actif non archivable, archive, histoire après réouverture, lien retiré après refus ; API synthétique, pas de Neon/Live réel |
 | Live consentements/clôture/transport + contrat + callback | 40 réussis : 7 nouveaux tests sur Mongo réel isolé, limites/credentials existants, callback Unified Core et invariance des sources protégées |
 | Non-régression backend Live, sélection 35 fichiers | 309 réussis, 9 échecs ; les 9 noms d'échec sont identiques à ceux reproduits sur le snapshot de départ `d2e9ede` (31 réussis, 9 échecs pour les trois fichiers concernés). Deux nouveaux tests supplémentaires passent dans la sélection ciblée finale |
+| GDTF assets, Video engine/contrats/routes et certification équipements Stage | 22 réussis, 1 ignoré (fixture GDTF réelle externe non fournie) |
 | HTTP métier Live sur Uvicorn/Mongo isolés | 40 réussis, 20 échecs ; mêmes 20 noms reproduits sur Uvicorn du snapshot `d2e9ede` et autre DB isolée |
 | Jest frontend Live, 27 suites | 26 suites / 170 tests réussis ; 1 suite / 1 test échoué, reproduit sur le snapshot de départ (6 réussis, 1 échec dans le fichier concerné) |
 | Build frontend Live | `CI=true npm run build` réussi, sans changement de manifest ni de lockfile |
