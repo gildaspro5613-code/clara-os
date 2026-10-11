@@ -1,6 +1,6 @@
 # Publication GitHub : protection Vercel à contrôler
 
-Statut : **BLOCKED pour la publication**. L'utilisateur a confirmé que Vercel est réservé à la production et a demandé de garder les branches locales si les réglages ne peuvent pas être vérifiés. Les nouvelles branches n'ont donc pas été poussées et aucune nouvelle PR n'a été ouverte.
+Statut : **publication GitHub autorisée et réalisée en brouillon**, après confirmation du réglage production uniquement par l’utilisateur. La situation ci-dessous décrit le blocage antérieur à cette confirmation. L'utilisateur a confirmé que Vercel est réservé à la production et a demandé de garder les branches locales si les réglages ne peuvent pas être vérifiés. Les nouvelles branches n'ont donc pas été poussées et aucune nouvelle PR n'a été ouverte.
 
 Vérification en lecture seule réalisée : aucun connecteur Vercel disponible ; aucune authentification API Vercel ni identification de projet/team disponible dans l'environnement. Aucune valeur secrète n'a été affichée ou demandée. Les statuts GitHub des derniers commits existants indiquent « Canceled by Ignored Build Step » pour OS, Live frontend et Live API ; ces annulations ne prouvent pas le prédicat appliqué à de nouvelles branches.
 
