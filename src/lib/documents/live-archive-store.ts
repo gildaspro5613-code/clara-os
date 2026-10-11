@@ -43,15 +43,18 @@ export async function saveLiveArchiveReference(input: unknown): Promise<LiveArch
       ${record.projectId}, ${JSON.stringify(record)}::jsonb
     )
     ON CONFLICT (workspace_id, client_id, live_project_id)
-    DO UPDATE SET
-      updated_at = CASE
-        WHEN clara_live_archive_references.project_id = EXCLUDED.project_id
-          THEN clara_live_archive_references.updated_at
-        ELSE clara_live_archive_references.updated_at
-      END
+    DO NOTHING
     RETURNING project_id, archive_record
   ` as Array<{ project_id: string; archive_record: LiveArchiveReference }>;
-  const stored = rows[0];
+  const existing = rows.length ? rows : await sql`
+    SELECT project_id, archive_record
+    FROM clara_live_archive_references
+    WHERE workspace_id = ${record.workspaceId}
+      AND client_id = ${record.clientId}
+      AND live_project_id = ${record.liveProjectId}
+    LIMIT 1
+  ` as Array<{ project_id: string; archive_record: LiveArchiveReference }>;
+  const stored = existing[0];
   if (!stored || stored.project_id !== record.projectId) {
     throw new Error("Conflicting Clara Live archive project identity");
   }
