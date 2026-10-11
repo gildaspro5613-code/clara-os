@@ -14,6 +14,9 @@ import type { drive_v3 } from "googleapis";
 import { Readable } from "node:stream";
 
 import type { GoogleDriveContext } from "./google-drive-context";
+import { extractPdfText } from "@/lib/documents/pdf-text";
+import { readDocumentStream } from "@/lib/documents/bounded-document-stream";
+import { DocumentReadError, MAX_PDF_BYTES, MAX_TEXT_BYTES, checkDocumentText } from "@/lib/documents/document-read-error";
 
 /**
  * Downloaded Google Drive file.
@@ -174,7 +177,7 @@ export class DriveFiles {
 
     const metadata = await this.drive.files.get({
       fileId,
-      fields: "id,name,mimeType",
+      fields: "id,name,mimeType,size",
       supportsAllDrives: true,
     });
 
@@ -194,37 +197,28 @@ export class DriveFiles {
 
       const response = await this.drive.files.export({
         fileId,
-        mimeType: "text/plain",
-      });
+        mimeType: actualMimeType === "application/vnd.google-apps.spreadsheet" ? "text/csv" : "text/plain",
+      }, { responseType: "stream", timeout: 15_000 });
+      const content = await readDocumentStream(response.data, MAX_TEXT_BYTES);
 
       return {
-        textContent:
-          typeof response.data === "string"
-            ? response.data
-            : String(response.data ?? ""),
+        textContent: checkDocumentText(content.toString("utf8")),
         mimeType: actualMimeType,
       };
 
     }
 
-    if (actualMimeType === "text/plain" || actualMimeType === "text/markdown" || actualMimeType === "text/csv") {
-      const size = await this.drive.files.get({
-        fileId,
-        fields: "size",
-        supportsAllDrives: true,
-      });
-      if (Number(size.data.size ?? 0) > 2 * 1024 * 1024) {
-        throw new Error("Lecture limitée aux documents texte de 2 Mo maximum.");
+    if (actualMimeType === "application/pdf" || actualMimeType === "text/plain" || actualMimeType === "text/markdown" || actualMimeType === "text/csv") {
+      const maxBytes = actualMimeType === "application/pdf" ? MAX_PDF_BYTES : MAX_TEXT_BYTES;
+      if (Number(metadata.data.size ?? 0) > maxBytes) {
+        throw new DocumentReadError("DOCUMENT_TOO_LARGE", `Document trop volumineux (${maxBytes / 1024 / 1024} Mo maximum).`, 413);
       }
       const response = await this.drive.files.get(
         { fileId, alt: "media", supportsAllDrives: true },
-        { responseType: "arraybuffer" },
+        { responseType: "stream", timeout: 15_000 },
       );
-      const content = Buffer.from(response.data as ArrayBuffer);
-      if (content.byteLength > 2 * 1024 * 1024) {
-        throw new Error("Lecture limitée aux documents texte de 2 Mo maximum.");
-      }
-      return { textContent: content.toString("utf8"), mimeType: actualMimeType };
+      const content = await readDocumentStream(response.data, maxBytes);
+      return { textContent: actualMimeType === "application/pdf" ? await extractPdfText(content) : checkDocumentText(content.toString("utf8")), mimeType: actualMimeType };
     }
 
     return {

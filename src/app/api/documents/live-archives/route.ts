@@ -5,6 +5,7 @@ import {
 } from "@/lib/external-capabilities/config";
 import {
   parseLiveArchiveReference,
+  LiveArchiveValidationError,
   type LiveArchiveReference,
 } from "@/lib/documents/live-archive-reference";
 
@@ -62,7 +63,7 @@ export async function POST(request: Request) {
     if (error instanceof ExternalProductConfigurationError) {
       return NextResponse.json({ success: false, message: "Product configuration unavailable" }, { status: 503 });
     }
-    if (error instanceof SyntaxError || error instanceof Error && error.message.startsWith("Invalid Live archive")) {
+    if (error instanceof SyntaxError || error instanceof LiveArchiveValidationError) {
       return NextResponse.json({ success: false, message: "Invalid archive reference" }, { status: 400 });
     }
     return NextResponse.json({ success: false, message: "Archive request failed" }, { status: 500 });

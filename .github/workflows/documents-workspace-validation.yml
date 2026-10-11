@@ -1,0 +1,64 @@
+name: Documents Workspace V2 validation
+on:
+  pull_request:
+    branches: [consolidation/clara-os-clean-base]
+    paths:
+      - "src/app/api/documents/**"
+      - "src/app/documents/**"
+      - "src/lib/documents/**"
+      - "src/lib/connectors/internal/google/drive/drive-files.ts"
+      - "src/tests/documents*"
+      - "src/tests/live-archive*"
+      - "src/tests/helpers/documents*"
+      - "src/tests/helpers/synthetic-pdf.ts"
+      - "src/tests/fixtures/documents/**"
+      - "package*.json"
+      - "next.config.ts"
+      - ".github/workflows/documents-workspace-validation.yml"
+permissions:
+  contents: read
+jobs:
+  documents:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - name: Isolated archive database
+        run: |
+          docker run --detach --name clara-document-registry-test-documentsv2 -e POSTGRES_PASSWORD=synthetic-test-only postgres:17-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24
+          for attempt in $(seq 1 30); do
+            if docker exec clara-document-registry-test-documentsv2 pg_isready -U postgres --quiet; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+      - name: Documents and archive contracts
+        run: npm run test:documents
+        env:
+          DOCUMENT_ARCHIVE_TEST_CONTAINER: clara-document-registry-test-documentsv2
+      - run: npx tsc --noEmit --pretty false
+      - name: Lint changed document surfaces
+        run: npx eslint src/app/api/documents src/app/documents src/lib/documents src/lib/connectors/internal/google/drive/drive-files.ts src/tests/documents*.test.ts src/tests/documents-browser.e2e.mjs src/tests/live-archive*.test.ts src/tests/helpers/documents*.ts src/tests/helpers/documents-browser-runtime.mjs src/tests/helpers/synthetic-pdf.ts
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Browser workflow against local optimized app and synthetic dependencies
+        run: |
+          DATABASE_URL=postgresql://synthetic:synthetic@documents-e2e.invalid/synthetic NODE_OPTIONS="--import=$PWD/src/tests/helpers/documents-browser-runtime.mjs" npm run start -- --hostname 127.0.0.1 --port 3017 > /tmp/documents-browser-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          ready=false
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:3017/documents > /dev/null; then ready=true; break; fi
+            sleep 1
+          done
+          if [ "$ready" != true ]; then cat /tmp/documents-browser-server.log; exit 1; fi
+          DOCUMENTS_E2E_ORIGIN=http://127.0.0.1:3017 npm run test:documents:e2e
+      - name: Stop isolated database
+        if: always()
+        run: docker stop clara-document-registry-test-documentsv2 || true

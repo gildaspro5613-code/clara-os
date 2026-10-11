@@ -21,11 +21,20 @@ import { DEFAULT_SESSION_KEY } from "@/lib/core/store/session-store";
 import { EventType } from "@/types";
 import { Journal } from "@/lib/core/journal";
 import { writeActionEntry } from "@/lib/core/journal-writer";
+import { createDriveFolder, moveDriveResource } from "@/lib/documents/drive-workspace";
+import { DocumentReadError } from "@/lib/documents/document-read-error";
+import { readDocumentRequest } from "@/lib/documents/bounded-request";
+
+export const runtime = "nodejs";
 
 const MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
 const MAX_READ_CHARACTERS = 200_000;
 
 function failure(error: unknown, fallback: string) {
+  if (error instanceof SyntaxError) return NextResponse.json({ success: false, message: "Requête JSON invalide." }, { status: 400 });
+  if (error instanceof DocumentReadError) {
+    return NextResponse.json({ success: false, code: error.code, message: error.message }, { status: error.status });
+  }
   const reauth = googleReauthResponse(error);
   if (reauth) return reauth;
   return NextResponse.json(
@@ -61,7 +70,7 @@ export async function GET(request: Request) {
           success: false,
           extractable: false,
           message: (result.mimeType ?? mimeType) === "application/pdf"
-            ? "La lecture des PDF nécessite encore un extracteur dédié. Le PDF original reste consultable et téléchargeable."
+            ? "Ce PDF ne contient aucun texte extractible. Aucun OCR n’est effectué ; le PDF original reste disponible."
             : "Ce format ne fournit pas encore de texte extractible à Clara OS.",
         }, { status: 422 });
       }
@@ -167,57 +176,33 @@ export async function POST(request: Request) {
   try {
     const contentType = request.headers.get("content-type") ?? "";
     if (contentType.includes("application/json")) {
-      const body = await request.json() as { action?: string; fileId?: string; destinationId?: string; name?: string; parentId?: string };
+      const input: unknown = JSON.parse(new TextDecoder().decode(await readDocumentRequest(request, 64 * 1024)));
+      if (!input || typeof input !== "object" || Array.isArray(input)) throw new DocumentReadError("INVALID_REQUEST", "Requête documentaire invalide.", 400);
+      const body = input as { action?: string; fileId?: string; destinationId?: string; name?: string; parentId?: string };
+      if (!["move", "createFolder"].includes(body.action ?? "") ||
+          [body.fileId, body.destinationId, body.name, body.parentId].some(value => value !== undefined && (typeof value !== "string" || value.length > 512))) {
+        throw new DocumentReadError("INVALID_REQUEST", "Requête documentaire invalide.", 400);
+      }
       const drive = await new DriveClient().create();
       if (body.action === "createFolder") {
-        const name = body.name?.trim();
-        if (!name || name.length > 150) return NextResponse.json({ success: false, message: "Nom de dossier invalide." }, { status: 400 });
-        if (body.parentId) {
-          const parent = await drive.files.get({ fileId: body.parentId, fields: "id,mimeType", supportsAllDrives: true });
-          if (parent.data.mimeType !== "application/vnd.google-apps.folder") {
-            return NextResponse.json({ success: false, message: "Le parent doit être un dossier Google Drive." }, { status: 400 });
-          }
-        }
-        const created = await drive.files.create({
-          requestBody: { name, mimeType: "application/vnd.google-apps.folder", parents: body.parentId ? [body.parentId] : undefined },
-          fields: "id,name", supportsAllDrives: true,
-        });
-        return NextResponse.json({ success: true, folder: { id: created.data.id, name: created.data.name } });
+        const folder = await createDriveFolder(drive, body.name, body.parentId || "root");
+        return NextResponse.json({ success: true, folder });
       }
       if (body.action === "move") {
-        if (!body.fileId || !body.destinationId || body.fileId === body.destinationId) {
-          return NextResponse.json({ success: false, message: "Déplacement invalide." }, { status: 400 });
-        }
-        const [source, destination] = await Promise.all([
-          drive.files.get({ fileId: body.fileId, fields: "id,name,parents,mimeType", supportsAllDrives: true }),
-          drive.files.get({ fileId: body.destinationId, fields: "id,mimeType", supportsAllDrives: true }),
-        ]);
-        if (destination.data.mimeType !== "application/vnd.google-apps.folder") {
-          return NextResponse.json({ success: false, message: "La destination doit être un dossier." }, { status: 400 });
-        }
-        if (source.data.mimeType === "application/vnd.google-apps.folder") {
-          return NextResponse.json({ success: false, message: "Le déplacement de dossiers n'est pas encore autorisé." }, { status: 400 });
-        }
-        if (!source.data.parents?.length) {
-          return NextResponse.json({ success: false, message: "Impossible de déplacer un fichier sans dossier parent connu." }, { status: 409 });
-        }
-        if (source.data.parents.includes(body.destinationId)) {
-          return NextResponse.json({ success: false, message: "Ce fichier se trouve déjà dans le dossier choisi." }, { status: 409 });
-        }
-        await drive.files.update({
-          fileId: body.fileId, addParents: body.destinationId,
-          removeParents: (source.data.parents ?? []).join(","),
-          requestBody: {}, fields: "id,name,parents", supportsAllDrives: true,
-        });
+        const source = await moveDriveResource(drive, body.fileId ?? "", body.destinationId ?? "");
         await new Journal().addEntry(writeActionEntry(
-          `Document déplacé · ${source.data.name ?? body.fileId}`,
+          `Document déplacé · ${source.name ?? body.fileId}`,
           `Google Drive : déplacement confirmé vers ${body.destinationId}.`,
         ));
         return NextResponse.json({ success: true });
       }
       return NextResponse.json({ success: false, message: "Action inconnue." }, { status: 400 });
     }
-    const formData = await request.formData();
+    if (!contentType.includes("multipart/form-data")) throw new DocumentReadError("INVALID_UPLOAD", "Un téléversement multipart est requis.", 400);
+    const body = await readDocumentRequest(request, MAX_UPLOAD_BYTES + 64 * 1024);
+    let formData: FormData;
+    try { formData = await new Response(body, { headers: { "Content-Type": contentType } }).formData(); }
+    catch { throw new DocumentReadError("INVALID_UPLOAD", "Le téléversement est invalide.", 400); }
     const upload = formData.get("file");
 
     if (!(upload instanceof File)) {
@@ -229,6 +214,7 @@ export async function POST(request: Request) {
 
     const folderValue = formData.get("folderId");
     const uploadFolderId = typeof folderValue === "string" ? folderValue.trim() : "";
+    if (uploadFolderId.length > 512) throw new DocumentReadError("INVALID_FOLDER", "Dossier de destination invalide.", 400);
     if (uploadFolderId) {
       const drive = await new DriveClient().create();
       const parent = await drive.files.get({ fileId: uploadFolderId, fields: "id,mimeType", supportsAllDrives: true });
