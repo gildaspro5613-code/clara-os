@@ -252,3 +252,28 @@ Le hardware, les assets privés et le raccord réseau réel ne sont pas validés
 Dans OS : 29 tests documentaires/store PostgreSQL isolé PASS et TypeScript PASS.
 La phase 4 est **non activée**, et aucun nouveau build OS n'est revendiqué pour
 ces changements exclusivement documentaires.
+
+
+## Fondations canoniques préparées (2026-10-11)
+
+Le raccord sur les nouvelles branches dédiées est décrit dans
+[canonical-registry-implementation.md](canonical-registry-implementation.md).
+Les descriptions historiques de verrou ci-dessus correspondent aux branches
+#171/#294, conservées. Aucun contrat n'est activé en production.
+
+Les deux requêtes Live v1 acceptent désormais `authorizationTicket` : un nonce
+serveur OS scoped de 45 secondes, dont Live redemande la session et les ACL.
+Sans ce ticket, le produit seul n'obtient aucun grant. Les grants de lecture
+peuvent retourner `status:"active"`, `completedAt:null` et `archive:false` pour
+préserver l'histoire administrative d'un projet rouvert ; l'archivage exige
+`completed` attesté. Le grant comprend la révision du registre de clôture.
+
+La découverte minimale Live concerne un seul projet sélectionné par ticket,
+avec `nextCursor:null`, et ne renvoie que les projets terminés. OS fournit
+séparément les pages de clients/projets autorisés (`list`/`listProjects`, noms
+canoniques, curseur d'identifiant, au plus 100). Il ne s'agit pas d'une
+énumération workspace obtenue avec le jeton produit seul.
+
+Le cycle de clôture additif, indépendant de Project, a été explicitement
+approuvé : seules les transitions du propriétaire authentifié et autorisé
+produisent une attestation ; la réouverture invalide les nouveaux grants.

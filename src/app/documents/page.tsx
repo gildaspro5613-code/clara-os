@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ArrowLeft, Brain, Download, ExternalLink, FileText, Folder, FolderPlus, Search, Upload } from "lucide-react";
 
+import CanonicalArchivesPanel from "@/components/documents/CanonicalArchivesPanel";
+
 import MainLayout from "@/components/layout/MainLayout";
 
 interface DocumentFile {
@@ -286,10 +288,7 @@ export default function DocumentsPage() {
             <button type="button" disabled={destinationLoading || (destinationTrail.at(-1)?.id ?? "root") === moveTarget.parentId || working !== null} onClick={() => void confirmMove()} className="mt-4 rounded-lg bg-cyan-800 px-4 py-2 text-sm disabled:opacity-40">Confirmer le déplacement dans ce dossier</button>
           </section>}
           {selected && <section className="mb-6 rounded-xl border border-cyan-300/20 p-5"><div className="flex justify-between gap-4"><h2 className="font-semibold">{selected.name}</h2><button type="button" onClick={() => setSelected(null)}>Fermer</button></div>{selected.recommendation && <p className="mt-3 text-cyan-200">{selected.recommendation}</p>}<pre className="mt-4 max-h-80 overflow-auto whitespace-pre-wrap text-sm text-white/70">{selected.content}</pre></section>}
-          <section aria-label="Projets Clara Live archivés" className="mb-6 rounded-xl border border-white/10 p-5">
-            <h2 className="font-semibold">Projets Clara Live archivés</h2>
-            <p className="mt-2 text-sm text-white/60">La consultation des archives sera disponible lorsque les droits sur les clients et leurs projets auront été raccordés. Aucun projet Clara Live original n’est modifié.</p>
-          </section>
+          <CanonicalArchivesPanel />
           {activeSearch && <p className="mb-3 text-sm text-white/60">Résultats de recherche dans Google Drive : {activeSearch}</p>}
           <form onSubmit={handleSubmit} className="mb-6 flex max-w-2xl gap-2">
             <div className="relative flex-1">
