@@ -1,8 +1,10 @@
 # Raccord d’archivage Clara Live → Clara OS : contrat proposé
 
-Ce document est une proposition ciblée pour la PR #171. Aucun fichier Clara Live
-n’a été modifié, aucun endpoint nouveau n’est annoncé comme existant, et
-`/api/documents/live-archives` reste verrouillé. Le raccord existant est conservé.
+Ce document définit le contrat cible de la PR #171. L'audit désormais réalisé
+dans Clara Live a permis d'ajouter deux frontières authentifiées, qui retournent
+`503` sans grant tant que l'autorité canonique manque. Aucun contrat positif
+n'est disponible et `/api/documents/live-archives` reste verrouillé.
+Le raccord existant est conservé. Voir l'actualisation d'audit ci-dessous.
 
 ## Preuves disponibles dans Clara OS
 
@@ -21,8 +23,9 @@ La recherche des identifiants de projet/client dans le dépôt ne révèle pas d
 registre canonique reliant `workspaceId/clientId/projectId/liveProjectId`.
 Un email, un `submissionId`, un objet `project` libre, un nom de projet, un jeton
 produit et un `clientId` fourni par le navigateur ne peuvent pas remplacer ce registre.
-Les noms de champs réellement stockés dans Clara Live doivent être confirmés
-dans son dépôt avant toute implémentation. Ils ne sont pas déduits ici.
+L'audit Live confirme `Project.id`, `Project.user_id` et `Project.client`
+(texte libre), sans mapping canonique OS ni état de fin métier. Les détails
+et limites de cette preuve sont consignés dans l'actualisation ci-dessous.
 
 ## Données indispensables
 
@@ -134,16 +137,16 @@ L’interface Documents affiche actuellement l’indisponibilité de la consulta
 d’archives. Elle ne demande aucun identifiant technique et n’expose aucun lien
 Live non autorisé. Il n’existe pas encore de liste d’archives accessible.
 
-## Fichiers ciblés pour une future intervention autorisée
+## Fichiers ciblés après audit
 
-Les chemins **Live** suivants sont proposés comme nouveaux fichiers ; ils ne
-sont pas présentés comme les chemins existants d’un dépôt Live non inspecté :
+Chemins **Live** confirmés dans le dépôt FastAPI :
 
-- `src/app/api/core/projects/[liveProjectId]/archive-authorization/route.ts` : contrôle serveur en lecture seule.
-- `src/app/api/core/documents/archive-candidates/route.ts` : découverte autorisée et paginée.
-- `src/lib/documents/live-archive-authority.ts` : adaptateur aux registres et ACL Live réels, sans nouvelle architecture métier.
-- Tests correspondants : principal invalide, ACL workspace/client/projet, projet actif, mappings absents/contradictoires, grants expirés et non-mutation du projet.
-- Middleware produit et repositories projet/client/ACL **existants** : chemins à identifier lors de l’audit autorisé du dépôt Live.
+- `backend/live_archive_routes.py` : les deux frontières de lecture sont ajoutées et verrouillées.
+- `backend/server.py` : import et montage du routeur uniquement ; modèles et fonctions métier inchangés.
+- `backend/tests/test_live_archive_routes.py` : tests exécutés du verrou, des limites et du callback conservé.
+- Futur `backend/live_archive_authority.py` : adaptateur aux associations et ACL réelles après leur établissement autorisé.
+- Futurs tests d'autorité : principal invalide, ACL workspace/client/projet, projet actif, mappings absents/contradictoires, grants expirés, révocation et non-mutation du projet.
+- `backend/unified_core_capability_routes.py`, `backend/clara_os_client.py`, `backend/unified_core_contracts.py` : contrats/auth existants audités, fichiers inchangés.
 
 Fichiers **OS** concernés ensuite :
 
@@ -167,5 +170,85 @@ révocation de droits, accès inter-client/inter-workspace refusé et projet ori
 strictement conservé. Le test PostgreSQL synthétique présent dans cette PR
 valide le store, pas ces autorisations réelles ni la connectivité Neon.
 
-Statut actuel du raccord : **BLOCKED**. La production, les données réelles et
-Clara Live ne sont pas modifiés.
+Statut actuel du raccord : **BLOCKED**. La production et les données réelles
+ne sont pas modifiées. Les seules modifications Live sont la frontière
+verrouillée, son câblage, ses tests et les rapports d'audit.
+
+## Actualisation après audit Clara Live — 11 octobre 2026
+
+Base récente inspectée : `deploy/clara-live-api`, commit
+`40622e0eb830a87715431c258c109478ce74dd05`, incluant la PR #292.
+La branche par défaut `main` est plus ancienne et ne contient pas les acquis
+Stage Model récents ; elle n'est pas la base de l'intervention.
+Branche dédiée : `feat/secure-os-live-archive-contract`.
+PR Live séparée pour examen :
+https://github.com/gildaspro5613-code/clara-live/pull/294 (draft, activation bloquée).
+Audit et validation :
+[audit Live](https://github.com/gildaspro5613-code/clara-live/blob/feat/secure-os-live-archive-contract/docs/live-archive-authorization-audit.md),
+[rapport Live](https://github.com/gildaspro5613-code/clara-live/blob/feat/secure-os-live-archive-contract/docs/live-archive-validation.md).
+
+Les chemins Live sont **Python/FastAPI**, pas les chemins Next.js hypothétiques
+de la proposition initiale :
+
+- `backend/server.py` : modèle `Project`, propriété `user_id`, `client` texte
+  libre ; aucune fin métier, aucune association canonique client/projet OS.
+- `backend/unified_core_capability_routes.py` : véritable callback entrant,
+  jeton produit existant `CLARA_OS_PRODUCT_TOKEN`, en-têtes Bearer et
+  `x-clara-product: clara-live`. Ce fichier reste inchangé.
+- `backend/server.py`, `_dispatch_live_chat_to_core` : les IDs du scope sont
+  des IDs Live ; `workspaceId` représente le projet Live ou `user:{user_id}`.
+  Aucun passage automatique à un user/workspace OS n'est autorisé.
+- Nouveau `backend/live_archive_routes.py` : les deux POST proposés sont
+  authentifiés avec le même mécanisme produit, JSON borné à 16 KiB/5 s,
+  validation stricte ; réponse `503 LIVE_ARCHIVE_AUTHORITY_UNAVAILABLE`, sans
+  lookup ni mutation. Le routeur ne dispose d'aucun handle de base/storage.
+- Nouveau `backend/tests/test_live_archive_routes.py` : identité produit,
+  refus de grants basés sur les sélecteurs, limites et callback inchangé.
+- `docs/live-archive-authorization-audit.md` et `docs/live-archive-validation.md`
+  côté Live : audit complet et vérifications réellement exécutées.
+
+Le corps de `archive-authorization` correspond à la requête proposée plus haut.
+Le corps exact de `archive-candidates` est désormais :
+
+```json
+{
+  "schemaVersion": "clara.live-archive-candidates-request.v1",
+  "operation": "read",
+  "osUserId": "server-resolved-os-user",
+  "workspaceId": "canonical-os-workspace",
+  "limit": 50,
+  "cursor": null
+}
+```
+
+`operation` accepte `read` ou `archive`, `limit` un entier de 1 à 100.
+Cette route ne retourne aucune liste aujourd'hui. Le schéma de grant positif
+`clara.live-archive-authorization.v1` reste une cible, pas une autorité active.
+
+Les prérequis confirmés manquants sont : registre canonique client/projet OS,
+associations explicites aux projets Live, liaison de principals des deux
+produits, ACL actuelles et preuve métier du projet terminé. Le statut terminé
+des jobs/imports/analyses n'est pas une preuve de fin de prestation.
+
+Établissement proposé : opérations administratives authentifiées et auditées
+pour les liens workspace/client/projet ; liaison des principals par preuve des
+sessions existantes, challenge unique, consentement et révocation. Aucun lien
+par nom/email et aucune nouvelle identité parallèle. La source du registre
+client/projet et du lifecycle métier doit être définie et autorisée séparément
+avant implémentation ; ne pas modifier les modèles métier pour contourner ce
+préalable. Aucun mapping réel, seed ni registre supposé n'a été créé.
+
+Prochaine intervention ciblée Live : `backend/live_archive_authority.py` puis
+les handlers de `backend/live_archive_routes.py`, après mise à disposition des
+associations et de la preuve métier réelles. L'adaptateur OS et la levée du
+verrou restent conditionnés à la recette positive et négative de cette autorité.
+
+Vérifications de cette intervention : 34 tests frontière/callback/invariance PASS ;
+sélection backend 304 PASS/9 échecs reproduits sur base ; tests HTTP
+DMX/Sound/Production 40 PASS/20 échecs identiques sur base ; frontend
+170 PASS/1 échec identique sur base ; build Live PASS ; navigateur Sound/Video
+PASS ; smoke Stage 2D/WebGL 3D/contrôles/plein écran synthétique PASS.
+Le hardware, les assets privés et le raccord réseau réel ne sont pas validés.
+Dans OS : 29 tests documentaires/store PostgreSQL isolé PASS et TypeScript PASS.
+La phase 4 est **non activée**, et aucun nouveau build OS n'est revendiqué pour
+ces changements exclusivement documentaires.
