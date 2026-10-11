@@ -58,7 +58,11 @@ export async function saveLiveArchiveReference(input: unknown): Promise<LiveArch
   if (!stored || stored.project_id !== record.projectId) {
     throw new Error("Conflicting Clara Live archive project identity");
   }
-  return parseLiveArchiveReference(stored.archive_record);
+  const persisted = parseLiveArchiveReference(stored.archive_record);
+  if (JSON.stringify(persisted) !== JSON.stringify(record)) {
+    throw new Error("Archive reference already exists with different immutable content");
+  }
+  return persisted;
 }
 
 /**
