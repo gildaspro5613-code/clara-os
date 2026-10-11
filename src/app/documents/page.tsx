@@ -36,6 +36,8 @@ export default function DocumentsPage() {
   const [selected, setSelected] = useState<{ name: string; content: string; recommendation?: string | null } | null>(null);
   const [files, setFiles] = useState<DocumentFile[]>([]);
   const [nextPageToken, setNextPageToken] = useState<string | null>(null);
+  const [activeSearch, setActiveSearch] = useState("");
+  const [activeFolderId, setActiveFolderId] = useState("");
   const [destinationPageToken, setDestinationPageToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,6 +59,8 @@ export default function DocumentsPage() {
       const data = (await response.json()) as DocumentsResponse;
       if (!response.ok || !data.success) throw new Error(data.message ?? t("loadError"));
       setFiles(data.files ?? []);
+      setActiveSearch(search);
+      setActiveFolderId(search ? "" : folderId);
       setNextPageToken(data.nextPageToken ?? null);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("loadError"));
@@ -72,8 +76,8 @@ export default function DocumentsPage() {
     try {
       setLoading(true);
       const params = new URLSearchParams({ pageToken: nextPageToken });
-      if (query.trim()) params.set("query", query.trim());
-      else if (folderTrail.length) params.set("folderId", folderTrail[folderTrail.length - 1].id);
+      if (activeSearch) params.set("query", activeSearch);
+      else if (activeFolderId) params.set("folderId", activeFolderId);
       const response = await fetch(`/api/documents?${params}`, { cache: "no-store" });
       const data = await response.json() as DocumentsResponse;
       if (!response.ok || !data.success) throw new Error(data.message ?? "Chargement impossible.");
@@ -148,7 +152,7 @@ export default function DocumentsPage() {
       if (!response.ok || !data.success) throw new Error(data.message ?? "Déplacement impossible.");
       setMoveTarget(null);
       setStatus(`${file.name} a été déplacé vers ${destination.name}.`);
-      await loadDocuments(query.trim());
+      await loadDocuments(activeSearch, activeFolderId);
     } catch (err) { setError(err instanceof Error ? err.message : "Déplacement impossible."); }
     finally { setWorking(null); }
   }
