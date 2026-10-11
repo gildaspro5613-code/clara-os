@@ -23,6 +23,7 @@ import { Journal } from "@/lib/core/journal";
 import { writeActionEntry } from "@/lib/core/journal-writer";
 
 const MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
+const MAX_READ_CHARACTERS = 200_000;
 
 function failure(error: unknown, fallback: string) {
   const reauth = googleReauthResponse(error);
@@ -59,8 +60,18 @@ export async function GET(request: Request) {
         return NextResponse.json({
           success: false,
           extractable: false,
-          message: "Ce format ne fournit pas encore de texte extractible à Clara OS.",
+          message: (result.mimeType ?? mimeType) === "application/pdf"
+            ? "La lecture des PDF nécessite encore un extracteur dédié. Le PDF original reste consultable et téléchargeable."
+            : "Ce format ne fournit pas encore de texte extractible à Clara OS.",
         }, { status: 422 });
+      }
+
+      if (result.textContent.length > MAX_READ_CHARACTERS) {
+        return NextResponse.json({
+          success: false,
+          extractable: true,
+          message: "Document trop long pour une lecture unique par Clara (200 000 caractères maximum).",
+        }, { status: 413 });
       }
 
       const operational = await resolveOperationalContext();
