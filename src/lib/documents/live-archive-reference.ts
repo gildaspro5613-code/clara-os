@@ -36,7 +36,7 @@ export function parseLiveArchiveReference(input: unknown): LiveArchiveReference 
     throw new Error("Unsupported Live archive reference contract");
   }
   const archivedAt = requiredId(record.archivedAt, "archivedAt");
-  if (!/^\\d{4}-\\d{2}-\\d{2}T/.test(archivedAt) ||
+  if (!/^\d{4}-\d{2}-\d{2}T/.test(archivedAt) ||
       !Number.isFinite(Date.parse(archivedAt))) {
     throw new Error("Invalid Live archive date");
   }
