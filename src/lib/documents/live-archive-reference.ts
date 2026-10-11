@@ -36,7 +36,7 @@ export function parseLiveArchiveReference(input: unknown): LiveArchiveReference 
     throw new Error("Unsupported Live archive reference contract");
   }
   const archivedAt = requiredId(record.archivedAt, "archivedAt");
-  if (!/^\d{4}-\d{2}-\d{2}T/.test(archivedAt) ||
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/.test(archivedAt) ||
       !Number.isFinite(Date.parse(archivedAt))) {
     throw new Error("Invalid Live archive date");
   }
@@ -45,7 +45,9 @@ export function parseLiveArchiveReference(input: unknown): LiveArchiveReference 
   if (record.sourceUrl !== undefined) {
     if (typeof record.sourceUrl !== "string") throw new Error("Invalid Live source URL");
     const parsed = new URL(record.sourceUrl);
-    if (parsed.protocol !== "https:") throw new Error("Live source URL must use HTTPS");
+    if (parsed.protocol !== "https:" || parsed.username || parsed.password) {
+      throw new Error("Live source URL must use HTTPS without credentials");
+    }
     sourceUrl = parsed.toString();
   }
   return {
