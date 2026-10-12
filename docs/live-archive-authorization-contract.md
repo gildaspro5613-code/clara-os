@@ -252,3 +252,64 @@ Le hardware, les assets privés et le raccord réseau réel ne sont pas validés
 Dans OS : 29 tests documentaires/store PostgreSQL isolé PASS et TypeScript PASS.
 La phase 4 est **non activée**, et aucun nouveau build OS n'est revendiqué pour
 ces changements exclusivement documentaires.
+
+
+## Fondations canoniques préparées (2026-10-11)
+
+Le raccord sur les nouvelles branches dédiées est décrit dans
+[canonical-registry-implementation.md](canonical-registry-implementation.md).
+Les descriptions historiques de verrou ci-dessus correspondent aux branches
+#171/#294, conservées. Aucun contrat n'est activé en production.
+
+Les deux requêtes Live v1 acceptent désormais `authorizationTicket` : un nonce
+serveur OS scoped de 45 secondes, dont Live redemande la session et les ACL.
+Sans ce ticket, le produit seul n'obtient aucun grant. Les grants de lecture
+peuvent retourner `status:"active"`, `completedAt:null` et `archive:false` pour
+préserver l'histoire administrative d'un projet rouvert ; l'archivage exige
+`completed` attesté. Le grant comprend la révision du registre de clôture.
+
+La découverte minimale Live concerne un seul projet sélectionné par ticket,
+avec `nextCursor:null`, et ne renvoie que les projets terminés. OS fournit
+séparément les pages de clients/projets autorisés (`list`/`listProjects`, noms
+canoniques, curseur d'identifiant, au plus 100). Il ne s'agit pas d'une
+énumération workspace obtenue avec le jeton produit seul.
+
+Le cycle de clôture additif, indépendant de Project, a été explicitement
+approuvé : seules les transitions du propriétaire authentifié et autorisé
+produisent une attestation ; la réouverture invalide les nouveaux grants.
+
+### Sérialisation de la clôture et de la persistance
+
+Une autorisation de lecture seule n'autorise plus une écriture locale. OS appelle
+`POST /api/core/projects/{liveProjectId}/archive-commit` avec le ticket serveur et
+la révision de clôture vérifiée. Live réserve cette révision par CAS sur le même
+document MongoDB que la réouverture, avec écriture journalisée `majority` et
+lecture sur le primaire. La transition métier refuse une réservation en cours.
+
+Live appelle ensuite le produit OS existant (`/api/core/canonical/links`, action
+`archiveCommit`). La migration additive `010_canonical_archive_serialization.sql`
+réunit dans une transaction PostgreSQL le contrôle actualisé des droits OS,
+l'archive administrative, la consommation du ticket et le reçu lié au projet et
+à la révision. L'ancien commit local est interdit. Deux appels concurrents ne
+peuvent consommer le même ticket deux fois.
+
+Si la réouverture gagne le CAS, aucune persistance n'est appelée. Si la réservation
+gagne, une réouverture ne peut être validée avant la persistance ou l'annulation
+confirmée. Après timeout, `archiveCancel` utilise le même verrou transactionnel
+que le commit : son reçu durable interdit toute écriture retardée. Les reçus
+sont immuables et ne sont pas supprimés automatiquement à expiration du ticket.
+
+Une panne qui empêche de connaître les deux résultats conserve la réservation,
+sans expiration automatique. Le propriétaire authentifié peut appeler
+`POST /api/canonical/projects/{liveProjectId}/archive-reconciliation` avec
+`{"approve":true}`. Le hash durable permet uniquement l'action OS
+`archiveCancelHash`, jamais un commit : récupération possible après perte de la
+requête initiale ou redémarrage. Un reçu `committed` est conservé ; un reçu
+`cancelled` clôt définitivement l'autorisation. Sans reçu vérifié, aucune
+réouverture n'est autorisée. Les données techniques Project restent intactes.
+
+Activation ultérieure : conserver l'archivage désactivé jusqu'à installation des
+deux versions compatibles et de la migration 010 par une opération séparément
+autorisée. Aucun rollback ne doit restaurer un chemin de réouverture qui ignore
+les réservations ; arrêter les nouvelles archives et réconcilier les opérations
+pendantes en conservant les reçus et les protections de clôture.

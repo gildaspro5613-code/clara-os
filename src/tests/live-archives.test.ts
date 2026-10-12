@@ -19,34 +19,15 @@ test("archive validation rejects malformed contract, dates, IDs and source URLs"
 test("archive timestamps normalize equivalent instants", () => {
   assert.deepEqual(parseLiveArchiveReference(syntheticArchive), parseLiveArchiveReference({ ...syntheticArchive, archivedAt: "2026-10-11T12:00:00+02:00" }));
 });
-test("archive endpoint rejects invalid auth and keeps client/project authorization locked", async () => {
-  const names = ["CLARA_LIVE_PRODUCT_TOKEN", "CLARA_LIVE_WORKSPACE_ID", "CLARA_LIVE_CAPABILITIES", "CLARA_LIVE_CALLBACK_BASE_URL", "CLARA_EXTERNAL_PRODUCTS_JSON"];
-  const previous = names.map(name => process.env[name]);
-  try {
-    process.env.CLARA_LIVE_PRODUCT_TOKEN = "synthetic-token";
-    process.env.CLARA_LIVE_WORKSPACE_ID = "synthetic-os";
-    process.env.CLARA_LIVE_CAPABILITIES = "[]";
-    delete process.env.CLARA_LIVE_CALLBACK_BASE_URL;
-    delete process.env.CLARA_EXTERNAL_PRODUCTS_JSON;
-    const request = (body: unknown, token = "synthetic-token") => new Request("https://os.example.test/api/documents/live-archives", {
-      method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json" }, body: JSON.stringify(body),
+test("archive endpoint rejects product credentials without an OS session", async () => {
+  for (const token of ["invalid", "synthetic-product-token"]) {
+    const request = new Request("https://os.example.test/api/documents/live-archives", {
+      method:"POST",headers:{authorization:`Bearer ${token}`,"content-type":"application/json"},body:JSON.stringify(syntheticArchive),
     });
-    assert.equal((await POST(request(syntheticArchive, "invalid"))).status, 401);
-    assert.equal((await POST(request({ ...syntheticArchive, workspaceId: "other-workspace" }))).status, 403);
-    assert.equal((await POST(request(syntheticArchive))).status, 403);
-    assert.equal((await POST(request({ ...syntheticArchive, clientId: "other-client" }))).status, 403);
-    assert.equal((await POST(request({ ...syntheticArchive, projectId: "other-project" }))).status, 403);
-    assert.equal((await POST(request({ ...syntheticArchive, version: "unsupported" }))).status, 400);
-    assert.equal((await POST(request({ ...syntheticArchive, sourceUrl: "bad" }))).status, 400);
-    assert.equal((await GET(new Request("https://os.example.test/api/documents/live-archives?clientId=synthetic-client"))).status, 401);
-    for (const clientId of ["synthetic-client", "other-client"]) {
-      assert.equal((await GET(new Request(`https://os.example.test/api/documents/live-archives?clientId=${clientId}`, {
-        headers: { authorization: "Bearer synthetic-token" },
-      }))).status, 403);
-    }
-    const malformed = new Request("https://os.example.test/api/documents/live-archives", { method: "POST", headers: { authorization: "Bearer synthetic-token" }, body: "{" });
-    assert.equal((await POST(malformed)).status, 400);
-  } finally {
-    names.forEach((name, index) => { if (previous[index] === undefined) delete process.env[name]; else process.env[name] = previous[index]; });
+    assert.equal((await POST(request)).status,401);
+    assert.equal((await GET(new Request("https://os.example.test/api/documents/live-archives?clientId=synthetic-client",{headers:{authorization:`Bearer ${token}`}}))).status,401);
   }
+  const cookie = "clara_auth_session=" + "a".repeat(43);
+  const crossOrigin = new Request("https://os.example.test/api/documents/live-archives",{method:"POST",headers:{cookie,Origin:"https://evil.test","content-type":"application/json"},body:"{}"});
+  assert.equal((await POST(crossOrigin)).status,403);
 });

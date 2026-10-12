@@ -1,6 +1,6 @@
 import type { LiveArchiveReference } from "./live-archive-reference";
 
-/** Proposed read-only Live response. NOT supplied by the current Live bridge.
+/** Trusted Live response supplied by the scoped canonical server bridge.
  * Only consume a response fetched server-to-server from the configured Live
  * origin after authenticated OS session resolution. Never accept this from
  * a browser, incoming event, archive POST body or a product token alone.
@@ -13,8 +13,9 @@ export interface LiveArchiveAuthorization {
   clientId: string;
   projectId: string;
   liveProjectId: string;
-  status: "completed";
-  completedAt: string;
+  status: "active" | "completed";
+  completedAt: string | null;
+  lifecycleRevision?: number;
   verifiedAt: string;
   expiresAt: string;
   displayName: string;
@@ -26,9 +27,9 @@ export class LiveArchiveAuthorizationError extends Error {
   constructor() { super("LIVE_ARCHIVE_ACCESS_DENIED"); }
 }
 
-/** Pure gate for the future trusted adapter. No network calls or activation.
+/** Pure gate shared by the canonical archive service. No network calls.
  * An authenticated principal is resolved from OS's actual server session;
- * the trusted adapter must establish canonical associations in Live, not echo
+ * the adapter establishes canonical associations in OS and verifies Live, not echo
  * caller-selected identifiers. See docs/documents-workspace-v2.md.
  */
 export function verifyLiveArchiveAuthorization(
@@ -47,7 +48,9 @@ export function verifyLiveArchiveAuthorization(
       a.osUserId !== principal.userId || a.workspaceId !== principal.workspaceId ||
       a.workspaceId !== reference.workspaceId || a.clientId !== reference.clientId ||
       a.projectId !== reference.projectId || a.liveProjectId !== reference.liveProjectId ||
-      a.status !== "completed" || !Number.isFinite(completed) || completed > now ||
+      (a.status !== "completed" && a.status !== "active") ||
+      (a.status === "completed" && (!Number.isFinite(completed) || completed > now)) ||
+      (operation === "archive" && a.status !== "completed") ||
       !Number.isFinite(verified) || !Number.isFinite(expires) || verified > now || expires <= now ||
       expires - verified > 60_000 || expires <= verified ||
       (operation === "archive" && (a.displayName !== reference.displayName || a.sourceUrl !== reference.sourceUrl)) ||
