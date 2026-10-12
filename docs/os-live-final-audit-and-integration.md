@@ -160,3 +160,8 @@ CANONICAL_LIVE_REPO=/workspace/clara-live CANONICAL_LIVE_PYTHON=/workspace/.venv
 L’intégration crée des DB temporaires `canonical_audit_<uuid>` puis nettoie seulement ses propres fixtures. L’adaptateur Neon utilise les requêtes réelles du client Neon vers PostgreSQL local ; TLS est remplacé par des transports HTTPS-fixture → HTTP loopback, et tout accès Node hors destinations de fixture/loopback est refusé. Les variantes de panne ne coupent aucune plateforme réelle. Le test de verrouillage crée/nettoie sa propre DB `canonical_lock_<uuid>` ; avant le correctif il produit 40P01, après les deux commandes réussissent. Les autres commandes de tests/browser sont documentées dans `canonical-registry-validation.md` ; logs de cette séance dans `/tmp/final-*.log`.
 
 Après les correctifs, les contrôles GitHub des nouveaux heads devront être relus ; les succès Live du tableau concernent le head initial audité `99aeb23`, pas une anticipation des checks du correctif Origin. Les exécutables/tests restent reproductibles et les PR en brouillon.
+
+
+### Contrôles finaux après publication des correctifs
+
+Le head Live #295 **42df55f** a ses quatre contrôles applicatifs GitHub terminés et réussis : compile-and-import, isolated-validation, frontend-library-tests et backend-library-tests. Les deux statuts Vercel Live indiquent Canceled by Ignored Build Step. Le correctif SQL est publié sur #172 (commit applicatif **d2af9c8**, suivi de rapports uniquement) ; le workflow applicatif OS reste exclu par le filtre de base décrit plus haut. #171 conserve son échec d’installation après deux tentatives, sans nouveau commit ni modification de sa base. Ces contrôles ne lèvent donc pas le statut BLOCKED de l’ensemble.
