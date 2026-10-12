@@ -29,6 +29,15 @@ export function createCanonicalArchiveAuthority(query: RegistryQuery = sql) {
   async function commit(context: RegistryContext, ticket: string, record: LiveArchiveReference) {
     return result(query`SELECT clara_registry_archive_commit(${context.digest},${context.workspaceId},${challengeDigest(ticket)},${JSON.stringify(record)}::jsonb) AS result`);
   }
+  async function settle(workspace: string, ticket: unknown, revision: unknown, liveProject: unknown, mode: "commit" | "cancel") {
+    if (!Number.isSafeInteger(revision) || (revision as number) < 1) throw new RegistryError(400,"INVALID_LIFECYCLE_REVISION");
+    return result(query`SELECT clara_registry_archive_settle(${opaque(workspace)},${challengeDigest(ticket)},${revision}::bigint,${opaque(liveProject)},${mode}) AS result`);
+  }
+  async function cancelDigest(workspace: string, digest: unknown, revision: unknown, liveProject: unknown) {
+    if (typeof digest !== "string" || !/^[a-f0-9]{64}$/.test(digest) || !Number.isSafeInteger(revision) || (revision as number)<1)
+      throw new RegistryError(400,"INVALID_ARCHIVE_RECONCILIATION");
+    return result(query`SELECT clara_registry_archive_settle(${opaque(workspace)},${digest},${revision}::bigint,${opaque(liveProject)},${"cancel"}) AS result`);
+  }
   async function history(context: RegistryContext, client: string, project: string) {
     await current(context,client,project,"read");
     try {
@@ -36,6 +45,6 @@ export function createCanonicalArchiveAuthority(query: RegistryQuery = sql) {
       return (rows[0] as {archive_record?: LiveArchiveReference} | undefined)?.archive_record ?? null;
     } catch (error) { databaseError(error); }
   }
-  return { issue, redeem, current, commit, history };
+  return { issue, redeem, current, commit, settle, cancelDigest, history };
 }
 export const canonicalArchiveAuthority = createCanonicalArchiveAuthority();

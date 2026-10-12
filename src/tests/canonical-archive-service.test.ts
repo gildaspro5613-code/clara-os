@@ -12,15 +12,19 @@ test("archive service checks fresh Live state, scoped grants, outages and reopen
   const context={digest:"d",workspaceId:"w"};
   const current=async()=>{if(revoked)throw new RegistryError(403,"DENIED");return scope;};
   const authority:ReturnType<typeof createCanonicalArchiveAuthority>={
-    current,issue:async()=>({scope:await current(),ticket:"t"}),redeem:async()=>scope,
+    cancelDigest:async()=>({}),settle:async()=>({}),current,issue:async()=>({scope:await current(),ticket:"t"}),redeem:async()=>scope,
     history:async()=>{await current();return saved;},
     commit:async(_context,_ticket,record)=>{await current();commits++;saved??=record;return saved;},
   };
   const service=createCanonicalArchiveService(authority,async(_path,payload)=>{
     if(fail)throw new RegistryError(503,"UNAVAILABLE");
+    if (_path.endsWith('/archive-commit')) {
+      commits++;await current();saved??={version:"clara.live-archive-reference.v1",productId:"clara-live",status:"archived",workspaceId:"w",clientId:"c",projectId:"p",liveProjectId:"lp",displayName:"Named project",archivedAt:new Date().toISOString()};
+      return {state:"committed",reference:saved};
+    }
     const operation=(payload as {operation:string}).operation;
     if(operation==="archive"&&status!=="completed")throw new RegistryError(403,"NOT_COMPLETED");
-    return {authorization:{schemaVersion:"clara.live-archive-authorization.v1",productId:"clara-live",osUserId:scope.osUserId,workspaceId:"w",clientId:forged?"other":"c",projectId:"p",liveProjectId:"lp",status,completedAt:status==="completed"?new Date(Date.now()-1000).toISOString():null,verifiedAt:new Date().toISOString(),expiresAt:new Date(Date.now()+30000).toISOString(),displayName:"Named project",sourceUrl:"https://live.melodie.digital/projects/lp",permissions:{workspace:true,client:true,project:true,read:true,archive:operation==="archive"&&status==="completed"}}};
+    return {authorization:{schemaVersion:"clara.live-archive-authorization.v1",productId:"clara-live",osUserId:scope.osUserId,workspaceId:"w",clientId:forged?"other":"c",projectId:"p",liveProjectId:"lp",lifecycleRevision:1,status,completedAt:status==="completed"?new Date(Date.now()-1000).toISOString():null,verifiedAt:new Date().toISOString(),expiresAt:new Date(Date.now()+30000).toISOString(),displayName:"Named project",sourceUrl:"https://live.melodie.digital/projects/lp",permissions:{workspace:true,client:true,project:true,read:true,archive:operation==="archive"&&status==="completed"}}};
   });
   await assert.rejects(service.archive(context,"c","p"),RegistryError);assert.equal(commits,0);
   status="completed";forged=true;await assert.rejects(service.archive(context,"c","p"),RegistryError);assert.equal(commits,0);

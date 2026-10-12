@@ -15,6 +15,7 @@ export interface LiveArchiveAuthorization {
   liveProjectId: string;
   status: "active" | "completed";
   completedAt: string | null;
+  lifecycleRevision?: number;
   verifiedAt: string;
   expiresAt: string;
   displayName: string;

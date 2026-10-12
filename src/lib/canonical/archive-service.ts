@@ -29,9 +29,21 @@ export function createCanonicalArchiveService(authority = canonicalArchiveAuthor
     const { scope,ticket,authorization } = await grant(context,client,project,"archive");
     const record = reference(scope,authorization);
     verify(record,scope,authorization,"archive");
-    // Commit rechecks the actual OS session, membership, ACL and associations
-    // atomically with the reference and audit. No grant can bypass revocation.
-    return authority.commit(context,ticket,record);
+    if (!Number.isSafeInteger(authorization.lifecycleRevision) || authorization.lifecycleRevision! < 1)
+      throw new RegistryError(403,"LIVE_CLOSURE_REVISION_REQUIRED");
+    // Live serializes this callback with reopen on the same Mongo document.
+    // Only its authenticated callback may write OS's durable receipt.
+    const receipt = await call(`/api/core/projects/${encodeURIComponent(scope.liveProjectId)}/archive-commit`, {
+      schemaVersion:"clara.live-archive-commit-request.v1", authorizationTicket:ticket,
+      lifecycleRevision:authorization.lifecycleRevision, operation:"archive", osUserId:scope.osUserId,
+      workspaceId:scope.workspaceId,clientId:scope.clientId,projectId:scope.projectId,
+    }) as {state?:string;reference?:unknown};
+    if (receipt.state !== "committed") throw new RegistryError(403,"LIVE_ARCHIVE_NOT_COMMITTED");
+    const saved = parseLiveArchiveReference(receipt.reference);
+    if (saved.workspaceId !== record.workspaceId || saved.clientId !== record.clientId ||
+        saved.projectId !== record.projectId || saved.liveProjectId !== record.liveProjectId)
+      throw new RegistryError(403,"LIVE_ARCHIVE_RECEIPT_MISMATCH");
+    return saved;
   }
   async function read(context: RegistryContext, client: string, project: string) {
     const { scope,authorization } = await grant(context,client,project,"read");

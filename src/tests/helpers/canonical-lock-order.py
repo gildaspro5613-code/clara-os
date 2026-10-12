@@ -4,7 +4,7 @@ base=['docker','exec',C,'psql','-U','postgres','-d',D,'-qAt','-v','ON_ERROR_STOP
 subprocess.run(['docker','exec',C,'createdb','-U','postgres',D],check=True)
 from pathlib import Path
 for p in sorted((Path(__file__).resolve().parents[3] / 'db/migrations').glob('*.sql')):
- if p.name[:3] in ('001','002','008','009'):
+ if p.name[:3] in ('001','002','008','009','010'):
   subprocess.run(['docker','exec','-i',C,'psql','-U','postgres','-d',D,'-q','-v','ON_ERROR_STOP=1'],input=p.read_bytes(),check=True,capture_output=True)
 digest=hashlib.sha256(b'lock-fixture').hexdigest()
 seed=f"""INSERT INTO clara_auth_users(id) VALUES('u');INSERT INTO clara_auth_workspaces(id) VALUES('w');INSERT INTO clara_auth_identities(issuer,subject,user_id) VALUES('fixture','u','u');INSERT INTO clara_workspace_memberships(user_id,workspace_id,role) VALUES('u','w','owner');INSERT INTO clara_auth_sessions(token_hash,user_id,expires_at) VALUES('{digest}','u',NOW()+INTERVAL '1 hour');INSERT INTO clara_registry_clients(workspace_id,id,display_name,created_by) VALUES('w','c','c','u');INSERT INTO clara_registry_projects(workspace_id,id,client_id,display_name,created_by) VALUES('w','p','c','p','u');INSERT INTO clara_registry_client_access VALUES('w','c','u',true,true,true,NULL);INSERT INTO clara_registry_project_access VALUES('w','p','u',true,true,true,NULL);INSERT INTO clara_registry_identity_links VALUES('w','u','lu','ip',NOW(),NULL);INSERT INTO clara_registry_project_links VALUES('w','p','c','lp','lu','u','pp',NOW(),NULL);"""

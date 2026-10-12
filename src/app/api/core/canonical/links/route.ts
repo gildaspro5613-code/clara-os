@@ -12,6 +12,14 @@ export async function POST(request: Request) {
     if (!product || request.headers.get("x-clara-product") !== "clara-live") throw new RegistryError(401, "PRODUCT_AUTHENTICATION_REQUIRED");
     if (!product.capabilities.includes("canonical-links:v1")) throw new RegistryError(403, "CANONICAL_LINK_CAPABILITY_REQUIRED");
     const body = await registryBody(request);
+    if (body.action === "archiveCancelHash") {
+      fields(body,["action","ticketHash","lifecycleRevision","liveProjectId"]);
+      return registrySuccess(await canonicalArchiveAuthority.cancelDigest(product.workspaceId,body.ticketHash,body.lifecycleRevision,body.liveProjectId));
+    }
+    if (body.action === "archiveCommit" || body.action === "archiveCancel") {
+      fields(body, ["action","ticket","lifecycleRevision","liveProjectId"]);
+      return registrySuccess(await canonicalArchiveAuthority.settle(product.workspaceId,body.ticket,body.lifecycleRevision,body.liveProjectId,body.action === "archiveCommit" ? "commit" : "cancel"));
+    }
     if (body.action === "redeem") {
       fields(body, ["action", "ticket"]);
       return registrySuccess(await canonicalArchiveAuthority.redeem(product.workspaceId, body.ticket));

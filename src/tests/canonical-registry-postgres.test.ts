@@ -1,14 +1,20 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { randomUUID, createHash } from "node:crypto";
 import { createCanonicalArchiveAuthority } from "@/lib/canonical/archive-authority";
 import { createCanonicalRegistry, RegistryError, type RegistryQuery } from "@/lib/canonical/registry";
 
 const container = process.env.CANONICAL_TEST_CONTAINER;
-test("real PostgreSQL: explicit registry, double consent, conflicts, revocation and isolation", { skip: !container }, async () => {
+test("real PostgreSQL: explicit registry, double consent, conflicts, revocation and isolation", { skip: !container }, async (t) => {
   assert.equal(container, "clara-canonical-test-postgres");
-  const execute = (statement: string) => execFileSync("docker", ["exec", container!, "psql", "-U", "postgres", "-qAt", "-v", "ON_ERROR_STOP=1", "-v", "VERBOSITY=verbose", "-c", statement], { encoding: "utf8", stdio: ["pipe", "pipe", "pipe"] });
+  const database="canonical_commit_"+randomUUID().replaceAll("-", "");
+  execFileSync("docker",["exec",container,"createdb","-U","postgres",database]);
+  t.after(()=>execFileSync("docker",["exec",container,"dropdb","-U","postgres",database]));
+  for(const file of ["001_authenticated_workspaces.sql","002_verified_auth_identities.sql","008_canonical_client_project_registry.sql","009_canonical_archive_authority.sql","010_canonical_archive_serialization.sql"])
+    execFileSync("docker",["exec","-i",container,"psql","-U","postgres","-d",database,"-q","-v","ON_ERROR_STOP=1"],{input:readFileSync("db/migrations/"+file),stdio:["pipe","pipe","pipe"]});
+  const execute = (statement: string) => execFileSync("docker", ["exec", container!, "psql", "-U", "postgres", "-d", database, "-qAt", "-v", "ON_ERROR_STOP=1", "-v", "VERBOSITY=verbose", "-c", statement], { encoding: "utf8", stdio: ["pipe", "pipe", "pipe"] });
   const query: RegistryQuery = async (strings, ...values) => {
     const statement = strings.reduce((s, part, i) => s + part + (i < values.length ? "'" + String(values[i]).replaceAll("'", "''") + "'" : ""), "");
     try { return execute(`SELECT row_to_json(r) FROM (${statement}) r`).trim().split("\n").filter(Boolean).map(s => JSON.parse(s)); }
@@ -55,15 +61,20 @@ test("real PostgreSQL: explicit registry, double consent, conflicts, revocation 
   await assert.rejects(authority.issue(stranger,"c1","p1","archive"),(e:RegistryError)=>e.status===403);
   const record = {version:"clara.live-archive-reference.v1" as const,productId:"clara-live" as const,status:"archived" as const,workspaceId:w,clientId:"c1",projectId:"p1",liveProjectId:pc.liveProjectId!,displayName:"p1",archivedAt:new Date().toISOString()};
   await assert.rejects(authority.commit(context,ticket.ticket,{...record,clientId:"c2"}),(e:RegistryError)=>e.status===403);
-  assert.deepEqual(await authority.commit(context,ticket.ticket,record),record);
+  await assert.rejects(authority.commit(context,ticket.ticket,record),(e:RegistryError)=>e.status===403);
+  const receipt=await authority.settle(w,ticket.ticket,1,pc.liveProjectId,"commit") as {reference:typeof record;state:string};
+  assert.equal(receipt.state,"committed");
+  const persisted=receipt.reference;assert.equal(persisted.projectId,record.projectId);
   await assert.rejects(authority.redeem(w,ticket.ticket),(e:RegistryError)=>e.status===403);
-  assert.deepEqual(await authority.history(context,"c1","p1"),record);
+  assert.deepEqual(await authority.history(context,"c1","p1"),persisted);
   const duplicateTicket=await authority.issue(context,"c1","p1","archive");
-  assert.deepEqual(await authority.commit(context,duplicateTicket.ticket,{...record,archivedAt:new Date(Date.now()+1000).toISOString()}),record);
+  assert.deepEqual((await authority.settle(w,duplicateTicket.ticket,1,pc.liveProjectId,"commit") as {reference:typeof record}).reference,persisted);
+  assert.deepEqual(await authority.settle(w,ticket.ticket,1,pc.liveProjectId,"commit"),receipt);
+  await assert.rejects(authority.settle(w,ticket.ticket,2,pc.liveProjectId,"commit"),(e:RegistryError)=>e.status===403);
   const revokedTicket=await authority.issue(context,"c1","p1","archive");
   await registry.command(context, "revokeIdentityLink", {});
   await assert.rejects(authority.redeem(w,revokedTicket.ticket),(e:RegistryError)=>e.status===403);
-  await assert.rejects(authority.commit(context,revokedTicket.ticket,record),(e:RegistryError)=>e.status===403);
+  await assert.rejects(authority.settle(w,revokedTicket.ticket,1,pc.liveProjectId,"commit"),(e:RegistryError)=>e.status===403);
   const records = await registry.command(context, "list", {}) as Array<{projects: Array<{liveProjectId: string | null}>}>;
   assert.equal(records[0].projects[0].liveProjectId, null);
   await assert.rejects(registry.pending(w, "inspect", project.challenge, {}), (e: RegistryError) => e.status === 403);
