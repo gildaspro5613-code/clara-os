@@ -89,7 +89,7 @@ Les neuf échecs backend et le test frontend décrits ci-dessous sont reproduits
 | Build OS optimisé Webpack | Réussi ; cache local de fichiers Geist réels via hook Next, sans changement de TLS/polices/config applicative |
 | Chromium Documents/archives OS | **7 réussis**, build réel et API synthétique |
 | Live ciblé canonical/archive/callback + auth/CORS historique | **58 réussis**, Mongo isolé, nouvelle garde et tests d’invariance |
-| Live backend, sélection de 35 fichiers | **311 réussis, 9 échoués** |
+| Live backend, sélection de 35 fichiers | **312 réussis, 9 échoués** |
 | Snapshot des 3 fichiers backend en échec (`d2e9ede`) | **31 réussis, mêmes 9 échecs** ; comparaison exacte des noms réussie |
 | Frontend Live, 27 suites | **170 réussis, 1 échoué** |
 | Snapshot du fichier frontend en échec (`d2e9ede`) | **6 réussis, même 1 échec** |
@@ -136,7 +136,7 @@ Après déploiements autorisés mais avant ouverture générale : contrôler aut
 
 Retour arrière **non destructif** : refermer d’abord la capacité canonique lors d’une opération de configuration autorisée, arrêter les nouvelles écritures et inspecter les requêtes déjà en vol ; restaurer les versions applicatives précédentes approuvées (OS #171 avec archive verrouillée, Live #294 sans autorité active, ou versions de production sauvegardées). Conserver toutes les nouvelles tables/collections, références et audits. Aucun DROP, suppression de Project ou restauration globale de données qui écraserait des opérations récentes. Les données techniques originales n’ayant pas été mutées par le raccord, elles ne nécessitent pas un rollback de modèle.
 
-Les tests de routes anciennes OS (3 réussis) et du défaut Live sans autorité confirment le verrou logiciel. Application et reprise des migrations et correction sont testées dans des DB isolées ; la restauration complète des sauvegardes et le rollback du déploiement réel doivent encore être éprouvés dans l’environnement autorisé. Reprise de l’archive uniquement après diagnostic, preuve de cohérence et nouvel accord d’activation.
+Les tests de routes anciennes OS (3 réussis) et du défaut Live sans autorité confirment le verrou logiciel. Application et reprise des migrations et corrections sont testées dans des DB isolées ; la restauration complète des sauvegardes et le rollback du déploiement réel doivent encore être éprouvés dans l’environnement autorisé. Reprise de l’archive uniquement après diagnostic, preuve de cohérence et nouvel accord d’activation.
 
 ## 8. Conditions de passage à READY TO MERGE
 
