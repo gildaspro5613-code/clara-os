@@ -2,9 +2,9 @@
 
 Date : 12 octobre 2026 (Europe/Paris). **Statut : BLOCKED — pas d’autorisation de fusion ou d’activation.**
 
-Le parcours fonctionnel isolé passe. Un interblocage des nouvelles fonctions SQL a été reproduit puis corrigé dans #172. Deux points restent ouverts : le contrôle GitHub `validate` de #171 échoue à l’installation des dépendances, y compris après relance ; une autorisation Live déjà délivrée avant une réouverture peut encore être persistée dans OS après cette réouverture. Cette limite distribuée a été reproduite, pas seulement déduite du code. Les demandes d’autorisation suivantes sont bien refusées et l’histoire consultée affiche le statut Live actif.
+Le parcours fonctionnel isolé passe. Un interblocage des nouvelles fonctions SQL a été reproduit puis corrigé dans #172 ; une acceptation trop large de l’Origin pour le consentement par cookie a été reproduite puis corrigée dans les nouvelles routes de #295. Deux points restent ouverts : le contrôle GitHub `validate` de #171 échoue à l’installation des dépendances, y compris après relance ; une autorisation Live déjà délivrée avant une réouverture peut encore être persistée dans OS après cette réouverture. Cette limite distribuée a été reproduite, pas seulement déduite du code. Les demandes d’autorisation suivantes sont bien refusées et l’histoire consultée affiche le statut Live actif.
 
-Aucun merge, changement de base, déploiement de production/Preview, migration de production, changement de configuration/secrets ou suppression de données métier effectué. Les seules modifications applicatives de cet audit concernent l’ordre des verrous dans les nouvelles fonctions SQL de #172 ; les autres ajouts sont des tests et ce rapport. Aucun module Live existant n’est modifié.
+Aucun merge, changement de base, déploiement de production/Preview, migration de production, changement de configuration/secrets ou suppression de données métier effectué. Les seules modifications applicatives de cet audit concernent l’ordre des verrous dans les nouvelles fonctions SQL de #172 et le contrôle d’Origin dans le nouveau routeur canonique de #295 ; les autres ajouts sont des tests et ce rapport. Aucun module métier, authentification historique ou CORS global Live n’est modifié.
 
 ## 1. Périmètre, dépendances et contrôles GitHub
 
@@ -31,7 +31,7 @@ OS : cookie opaque existant, empreinte SHA-256, session persistée valide/non r�
 
 Live : `current_user` existant est utilisé ; le scénario d’intégration passe réellement par sa validation JWT et sa lecture Mongo, avec clés/comptes synthétiques. Pas de mécanisme d’identité parallèle. Les routes existantes et fonctions d’authentification restent inchangées.
 
-Liaison : challenge OS 256 bits, TTL 5 min, empreinte seule persistée, scope lié à la même session OS et au workspace. Consentement explicite Live, projet sélectionné et effectivement possédé ; proposition produit ne peut activer le lien. Confirmation explicite par la session OS d’origine, preuve fraîche Live, validation du scope/temps/propriétaire puis activation/audit transactionnels SQL. Ni nom ni email n’établissent une correspondance. `approve:true` est strict ; `approve:1` est refusé.
+Liaison : challenge OS 256 bits, TTL 5 min, empreinte seule persistée, scope lié à la même session OS et au workspace. Consentement explicite Live ; avec un cookie, l’Origin doit être dans la liste explicite autorisée et ne peut être accepté au seul motif qu’il correspond à la regex CORS des previews. Projet sélectionné et effectivement possédé ; proposition produit ne peut activer le lien. Confirmation explicite par la session OS d’origine, preuve fraîche Live, validation du scope/temps/propriétaire puis activation/audit transactionnels SQL. Ni nom ni email n’établissent une correspondance. `approve:true` est strict ; `approve:1` est refusé.
 
 ### ACL, révocation, expiration
 
@@ -61,15 +61,18 @@ HTTP : credential/configuration produit existants, capacité additive `canonical
 
 **Défaut nouveau des fondations #172, corrigé** : `clara_registry_command` verrouillait session/adhésion puis workspace ; les tickets prenaient workspace puis session/ACL. Deux transactions concurrentes ont produit le code PostgreSQL `40P01` dans une DB temporaire. Correction : ordre workspace → session/ACL/challenge commun à command, pending et authority. Le test déterministe bloque volontairement une transaction sur le workspace, intercale une lecture du registre puis poursuit le ticket : auparavant interblocage ; après correction les deux opérations réussissent. Aucun droit ni modèle métier modifié, aucun changement des tables auth ou de leurs valeurs.
 
+**Défaut nouveau des fondations #295, corrigé** : une Origin non présente dans la liste explicite mais correspondant au motif CORS `clara-live-*.vercel.app` pouvait consentir avec un cookie authentifié. Le test avant correction retourne 200 au lieu du 403 attendu. Le contrôle canonique refuse désormais ces origines avant tout appel OS ou écriture Mongo ; consentement, clôture et réouverture utilisent cette même garde. Authentification historique et réglage CORS global restent intacts. Le test vérifie refus et absence d’effets persistés ; les origines explicitement autorisées et les appels Bearer sans cookie continuent de passer.
+
 Fichiers corrigés/ajoutés dans cet audit :
 
 - `db/migrations/008_canonical_client_project_registry.sql` et `009_canonical_archive_authority.sql` : ordre des verrous uniquement.
 - `src/tests/canonical-registry-postgres.test.ts` : scénario de concurrence supplémentaire.
 - `src/tests/helpers/canonical-lock-order.py` : reproduction déterministe PostgreSQL isolé.
 - `src/tests/helpers/canonical-integration.mts` et `canonical-live-fixture.py` : parcours entre les routes réelles, sessions/données synthétiques et bases isolées.
+- Live : `backend/canonical_authority_routes.py`, contrôle exact de l’Origin uniquement ; `backend/tests/test_canonical_authority.py`, nouveau cas de cookie/regex CORS.
 - Le présent rapport.
 
-Live : aucun fichier applicatif modifié. Diff protégé contre `origin/deploy/clara-live-api` vide pour `clara_os_client.py`, `unified_core_contracts.py`, `unified_core_capability_routes.py`, Stage, interop et connecteurs ; test d’invariance existant réussi. `server.py` ne contient que les ajouts de montage de routeurs déjà présents dans #294/#295 ; fonctions métier/Project/current_user inchangées. Frontend Live inchangé. Les fonctions commerciales OS ne sont pas touchées par cette correction.
+Live : seul le nouveau routeur canonique est corrigé ; aucun module applicatif préexistant aux fondations n’est modifié. Diff protégé contre `origin/deploy/clara-live-api` vide pour `clara_os_client.py`, `unified_core_contracts.py`, `unified_core_capability_routes.py`, Stage, interop et connecteurs ; test d’invariance existant réussi. `server.py` ne contient que les ajouts de montage de routeurs déjà présents dans #294/#295 ; fonctions métier/Project/current_user inchangées. Frontend Live inchangé. Les fonctions commerciales OS ne sont pas touchées.
 
 Les neuf échecs backend et le test frontend décrits ci-dessous sont reproduits sur le snapshot `d2e9ede` et ont les mêmes noms ; ils ne sont pas masqués par des modifications de bibliothèque, jobs ou navigation. Le contrôle d’installation GitHub #171 est un autre échec, préexistant à cet audit, dont la cause reste inconnue. Il n’est pas classé arbitrairement comme régression de code.
 
@@ -85,7 +88,7 @@ Les neuf échecs backend et le test frontend décrits ci-dessous sont reproduits
 | TypeScript et ESLint ciblé OS, compilation des deux fixtures Python | Réussis |
 | Build OS optimisé Webpack | Réussi ; cache local de fichiers Geist réels via hook Next, sans changement de TLS/polices/config applicative |
 | Chromium Documents/archives OS | **7 réussis**, build réel et API synthétique |
-| Live ciblé canonical/archive/callback | **40 réussis**, Mongo isolé et tests d’invariance |
+| Live ciblé canonical/archive/callback + auth/CORS historique | **58 réussis**, Mongo isolé, nouvelle garde et tests d’invariance |
 | Live backend, sélection de 35 fichiers | **311 réussis, 9 échoués** |
 | Snapshot des 3 fichiers backend en échec (`d2e9ede`) | **31 réussis, mêmes 9 échecs** ; comparaison exacte des noms réussie |
 | Frontend Live, 27 suites | **170 réussis, 1 échoué** |
@@ -102,7 +105,7 @@ Le build frontend Live et les 22 tests GDTF/Video/certification Stage (1 fixture
 ## 5. Plan exact d’intégration — à autoriser, non exécuté
 
 1. **Lever le blocage CI #171** : consulter les logs d’installation depuis GitHub, reproduire avec versions exactes Node/npm du runner, résoudre la cause minimale puis obtenir validate et documents verts au head retenu. Vérifier également les contrôles du dernier head #172 et accepter explicitement les preuves canoniques locales/reproductibles ou autoriser leur automatisation CI. Ne pas modifier les modules métier pour masquer les échecs historiques.
-2. **Revue sécurité et sémantique** : vérifier le correctif de verrous ; décider la portée des archives en vol avec le cas reproduit. Si l’exigence impose l’état completed à l’instant du commit OS, garder l’activation bloquée jusqu’au protocole coordonné. Examiner la conservation des preuves de clôture/révision dans l’audit si une traçabilité réglementaire plus forte est requise ; ne pas inventer une preuve persistée aujourd’hui.
+2. **Revue sécurité et sémantique** : vérifier les correctifs de verrous et d’Origin ; décider la portée des archives en vol avec le cas reproduit. Si l’exigence impose l’état completed à l’instant du commit OS, garder l’activation bloquée jusqu’au protocole coordonné. Examiner la conservation des preuves de clôture/révision dans l’audit si une traçabilité réglementaire plus forte est requise ; ne pas inventer une preuve persistée aujourd’hui.
 3. **Préparer la fenêtre, sauvegardes et garde d’activation** : avant tout déploiement/migration, conserver la capacité canonique absente et toutes les associations nouvelles non actives ; vérifier l’existant sans altérer Unified Core. Relever les branches Production Branch Vercel : un merge vers l’une d’elles peut déclencher automatiquement un déploiement. L’accord de merge ne doit pas être interprété comme accord de déploiement si celui-ci n’est pas explicitement donné.
 4. **Ordre des merges recommandé** : **Live #294 → Live #295 → OS #171 → OS #172**. Parent avant enfant dans chaque dépôt ; backend Live avant raccord consommateur OS. Aucun merge ici.
 5. **Retarget des enfants après leurs parents, à autoriser** : #295 vise actuellement la branche #294 ; après merge de #294, #295 devra viser `deploy/clara-live-api`. #172 devra ensuite viser `consolidation/clara-os-clean-base` après merge de #171. Merger les enfants seulement dans une branche de parent déjà fusionnée ne les intégrerait pas dans ces bases. Les changements de base n’ont pas été effectués ; ils nécessitent accord explicite compte tenu des consignes précédentes. Recalculer le diff, les conflits et les checks après chacun ; ne pas supposer un retarget automatique. Conserver toutes les branches ; `delete_branch_on_merge:false` vérifié dans les deux dépôts.
@@ -115,7 +118,7 @@ Le build frontend Live et les 22 tests GDTF/Video/certification Stage (1 fixture
 
 Sauvegardes à faire par l’administrateur avant migration autorisée : export PostgreSQL cohérent (schéma, fonctions/privileges et données auth/workspace/client/projet/ACL/liens/audit/références), sauvegarde Mongo incluant users/projects et sidecars s’ils existent, inventaire des index, SHA/config applicative sans publication de secrets. Stockage chiffré avec rétention et accès limités ; vérifier la restauration dans une DB isolée et comparer les comptages/index/contraintes et échantillons de données. Aucun backup/restore réel de production n’a été exécuté ou certifié ici.
 
-Contrôler le rôle applicatif réel : SECURITY INVOKER requiert EXECUTE sur les fonctions, accès aux tables et permissions nécessaires aux SELECT FOR UPDATE, notamment auth/workspace/session/membership ; audit nécessite aussi les droits de séquence. Le rôle PostgreSQL de tests est propriétaire, ce qui ne prouve pas les grants du rôle Neon réel. Ne pas accorder EXECUTE au public ou des accès SQL aux navigateurs. Vérifier backups/PITR et write concern/journaling Mongo réels, ainsi que la croissance des audits et la purge des tickets/challenges expirés sans perte d’audit.
+Contrôler le rôle applicatif réel : SECURITY INVOKER requiert EXECUTE sur les fonctions, accès aux tables et permissions nécessaires aux SELECT FOR UPDATE, notamment auth/workspace/session/membership ; audit nécessite aussi les droits de séquence. Le rôle PostgreSQL de tests est propriétaire, ce qui ne prouve pas les grants du rôle Neon réel. Ne pas accorder EXECUTE au public ou des accès SQL aux navigateurs. Les délais de 5 s concernent les ponts HTTP, pas un statement_timeout SQL démontré : vérifier aussi lock_timeout/statement_timeout du rôle réel et les attentes de verrou sous charge. Vérifier backups/PITR et write concern/journaling Mongo réels, ainsi que la croissance des audits et la purge des tickets/challenges expirés sans perte d’audit.
 
 Paramètres à vérifier sans mutation implicite : `CLARA_AUTH_APP_ORIGIN`, produit Clara Live et workspace canonique non-default, `CLARA_LIVE_CALLBACK_BASE_URL`, `CLARA_OS_BASE_URL`, productId existant et headers/token partagés existants. Les bases URL doivent être HTTPS et correspondre à l’origine/backend réellement servis ; les chemins sont ajoutés par les adaptateurs (`/api/core/...`), donc ne pas mettre une URL de capability complète ou doubler `/api`. Vérifier TLS, DNS/proxy, CORS/Origin, horloges UTC synchronisées et délai total ; les fixtures de loopback n’ont pas couvert ces conditions réelles.
 
@@ -138,7 +141,7 @@ Les tests de routes anciennes OS (3 réussis) et du défaut Live sans autorité 
 ## 8. Conditions de passage à READY TO MERGE
 
 - Le dernier head #171 a `validate` et `documents` réussis ; la cause d’installation est établie/résolue. Pas de simple assimilation de l’install rouge à une régression historique déjà acceptée.
-- Le correctif #172 est revu ; ses 3 tests canoniques, le scénario inter-plateformes (13 contrôles) et ses vérifications types/lint/build passent sur le head retenu, avec preuves reproductibles et couverture GitHub attendue acceptée. Les tests ne sont pas remplaçables par le seul check Vercel.
+- Les correctifs #172 (verrous) et #295 (Origin exact des consentements) sont revus ; ses 3 tests canoniques, le scénario inter-plateformes (13 contrôles) et ses vérifications types/lint/build passent sur le head retenu, avec preuves reproductibles et couverture GitHub attendue acceptée. Les tests ne sont pas remplaçables par le seul check Vercel.
 - Contrôles Live verts sur les heads retenus ; échecs locaux préexistants explicitement identifiés et acceptés comme baseline, sans les cacher.
 - Décision documentée sur les opérations autorisées déjà en vol et la signification de completed au commit ; si stricte, protocole supplémentaire livré/testé avant activation.
 - Parents d’abord, autorisation des retargets, nouveau contrôle de diff/conflicts/checks et branches conservées. Accord explicite de merge ; déploiement/migration/configuration restent des autorisations séparées.
@@ -155,3 +158,5 @@ CANONICAL_LIVE_REPO=/workspace/clara-live CANONICAL_LIVE_PYTHON=/workspace/.venv
 ```
 
 L’intégration crée des DB temporaires `canonical_audit_<uuid>` puis nettoie seulement ses propres fixtures. L’adaptateur Neon utilise les requêtes réelles du client Neon vers PostgreSQL local ; TLS est remplacé par des transports HTTPS-fixture → HTTP loopback, et tout accès Node hors destinations de fixture/loopback est refusé. Les variantes de panne ne coupent aucune plateforme réelle. Le test de verrouillage crée/nettoie sa propre DB `canonical_lock_<uuid>` ; avant le correctif il produit 40P01, après les deux commandes réussissent. Les autres commandes de tests/browser sont documentées dans `canonical-registry-validation.md` ; logs de cette séance dans `/tmp/final-*.log`.
+
+Après les correctifs, les contrôles GitHub des nouveaux heads devront être relus ; les succès Live du tableau concernent le head initial audité `99aeb23`, pas une anticipation des checks du correctif Origin. Les exécutables/tests restent reproductibles et les PR en brouillon.
