@@ -71,3 +71,12 @@ test("real PostgreSQL: explicit registry, double consent, conflicts, revocation 
   execute(`UPDATE clara_auth_sessions SET revoked_at=NOW() WHERE token_hash='${digest}'`);
   await assert.rejects(registry.command(context, "list", {}), (e: RegistryError) => e.status === 403);
 });
+
+// The fixture pauses a real ticket transaction with its workspace locked, then
+// starts a registry read before continuing the ticket's session/ACL lock phase.
+// Before the correction this produces PostgreSQL 40P01 deterministically.
+test("canonical PostgreSQL commands and tickets share workspace-first lock order", { skip: !container }, () => {
+  assert.equal(container, "clara-canonical-test-postgres");
+  const result = execFileSync("python3", ["src/tests/helpers/canonical-lock-order.py"], { encoding: "utf8", timeout: 30000 });
+  assert.equal(JSON.parse(result).deadlock, false);
+});

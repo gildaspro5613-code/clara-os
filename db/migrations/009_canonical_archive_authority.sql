@@ -20,6 +20,8 @@ CREATE OR REPLACE FUNCTION clara_registry_authority(session_digest TEXT,workspac
 RETURNS JSONB LANGUAGE plpgsql SECURITY INVOKER AS $$
 DECLARE scope JSONB;
 BEGIN
+ -- Match registry/ticket lock order, including direct read-authority calls.
+ PERFORM 1 FROM clara_auth_workspaces WHERE id=workspace FOR UPDATE;
  IF op NOT IN ('read','archive') THEN RAISE EXCEPTION 'INVALID_OPERATION' USING ERRCODE='22023'; END IF;
  SELECT jsonb_build_object('osUserId',s.user_id,'workspaceId',workspace,'clientId',client,'projectId',project,
    'clientName',c.display_name,'projectName',p.display_name,'liveUserId',i.live_user_id,'liveProjectId',l.live_project_id,

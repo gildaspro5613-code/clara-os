@@ -123,6 +123,9 @@ DECLARE
   ch clara_registry_link_challenges%ROWTYPE;
   identity clara_registry_identity_links%ROWTYPE;
 BEGIN
+  -- All canonical functions acquire the workspace before session/ACL rows.
+  -- Consistent ordering prevents deadlocks with ticket and revocation calls.
+  PERFORM 1 FROM clara_auth_workspaces WHERE id=workspace FOR UPDATE;
   -- Lock the existing session/membership for this transaction. No new auth,
   -- default workspace or caller-supplied principal is accepted.
   SELECT s.user_id,m.role INTO actor,actor_role
@@ -132,9 +135,6 @@ BEGIN
     AND EXISTS (SELECT 1 FROM clara_auth_identities i WHERE i.user_id=s.user_id)
   FOR UPDATE OF s,m;
   IF actor IS NULL THEN RAISE EXCEPTION 'REGISTRY_ACCESS_DENIED' USING ERRCODE='42501'; END IF;
-  -- Serialize only the new registry's commands in this workspace, including
-  -- ACL revocations and challenge approval. Never mutate the auth workspace.
-  PERFORM 1 FROM clara_auth_workspaces WHERE id=workspace FOR UPDATE;
 
   IF operation='list' THEN
     SELECT COALESCE(jsonb_agg(row_data ORDER BY row_data->>'id'),'[]') INTO result FROM (
@@ -333,6 +333,7 @@ CREATE OR REPLACE FUNCTION clara_registry_pending(
 ) RETURNS JSONB LANGUAGE plpgsql SECURITY INVOKER AS $$
 DECLARE ch clara_registry_link_challenges%ROWTYPE;
 BEGIN
+  PERFORM 1 FROM clara_auth_workspaces WHERE id=workspace FOR UPDATE;
   SELECT c.* INTO ch FROM clara_registry_link_challenges c
     JOIN clara_auth_sessions s ON s.token_hash=c.session_hash AND s.user_id=c.os_user_id
     JOIN clara_workspace_memberships m ON m.workspace_id=c.workspace_id AND m.user_id=c.os_user_id
