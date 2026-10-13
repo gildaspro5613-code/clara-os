@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 /**
  * ============================================
  * CLARA OS
@@ -34,11 +35,11 @@ export default function QuickActions({
     },
   ],
 }: QuickActionsProps) {
+  const ui = useTranslations("ui");
+
   return (
     <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
-      <h2 className="text-xl font-semibold text-white">
-        Actions rapides
-      </h2>
+      <h2 className="text-xl font-semibold text-white">{" "}{ui("quickActions")}{" "}</h2>
 
       <div className="mt-4 flex flex-wrap gap-3">
         {actions.map((action) => (

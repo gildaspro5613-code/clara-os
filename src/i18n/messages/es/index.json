@@ -182,8 +182,9 @@
     "title": "Telefonía",
     "unknown": "Disponibilidad no verificada",
     "recent": "Llamadas recientes",
-    "empty": "Todavía no hay llamadas registradas.",
-    "history": "El historial se conectará a la memoria telefónica."
+    "empty": "El historial de llamadas no está disponible en esta interfaz.",
+    "history": "El historial se conectará a la memoria telefónica.",
+    "missingNumber": "Falta el número de destino."
   },
   "chat": {
     "greeting": "Hola. Ya estoy aquí. ¿Qué hacemos hoy?",

@@ -59,12 +59,8 @@ export default function TelephoniePage() {
       setStatus(
         t("callStarted"),
       );
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : t("callError"),
-      );
+    } catch {
+      setError(t("callError"));
     } finally {
       setCalling(false);
     }

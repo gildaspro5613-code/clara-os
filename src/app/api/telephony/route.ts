@@ -9,6 +9,7 @@
  * ============================================
  */
 
+import { getTranslations } from "next-intl/server";
 import { NextResponse } from "next/server";
 
 import {
@@ -21,17 +22,18 @@ interface OutboundCallRequest {
 }
 
 export async function POST(request: Request) {
+  const t=await getTranslations("telephony");
   try {
     const body =
       (await request.json()) as OutboundCallRequest;
 
-    const toNumber = body.toNumber?.trim();
+    const toNumber = typeof body.toNumber === "string" ? body.toNumber.trim() : "";
 
     if (!toNumber) {
       return NextResponse.json(
         {
           success: false,
-          error: "Numéro de destination manquant.",
+          error: t("missingNumber"),
         },
         { status: 400 },
       );
@@ -45,22 +47,21 @@ export async function POST(request: Request) {
       });
 
     if (!result.success) {
-      return NextResponse.json(result, {
-        status: 502,
-      });
+      return NextResponse.json({success:false,error:t("callError")}, {status:502});
     }
 
-    return NextResponse.json(result);
-  } catch (error) {
-    console.error("[API /telephony]", error);
+    // Only public call identifiers are returned; never echo provider messages.
+    return NextResponse.json({success:true,operation:result.operation,toNumber,
+      ...(typeof result.conversationId === "string" ? {conversationId:result.conversationId} : {}),
+      ...(typeof result.callSid === "string" ? {callSid:result.callSid} : {}),
+      message:t("callStarted"),completedAt:result.completedAt});
+  } catch {
+    console.error("[API /telephony] call failed");
 
     return NextResponse.json(
       {
         success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "Impossible de lancer l'appel Clara.",
+        error:t("callError"),
       },
       { status: 500 },
     );

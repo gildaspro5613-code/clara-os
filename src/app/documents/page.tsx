@@ -22,12 +22,15 @@ interface DocumentsResponse {
   files?: DocumentFile[];
   nextPageToken?: string | null;
   message?: string;
+  code?: string;
   extractable?: boolean;
   textContent?: string;
   brain?: { recommendation?: string | null; missionId?: string | null };
 }
 
 export default function DocumentsPage() {
+  const ui = useTranslations("ui");
+
   const router = useRouter();
   const t = useTranslations("documents");
   const tp = useTranslations("pages");
@@ -68,13 +71,13 @@ export default function DocumentsPage() {
       const response = await fetch(`/api/documents?${params}`, { cache: "no-store" });
       const data = (await response.json()) as DocumentsResponse;
       if (generation !== listGeneration.current) return;
-      if (!response.ok || !data.success) throw new Error(data.message ?? t("loadError"));
+      if (!response.ok || !data.success) throw new Error(t("loadError"));
       setFiles(data.files ?? []);
       setActiveSearch(search);
       setActiveFolderId(search ? "" : folderId);
       setNextPageToken(data.nextPageToken ?? null);
-    } catch (err) {
-      if (generation === listGeneration.current) setError(err instanceof Error ? err.message : t("loadError"));
+    } catch {
+      if (generation === listGeneration.current) setError(t("loadError"));
     } finally {
       if (generation === listGeneration.current) setLoading(false);
     }
@@ -88,15 +91,15 @@ export default function DocumentsPage() {
     void fetch("/api/documents", { cache: "no-store", signal: controller.signal })
       .then(async response => {
         const data = await response.json() as DocumentsResponse;
-        if (!response.ok || !data.success) throw new Error(data.message ?? "Impossible de consulter Google Drive.");
+        if (!response.ok || !data.success) throw new Error(ui("unableToViewGoogleDrive"));
         if (generation !== listing.current) return;
         setFiles(data.files ?? []);
         setNextPageToken(data.nextPageToken ?? null);
-      }).catch(err => {
-        if (generation === listing.current && !controller.signal.aborted) setError(err instanceof Error ? err.message : "Impossible de consulter Google Drive.");
+      }).catch(() => {
+        if (generation === listing.current && !controller.signal.aborted) setError(ui("unableToViewGoogleDrive"));
       }).finally(() => { if (generation === listing.current) setLoading(false); });
     return () => { controller.abort(); listing.current++; destinations.current++; };
-  }, []);
+  }, [ui]);
 
   async function loadMore() {
     if (!nextPageToken || loading) return;
@@ -109,10 +112,10 @@ export default function DocumentsPage() {
       const response = await fetch(`/api/documents?${params}`, { cache: "no-store" });
       const data = await response.json() as DocumentsResponse;
       if (generation !== listGeneration.current) return;
-      if (!response.ok || !data.success) throw new Error(data.message ?? "Chargement impossible.");
+      if (!response.ok || !data.success) throw new Error(ui("unableToLoad"));
       setFiles(prev => [...prev, ...(data.files ?? []).filter(file => !prev.some(existing => existing.id === file.id))]);
       setNextPageToken(data.nextPageToken ?? null);
-    } catch (err) { if (generation === listGeneration.current) setError(err instanceof Error ? err.message : "Chargement impossible."); }
+    } catch { if (generation === listGeneration.current) setError(ui("unableToLoad")); }
     finally { if (generation === listGeneration.current) setLoading(false); }
   }
 
@@ -132,16 +135,16 @@ export default function DocumentsPage() {
   }
 
   async function createFolder() {
-    const name = window.prompt("Nom du nouveau dossier :")?.trim();
+    const name = window.prompt(ui("newFolderName"))?.trim();
     if (!name) return;
     try {
       setWorking("create"); setError(null);
       const response = await fetch("/api/documents", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "createFolder", name, parentId: folderTrail.at(-1)?.id }) });
       const data = await response.json() as DocumentsResponse;
-      if (!response.ok || !data.success) throw new Error(data.message ?? "Création impossible.");
+      if (!response.ok || !data.success) throw new Error(ui("unableToCreateTheFolder"));
       setQuery("");
       await loadDocuments("", folderTrail.at(-1)?.id ?? "");
-    } catch (err) { setError(err instanceof Error ? err.message : "Création impossible."); }
+    } catch { setError(ui("unableToCreateTheFolder")); }
     finally { setWorking(null); }
   }
 
@@ -156,11 +159,11 @@ export default function DocumentsPage() {
       const response = await fetch(`/api/documents?${params}`, { cache: "no-store" });
       const data = await response.json() as DocumentsResponse;
       if (generation !== destinationGeneration.current) return;
-      if (!response.ok || !data.success) throw new Error(data.message ?? "Impossible de consulter les dossiers.");
+      if (!response.ok || !data.success) throw new Error(ui("unableToViewFolders"));
       const folders = (data.files ?? []).filter(item => item.mimeType === "application/vnd.google-apps.folder");
       setDestinations(prev => pageToken ? [...prev, ...folders.filter(folder => !prev.some(existing => existing.id === folder.id))] : folders);
       setDestinationPageToken(data.nextPageToken ?? null);
-    } catch (err) { if (generation === destinationGeneration.current) setError(err instanceof Error ? err.message : "Impossible de consulter les dossiers."); }
+    } catch { if (generation === destinationGeneration.current) setError(ui("unableToViewFolders")); }
     finally { if (generation === destinationGeneration.current) setDestinationLoading(false); }
   }
 
@@ -173,10 +176,10 @@ export default function DocumentsPage() {
   }
 
   async function confirmMove() {
-    const destination = destinationTrail.at(-1) ?? { id: "root", name: "Mon Drive" };
+    const destination = destinationTrail.at(-1) ?? { id: "root", name: ui("myDrive") };
     const file = moveTarget;
     if (!destination || !file || destination.id === file.parentId) return;
-    if (!window.confirm(`Déplacer « ${file.name} » vers « ${destination.name} » ?`)) return;
+    if (!window.confirm(ui("confirmMove",{file:file.name,folder:destination.name}))) return;
     try {
       setWorking(`move:${file.id}`); setError(null);
       const response = await fetch("/api/documents", {
@@ -184,11 +187,11 @@ export default function DocumentsPage() {
         body: JSON.stringify({ action: "move", fileId: file.id, destinationId: destination.id }),
       });
       const data = await response.json() as DocumentsResponse;
-      if (!response.ok || !data.success) throw new Error(data.message ?? "Déplacement impossible.");
+      if (!response.ok || !data.success) throw new Error(ui("unableToMoveTheDocument"));
       setMoveTarget(null);
-      setStatus(`${file.name} a été déplacé vers ${destination.name}.`);
+      setStatus(ui("documentMoved",{file:file.name,folder:destination.name}));
       await loadDocuments(activeSearch, activeFolderId);
-    } catch (err) { setError(err instanceof Error ? err.message : "Déplacement impossible."); }
+    } catch { setError(ui("unableToMoveTheDocument")); }
     finally { setWorking(null); }
   }
 
@@ -209,12 +212,12 @@ export default function DocumentsPage() {
       if (folderTrail.length) body.set("folderId", folderTrail[folderTrail.length - 1].id);
       const response = await fetch("/api/documents", { method: "POST", body });
       const data = (await response.json()) as DocumentsResponse;
-      if (!response.ok || !data.success) throw new Error(data.message ?? "Import impossible.");
-      setStatus(`${file.name} a été importé dans le dossier sélectionné.`);
+      if (!response.ok || !data.success) throw new Error(ui("unableToUploadTheDocument"));
+      setStatus(ui("documentUploaded",{file:file.name}));
       setQuery("");
       await loadDocuments("", folderTrail.at(-1)?.id ?? "");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Import impossible.");
+    } catch {
+      setError(ui("unableToUploadTheDocument"));
     } finally {
       setWorking(null);
       if (fileInput.current) fileInput.current.value = "";
@@ -233,13 +236,17 @@ export default function DocumentsPage() {
       const response = await fetch(`/api/documents?${params.toString()}`, { cache: "no-store" });
       const data = (await response.json()) as DocumentsResponse;
       if (generation !== listGeneration.current) return;
-      if (!response.ok || !data.success) throw new Error(data.message ?? "Lecture impossible.");
+      if (!response.ok || !data.success) {
+        const known = ["PDF_TOO_LARGE", "PDF_TOO_MANY_PAGES", "PDF_NO_TEXT", "PDF_ENCRYPTED", "PDF_INVALID", "PDF_RESOURCE_LIMIT", "PDF_BUSY", "DOCUMENT_TOO_LONG"];
+        setError(data.code && known.includes(data.code) ? ui(data.code) : ui("unableToReadTheDocument"));
+        return;
+      }
       setSelected({ name: file.name, content: data.textContent ?? "", recommendation: data.brain?.recommendation });
       setStatus(data.brain?.recommendation
-        ? `Clara a lu ${file.name}. ${data.brain.recommendation}`
-        : `Clara a lu ${file.name} et l’a transmis au Brain.`);
-    } catch (err) {
-      if (generation === listGeneration.current) setError(err instanceof Error ? err.message : "Lecture impossible.");
+        ? `${ui("documentRead",{file:file.name})} ${data.brain.recommendation}`
+        : ui("documentSentToBrain",{file:file.name}));
+    } catch {
+      if (generation === listGeneration.current) setError(ui("unableToReadTheDocument"));
     } finally {
       setWorking(null);
     }
@@ -268,28 +275,28 @@ export default function DocumentsPage() {
             <div>
               <input ref={fileInput} type="file" className="hidden" onChange={(event) => void handleUpload(event.target.files?.[0])} />
               <button type="button" disabled={working !== null} onClick={() => fileInput.current?.click()} className="inline-flex items-center gap-2 rounded-xl border border-cyan-300/20 bg-cyan-300/[0.08] px-4 py-2.5 text-sm text-cyan-50 transition hover:bg-cyan-300/[0.12] disabled:opacity-50">
-                <Upload size={15} />{working === "upload" ? "Import…" : "Importer un document"}
+                <Upload size={15} />{working === "upload" ? ui("uploading") : ui("uploadADocument")}
               </button>
             </div>
           </div>
 
           <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
-            <button type="button" disabled={working !== null} onClick={() => navigateTo(-1)} className="text-cyan-300">Mon Drive</button>
+            <button type="button" disabled={working !== null} onClick={() => navigateTo(-1)} className="text-cyan-300">{ui("myDrive")}</button>
             {folderTrail.map((folder, index) => <span key={folder.id} className="flex items-center gap-2"><span className="text-white/30">/</span><button type="button" disabled={working !== null} onClick={() => navigateTo(index)} className="text-cyan-300">{folder.name}</button></span>)}
-            <button type="button" onClick={() => void createFolder()} disabled={working !== null} className="ml-auto flex items-center gap-2 rounded-lg border border-white/15 px-3 py-2"><FolderPlus size={15}/>Nouveau dossier</button>
+            <button type="button" onClick={() => void createFolder()} disabled={working !== null} className="ml-auto flex items-center gap-2 rounded-lg border border-white/15 px-3 py-2"><FolderPlus size={15}/>{ui("newFolder")}</button>
           </div>
-          {moveTarget && <section role="dialog" aria-label="Choisir le dossier de destination" className="mb-6 rounded-xl border border-cyan-300/25 bg-[#101827] p-5">
-            <div className="flex items-center justify-between gap-4"><h2 className="font-semibold">Déplacer « {moveTarget.name} »</h2><button type="button" disabled={working !== null} onClick={() => { destinationGeneration.current++; setMoveTarget(null); }}>Annuler</button></div>
-            <div className="mt-3 flex flex-wrap gap-2 text-sm"><button type="button" disabled={working !== null} onClick={() => { setDestinationTrail([]); void browseDestination(); }} className="text-cyan-300">Mon Drive</button>
+          {moveTarget && <section role="dialog" aria-label={ui("chooseTheDestinationFolder")} className="mb-6 rounded-xl border border-cyan-300/25 bg-[#101827] p-5">
+            <div className="flex items-center justify-between gap-4"><h2 className="font-semibold">{ui("move")}{" "}{moveTarget.name} »</h2><button type="button" disabled={working !== null} onClick={() => { destinationGeneration.current++; setMoveTarget(null); }}>{ui("cancel")}</button></div>
+            <div className="mt-3 flex flex-wrap gap-2 text-sm"><button type="button" disabled={working !== null} onClick={() => { setDestinationTrail([]); void browseDestination(); }} className="text-cyan-300">{ui("myDrive")}</button>
               {destinationTrail.map((folder, index) => <button type="button" disabled={working !== null} key={folder.id} className="text-cyan-300" onClick={() => { const next = destinationTrail.slice(0, index + 1); setDestinationTrail(next); void browseDestination(folder.id); }}>/ {folder.name}</button>)}
             </div>
-            {destinationLoading ? <p className="mt-3 text-sm text-white/60">Chargement des dossiers…</p> : <div className="mt-3 grid gap-2 sm:grid-cols-2">{destinations.map(folder => <button type="button" disabled={working !== null} key={folder.id} onClick={() => { setDestinationTrail(prev => [...prev, { id: folder.id, name: folder.name }]); void browseDestination(folder.id); }} className="flex items-center gap-2 rounded-lg border border-white/10 p-3 text-left text-sm"><Folder size={16} className="text-cyan-300"/>{folder.name}</button>)}</div>}
-            {destinationPageToken && <button type="button" disabled={destinationLoading} onClick={() => void browseDestination(destinationTrail.at(-1)?.id ?? "", destinationPageToken)} className="mt-3 rounded-lg border border-white/15 px-3 py-2 text-sm">Afficher davantage de dossiers</button>}
-            <button type="button" disabled={destinationLoading || (destinationTrail.at(-1)?.id ?? "root") === moveTarget.parentId || working !== null} onClick={() => void confirmMove()} className="mt-4 rounded-lg bg-cyan-800 px-4 py-2 text-sm disabled:opacity-40">Confirmer le déplacement dans ce dossier</button>
+            {destinationLoading ? <p className="mt-3 text-sm text-white/60">{ui("loadingFolders")}</p> : <div className="mt-3 grid gap-2 sm:grid-cols-2">{destinations.map(folder => <button type="button" disabled={working !== null} key={folder.id} onClick={() => { setDestinationTrail(prev => [...prev, { id: folder.id, name: folder.name }]); void browseDestination(folder.id); }} className="flex items-center gap-2 rounded-lg border border-white/10 p-3 text-left text-sm"><Folder size={16} className="text-cyan-300"/>{folder.name}</button>)}</div>}
+            {destinationPageToken && <button type="button" disabled={destinationLoading} onClick={() => void browseDestination(destinationTrail.at(-1)?.id ?? "", destinationPageToken)} className="mt-3 rounded-lg border border-white/15 px-3 py-2 text-sm">{ui("showMoreFolders")}</button>}
+            <button type="button" disabled={destinationLoading || (destinationTrail.at(-1)?.id ?? "root") === moveTarget.parentId || working !== null} onClick={() => void confirmMove()} className="mt-4 rounded-lg bg-cyan-800 px-4 py-2 text-sm disabled:opacity-40">{ui("confirmMoveToThisFolder")}</button>
           </section>}
-          {selected && <section className="mb-6 rounded-xl border border-cyan-300/20 p-5"><div className="flex justify-between gap-4"><h2 className="font-semibold">{selected.name}</h2><button type="button" onClick={() => setSelected(null)}>Fermer</button></div>{selected.recommendation && <p className="mt-3 text-cyan-200">{selected.recommendation}</p>}<pre className="mt-4 max-h-80 overflow-auto whitespace-pre-wrap text-sm text-white/70">{selected.content}</pre></section>}
+          {selected && <section className="mb-6 rounded-xl border border-cyan-300/20 p-5"><div className="flex justify-between gap-4"><h2 className="font-semibold">{selected.name}</h2><button type="button" onClick={() => setSelected(null)}>{ui("close")}</button></div>{selected.recommendation && <p className="mt-3 text-cyan-200">{selected.recommendation}</p>}<pre className="mt-4 max-h-80 overflow-auto whitespace-pre-wrap text-sm text-white/70">{selected.content}</pre></section>}
           <CanonicalArchivesPanel />
-          {activeSearch && <p className="mb-3 text-sm text-white/60">Résultats de recherche dans Google Drive : {activeSearch}</p>}
+          {activeSearch && <p className="mb-3 text-sm text-white/60">{ui("googleDriveSearchResults")}{" "}{activeSearch}</p>}
           <form onSubmit={handleSubmit} className="mb-6 flex max-w-2xl gap-2">
             <div className="relative flex-1">
               <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-white/35" />
@@ -317,19 +324,19 @@ export default function DocumentsPage() {
                   </div>
 
                   <div className="mt-5 grid gap-2">
-                    {file.mimeType === "application/vnd.google-apps.folder" ? <button type="button" disabled={working !== null} onClick={() => openFolder(file)} className="rounded-xl border border-cyan-300/20 px-4 py-2.5 text-left text-xs text-cyan-100">Ouvrir le dossier</button> : <>
+                    {file.mimeType === "application/vnd.google-apps.folder" ? <button type="button" disabled={working !== null} onClick={() => openFolder(file)} className="rounded-xl border border-cyan-300/20 px-4 py-2.5 text-left text-xs text-cyan-100">{ui("openFolder")}</button> : <>
                     <button type="button" disabled={working !== null} onClick={() => void handleAnalyze(file)} className="flex items-center justify-between rounded-xl border border-cyan-300/15 bg-cyan-300/[0.04] px-4 py-2.5 text-xs text-cyan-50/75 transition hover:bg-cyan-300/[0.08] disabled:opacity-50">
-                      {working === `read:${file.id}` ? "Lecture…" : "Lire avec Clara"}<Brain size={14} />
+                      {working === `read:${file.id}` ? ui("reading") : ui("readWithClara")}<Brain size={14} />
                     </button>
-                    <a href={downloadHref(file)} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-xs text-white/60 transition hover:bg-white/[0.06] hover:text-white">Télécharger<Download size={14} /></a>
+                    <a href={downloadHref(file)} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-xs text-white/60 transition hover:bg-white/[0.06] hover:text-white">{ui("download")}<Download size={14} /></a>
                     {file.url && <a href={file.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-xs text-white/60 transition hover:bg-white/[0.06] hover:text-white">{t("open")}<ExternalLink size={14} /></a>}
-                    </>}<button type="button" disabled={working !== null} onClick={() => startMove(file)} className="rounded-xl border border-white/10 px-4 py-2.5 text-left text-xs text-white/60">Déplacer vers un dossier…</button>
+                    </>}<button type="button" disabled={working !== null} onClick={() => startMove(file)} className="rounded-xl border border-white/10 px-4 py-2.5 text-left text-xs text-white/60">{ui("moveToAFolder")}</button>
                   </div>
                 </article>
               ))}
             </div>
           )}
-          {nextPageToken && <button type="button" disabled={loading} onClick={() => void loadMore()} className="mt-6 rounded-xl border border-white/15 px-5 py-3 text-sm text-cyan-100 disabled:opacity-40">Afficher davantage de fichiers et dossiers</button>}
+          {nextPageToken && <button type="button" disabled={loading} onClick={() => void loadMore()} className="mt-6 rounded-xl border border-white/15 px-5 py-3 text-sm text-cyan-100 disabled:opacity-40">{ui("showMoreFilesAndFolders")}</button>}
         </div>
       </div>
     </MainLayout>

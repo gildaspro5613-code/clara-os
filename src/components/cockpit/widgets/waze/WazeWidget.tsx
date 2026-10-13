@@ -14,6 +14,8 @@ interface WazeResponse {
 }
 
 export default function WazeWidget() {
+  const ui = useTranslations("ui");
+
   const t = useTranslations("cockpitUi");
   const [destination, setDestination] = useState("");
   const [wazeUrl, setWazeUrl] = useState<string | null>(null);
@@ -127,7 +129,7 @@ export default function WazeWidget() {
             disabled:opacity-30
           "
         >
-          {loading ? "..." : "Go"}
+          {loading ? "..." : ui("go")}
         </button>
       </div>
 

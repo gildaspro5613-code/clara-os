@@ -15,6 +15,8 @@ export default async function MissionWidget({
   activeCount = 0,
   blockedCount = 0,
 }: MissionWidgetProps) {
+  const ui = await getTranslations("ui");
+
   const t = await getTranslations("cockpitUi");
   if (!mission) {
     return (
@@ -28,7 +30,7 @@ export default async function MissionWidget({
   }
 
   return (
-    <GlassPanel title="Mission courante">
+    <GlassPanel title={ui("currentOperationalMission")}>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <h2 className="truncate text-base font-semibold text-white">{mission.title}</h2>
@@ -42,14 +44,12 @@ export default async function MissionWidget({
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-white/45">
-        <span>{activeCount} mission{activeCount > 1 ? "s" : ""} active{activeCount > 1 ? "s" : ""}</span>
-        {blockedCount > 0 && <span>· {blockedCount} bloquée{blockedCount > 1 ? "s" : ""}</span>}
+        <span>{ui("activeMissionCount",{count:activeCount})}</span>
+        {blockedCount > 0 && <span>· {ui("blockedMissionCount",{count:blockedCount})}</span>}
         <span>· {t(`missionStatus.${mission.status}`)}</span>
       </div>
 
-      <Link href="/missions" className="mt-4 inline-flex text-xs text-cyan-400 transition hover:text-cyan-300">
-        Voir toutes les missions →
-      </Link>
+      <Link href="/missions" className="mt-4 inline-flex text-xs text-cyan-400 transition hover:text-cyan-300">{" "}{ui("viewAllMissions")}{" "}</Link>
     </GlassPanel>
   );
 }

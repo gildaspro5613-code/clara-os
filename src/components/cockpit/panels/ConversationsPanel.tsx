@@ -22,6 +22,8 @@ interface ConversationsPanelProps {
 export default function ConversationsPanel({
   session,
 }: ConversationsPanelProps) {
+  const ui = useTranslations("ui");
+
   const t = useTranslations("cockpitUi");
   const recentMessages = session.conversation.slice(-2).reverse();
 
@@ -38,7 +40,7 @@ export default function ConversationsPanel({
                 <p className="font-semibold">
                   {message.role === "clara"
                     ? "Clara"
-                    : session.user.firstName ?? "Utilisateur"}
+                    : session.user.firstName ?? ui("user")}
                 </p>
 
                 <span className="shrink-0 text-xs text-white/45">

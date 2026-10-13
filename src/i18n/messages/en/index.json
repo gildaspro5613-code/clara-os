@@ -182,8 +182,9 @@
     "title": "Telephony",
     "unknown": "Availability not verified",
     "recent": "Recent calls",
-    "empty": "No calls recorded yet.",
-    "history": "Call history will be connected to telephony memory."
+    "empty": "Call history is unavailable in this interface.",
+    "history": "Call history will be connected to telephony memory.",
+    "missingNumber": "Destination number is missing."
   },
   "chat": {
     "greeting": "Hello. I’m here. What shall we do today?",
