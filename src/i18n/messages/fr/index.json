@@ -179,7 +179,11 @@
     "provider": "Infrastructure",
     "providerValue": "Twilio · ElevenLabs",
     "notice": "Les appels sont lancés uniquement à votre demande.",
-    "title": "Téléphonie"
+    "title": "Téléphonie",
+    "unknown": "Disponibilité non vérifiée",
+    "recent": "Appels récents",
+    "empty": "Aucun appel enregistré pour l'instant.",
+    "history": "L'historique sera raccordé à la mémoire téléphonique."
   },
   "chat": {
     "greeting": "Bonjour. Me voilà. Que faisons-nous aujourd’hui ?",
