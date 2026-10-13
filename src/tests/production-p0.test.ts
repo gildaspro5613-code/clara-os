@@ -15,7 +15,7 @@ import { rememberEvent, clearRememberedEvents } from "@/lib/brain/memory-store";
 import { loadMemory } from "@/lib/brain/memory";
 import { buildContext } from "@/lib/brain/context";
 import { routeHarness } from "./helpers/external-event-route-harness";
-import { sessionKey } from "@/lib/external-capabilities/external-event-handler";
+import { sessionKey,parseBody } from "@/lib/external-capabilities/external-event-handler";
 import type { OpenAIResponsesResult } from "@/lib/connectors/internal/openai/responses/openai-responses-result";
 
 const event=(project="project-a",user="alice",session="session-a"):Event=>({id:crypto.randomUUID(),type:EventType.USER_MESSAGE,source:"EXTERNAL_PRODUCT",timestamp:new Date(),
@@ -104,4 +104,19 @@ test("P0-C: provider adapter enforces conversational ceiling and timeout without
  assert.equal(calls[0].max_output_tokens,3200);assert.equal(settings[0].timeout,60000);assert.equal(settings[0].maxRetries,0);assert.equal(response.finishReason,"incomplete");
  await engine.generate({prompt:"Synthetic",maxTokens:100000});assert.equal(calls[1].max_output_tokens,2000);assert.equal(settings[1].timeout,undefined);
  await engine.generate({prompt:"Synthetic",maxTokens:100000,outputProfile:"document_analysis"});assert.equal(calls[2].max_output_tokens,6000);
+});
+
+
+test("P0-D: missing document identity cannot associate a foreign attachment",()=>{
+ const current=event();const payload=current.payload as {context:{projectContext:{documents:unknown[]}};documents:unknown[]};
+ payload.context.projectContext.documents=[{filename:"Explicitly scoped document without ID"}];
+ payload.documents=[{filename:"Foreign attachment",segments:[{text:"PRIVATE UNASSOCIATED ATTACHMENT"}]}];
+ assert.ok(!liveProjectSource(current)!.summary.includes("PRIVATE UNASSOCIATED ATTACHMENT"));
+});
+
+test("P0-B: opaque scope identifiers reject controls that could collide in the durable key",()=>{
+ const body={schemaVersion:"clara.unified-core.event.v1",eventType:"USER_MESSAGE",message:"Synthetic request",scope:{productId:"clara-live",workspaceId:"w",userId:"alice",sessionId:"thread"}};
+ assert.ok(parseBody(body));
+ for(const field of ["workspaceId","userId","sessionId"])
+  for(const control of ["\u001f","\n","\u007f"])assert.equal(parseBody({...body,scope:{...body.scope,[field]:"first"+control+"second"}}),null);
 });

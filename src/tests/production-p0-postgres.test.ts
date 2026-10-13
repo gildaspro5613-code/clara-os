@@ -70,3 +70,25 @@ test("P0-C/F: actual worker commits failure and partial session atomically, neve
    writeFileSync(process.env.P0_LIVE_CONTRACT_FIXTURE,JSON.stringify([publicJob(saved!),publicJob((await store.lookup(scope,completedId))!)]));
  }
 });
+
+test("P0-B: native OS cannot inherit an external thread through latest-session or global-mission fallback",{skip:!container},async()=>{
+ const pg=isolatedPostgres(container),prefix=id();
+ const stores=moduleFrom("src/lib/core/store/session-store.ts",{"./database":{sql:pg.query}}) as typeof import("@/lib/core/store/session-store");
+ const privateMission={id:prefix,title:"Private Live project",status:"active",tasks:[]};
+ const external=createSession();external.mission=privateMission as unknown as NonNullable<ClaraSession['mission']>;external.conversation=[{id:"private",role:"user",content:"PRIVATE LIVE MESSAGE",createdAt:new Date().toISOString()}];
+ const externalKey="external:"+prefix;await stores.saveSession(external,externalKey);
+ const nativeOwner=await stores.loadMostRecentMissionSession(true);assert.ok(!nativeOwner?.key.startsWith("external:"));
+ const context=moduleFrom("src/lib/core/operational-context.ts",{
+  "./store/session-store":{...stores,loadMostRecentMissionSession:async()=>null,loadSession:async()=>createSession()},
+  "@/modules/missions/current-mission":{getCurrentMission:async()=>privateMission},
+  "@/lib/acquisition/acquisition-store":{loadActiveAcquisitionQualifications:async()=>[],loadAcquisitionRecord:async()=>null},
+ }) as typeof import("@/lib/core/operational-context");
+ const native=await context.resolveOperationalContext();assert.equal(native.sessionKey,"default");assert.equal(native.session.mission,null);assert.equal(native.session.conversation.length,0);
+ const runtime=moduleFrom("src/lib/core/clara.ts",{
+  "./store/session-store":stores,"@/modules/missions/current-mission":{getCurrentMission:async()=>privateMission},
+  "@/modules/missions/mission-store":{loadMission:async()=>null,saveMission:async()=>{}},
+  "@/lib/runtime/runtime-factory":{RuntimeFactory:{create:()=>({active:true})}},
+  "./journal":{Journal:class{async addEntry(){}}},
+ }) as typeof import("@/lib/core/clara");
+ const started=await new runtime.Clara("synthetic:"+prefix).start();assert.equal(started.mission,null);assert.equal(started.conversation.length,0);
+});

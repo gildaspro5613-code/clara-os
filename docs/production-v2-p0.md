@@ -42,7 +42,10 @@ filtre produit/workspace/user/session/projet et workspace OS authentifié. Elle
 ne réinjecte plus les payloads documentaires bruts des anciens événements.
 
 Les sessions externes n'héritent plus de la mission globale ni du prénom du
-propriétaire OS. Une demande Production `adviceOnly` n'exécute aucune tâche
+propriétaire OS. Réciproquement, le chat natif exclut les sessions externes de
+sa sélection de fil et de son repli sur une mission globale. Les fils commerciaux
+natifs conservent leur projection et leur continuité ; sept tests commerciaux
+existants sont inclus dans la validation. Une demande Production `adviceOnly` n'exécute aucune tâche
 mission/capability autonome. Les sessions et jobs utilisent leurs tables
 existantes ; la sérialisation asynchrone reste celle des jobs durables #301.
 Aucune nouvelle base de conversation.
@@ -142,15 +145,15 @@ accordé et les jobs/documents de production n'ont pas été touchés.
 
 ## Résultats constatés
 
-- 26 tests ciblés réussis, aucun ignoré (P0, persistance PostgreSQL, jobs,
+- 36 tests ciblés réussis, aucun ignoré (P0, persistance PostgreSQL, jobs,
   contrats externes, échecs documentaires et budget fournisseur).
 - 29 tests documentaires OS réussis.
 - 21 tests Live #301 réussis sur une copie isolée de `f689caf` ; deux états
   réels du worker OS acceptés par le client/DTO Live inchangé.
-- Arbre combiné avec #173 : 13 tests réussis, TypeScript réussi. Aucun conflit
+- Arbre combiné avec #173 : 16 tests réussis, TypeScript réussi. Aucun conflit
   restant après séparation des imports P0, sans modification de #173.
 - TypeScript, ESLint ciblé et build local final réussis. Le workflow GitHub de
-  pull request a aussi réussi installation, 26 tests, TypeScript et build.
+  pull request a aussi réussi installation, les 26 tests initiaux, TypeScript et build.
 - Le premier workflow push a échoué avant les tests : `pg_isready` sur socket
   Unix peut accepter le serveur temporaire d'initialisation PostgreSQL. Ce cas
   a été reproduit localement (Unix prêt / TCP non prêt). Le fixture vérifie
@@ -177,6 +180,8 @@ PR P0 : #174 (Draft). La liste suivante correspond à la différence avec la bas
 - `src/lib/core/clara.ts`
 - `src/lib/core/conversation-context.ts`
 - `src/lib/core/orchestrator.ts`
+- `src/lib/core/operational-context.ts`
+- `src/lib/core/store/session-store.ts`
 - `src/lib/core/session.ts`
 - `src/lib/external-capabilities/event-job-worker.ts`
 - `src/lib/external-capabilities/event-jobs.ts`

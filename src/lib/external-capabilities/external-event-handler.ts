@@ -169,7 +169,7 @@ function opaque(value: unknown, max = 160): value is string {
   return typeof value === "string" &&
     value.trim().length > 0 &&
     value.length <= max &&
-    !/[\\/\0]/.test(value);
+    !/[\\/\u0000-\u001f\u007f]/.test(value);
 }
 
 export function parseBody(value: unknown): ExternalEventBody | null {

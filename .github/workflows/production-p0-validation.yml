@@ -37,7 +37,7 @@ jobs:
           docker exec "$DOCUMENT_OPERATION_TEST_CONTAINER" psql -U postgres -v ON_ERROR_STOP=1 -c 'CREATE TABLE clara_sessions(id TEXT PRIMARY KEY,data JSONB NOT NULL,updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())'
           docker exec -i "$DOCUMENT_OPERATION_TEST_CONTAINER" psql -U postgres -v ON_ERROR_STOP=1 < db/migrations/007_external_event_jobs.sql
       - name: Production context, isolation, partial generations and durable jobs
-        run: node --import tsx --test src/tests/production-p0.test.ts src/tests/production-p0-postgres.test.ts src/tests/event-jobs-postgres.test.ts src/tests/external-event-message-contract.test.ts src/tests/document-analysis-failures.test.ts
+        run: node --import tsx --test src/tests/production-p0.test.ts src/tests/production-p0-postgres.test.ts src/tests/event-jobs-postgres.test.ts src/tests/external-event-message-contract.test.ts src/tests/document-analysis-failures.test.ts src/tests/commercial-operational-continuity.test.ts
       - name: TypeScript
         run: npx tsc --noEmit --pretty false
       - name: Production build in GitHub only

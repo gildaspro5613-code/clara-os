@@ -33,6 +33,7 @@ import { Journal } from "./journal";
 import type { JournalEntry } from "./journal-entry";
 import {
   loadSession,
+  loadSessionOwningMission,
   saveSession,
 } from "./store/session-store";
 import { loadMission } from "@/modules/missions/mission-store";
@@ -61,7 +62,9 @@ export class Clara {
       : null;
 
     if (!persistedMission && !this.sessionKey.startsWith("external:")) {
-      persistedMission = await getCurrentMission();
+      const candidate=await getCurrentMission();
+      const owner=candidate ? await loadSessionOwningMission(candidate.id) : null;
+      persistedMission=owner?.key.startsWith("external:") ? null : candidate;
     }
 
     if (persistedMission) {

@@ -59,9 +59,11 @@ export function liveProjectSource(event: Event): BrainSourceContext | null {
   // Explicit authenticated project membership is the document allowlist. Never
   // match a filename, title, client name or email to establish that membership.
   const documents=Array.isArray(projectContext.documents) ? projectContext.documents.filter(belongs).slice(0,20) : [];
-  const allowedIds=new Set(documents.map(d=>object(d).id ?? object(d).documentId));
-  const attachments=Array.isArray(payload.documents) ? payload.documents.filter(d=>belongs(d) &&
-    (object(d).projectId===projectId || object(d).project_id===projectId || allowedIds.has(object(d).documentId))).slice(0,20) : [];
+  const allowedIds=new Set(documents.map(d=>object(d).id ?? object(d).documentId).filter((id): id is string=>typeof id==="string" && id.length>0));
+  const attachments=Array.isArray(payload.documents) ? payload.documents.filter(d=>{
+    const item=object(d), id=item.documentId;
+    return belongs(d) && (item.projectId===projectId || item.project_id===projectId || (typeof id==="string" && allowedIds.has(id)));
+  }).slice(0,20) : [];
   const projectFields=Object.fromEntries(['id','name','client','type','date','environments','description'].filter(k=>k in project).map(k=>[k,project[k]]));
   const data={project:bounded(projectFields),activePreparation:bounded(activePreparation),
     computations:bounded(projectContext.computations ?? {}),documents:bounded(documents),
