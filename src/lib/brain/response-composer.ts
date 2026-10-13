@@ -16,6 +16,8 @@
  */
 
 import type { ClaraSession } from "@/lib/core/session";
+import type { Locale } from "@/i18n/types";
+import { responseLanguageInstruction } from "@/i18n/response-language";
 import type { CommercialCommunicationDraft } from "@/lib/acquisition/commercial-communication-draft";
 import { OpenAIResponsesEngine } from "@/lib/connectors/internal/openai/responses/openai-responses-engine";
 import { extractPhysicalActionProposal, PHYSICAL_ACTION_PROPOSAL_INSTRUCTIONS, type ConversationalPhysicalActionDraft } from "@/lib/clara/physical-action-proposal";
@@ -106,6 +108,7 @@ export async function composeCommercialDraftRevision(
 export async function composeClaraResponseWithProposal(
   message: string,
   session: ClaraSession,
+  locale?: Locale,
 ): Promise<ComposedClaraResponse> {
   const recommendation = session.recommendation;
   const decision = recommendation?.decision;
@@ -154,7 +157,7 @@ export async function composeClaraResponseWithProposal(
     "- jamais commerciale, jamais service client, jamais interface technique froide.",
     "",
     "RÈGLES DE CONVERSATION",
-    "- Réponds dans la langue du message utilisateur.",
+    locale ? `- ${responseLanguageInstruction(locale)}` : "- Réponds dans la langue du message utilisateur.",
     "- Ne commence pas mécaniquement par la priorité ou par 'Commencer par'.",
     "- Ne récite pas les champs internes du Brain.",
     "- Ne répète pas inutilement la demande utilisateur.",
