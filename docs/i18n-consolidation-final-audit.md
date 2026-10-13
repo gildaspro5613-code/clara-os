@@ -33,6 +33,10 @@ Les tests navigateur : `DOCUMENTS_E2E_ORIGIN=http://127.0.0.1:3038 DOCUMENTS_E2E
 
 PR #174 : `fix/os-production-v2-p0-20261013`, SHA protégé `26a5c91a5fccb09db3d78c681817bf561b6ea6bc`. Aucune écriture sur cette branche, aucun rebase/merge. `git merge-tree --write-tree` sur un objet temporaire #173 et la tête #174 : code 0, aucun conflit. Arbre simulé `ce3f2b059dcac9192abeee75870f4b618fc4f166`, exporté dans `/tmp/clara-os-i18n-p0-final` pour les tests ; seul le septième test i18n a ensuite été copié dans cette simulation. La garde P0 de génération partielle et les écritures transactionnelles demeurent celles de #174. Aucune correction P0 réimplémentée ici.
 
+## Vérification GitHub après publication
+
+Premier commit publié : `7f6a492`. Vercel : `Canceled by Ignored Build Step` ; #173 reste Draft et #174 conserve sa tête. Le premier contrôle i18n a échoué à l’étape des tests. Les logs GitHub sont inaccessibles depuis cet environnement ; un échec identique est reproduit localement sans `rg` (6 succès, 1 échec `spawnSync rg ENOENT`). Le test d’inventaire utilise désormais uniquement Node.js, sans dépendance à un exécutable du runner ; les sept tests passent aussi avec PATH vide. La conclusion du nouveau contrôle doit être vérifiée, sans assimiler cette reproduction à une preuve du log distant.
+
 ## Limites et préparation à validation
 
 - Les anciennes données persistées, textes Brain, citations, contenus de documents et noms métier restent dans leur langue d’origine par choix explicite ; aucun retraitement/migration.

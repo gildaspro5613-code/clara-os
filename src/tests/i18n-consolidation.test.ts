@@ -1,8 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { responseLanguageInstruction, safeResponseLocale } from "../i18n/response-language";
-import {readFileSync} from "node:fs";
-import {execFileSync} from "node:child_process";
+import {readFileSync, readdirSync} from "node:fs";
 import {createRequire} from "node:module";
 import {resolve} from "node:path";
 import vm from "node:vm";
@@ -67,7 +66,7 @@ test("every dictionary message is nonempty valid ICU with matching parameters an
 });
 
 test("all static translation calls in pages, components, modules and API resolve to real catalog keys",()=>{
- const files=execFileSync('rg',['--files','src/app','src/components','src/modules'],{encoding:'utf8'}).trim().split('\n').filter(p=>p.endsWith('.tsx')||p.endsWith('.ts'));const messages=catalog('fr');let checked=0;
+ const files=['src/app','src/components','src/modules'].flatMap(root=>readdirSync(root,{recursive:true,withFileTypes:true}).filter(entry=>entry.isFile()).map(entry=>resolve(entry.parentPath,entry.name))).filter(p=>p.endsWith('.tsx')||p.endsWith('.ts'));const messages=catalog('fr');let checked=0;
  const lookup=(key:string)=>key.split('.').reduce<unknown>((value,part)=>value && typeof value==='object' ? (value as Record<string,unknown>)[part] : undefined,messages);
  for(const file of files){const ast=ts.createSourceFile(file,readFileSync(file,'utf8'),ts.ScriptTarget.Latest,true,file.endsWith('.tsx')?ts.ScriptKind.TSX:ts.ScriptKind.TS);const names=new Map<string,Set<string>>();
   function declarations(node:ts.Node){if(ts.isVariableDeclaration(node)&&ts.isIdentifier(node.name)&&node.initializer){let initializer=node.initializer;if(ts.isAwaitExpression(initializer))initializer=initializer.expression;if(ts.isCallExpression(initializer)&&ts.isIdentifier(initializer.expression)&&['getTranslations','useTranslations'].includes(initializer.expression.text)){const arg=initializer.arguments[0];if(arg&&ts.isStringLiteral(arg)){const list=names.get(node.name.text)??new Set<string>();list.add(arg.text);names.set(node.name.text,list);}}}ts.forEachChild(node,declarations);}declarations(ast);
