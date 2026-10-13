@@ -119,6 +119,15 @@ export async function POST(request: Request) {
     // already-decided Brain/session state and cannot call Clara capabilities.
     const composed = await composeClaraResponseWithProposal(message, session);
     let responseMessage = composed.content;
+    if (composed.generation.status !== "completed" && !isCommercialCommand) {
+      const at=new Date().toISOString();
+      session.conversation=[...session.conversation,
+        {id:crypto.randomUUID(),role:"user" as const,content:message,createdAt:at},
+        {id:crypto.randomUUID(),role:"clara" as const,content:composed.content,createdAt:at,generation:composed.generation},
+      ].slice(-MAX_PERSISTED_MESSAGES);
+      session.updatedAt=new Date();await saveSession(session,operational.sessionKey);
+      return NextResponse.json({success:false,message:composed.content,generation:composed.generation,conversation:session.conversation},{status:502});
+    }
     const executionPlan = recommendation?.decision
       ? buildExecutionPlan(recommendation.decision, "fr", composed.physicalAction)
       : { tasks: [], physicalActions: [] };

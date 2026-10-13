@@ -15,10 +15,11 @@ export async function runEventJob(id: string | null = null, store = eventJobs,
     if (!product || product.workspaceId !== job.os_workspace_id || !body || body.scope?.productId !== job.product_id) {
       await store.fail(job, "EVENT_JOB_AUTHORIZATION_CHANGED", null); return true;
     }
-    let persisted = false;
+    let persisted = false, failurePersisted=false;
     const response = await execute({ product, body, correlationId: job.correlation_id, jobId: job.job_id,
       progress: (phase) => store.progress(job, phase),
-      persist: async (data, session, key) => { await store.completeWithSession(job, data, session, key); persisted = true; } });
+      persist: async (data, session, key) => { await store.completeWithSession(job, data, session, key); persisted = true; },
+      persistFailure: async (category,session,key)=>{await store.failWithSession(job,category,session,key);failurePersisted=true;} });
     const payload = await response.json();
     if (response.status === 200 && payload.success && payload.data) { if (!persisted) await store.complete(job, payload.data); }
     else if (response.status === 202) {
@@ -29,7 +30,7 @@ export async function runEventJob(id: string | null = null, store = eventJobs,
       const code = ['DOCUMENT_ANALYSIS_FAILED','CORE_EVENT_PROCESSING_FAILED','DOCUMENT_RETRY_AUTHORIZATION_REQUIRED','DOCUMENT_OPERATION_CONFLICT'].includes(payload.code)
         ? payload.code : 'EVENT_JOB_EXECUTION_FAILED';
       const categories = ['missing_segments','provider_auth','provider_rate_limit','provider_timeout','provider_connection','provider_server','provider_request','provider_unknown','output_truncated','output_filtered','provider_incomplete','provider_failed','empty_output','invalid_json','invalid_structure'];
-      await store.fail(job, code, categories.includes(payload.failureCategory) ? payload.failureCategory : null);
+      if(!failurePersisted)await store.fail(job, code, categories.includes(payload.failureCategory) ? payload.failureCategory : null);
     }
   } catch {
     // Storage/call ambiguity may include committed effects. Never retry blindly,

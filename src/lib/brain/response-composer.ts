@@ -16,6 +16,11 @@
  */
 
 import type { ClaraSession } from "@/lib/core/session";
+import type { Locale } from "@/i18n/types";
+import { responseLanguageInstruction } from "@/i18n/response-language";
+import { safeResponseLocale } from "@/i18n/response-language";
+import { responseGeneration, generationNotice, type ResponseGeneration } from "./response-generation";
+import { object } from "./live-project-context";
 import type { CommercialCommunicationDraft } from "@/lib/acquisition/commercial-communication-draft";
 import { OpenAIResponsesEngine } from "@/lib/connectors/internal/openai/responses/openai-responses-engine";
 import { extractPhysicalActionProposal, PHYSICAL_ACTION_PROPOSAL_INSTRUCTIONS, type ConversationalPhysicalActionDraft } from "@/lib/clara/physical-action-proposal";
@@ -23,6 +28,7 @@ import { extractPhysicalActionProposal, PHYSICAL_ACTION_PROPOSAL_INSTRUCTIONS, t
 export interface ComposedClaraResponse {
   content: string;
   physicalAction?: ConversationalPhysicalActionDraft;
+  generation: ResponseGeneration;
 }
 
 export interface CommercialDraftRevision {
@@ -99,24 +105,19 @@ export async function composeCommercialDraftRevision(
     maxTokens: 1400,
   });
 
-  if (!result.success || !result.content.trim()) return null;
+  if (!result.success || result.responseStatus !== "completed" || !result.content.trim()) return null;
   return parseCommercialDraftRevision(result.content);
 }
 
 export async function composeClaraResponseWithProposal(
   message: string,
   session: ClaraSession,
+  locale?: Locale,
 ): Promise<ComposedClaraResponse> {
   const recommendation = session.recommendation;
   const decision = recommendation?.decision;
   const mission = session.mission;
   const firstName = session.user.firstName;
-
-  const fallback =
-    decision?.summary?.trim() ??
-    recommendation?.summary?.trim() ??
-    mission?.nextAction?.trim() ??
-    "J'ai bien pris en compte ta demande.";
 
   const sourcesSummary = session.sources.length > 0
     ? session.sources.map((source) => source.summary).join("\n\n")
@@ -154,7 +155,7 @@ export async function composeClaraResponseWithProposal(
     "- jamais commerciale, jamais service client, jamais interface technique froide.",
     "",
     "RÈGLES DE CONVERSATION",
-    "- Réponds dans la langue du message utilisateur.",
+    locale ? `- ${responseLanguageInstruction(locale)}` : "- Réponds dans la langue du message utilisateur.",
     "- Ne commence pas mécaniquement par la priorité ou par 'Commencer par'.",
     "- Ne récite pas les champs internes du Brain.",
     "- Ne répète pas inutilement la demande utilisateur.",
@@ -198,23 +199,34 @@ export async function composeClaraResponseWithProposal(
   const result = await new OpenAIResponsesEngine().generate({
     prompt,
     model: process.env.OPENAI_MODEL ?? "gpt-5.5",
-    // 500 tokens truncated the first rich Clara Light answer in Preview.
-    // Keep enough headroom for a complete professional answer while the
-    // composer remains non-agentic and bounded.
-    maxTokens: 1200,
+    // Dedicated bounded conversational budget, including provider reasoning.
+    // No automatic continuation or implicit repeat of a durable invocation.
+    maxTokens: 3200,
+    outputProfile: "conversation",
   });
 
-  if (!result.success || !result.content.trim()) {
-    return { content: fallback };
+  const generation=responseGeneration(result);
+  if (generation.status !== "completed") {
+    const language=locale ?? safeResponseLocale(object(object(session.brainDashboard?.context.event.payload).context).language);
+    // Never parse a partial machine proposal into executable/approval actions.
+    const partial=result.content.trim().split("CLARA_PHYSICAL_ACTION_PROPOSAL:",1)[0].trim();
+    generation.recoverable=!!partial;
+    const notice=generationNotice(language,generation);
+    return { content:partial ? partial+"\n\n"+notice : notice, generation };
   }
 
   const extracted = extractPhysicalActionProposal(result.content.trim());
-  return { content: extracted.content.trim(), physicalAction: extracted.proposal };
+  if(!extracted.content.trim()) {
+    const failed={status:"failed" as const,failureCategory:"empty_output",recoverable:false};
+    return {content:generationNotice(locale ?? "fr",failed),generation:failed};
+  }
+  return { content: extracted.content.trim(), physicalAction: extracted.proposal, generation };
 }
 
 export async function composeClaraResponse(
   message: string,
   session: ClaraSession,
+  locale?: Locale,
 ): Promise<string> {
-  return (await composeClaraResponseWithProposal(message, session)).content;
+  return (await composeClaraResponseWithProposal(message, session,locale)).content;
 }

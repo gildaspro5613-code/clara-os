@@ -1,0 +1,46 @@
+name: Production P0 validation
+on:
+  push:
+    branches: [fix/os-production-v2-p0-20261013]
+  pull_request:
+    paths:
+      - 'src/lib/brain/**'
+      - 'src/lib/core/**'
+      - 'src/lib/external-capabilities/**'
+      - 'src/lib/connectors/internal/openai/responses/**'
+      - 'src/tests/production-p0*'
+      - '.github/workflows/production-p0-validation.yml'
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      DOCUMENT_OPERATION_TEST_CONTAINER: clara-document-registry-test-p0
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Isolated durable session and job fixture
+        run: |
+          docker run -d --name "$DOCUMENT_OPERATION_TEST_CONTAINER" -e POSTGRES_HOST_AUTH_METHOD=trust postgres:17-alpine
+          for attempt in $(seq 1 30); do
+            if docker exec "$DOCUMENT_OPERATION_TEST_CONTAINER" pg_isready -U postgres; then break; fi
+            sleep 1
+          done
+          docker exec "$DOCUMENT_OPERATION_TEST_CONTAINER" psql -U postgres -v ON_ERROR_STOP=1 -c 'CREATE TABLE clara_sessions(id TEXT PRIMARY KEY,data JSONB NOT NULL,updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())'
+          docker exec -i "$DOCUMENT_OPERATION_TEST_CONTAINER" psql -U postgres -v ON_ERROR_STOP=1 < db/migrations/007_external_event_jobs.sql
+      - name: Production context, isolation, partial generations and durable jobs
+        run: node --import tsx --test src/tests/production-p0.test.ts src/tests/production-p0-postgres.test.ts src/tests/event-jobs-postgres.test.ts src/tests/external-event-message-contract.test.ts src/tests/document-analysis-failures.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit --pretty false
+      - name: Production build in GitHub only
+        run: npm run build
+      - name: Clean isolated fixture
+        if: always()
+        run: docker rm -f "$DOCUMENT_OPERATION_TEST_CONTAINER" || true

@@ -6,7 +6,7 @@ import { authenticateExternalProduct, ExternalProductConfigurationError } from "
 import { DocumentRetryAuthorizationError, documentOperations, operationScopeKey, operationFingerprint } from "@/lib/external-capabilities/document-operations";
 
 export function routeHarness(failDispatch = false, store = documentOperations, failSession = false,
-  generate?: () => Promise<{ success: boolean; content: string; responseStatus?: "completed" | "incomplete" | "failed" | "other"; incompleteReason?: "max_output_tokens" | "content_filter" | "other"; failureCategory?: "provider_timeout" | "provider_auth" | "provider_rate_limit"; providerHttpStatus?: number; outputTokens?: number }>, compose?: () => Promise<string>) {
+  generate?: () => Promise<{ success: boolean; content: string; responseStatus?: "completed" | "incomplete" | "failed" | "other"; incompleteReason?: "max_output_tokens" | "content_filter" | "other"; failureCategory?: "provider_timeout" | "provider_auth" | "provider_rate_limit"; providerHttpStatus?: number; outputTokens?: number }>, compose?: () => Promise<string | import("@/lib/brain/response-composer").ComposedClaraResponse>) {
   const metrics = { documentAnalyses: 0 };
   const products = new Map([
     ["clara-live", { productId: "clara-live", workspaceId: "os-workspace", token: "test-credential", capabilities: [] }],
@@ -26,7 +26,10 @@ export function routeHarness(failDispatch = false, store = documentOperations, f
       if (failDispatch) throw new Error("confidential-downstream-error");
       received.push(event); return { conversation: [], sources: [], state: "WORKING" };
     } },
-    "@/lib/brain/response-composer": { composeClaraResponse: async () => compose ? compose() : "Contract accepted." },
+    "@/lib/brain/response-composer": { composeClaraResponseWithProposal: async () => {
+      const composed=compose ? await compose() : "Contract accepted.";
+      return typeof composed === "string" ? {content:composed,generation:{status:"completed",recoverable:false}} : composed;
+    } },
     "@/lib/core/store/session-store": { saveSession: async () => { if (failSession) throw new Error("private-storage-error"); } },
     "@/lib/connectors/internal/openai/responses/openai-responses-engine": { OpenAIResponsesEngine: class { async generate() { metrics.documentAnalyses += 1; if (generate) return generate(); return { success: true, content: JSON.stringify({ entities: [], facts: [], ambiguities: [], conflicts: [] }) }; } } },
     "@/types": { EventType: { USER_MESSAGE: "USER_MESSAGE", DOCUMENT_RECEIVED: "DOCUMENT_RECEIVED" } },

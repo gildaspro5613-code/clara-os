@@ -33,6 +33,7 @@ export class OpenAIResponsesEngine {
 
       const client = new OpenAI({
         apiKey: process.env.OPENAI_API_KEY,
+        ...(context.outputProfile === "conversation" ? {timeout:60_000,maxRetries:0} : {}),
       });
 
       const input =
@@ -66,7 +67,7 @@ export class OpenAIResponsesEngine {
 
         max_output_tokens: Math.min(
           context.maxTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,
-          context.outputProfile === "document_analysis" ? 6_000 : HARD_MAX_OUTPUT_TOKENS,
+          context.outputProfile === "document_analysis" ? 6_000 : context.outputProfile === "conversation" ? 3_200 : HARD_MAX_OUTPUT_TOKENS,
         ),
 
         metadata: context.metadata,
@@ -113,7 +114,7 @@ export class OpenAIResponsesEngine {
         finishReason:
           toolCalls.length > 0
             ? "tool_call"
-            : "completed",
+            : response.status === "completed" ? "completed" : response.status === "incomplete" ? "incomplete" : "error",
 
         message:
           toolCalls.length > 0
