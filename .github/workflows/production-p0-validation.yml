@@ -30,9 +30,10 @@ jobs:
         run: |
           docker run -d --name "$DOCUMENT_OPERATION_TEST_CONTAINER" -e POSTGRES_HOST_AUTH_METHOD=trust postgres:17-alpine
           for attempt in $(seq 1 30); do
-            if docker exec "$DOCUMENT_OPERATION_TEST_CONTAINER" pg_isready -U postgres; then break; fi
+            if docker exec "$DOCUMENT_OPERATION_TEST_CONTAINER" pg_isready -h 127.0.0.1 -U postgres; then break; fi
             sleep 1
           done
+          docker exec "$DOCUMENT_OPERATION_TEST_CONTAINER" pg_isready -h 127.0.0.1 -U postgres
           docker exec "$DOCUMENT_OPERATION_TEST_CONTAINER" psql -U postgres -v ON_ERROR_STOP=1 -c 'CREATE TABLE clara_sessions(id TEXT PRIMARY KEY,data JSONB NOT NULL,updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())'
           docker exec -i "$DOCUMENT_OPERATION_TEST_CONTAINER" psql -U postgres -v ON_ERROR_STOP=1 < db/migrations/007_external_event_jobs.sql
       - name: Production context, isolation, partial generations and durable jobs

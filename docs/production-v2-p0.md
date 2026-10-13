@@ -139,3 +139,49 @@ contenus volumineux bornés avec omission annoncée ; consultation d'un fragment
 via Live non implémentée ; clients synchrones concurrents hors file durable
 non soumis à la sérialisation #301. Aucun nouveau droit de consultation n'est
 accordé et les jobs/documents de production n'ont pas été touchés.
+
+## Résultats constatés
+
+- 26 tests ciblés réussis, aucun ignoré (P0, persistance PostgreSQL, jobs,
+  contrats externes, échecs documentaires et budget fournisseur).
+- 29 tests documentaires OS réussis.
+- 21 tests Live #301 réussis sur une copie isolée de `f689caf` ; deux états
+  réels du worker OS acceptés par le client/DTO Live inchangé.
+- Arbre combiné avec #173 : 13 tests réussis, TypeScript réussi. Aucun conflit
+  restant après séparation des imports P0, sans modification de #173.
+- TypeScript, ESLint ciblé et build local final réussis. Le workflow GitHub de
+  pull request a aussi réussi installation, 26 tests, TypeScript et build.
+- Le premier workflow push a échoué avant les tests : `pg_isready` sur socket
+  Unix peut accepter le serveur temporaire d'initialisation PostgreSQL. Ce cas
+  a été reproduit localement (Unix prêt / TCP non prêt). Le fixture vérifie
+  maintenant TCP et échoue explicitement si le serveur final n'est pas prêt.
+
+PR P0 : #174 (Draft). La liste suivante correspond à la différence avec la base
+`consolidation/clara-os-clean-base` et ne contient aucun fichier Clara Live.
+
+## Fichiers modifiés
+
+- `.github/workflows/production-p0-validation.yml`
+- `docs/production-v2-p0.md`
+- `src/app/api/clara/chat/route.ts`
+- `src/i18n/response-language.ts`
+- `src/lib/brain/brain-source-registry.ts`
+- `src/lib/brain/drive-context.ts`
+- `src/lib/brain/live-project-context.ts`
+- `src/lib/brain/memory.ts`
+- `src/lib/brain/reasoning.ts`
+- `src/lib/brain/response-composer.ts`
+- `src/lib/brain/response-generation.ts`
+- `src/lib/connectors/internal/openai/responses/openai-responses-context.ts`
+- `src/lib/connectors/internal/openai/responses/openai-responses-engine.ts`
+- `src/lib/core/clara.ts`
+- `src/lib/core/conversation-context.ts`
+- `src/lib/core/orchestrator.ts`
+- `src/lib/core/session.ts`
+- `src/lib/external-capabilities/event-job-worker.ts`
+- `src/lib/external-capabilities/event-jobs.ts`
+- `src/lib/external-capabilities/external-event-handler.ts`
+- `src/tests/helpers/external-event-route-harness.ts`
+- `src/tests/helpers/production-p0-harness.ts`
+- `src/tests/production-p0-postgres.test.ts`
+- `src/tests/production-p0.test.ts`
