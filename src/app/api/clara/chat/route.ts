@@ -1,5 +1,7 @@
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { LOCALE_COOKIE, resolveLocale } from "@/i18n/config";
 import { readAuthCookie } from "@/lib/connectors/microsoft/security/request-authorization";
 import { resolveSoleAuthenticatedWorkspace } from "@/lib/auth/sole-authenticated-workspace";
 import { PostgresPhysicalActionProposalStore } from "@/lib/connectors/clara-live/postgres-physical-action-store";
@@ -117,7 +119,8 @@ export async function POST(request: Request) {
 
     // The composer only gives Clara a conversational voice. It receives the
     // already-decided Brain/session state and cannot call Clara capabilities.
-    const composed = await composeClaraResponseWithProposal(message, session);
+    const locale = resolveLocale((await cookies()).get(LOCALE_COOKIE)?.value);
+    const composed = await composeClaraResponseWithProposal(message, session, locale);
     let responseMessage = composed.content;
     const executionPlan = recommendation?.decision
       ? buildExecutionPlan(recommendation.decision, "fr", composed.physicalAction)
