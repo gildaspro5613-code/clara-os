@@ -18,12 +18,12 @@
 import type { ClaraSession } from "@/lib/core/session";
 import type { Locale } from "@/i18n/types";
 import { responseLanguageInstruction } from "@/i18n/response-language";
-import { safeResponseLocale } from "@/i18n/response-language";
-import { responseGeneration, generationNotice, type ResponseGeneration } from "./response-generation";
-import { object } from "./live-project-context";
 import type { CommercialCommunicationDraft } from "@/lib/acquisition/commercial-communication-draft";
 import { OpenAIResponsesEngine } from "@/lib/connectors/internal/openai/responses/openai-responses-engine";
 import { extractPhysicalActionProposal, PHYSICAL_ACTION_PROPOSAL_INSTRUCTIONS, type ConversationalPhysicalActionDraft } from "@/lib/clara/physical-action-proposal";
+import { safeResponseLocale } from "@/i18n/response-language";
+import { responseGeneration, generationNotice, type ResponseGeneration } from "./response-generation";
+import { object } from "./live-project-context";
 
 export interface ComposedClaraResponse {
   content: string;
