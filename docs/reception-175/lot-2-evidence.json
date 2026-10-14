@@ -1,0 +1,332 @@
+{
+  "decision": "GO_ISOLATED_ONLY",
+  "production": "NO_GO",
+  "referenceCommit": "334c8ec1693337cbc89068863b01f3192da45bde",
+  "applicationCommit": "bafae5454648da31afa7e84a3d968b01c7895ca2",
+  "testCommit": "bafae5454648da31afa7e84a3d968b01c7895ca2",
+  "generatedAt": "2026-10-14T19:46:13.907180+00:00",
+  "branch": "fix/os-operational-reception-175",
+  "pullRequest": 176,
+  "draft": true,
+  "modifiedFiles": [
+    ".github/workflows/native-authority-validation.yml",
+    "db/migrations/015_native_google_document_authority.sql",
+    "src/app/api/connections/google/callback/route.ts",
+    "src/app/api/connections/google/connect/route.ts",
+    "src/app/api/connections/google/route.ts",
+    "src/app/api/documents/route.ts",
+    "src/app/api/native/documents/authorization/route.ts",
+    "src/app/api/native/runtime/route.ts",
+    "src/app/brain/page.tsx",
+    "src/app/clara/page.tsx",
+    "src/app/documents/page.tsx",
+    "src/components/cockpit/Cockpit.tsx",
+    "src/components/native/NativeDocumentsPanel.tsx",
+    "src/components/native/NativeScopeSelector.tsx",
+    "src/i18n/messages/de/consolidated-ui.json",
+    "src/i18n/messages/en/consolidated-ui.json",
+    "src/i18n/messages/es/consolidated-ui.json",
+    "src/i18n/messages/fr/consolidated-ui.json",
+    "src/i18n/messages/it/consolidated-ui.json",
+    "src/lib/auth/google-sign-in.ts",
+    "src/lib/auth/oauth/service.ts",
+    "src/lib/auth/oauth/state.ts",
+    "src/lib/auth/oauth/types.ts",
+    "src/lib/brain/brain-source-registry.ts",
+    "src/lib/connections/credential-store.ts",
+    "src/lib/connectors/google/drive/drive-client.ts",
+    "src/lib/connectors/google/oauth/google-oauth.ts",
+    "src/lib/connectors/internal/google/auth/google-auth.ts",
+    "src/lib/connectors/internal/google/drive/drive-client.ts",
+    "src/lib/connectors/internal/google/drive/drive-files.ts",
+    "src/lib/core/session.ts",
+    "src/lib/documents/bounded-document-stream.ts",
+    "src/lib/documents/workspace-handler.ts",
+    "src/lib/native/documents.ts",
+    "src/lib/native/google-authority.ts",
+    "src/lib/native/scoped-context.ts",
+    "src/modules/missions/types/Mission.ts",
+    "src/tests/documents-browser.e2e.mjs",
+    "src/tests/helpers/documents-route-harness.ts",
+    "src/tests/helpers/native-google-expire-fixture.mts",
+    "src/tests/helpers/native-runtime-browser-fixture.mts",
+    "src/tests/helpers/native-runtime-browser-preload.mjs",
+    "src/tests/native-authority.test.ts",
+    "src/tests/native-commercial-postgres.test.ts",
+    "src/tests/native-documents-browser.e2e.mjs",
+    "src/tests/native-documents-postgres.test.ts",
+    "src/tests/native-google-oauth.test.ts",
+    "src/tests/native-runtime-browser.e2e.mjs",
+    "src/tests/native-runtime-postgres.test.ts"
+  ],
+  "tests": [
+    {
+      "name": "native-security-and-documentary",
+      "counts": {
+        "tests": 15,
+        "pass": 15,
+        "fail": 0,
+        "skipped": 0
+      },
+      "logSha256": "37a010a1ff9a3c06152ffcb80ff149fb15f93a768be9cebade63693f5a20f946",
+      "artifact": "/tmp/lot2-final-identity-security.log"
+    },
+    {
+      "name": "sql-application-role",
+      "counts": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "skipped": 0
+      },
+      "logSha256": "a6c161e60bde1ffa309f60bffdc77e19e44e3675597952a82a590857f5eb9ae5",
+      "artifact": "/tmp/lot2-role-postgres.log"
+    },
+    {
+      "name": "native-commercial-documentary-browser",
+      "counts": {
+        "tests": 3,
+        "pass": 3,
+        "fail": 0,
+        "skipped": 0
+      },
+      "logSha256": "8ff549767a67878b46ec2f56c270c07651d121160b660b8286490bfcdd17beeb",
+      "artifact": "/tmp/lot2-browser-scope-guard.log"
+    },
+    {
+      "name": "browser-ui-regressions",
+      "counts": {
+        "tests": 10,
+        "pass": 10,
+        "fail": 0,
+        "skipped": 0
+      },
+      "logSha256": "5b4add756775f5a66ba8f0170a56f1beffb4b59bde6d9ea5f085684a97cabbe8",
+      "artifact": "/tmp/lot2-browser-regressions.log"
+    },
+    {
+      "name": "i18n-voice-commercial-common-oauth",
+      "counts": {
+        "tests": 39,
+        "pass": 39,
+        "fail": 0,
+        "skipped": 0
+      },
+      "logSha256": "88503bdc06cfc1f76e2d45cfd2e800427a325a3fc3b05b9efb0a85f77281c4b0",
+      "artifact": "/tmp/lot2-i18n-oauth-final.log"
+    },
+    {
+      "name": "documents",
+      "counts": {
+        "tests": 29,
+        "pass": 29,
+        "fail": 0,
+        "skipped": 0
+      },
+      "logSha256": "1a5272a1edd68cf5ee621bf1351ce017d875b441f98e81e58336b525d0f32fff",
+      "artifact": "/tmp/lot2-documents-real.log"
+    },
+    {
+      "name": "production-p0-isolated",
+      "counts": {
+        "tests": 36,
+        "pass": 36,
+        "fail": 0,
+        "skipped": 0
+      },
+      "logSha256": "4b17d44083990ffbe4911efa7d91b0a02b8862b039880b111fccd904c16629ac",
+      "artifact": "/tmp/lot2-p0-real.log"
+    },
+    {
+      "name": "canonical-os-live",
+      "counts": {
+        "tests": 4,
+        "pass": 4,
+        "fail": 0,
+        "skipped": 0
+      },
+      "logSha256": "390f92650aa3101a7eda5c51b40b5b7950fa09ebc2c9602ca621c2e41ec14ebe",
+      "artifact": "/tmp/lot2-canonical.log"
+    },
+    {
+      "name": "authentication-workspaces",
+      "counts": {
+        "tests": 25,
+        "pass": 25,
+        "fail": 0,
+        "skipped": 0
+      },
+      "logSha256": "2d199d5dd7c6d118d4a2050af677b3720d5b53999bbf13b94d08977440e657b7",
+      "artifact": "/tmp/lot2-auth.log"
+    }
+  ],
+  "build": {
+    "command": "NEXT_TELEMETRY_DISABLED=1 NEXT_FONT_GOOGLE_MOCKED_RESPONSES=<local-font-fixture> npm run build -- --webpack",
+    "result": "PASS",
+    "logSha256": "f381d24f300a2004e6b575bef0039e96aacd0760dc2f04d1ae7bd10e04fa8aec"
+  },
+  "typescript": "PASS",
+  "targetedLint": "PASS",
+  "globalLint": {
+    "errors": 10,
+    "warnings": 13,
+    "baselineDiagnosticSources": [
+      {
+        "file": "src/app/api/weather/route.ts",
+        "unchangedFromLot1": true,
+        "sha256": "ba7e56ec4548b994987512e4d8fd30027637c646742330f7c44118f67139aee8"
+      },
+      {
+        "file": "src/components/automatisations/MakeConnectionStatus.tsx",
+        "unchangedFromLot1": true,
+        "sha256": "0c7a7be1be085aa48e07262833715ae202cc0bef0cf74a012218f1444c7d4935"
+      },
+      {
+        "file": "src/components/clara/ClaraRecommendation.tsx",
+        "unchangedFromLot1": true,
+        "sha256": "2dafb15ade49612fd63a22c66b97690369a13f0ffab98b4e35c88dac6dc7344d"
+      },
+      {
+        "file": "src/components/cockpit/panels/AgendaPanel.tsx",
+        "unchangedFromLot1": true,
+        "sha256": "147a090ee30df9bfc2406a44e377f8dd09dd9ab24f092078bba597aacd448ec8"
+      },
+      {
+        "file": "src/components/cockpit/panels/TodayPanel.tsx",
+        "unchangedFromLot1": true,
+        "sha256": "323dbed2ad771ede6f38c8db9541f06eccb3115188a28e5cbc4310b01fbf60da"
+      },
+      {
+        "file": "src/components/cockpit/widgets/agenda/AgendaWidget.tsx",
+        "unchangedFromLot1": true,
+        "sha256": "185d226d3aef913cb80d049c4d426fbf17391d93d60beecb97ced711c2eb83b6"
+      },
+      {
+        "file": "src/components/cockpit/widgets/weather/WeatherWidget.tsx",
+        "unchangedFromLot1": true,
+        "sha256": "0eb28f269aa018bb4fc395497b5f7026467a735366e0c56aa77bb219a2864975"
+      },
+      {
+        "file": "src/components/contacts/ContactsDirectory.tsx",
+        "unchangedFromLot1": true,
+        "sha256": "10843ce03b5c03e6c97bfce839226b3c89e880d41c9afb06058b79230caa1d8a"
+      },
+      {
+        "file": "src/components/layout/Sidebar.tsx",
+        "unchangedFromLot1": true,
+        "sha256": "7d3027b91cf46c2750cf20dea3a134baa1264b446d8dad266a9d1c3b84708c23"
+      },
+      {
+        "file": "src/lib/capabilities/magicq-lighting/executor.ts",
+        "unchangedFromLot1": true,
+        "sha256": "0127e05277f1f02f95b7d45ca3c811c6cd9d3d121289ce5295c2002ab870dc74"
+      },
+      {
+        "file": "src/lib/capabilities/workspace-install/workflow.ts",
+        "unchangedFromLot1": true,
+        "sha256": "cbf53428a5383b15fac1d41645ece5504b5adb1c4758a0c89c5cf7213c9bdb93"
+      },
+      {
+        "file": "src/lib/connectors/internal/google/gmail/google-gmail-engine.ts",
+        "unchangedFromLot1": true,
+        "sha256": "8f62293a4c50ceae0ec42c22c63490fce7662dea754f423a83183ac102c2f2e8"
+      },
+      {
+        "file": "src/lib/connectors/internal/google/sheets/google-sheets-engine.ts",
+        "unchangedFromLot1": true,
+        "sha256": "01e135c86f99b1982d043ec2c71ccc0fe7768eb83f91f51dc6d1f5252c571feb"
+      },
+      {
+        "file": "src/lib/core/store/database.ts",
+        "unchangedFromLot1": true,
+        "sha256": "e22f07c4fe61a68dc1fb749cdbfb66a976d3330d98f25f49ed922a825f04bdf6"
+      },
+      {
+        "file": "src/modules/agenda/AgendaStage.tsx",
+        "unchangedFromLot1": true,
+        "sha256": "7fcdb83382532a04fb8c14b6b56851215e6a497bb72f892df5a1cefffced4f33"
+      },
+      {
+        "file": "src/tests/integration/lighting-console-connections-v1.test.ts",
+        "unchangedFromLot1": true,
+        "sha256": "ad3361fc3d496240a12f09dc7389308cbf70bb34714d6c559c681dc1cd1d83c1"
+      },
+      {
+        "file": "src/tests/integration/lighting-self-service-onboarding-v1.test.ts",
+        "unchangedFromLot1": true,
+        "sha256": "59616335f1351af32af668e571ddacab90ac892d344a4a0f195f3425b9eb2cef"
+      },
+      {
+        "file": "src/tests/integration/magicq-hardware-test-readiness.test.ts",
+        "unchangedFromLot1": true,
+        "sha256": "068dd6e317150e25f6169921435f1b23fc5bc2fa4546cfad2b7c840f8a8bccfb"
+      }
+    ]
+  },
+  "legacyVitest": {
+    "passed": 20,
+    "failed": 2,
+    "initializationFailures": 1,
+    "status": "PREEXISTING_SAME_THREE_FILES"
+  },
+  "database": {
+    "postgresql": "17 isolated Docker",
+    "realBusinessPersistence": true,
+    "migration015Reapplication": true,
+    "backupRestore": true,
+    "publicExecuteDenied": true,
+    "readOnlyRoleDenied": true,
+    "applicationRoleWithGrantsPassed": true,
+    "productionMigration": false
+  },
+  "providers": {
+    "google": "CONTROLLED_SIMULATION",
+    "openai": "CONTROLLED_SIMULATION",
+    "realGoogleDriveCertification": false,
+    "productionSignInCertification": false,
+    "testAuthSessions": "seeded verified canonical identities"
+  },
+  "dataset": {
+    "users": 2,
+    "clients": 2,
+    "projects": 3,
+    "documents": [
+      "document-a",
+      "document-shared",
+      "document-b",
+      "document-p3"
+    ],
+    "foreignConnection": "owned by second verified user"
+  },
+  "live": {
+    "modified": false,
+    "commit": "48a2f94910d4a6111250e15046e0f471ddd6ac9b",
+    "integrationConcurrencyChecks": 18
+  },
+  "github": {
+    "publicationStatus": "PENDING_PUBLICATION_AND_CHECKS",
+    "prepublicationVercelStatus": {
+      "sha": "334c8ec1693337cbc89068863b01f3192da45bde",
+      "state": "success",
+      "description": "Canceled by Ignored Build Step"
+    }
+  },
+  "governance": {
+    "merge": false,
+    "deployment": false,
+    "productionMigration": false,
+    "productionSecretOrConfigChange": false,
+    "supplierSendOrCall": false
+  },
+  "initialImplementationCommit": "43045b97d5885010393c5704f11e7109f9053113",
+  "canonicalDocumentIdentity": "Google file ID identifies one active owner/workspace/client/project; foreign-context redeclaration and ownership changes rejected",
+  "confirmedAndFixedDefects": [
+    {
+      "defect": "same file could be redeclared in another project using the same authorized Google connection",
+      "beforeLogSha256": "5bf24f72ee883966aab724eb89140abca40783b227362d756f64cbec71c7e916",
+      "beforeResult": "FAIL: missing expected rejection",
+      "fixCommit": "bafae5454648da31afa7e84a3d968b01c7895ca2",
+      "afterResult": "PASS: foreign inspect/bind and foreign ownership denied"
+    }
+  ]
+}

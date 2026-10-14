@@ -1,3 +1,5 @@
+> **Lot 2 — GO en isolation, NO-GO Production** : [raccord canonique Google/Drive/Documents](lot-2-google-document-continuity.md), [preuves](lot-2-evidence.json). Le parcours documentaire est réellement exercé avec PostgreSQL/Core/Brain et Google simulé ; le lot 1 reste validé. Les verrouillages des rapports antérieurs sont historiques et ne remplacent pas cette décision datée. PR #176 toujours Draft.
+
 > **Lot 1 — GO en isolation, NO-GO Production** : [continuité commerciale et recette](lot-1-commercial-continuity.md), [preuves](lot-1-evidence.json), [politique permanente](non-regression-policy.md). Les rapports antérieurs ci-dessous décrivent leurs commits et verrouillages historiques.
 
 > Audit final préproduction : [rapport et matrice GO/NO-GO](preproduction-audit.md), [preuves](preproduction-evidence.json). NO-GO Production ; gestion Google/Brevo/Make fermée jusqu’à certification canonique. Les sections antérieures ci-dessous conservent leurs preuves datées.
