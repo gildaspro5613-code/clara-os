@@ -9,6 +9,7 @@
  * ============================================
  */
 
+import { authorizeVoiceRequest } from "@/lib/auth/voice-request-authorization";
 import { getTranslations } from "next-intl/server";
 import { NextResponse } from "next/server";
 
@@ -24,6 +25,10 @@ interface OutboundCallRequest {
 export async function POST(request: Request) {
   const t=await getTranslations("telephony");
   try {
+    if (!await authorizeVoiceRequest(request)) {
+      const ui = await getTranslations("voiceApi");
+      return NextResponse.json({success:false,error:ui("operatorRequired")}, {status:403});
+    }
     const body =
       (await request.json()) as OutboundCallRequest;
 

@@ -1,3 +1,4 @@
+import EmailSummaryPanel from "../panels/EmailSummaryPanel";
 import AgendaWidget from "./agenda/AgendaWidget";
 import MissionWidget from "./missions/MissionWidget";
 import ClaraChatWidget from "./clara/ClaraChatWidget";
@@ -74,6 +75,8 @@ export default async function CockpitWidgets({ session, acquisition }: CockpitWi
           </div>
         )}
 
+        <div className="mt-5"><EmailSummaryPanel session={session} /></div>
+
         <div className="mt-5 grid items-stretch gap-5 lg:grid-cols-[1.35fr_1fr]">
           <div className="min-w-0">
             <ConversationsPanel session={session} />
@@ -96,7 +99,7 @@ export default async function CockpitWidgets({ session, acquisition }: CockpitWi
         </div>
 
         <div className="mt-5">
-          <ClaraChatWidget initialMessages={session.conversation} userFirstName={session.user.firstName} />
+          <ClaraChatWidget compact initialMessages={session.conversation} userFirstName={session.user.firstName} />
         </div>
       </div>
     </section>

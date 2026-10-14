@@ -1,0 +1,244 @@
+{
+  "checkedAt": "2026-10-14T07:17:13.356644+02:00",
+  "base": "781976a3b53d6a8a53d31a892c33168af0b3b4f5",
+  "decision": "NO-GO",
+  "productionProvidersTested": false,
+  "checks": [
+    {
+      "id": "contracts",
+      "scope": "isolated doubles and real UI/composer modules",
+      "completedAt": "2026-10-14T07:31:53.066429+02:00",
+      "counts": {
+        "tests": 29,
+        "pass": 29,
+        "fail": 0,
+        "skipped": 0
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "documents",
+      "scope": "local PDF reader and isolated PostgreSQL; Google simulated",
+      "completedAt": "2026-10-14T07:01:45.676055+02:00",
+      "counts": {
+        "tests": 29,
+        "pass": 29,
+        "fail": 0,
+        "skipped": 0
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "connectors-auth-p0",
+      "scope": "provider doubles and isolated PostgreSQL",
+      "completedAt": "2026-10-14T07:02:57.528466+02:00",
+      "counts": {
+        "tests": 65,
+        "pass": 65,
+        "fail": 0,
+        "skipped": 0
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "canonical-auth",
+      "scope": "isolated PostgreSQL, synthetic OS/Live concurrency transport",
+      "completedAt": "2026-10-14T07:07:39.018083+02:00",
+      "counts": {
+        "tests": 11,
+        "pass": 11,
+        "fail": 0,
+        "skipped": 0
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "hardware",
+      "scope": "mock protocol adapters; no equipment network",
+      "completedAt": "2026-10-14T07:10:18.054997+02:00",
+      "counts": {
+        "tests": 16,
+        "pass": 16,
+        "fail": 0,
+        "skipped": 0
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "browser-populated",
+      "scope": "localhost optimized app and populated Neon protocol fixture",
+      "completedAt": "2026-10-14T07:32:44.778766+02:00",
+      "counts": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "skipped": 0
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "browser-regression",
+      "scope": "localhost optimized app; API doubles and empty Neon protocol fixture",
+      "completedAt": "2026-10-14T07:16:12.317050+02:00",
+      "counts": {
+        "tests": 8,
+        "pass": 8,
+        "fail": 0,
+        "skipped": 0
+      },
+      "result": "PASS"
+    }
+  ],
+  "nativeAuthorizationAudit": {
+    "at": "2026-10-14T05:02:17.900Z",
+    "isolation": "BLOCKED: native handler ignores request identity; controlled synthetic fixture only",
+    "observations": [
+      {
+        "identity": "anonymous",
+        "status": 200,
+        "globalFixtureMissionVisible": true
+      },
+      {
+        "identity": "synthetic-user-A",
+        "status": 200,
+        "globalFixtureMissionVisible": true
+      },
+      {
+        "identity": "synthetic-user-B",
+        "status": 200,
+        "globalFixtureMissionVisible": true
+      }
+    ]
+  },
+  "productionMetadata": {
+    "status": "BLOCKED",
+    "reason": "owner reports Vercel team HTTP 403; no names/scopes access",
+    "secretValuesRead": false
+  },
+  "productionHTTP": {
+    "status": "BLOCKED",
+    "reason": "public read of auth/session/status did not obtain a response from this environment; no authenticated Production test"
+  },
+  "baselineFailures": {
+    "lint": {
+      "errors": 10,
+      "warnings": 14,
+      "sameOnBase": true
+    },
+    "vitest": {
+      "pass": 20,
+      "fail": 2,
+      "failedFiles": 3,
+      "failedInitializationSuites": 1,
+      "sameOnBase": true
+    }
+  },
+  "voiceHTTPChecks": {
+    "scope": "optimized local app, no authenticated caller, synthetic database and external fetch denial",
+    "checkedAt": "2026-10-14T05:26:20.237012+00:00",
+    "checks": [
+      {
+        "locale": "fr",
+        "route": "/api/telephony",
+        "status": 403
+      },
+      {
+        "locale": "fr",
+        "route": "/api/elevenlabs/session",
+        "status": 403
+      },
+      {
+        "locale": "fr",
+        "route": "/api/voice/speak",
+        "status": 403
+      },
+      {
+        "locale": "fr",
+        "route": "/api/voice/transcribe",
+        "status": 403
+      },
+      {
+        "locale": "en",
+        "route": "/api/telephony",
+        "status": 403
+      },
+      {
+        "locale": "en",
+        "route": "/api/elevenlabs/session",
+        "status": 403
+      },
+      {
+        "locale": "en",
+        "route": "/api/voice/speak",
+        "status": 403
+      },
+      {
+        "locale": "en",
+        "route": "/api/voice/transcribe",
+        "status": 403
+      },
+      {
+        "locale": "es",
+        "route": "/api/telephony",
+        "status": 403
+      },
+      {
+        "locale": "es",
+        "route": "/api/elevenlabs/session",
+        "status": 403
+      },
+      {
+        "locale": "es",
+        "route": "/api/voice/speak",
+        "status": 403
+      },
+      {
+        "locale": "es",
+        "route": "/api/voice/transcribe",
+        "status": 403
+      },
+      {
+        "locale": "de",
+        "route": "/api/telephony",
+        "status": 403
+      },
+      {
+        "locale": "de",
+        "route": "/api/elevenlabs/session",
+        "status": 403
+      },
+      {
+        "locale": "de",
+        "route": "/api/voice/speak",
+        "status": 403
+      },
+      {
+        "locale": "de",
+        "route": "/api/voice/transcribe",
+        "status": 403
+      },
+      {
+        "locale": "it",
+        "route": "/api/telephony",
+        "status": 403
+      },
+      {
+        "locale": "it",
+        "route": "/api/elevenlabs/session",
+        "status": 403
+      },
+      {
+        "locale": "it",
+        "route": "/api/voice/speak",
+        "status": 403
+      },
+      {
+        "locale": "it",
+        "route": "/api/voice/transcribe",
+        "status": 403
+      }
+    ]
+  },
+  "translatedMessages": 2870,
+  "staticTranslationCalls": 534
+}

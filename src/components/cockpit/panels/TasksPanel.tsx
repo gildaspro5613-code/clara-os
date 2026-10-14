@@ -21,6 +21,7 @@ interface TasksPanelProps {
 export default function TasksPanel({
   mission,
 }: TasksPanelProps) {
+  const ui = useTranslations("ui");
   const t = useTranslations("cockpitUi");
   return (
     <GlassPanel className="!h-auto !p-4 sm:!p-5">
@@ -30,7 +31,7 @@ export default function TasksPanel({
         </p>
 
         <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-white/70">
-          {mission.objective}
+          {ui("localizedSummary")}
         </p>
       </div>
 
@@ -61,7 +62,7 @@ export default function TasksPanel({
         </p>
 
         <p className="mt-1.5 line-clamp-2 text-sm font-medium leading-relaxed">
-          {mission.nextAction ?? t("noNextStep")}
+          {ui("reviewNextAction")}
         </p>
       </div>
     </GlassPanel>

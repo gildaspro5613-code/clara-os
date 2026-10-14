@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Check, Send, X } from "lucide-react";
@@ -24,6 +25,7 @@ interface PhysicalActionProposalView {
 }
 
 interface ClaraChatWidgetProps {
+  compact?: boolean;
   autoFocus?: boolean;
   initialMessages?: ClaraConversationMessage[];
   userFirstName?: string | null;
@@ -46,6 +48,7 @@ function personalizedGreeting(
 }
 
 export default function ClaraChatWidget({
+  compact = false,
   autoFocus = false,
   initialMessages = [],
   userFirstName,
@@ -257,7 +260,7 @@ export default function ClaraChatWidget({
                 : "max-w-[80%] rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm leading-relaxed text-white/80"
             }
           >
-            {message.content}
+            {compact && message.id !== "clara-greeting" ? <Link href="/conversations" className="text-cyan-200">{ui("openConversationMessage")} →</Link> : message.content}
           </div>
         ))}
 

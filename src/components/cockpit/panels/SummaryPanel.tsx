@@ -9,6 +9,7 @@
  * ============================================
  */
 
+import { cockpitConversationSummary } from "@/lib/presentation/cockpit-summary";
 import GlassPanel from "@/components/ui/GlassPanel";
 import type { ClaraSession } from "@/lib/core/session";
 import { useTranslations } from "next-intl";
@@ -20,14 +21,13 @@ interface SummaryPanelProps {
 export default function SummaryPanel({
   session,
 }: SummaryPanelProps) {
+  const ui = useTranslations("ui");
+  const summary = cockpitConversationSummary(session);
   const t = useTranslations("cockpitUi");
   const mission = session.mission;
   const completedTasks = mission?.tasks.filter((task) => task.completed).length ?? 0;
   const userTurns = session.conversation.filter((message) => message.role === "user").length;
   const progress = mission?.progress ?? 0;
-  const latestClaraMessage = [...session.conversation]
-    .reverse()
-    .find((message) => message.role === "clara");
 
   return (
     <GlassPanel title={t("dailySummary")}>
@@ -59,9 +59,10 @@ export default function SummaryPanel({
           </p>
 
           <p className="mt-2 line-clamp-4 text-sm leading-relaxed text-white/75">
-            {latestClaraMessage?.content ?? mission?.objective ?? t("progressSummary")}
+            {ui("conversationSummary", {count: summary.messages})}
           </p>
 
+          {summary.partial > 0 && <p className="mt-2 text-xs text-amber-200">{ui("partialSummary", {count: summary.partial})}</p>}
         </div>
 
       </div>

@@ -13,7 +13,7 @@ import {OpenAIResponsesEngine} from "../lib/connectors/internal/openai/responses
 import {createSession} from "../lib/core/session";
 import { locales } from "../i18n/config";
 
-const dictionaries = ["index", "journal", "missions", "automations-brevo", "automations-make", "consolidated-ui"] as const;
+const dictionaries = ["index", "journal", "missions", "automations-brevo", "automations-make", "consolidated-ui", "commercial-draft"] as const;
 
 function flatten(value: unknown, prefix = ""): string[] {
   if (!value || typeof value !== "object" || Array.isArray(value)) return [prefix];
@@ -69,7 +69,24 @@ test("all static translation calls in pages, components, modules and API resolve
  const files=['src/app','src/components','src/modules'].flatMap(root=>readdirSync(root,{recursive:true,withFileTypes:true}).filter(entry=>entry.isFile()).map(entry=>resolve(entry.parentPath,entry.name))).filter(p=>p.endsWith('.tsx')||p.endsWith('.ts'));const messages=catalog('fr');let checked=0;
  const lookup=(key:string)=>key.split('.').reduce<unknown>((value,part)=>value && typeof value==='object' ? (value as Record<string,unknown>)[part] : undefined,messages);
  for(const file of files){const ast=ts.createSourceFile(file,readFileSync(file,'utf8'),ts.ScriptTarget.Latest,true,file.endsWith('.tsx')?ts.ScriptKind.TSX:ts.ScriptKind.TS);const names=new Map<string,Set<string>>();
-  function declarations(node:ts.Node){if(ts.isVariableDeclaration(node)&&ts.isIdentifier(node.name)&&node.initializer){let initializer=node.initializer;if(ts.isAwaitExpression(initializer))initializer=initializer.expression;if(ts.isCallExpression(initializer)&&ts.isIdentifier(initializer.expression)&&['getTranslations','useTranslations'].includes(initializer.expression.text)){const arg=initializer.arguments[0];if(arg&&ts.isStringLiteral(arg)){const list=names.get(node.name.text)??new Set<string>();list.add(arg.text);names.set(node.name.text,list);}}}ts.forEachChild(node,declarations);}declarations(ast);
+  function namespace(initializer: ts.Expression | undefined): string | null {
+   if (initializer && ts.isAwaitExpression(initializer)) initializer = initializer.expression;
+   if (!initializer || !ts.isCallExpression(initializer) || !ts.isIdentifier(initializer.expression) || !['getTranslations','useTranslations'].includes(initializer.expression.text)) return null;
+   const arg = initializer.arguments[0]; return arg && ts.isStringLiteral(arg) ? arg.text : null;
+  }
+  function register(name: string, value: string | null) { if(value) { const list=names.get(name)??new Set<string>();list.add(value);names.set(name,list); } }
+  function declarations(node:ts.Node) {
+   if(ts.isVariableDeclaration(node)) {
+    if(ts.isIdentifier(node.name)) register(node.name.text,namespace(node.initializer));
+    else if(ts.isArrayBindingPattern(node.name)) {
+     let initializer=node.initializer;if(initializer && ts.isAwaitExpression(initializer))initializer=initializer.expression;
+     if(initializer && ts.isCallExpression(initializer) && ts.isPropertyAccessExpression(initializer.expression) && initializer.expression.expression.getText(ast)==='Promise' && initializer.expression.name.text==='all') {
+      const args=initializer.arguments[0];if(args && ts.isArrayLiteralExpression(args))node.name.elements.forEach((entry,index)=>{if(ts.isBindingElement(entry)&&ts.isIdentifier(entry.name))register(entry.name.text,namespace(args.elements[index]));});
+     }
+    }
+   }
+   ts.forEachChild(node,declarations);
+  } declarations(ast);
   function calls(node:ts.Node){if(ts.isCallExpression(node)&&ts.isIdentifier(node.expression)&&names.has(node.expression.text)){const key=node.arguments[0];if(key&&ts.isStringLiteral(key)){assert.ok([...names.get(node.expression.text)!].some(ns=>typeof lookup(ns+'.'+key.text)==='string'),`${file}: ${node.expression.text}(${key.text})`);checked++;}}ts.forEachChild(node,calls);}calls(ast);
  }
  assert.ok(checked>200);console.info(`Checked ${checked} static translation calls.`);
@@ -84,7 +101,7 @@ test("new Clara responses use selected locale, preserve original quotations and 
 test("telephony API localizes errors, preserves public identifiers and never echoes provider exceptions or secrets",async()=>{
  const require=createRequire(resolve('src/app/api/telephony/route.ts'));let result:unknown,locale='fr',calls=0;const logs:string[]=[];const exports:Record<string,unknown>={};
  const source=readFileSync('src/app/api/telephony/route.ts','utf8');
- const modules:Record<string,unknown>={'next/server':{NextResponse:Response},'next-intl/server':{getTranslations:async()=>createTranslator({locale,messages:catalog(locale),namespace:'telephony'})},'@/lib/connectors/internal/telephony':{TELEPHONY_MODULE:{engine:{execute:async()=>{calls++;if(result instanceof Error)throw result;return result;}}}}};
+ const modules:Record<string,unknown>={'@/lib/auth/voice-request-authorization':{authorizeVoiceRequest:async()=>true},'next/server':{NextResponse:Response},'next-intl/server':{getTranslations:async()=>createTranslator({locale,messages:catalog(locale),namespace:'telephony'})},'@/lib/connectors/internal/telephony':{TELEPHONY_MODULE:{engine:{execute:async()=>{calls++;if(result instanceof Error)throw result;return result;}}}}};
  vm.runInNewContext(ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{exports,require:(name:string)=>modules[name]??require(name),console:{error:(...args:unknown[])=>logs.push(args.join(' '))}});
  const post=exports.POST as (request:Request)=>Promise<Response>;
  const request=(body:unknown)=>new Request('https://fixture.invalid/api/telephony',{method:'POST',body:JSON.stringify(body)});

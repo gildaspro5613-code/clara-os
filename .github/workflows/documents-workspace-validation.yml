@@ -8,6 +8,12 @@ on:
       - "src/lib/documents/**"
       - "src/lib/connectors/internal/google/drive/drive-files.ts"
       - "src/tests/documents*"
+      - "src/tests/operational-reception*"
+      - "src/tests/helpers/reception*"
+      - "src/components/cockpit/**"
+      - "src/app/clara/**"
+      - "src/app/missions/**"
+      - "src/i18n/**"
       - "src/tests/live-archive*"
       - "src/tests/helpers/documents*"
       - "src/tests/helpers/synthetic-pdf.ts"
@@ -58,7 +64,19 @@ jobs:
             sleep 1
           done
           if [ "$ready" != true ]; then cat /tmp/documents-browser-server.log; exit 1; fi
-          DOCUMENTS_E2E_ORIGIN=http://127.0.0.1:3017 npm run test:documents:e2e
+          DOCUMENTS_E2E_ORIGIN=http://127.0.0.1:3017 node --test src/tests/documents-browser.e2e.mjs src/tests/i18n-browser.e2e.mjs src/tests/canonical-archives-browser.e2e.mjs
+      - name: Populated multilingual reception against isolated fixture
+        run: |
+          CLARA_WORKSPACE_ID=melodie-digital DATABASE_URL=postgresql://synthetic:synthetic@documents-e2e.invalid/synthetic NODE_OPTIONS="--import=$PWD/src/tests/helpers/reception-browser-runtime.mjs" npm run start -- --hostname 127.0.0.1 --port 3018 > /tmp/reception-browser-server.log 2>&1 &
+          reception_server_pid=$!
+          trap 'kill "$reception_server_pid" 2>/dev/null || true' EXIT
+          ready=false
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:3018/conversations > /dev/null; then ready=true; break; fi
+            sleep 1
+          done
+          if [ "$ready" != true ]; then cat /tmp/reception-browser-server.log; exit 1; fi
+          DOCUMENTS_E2E_ORIGIN=http://127.0.0.1:3018 node --test src/tests/operational-reception-browser.e2e.mjs
       - name: Stop isolated database
         if: always()
         run: docker stop clara-document-registry-test-documentsv2 || true
