@@ -1,3 +1,4 @@
+import { nativePageFence } from "@/lib/native/page-fence";
 import { getTranslations } from "next-intl/server";
 import CommercialDraftEditor from "@/components/cockpit/panels/CommercialDraftEditor";
 import { buildCommercialQualificationDraft } from "@/lib/acquisition/commercial-communication-draft";
@@ -18,6 +19,9 @@ interface ClaraPageProps {
 export default async function ClaraPage({
   searchParams,
 }: ClaraPageProps) {
+  const nativeLocked=await nativePageFence();
+  if(nativeLocked)return nativeLocked;
+
   const t = await getTranslations("pages");
   const ui = await getTranslations("ui");
   const params = await searchParams;

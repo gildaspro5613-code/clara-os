@@ -1,3 +1,4 @@
+import { nativePageFence } from "@/lib/native/page-fence";
 import { getTranslations } from "next-intl/server";
 // ============================================
 // CLARA OS
@@ -15,6 +16,9 @@ import { resolveOperationalContext } from "@/lib/core/operational-context";
 export const dynamic = "force-dynamic";
 
 export default async function BrainPage() {
+  const nativeLocked=await nativePageFence();
+  if(nativeLocked)return nativeLocked;
+
   const ui = await getTranslations("ui");
 
   const { session } = await resolveOperationalContext();

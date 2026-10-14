@@ -65,7 +65,7 @@ jobs:
           done
           if [ "$ready" != true ]; then cat /tmp/documents-browser-server.log; exit 1; fi
           DOCUMENTS_E2E_ORIGIN=http://127.0.0.1:3017 node --test src/tests/documents-browser.e2e.mjs src/tests/i18n-browser.e2e.mjs src/tests/canonical-archives-browser.e2e.mjs
-      - name: Populated multilingual reception against isolated fixture
+      - name: Native authority negative HTTP and populated HTML/RSC leak regression
         run: |
           CLARA_WORKSPACE_ID=melodie-digital DATABASE_URL=postgresql://synthetic:synthetic@documents-e2e.invalid/synthetic NODE_OPTIONS="--import=$PWD/src/tests/helpers/reception-browser-runtime.mjs" npm run start -- --hostname 127.0.0.1 --port 3018 > /tmp/reception-browser-server.log 2>&1 &
           reception_server_pid=$!

@@ -2,7 +2,17 @@
 
 **Décision : NO-GO pour la réception Production. Issue #175 non clôturée.** Les corrections ciblées sont proposées dans une seule PR Draft ; aucun fournisseur OS n’est certifié réel. Base : `consolidation/clara-os-clean-base`, SHA `781976a3b53d6a8a53d31a892c33168af0b3b4f5`, après merges #173/#174. Audit du 14 octobre 2026, fuseau Europe/Paris.
 
-## Registre unique de réception
+## Suite P0 — autorité native, 14 octobre 2026
+
+Le défaut `/api/clara/session` qui renvoyait une mission globale sans session valide est corrigé sur la branche de la **PR #176, conservée en Draft**. [Rapport d'autorité native](native-authority.md) : inventaire Mission/Session/Document, contrat exact, migration additive 012 non exécutée en Production, preuves négatives et limites.
+
+**Mesure conservatoire avec restriction de disponibilité :** aucune lecture native sans propriétaire/utilisateur/workspace/client/projet/version attestés ; pages et opérations dépendantes du runtime global verrouillées même après authentification. Historique conservé sans association automatique. Le défaut de confidentialité est corrigé en isolation ; la réception native opérationnelle demeure **NO-GO**.
+
+Résultats de cette suite : **7 tests d'autorité**, **18 lectures PostgreSQL**, **32 refus de handlers**, **2 tests browser/HTTP** (30 visites sans fuite HTML/RSC, 20 refus sans/invalide cookie, 1 token inconnu), **36 tests P0**, **11 canonique/OS↔Live**, **29 documents**, **29 contrats/rendu**, **8 browser UI**. Zéro ignoré. Build, TypeScript et lint ciblé réussis. Même lint global (10 erreurs/14 avertissements) et mêmes échecs Vitest (20 succès, 2 échecs, 1 suite en erreur) que la base, réexécutés séparément.
+
+Les résultats « réception peuplée » ci-dessous sont ceux de la passe **antérieure au verrouillage natif**. Ils ne signifient plus que les pages/opérations globales sont accessibles : les tests métier/UI continuent en isolation avec mocks explicitement signalés, et le vrai serveur est testé négativement. Le registre courant de sécurité fait autorité dans [native-authority.md](native-authority.md) et la section `nativeAuthorityFollowup` de [evidence.json](evidence.json).
+
+## Historique de réception avant barrière native
 
 Les preuves horodatées sont dans [evidence.json](evidence.json). Les résultats locaux ne remplacent jamais une validation Production.
 
@@ -32,7 +42,7 @@ Les preuves horodatées sont dans [evidence.json](evidence.json). Les résultats
 5. Routes voix/téléphonie : réutiliser la session canonique et les droits existants `connections:manage` sur le workspace serveur ; origine HTTPS contrôlée pour POST, aucune confiance dans le workspace fourni par le caller. Supprimer erreurs/details fournisseur bruts ; URL vocale signée réservée à l’opérateur et `no-store`. Moteurs inchangés, aucune identité parallèle.
 6. Réparer les deux fixtures Google refresh/invalid_grant, qui recherchaient le workspace historique `default` : elles ciblent maintenant leur `connection.id` explicite. Aucun assouplissement des ACL ni fallback `default` ajouté.
 
-## Tests réellement exécutés
+## Tests exécutés avant barrière native
 
 | Suite / contrôle | Résultat |
 |---|---|
@@ -78,15 +88,15 @@ Les workflows existants i18n/documents exécutent ces nouvelles vérifications s
 5. Confirmer Settings → Build and Deployment → Ignored Build Step → **Only build production**. Aucune Preview ne doit être créée. Aucun changement de ce réglage. Vérifier le SHA réellement servi avant de prétendre que la branche de consolidation est la Production.
 6. La publication de la PR GitHub ne met pas la Production à jour. Tout redéploiement ou merge reste soumis à un feu vert distinct ; aucune migration ni suppression de données.
 
-## Intervention nécessaire sur l’autorité native
+## Intervention native identifiée lors de la passe précédente
 
-Une configuration Vercel ne répare pas la portée des données. Fichiers concernés pour une correction complémentaire explicitement cadrée : `src/lib/core/operational-context.ts`, `src/lib/core/store/session-store.ts`, `src/lib/core/runtime.ts`, `src/modules/missions/mission-store.ts`, `src/modules/missions/types/Mission.ts`, `src/app/api/clara/session/route.ts`, `src/app/api/clara/chat/route.ts`, `src/app/api/documents/route.ts`, pages Missions/Journal et stores d’intake/connexions utilisés par les pages natives.
+La correction conservatoire et le statut courant sont maintenant décrits dans [native-authority.md](native-authority.md). Une configuration Vercel ne répare pas la portée des données. Fichiers initialement concernés pour une correction complémentaire explicitement cadrée : `src/lib/core/operational-context.ts`, `src/lib/core/store/session-store.ts`, `src/lib/core/runtime.ts`, `src/modules/missions/mission-store.ts`, `src/modules/missions/types/Mission.ts`, `src/app/api/clara/session/route.ts`, `src/app/api/clara/chat/route.ts`, `src/app/api/documents/route.ts`, pages Missions/Journal et stores d’intake/connexions utilisés par les pages natives.
 
 Contrat à établir : principal issu de la session OIDC existante ; workspace choisi sur membership ; client/projet issus du registre canonique ; fil durable et ressources avec propriétaire explicite. Les ressources historiques sans preuve restent non associées. Aucune déduction à partir du fil le plus récent, nom ou email. Réutiliser les ACL et registry existants, sans introduire d’identité parallèle ; déterminer une association historique manuelle auditée. La garde voix ajoutée ne certifie pas ces ressources.
 
 Avant clôture : démontrer deux vrais comptes et projets distincts, reprise sans confusion, droits expirés/révoqués, accès interdit aux ressources étrangères, lectures fournisseurs autorisées, puis les actions externes spécifiquement autorisées. Les surfaces inexistantes (transport IONOS, entrants/historique Twilio, sélection native multi-workspace/projet) requièrent décision de périmètre ou écart explicitement accepté. Aucun de ces écarts n’a été accepté dans cette mission ; **NO-GO maintenu**.
 
-## Fichiers de cette passe
+## Fichiers de la première passe de réception
 
 - `.github/workflows/documents-workspace-validation.yml`
 - `.github/workflows/i18n-consolidation-validation.yml`

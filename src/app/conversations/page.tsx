@@ -1,3 +1,4 @@
+import { nativePageFence } from "@/lib/native/page-fence";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import MainLayout from "@/components/layout/MainLayout";
@@ -6,6 +7,9 @@ import { resolveOperationalContext } from "@/lib/core/operational-context";
 export const dynamic = "force-dynamic";
 
 export default async function ConversationsPage() {
+  const nativeLocked=await nativePageFence();
+  if(nativeLocked)return nativeLocked;
+
   const ui = await getTranslations("ui");
 
   const [t, locale, session] = await Promise.all([

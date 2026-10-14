@@ -1,3 +1,5 @@
+// Legacy business/component tests use an explicit fence mock; they do not validate server authorization.
+// See native-authority tests and real HTTP/browser reception for the production boundary.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { responseLanguageInstruction, safeResponseLocale } from "../i18n/response-language";
@@ -119,6 +121,7 @@ test('native chat localizes empty requests and network failures in all five sele
  const output=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
  const exported:{exports:Record<string,unknown>}={exports:{}};
  const dependencies:Record<string,unknown>={
+  '@/lib/native/authority':{nativeOperationFence:async()=>null},
   'next/server':{NextResponse:{json:(body:unknown,options?:ResponseInit)=>Response.json(body,options)}},
   'next/headers':{cookies:async()=>({get:()=>({value:locale})})},
   'next-intl/server':{getTranslations:async(namespace:string)=>createTranslator({locale,messages:catalog(locale),namespace})},

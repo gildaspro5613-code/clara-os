@@ -166,5 +166,7 @@
   "registryFocus": "Mission mise en avant par le registre · hors sélection du fil courant",
   "openSourceDetails": "Consulter les données source",
   "technicalDisciplines": "Domaines techniques",
-  "contactName": "Nom du contact"
+  "contactName": "Nom du contact",
+  "nativeAccessLocked": "Accès natif verrouillé",
+  "nativeAccessHelp": "Les ressources historiques sont conservées. Leur propriétaire et leur projet doivent être attestés explicitement avant toute consultation ou modification."
 }

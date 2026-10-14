@@ -1,8 +1,12 @@
+import { nativeOperationFence } from "@/lib/native/authority";
 import { NextResponse } from "next/server";
 import { listEvents } from "@/lib/connectors/google/calendar/list-events";
 import { googleReauthResponse } from "@/lib/connectors/google/auth/google-api-error-response";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const nativeDenied=await nativeOperationFence(request);
+  if(nativeDenied)return nativeDenied;
+
   try {
     const now = new Date();
 

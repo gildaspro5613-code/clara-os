@@ -166,5 +166,7 @@
   "registryFocus": "Registerfokus · außerhalb der Auswahl des aktuellen Verlaufs",
   "openSourceDetails": "Quelldaten ansehen",
   "technicalDisciplines": "Technische Bereiche",
-  "contactName": "Name der Kontaktperson"
+  "contactName": "Name der Kontaktperson",
+  "nativeAccessLocked": "Nativer Zugriff gesperrt",
+  "nativeAccessHelp": "Historische Ressourcen bleiben erhalten. Eigentümer und Projekt müssen vor dem Lesen oder Ändern ausdrücklich bestätigt werden."
 }

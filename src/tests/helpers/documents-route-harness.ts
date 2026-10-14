@@ -1,3 +1,5 @@
+// Legacy business/component tests use an explicit fence mock; they do not validate server authorization.
+// See native-authority tests and real HTTP/browser reception for the production boundary.
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import vm from "node:vm";
@@ -14,6 +16,7 @@ export function documentsRouteHarness(drive: drive_v3.Drive) {
   const files = new DriveFiles(drive);
   const require = createRequire(import.meta.url);
   const modules: Record<string, unknown> = {
+    "@/lib/native/authority": { nativeOperationFence: async () => null },
     "next/server": { NextResponse: Response },
     "@/lib/connectors/internal/google/drive/google-drive-engine": { GoogleDriveEngine: class {
       readContent(context: { fileId: string; mimeType?: string }) { return files.readContent(context.fileId, context.mimeType); }

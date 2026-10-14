@@ -166,5 +166,7 @@
   "registryFocus": "Missione evidenziata dal registro · fuori dalla selezione del filo corrente",
   "openSourceDetails": "Consulta i dati di origine",
   "technicalDisciplines": "Ambiti tecnici",
-  "contactName": "Nome del contatto"
+  "contactName": "Nome del contatto",
+  "nativeAccessLocked": "Accesso nativo bloccato",
+  "nativeAccessHelp": "Le risorse storiche sono conservate. Proprietario e progetto devono essere attestati esplicitamente prima di consultarli o modificarli."
 }

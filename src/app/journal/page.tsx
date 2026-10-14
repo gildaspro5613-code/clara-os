@@ -1,3 +1,4 @@
+import { nativePageFence } from "@/lib/native/page-fence";
 import MainLayout from "@/components/layout/MainLayout";
 import JournalStage from "@/modules/journal/JournalStage";
 import { getRuntime } from "@/lib/core/runtime";
@@ -11,6 +12,9 @@ const labels: Record<string,string> = {
 };
 
 export default async function JournalPage() {
+  const nativeLocked=await nativePageFence();
+  if(nativeLocked)return nativeLocked;
+
   const runtimeEntries = await getRuntime().getJournal();
   let brevoEntries: JournalEntry[] = [];
   try {

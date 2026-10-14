@@ -166,5 +166,7 @@
   "registryFocus": "Registry focus · outside current thread selection",
   "openSourceDetails": "Review source details",
   "technicalDisciplines": "Technical disciplines",
-  "contactName": "Contact name"
+  "contactName": "Contact name",
+  "nativeAccessLocked": "Native access locked",
+  "nativeAccessHelp": "Historical resources are retained. Their owner and project must be explicitly attested before viewing or modifying them."
 }

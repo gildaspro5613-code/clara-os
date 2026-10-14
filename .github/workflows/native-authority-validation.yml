@@ -1,0 +1,49 @@
+name: Native resource authority validation
+on:
+  pull_request:
+    branches: [consolidation/clara-os-clean-base]
+    paths:
+      - 'src/lib/native/**'
+      - 'src/app/api/clara/**'
+      - 'src/app/api/missions/**'
+      - 'src/app/api/documents/**'
+      - 'src/app/api/contacts/**'
+      - 'src/app/api/calendar/**'
+      - 'src/app/api/workspace/install/**'
+      - 'src/app/api/openai/test/**'
+      - 'src/app/api/internal/prospect-e2e-trace/**'
+      - 'src/app/**/*.tsx'
+      - 'src/tests/native-authority*'
+      - 'src/tests/operational-reception*'
+      - 'db/migrations/012_native_resource_authority.sql'
+      - '.github/workflows/native-authority-validation.yml'
+permissions:
+  contents: read
+jobs:
+  native-authority:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CANONICAL_TEST_CONTAINER: clara-canonical-test-postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Isolated PostgreSQL fixture only
+        run: |
+          docker run --detach --name "$CANONICAL_TEST_CONTAINER" -e POSTGRES_PASSWORD=synthetic-test-only postgres:17-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24
+          for attempt in $(seq 1 30); do
+            if docker exec "$CANONICAL_TEST_CONTAINER" pg_isready -U postgres --quiet; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+      - name: Actual handlers and database isolation, revocation, snapshot and history
+        run: node --import tsx --test src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts
+      - run: npx tsc --noEmit --pretty false
+      - run: npx eslint src/lib/native src/app/api/clara/session src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts
+      - name: Stop isolated fixture
+        if: always()
+        run: docker rm -f "$CANONICAL_TEST_CONTAINER" || true

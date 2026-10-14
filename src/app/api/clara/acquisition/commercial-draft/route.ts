@@ -1,3 +1,4 @@
+import { nativeOperationFence } from "@/lib/native/authority";
 import { NextResponse, type NextRequest } from "next/server";
 import { isSameOriginRequest } from "@/lib/auth/session-request-security";
 import { authorizeMicrosoftRequest } from "@/lib/connectors/microsoft/security/request-authorization";
@@ -15,6 +16,9 @@ function configuredWorkspaceId(): string | null {
 }
 
 export async function PATCH(request: NextRequest) {
+  const nativeDenied=await nativeOperationFence(request);
+  if(nativeDenied)return nativeDenied;
+
   try {
     if (!isSameOriginRequest(request.headers.get("origin"), process.env.CLARA_AUTH_APP_ORIGIN)) {
       return NextResponse.json({ success: false, message: "Origine non autorisée." }, { status: 403 });

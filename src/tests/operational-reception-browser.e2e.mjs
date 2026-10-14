@@ -4,29 +4,41 @@ import {readFile} from 'node:fs/promises';
 import {chromium} from 'playwright';
 const origin=process.env.DOCUMENTS_E2E_ORIGIN;
 if(!origin||!['localhost','127.0.0.1'].includes(new URL(origin).hostname))throw new Error('Isolated localhost server required');
-test('populated reception: five locales, source provenance, scoped focus, email summary and durable original conversation',async()=>{
+const privateMarkers=['PRIVATE_FULL_EMAIL_BODY','PRIVATE_EMAIL_SNIPPET','PRIVATE_DRAFT_BODY','PRIVATE_REQUEST_SOURCE','Source mission 0','Synthetic draft subject','sender@example.invalid'];
+// The populated fixture deliberately contains global/private data. These are
+// actual server requests: no API fulfill/mocks can bypass the production fence.
+test('native server pages: no private HTML/RSC leakage across six pages and five locales',async()=>{
  const browser=await chromium.launch({executablePath:process.env.DOCUMENTS_E2E_CHROMIUM,headless:true,args:['--no-sandbox']});
  try{for(const locale of ['fr','en','es','de','it']){
-  const catalog=JSON.parse(await readFile(new URL(`../i18n/messages/${locale}/index.json`,import.meta.url)));
-  const missionCatalog=JSON.parse(await readFile(new URL(`../i18n/messages/${locale}/missions.json`,import.meta.url)));
   const ui=JSON.parse(await readFile(new URL(`../i18n/messages/${locale}/consolidated-ui.json`,import.meta.url)));
   const context=await browser.newContext();await context.addCookies([{name:'NEXT_LOCALE',value:locale,url:origin}]);
-  const mutations=[];
-  await context.route('**/*',route=>{const url=new URL(route.request().url());if(url.origin!==new URL(origin).origin)return route.abort();if(url.pathname.startsWith('/api/')){
-   if(route.request().method()!=='GET')mutations.push(url.pathname);
-   if(url.pathname==='/api/clara/acquisition/commercial-draft'&&route.request().method()==='PATCH'){
-    const data=route.request().postDataJSON();assert.equal(data.submissionId,'synthetic-submission');assert.equal(data.subject,'Edited synthetic subject');assert.equal(data.body,'Edited synthetic draft body');
-    return route.fulfill({json:{success:true,draft:{...data,schema:'clara.commercial-communication-draft.v1',channel:'email',sender:{name:'Clara',email:'clara@melodie.digital'},recipient:{name:'Synthetic contact',email:'contact@example.invalid'},revision:2,approval:{required:true,status:'pending'},delivery:{allowed:false,reason:'operator-approval-required'}}}});
-   }
-   return route.fulfill({json:{success:false,connected:false,authenticated:false}});
-  }return route.continue();});
-  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(/MISSING_MESSAGE|INVALID_MESSAGE|IntlError/.test(m.text()))errors.push(m.text());});
-  await page.goto(origin);await page.getByRole('link',{name:catalog.navigation.documents,exact:true}).first().waitFor();
-  let body=await page.locator('body').innerText();assert.ok(!body.includes('PRIVATE_FULL_EMAIL_BODY'));assert.ok(!body.includes('PRIVATE_EMAIL_SNIPPET'));assert.ok(!body.includes('PRIVATE_DRAFT_BODY'));assert.ok(!body.includes('PRIVATE_REQUEST_SOURCE'));assert.ok(body.includes('Synthetic draft subject'));assert.ok(await page.getByRole('link',{name:ui.reviewDraft+' →'}).count());assert.ok(body.includes('Original subject'));assert.ok(body.includes('sender@example.invalid'));assert.ok(body.includes(ui.importantEmail));assert.ok(await page.locator('a[href="https://mail.google.com/mail/u/0/#all/mail123"]').count());
-  await page.goto(origin+'/clara');assert.ok((await page.locator('body').innerText()).includes('PRIVATE_DRAFT_BODY'));await page.getByRole('button',{name:ui.edit,exact:true}).click();const editor=page.locator('#commercial-draft');await editor.locator('input').fill('Edited synthetic subject');await editor.locator('textarea').fill('Edited synthetic draft body');await editor.getByRole('button',{name:ui.save,exact:true}).click();await editor.getByText('Edited synthetic draft body',{exact:true}).waitFor();assert.deepEqual(mutations,['/api/clara/acquisition/commercial-draft']);await page.getByText(catalog.pages.states.STARTING,{exact:true}).waitFor();assert.equal(await page.getByText('STARTING',{exact:true}).count(),0);
-  await page.goto(origin+'/conversations');await page.getByRole('heading',{name:catalog.pages.conversations,exact:true}).waitFor();assert.ok((await page.locator('body').innerText()).includes('PRIVATE_FULL_EMAIL_BODY'));
-  await page.goto(origin+'/missions');await page.getByText(missionCatalog.status.blocked,{exact:true}).first().waitFor();for(let i=0;i<6;i++)await page.getByText(`Source mission ${i}`,{exact:true}).first().waitFor();assert.ok((await page.locator('body').innerText()).includes(ui.sourceOriginal));
-  await page.goto(origin+'/conversations');assert.ok((await page.locator('body').innerText()).includes('PRIVATE_FULL_EMAIL_BODY'));
+  await context.route('**/*',route=>new URL(route.request().url()).origin===new URL(origin).origin?route.continue():route.abort());
+  const page=await context.newPage(),errors=[];
+  page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(/MISSING_MESSAGE|INVALID_MESSAGE|IntlError/.test(m.text()))errors.push(m.text());});
+  for(const path of ['/','/clara','/missions','/journal','/brain','/conversations']){
+   const response=await page.goto(origin+path);assert.equal(response.status(),200);
+   await page.getByRole('heading',{name:ui.nativeAccessLocked,exact:true}).waitFor();
+   assert.equal(await page.locator('[data-native-authority="locked"]').count(),1);
+   const html=await response.text(),body=await page.locator('body').innerText();
+   for(const marker of privateMarkers){assert.ok(!html.includes(marker),`${locale} ${path} HTML/RSC ${marker}`);assert.ok(!body.includes(marker),`${locale} ${path} body ${marker}`);}
+   assert.equal(await page.locator('html').getAttribute('lang'),locale);
+  }
   assert.deepEqual(errors,[],locale);await context.close();
  }}finally{await browser.close();}
+});
+test('real native HTTP rejects missing/invalid cookies and forged ownership without provider calls',async()=>{
+ let checked=0;
+ for(const cookie of ['', 'clara_auth_session=invalid'])for(const [method,path]of [
+  ['GET','/api/clara/session'],['GET','/api/documents'],['GET','/api/contacts'],['GET','/api/calendar'],
+  ['GET','/api/clara/acquisition/decisions'],['POST','/api/clara/chat'],['POST','/api/missions/execute'],
+  ['POST','/api/missions/resume'],['POST','/api/workspace/install'],['PATCH','/api/clara/acquisition/commercial-draft']
+ ]){
+  const response=await fetch(origin+path,{method,headers:{cookie,'Content-Type':'application/json'},...(method==='GET'?{}:{body:JSON.stringify({userId:'victim',workspaceId:'foreign',clientId:'foreign',projectId:'foreign',missionId:'mission-0'})})});
+  assert.equal(response.status,401,`${method} ${path}`);assert.equal(response.headers.get('Cache-Control'),'no-store');
+  const body=await response.text();for(const marker of privateMarkers)assert.ok(!body.includes(marker));assert.ok(!body.includes('mission-0'));checked++;
+ }
+ // A well-formed but unknown opaque cookie is not an authenticated session.
+ const unknown=await fetch(origin+'/api/clara/session?workspaceId=foreign&clientId=c&projectId=p&sessionId=native:victim',{headers:{cookie:'clara_auth_session='+'A'.repeat(43)}});
+ assert.equal(unknown.status,403);assert.deepEqual(await unknown.json(),{success:false,code:'NATIVE_SCOPE_DENIED'});
+ console.info(`Checked ${checked} unauthenticated HTTP refusals and one unknown session.`);
 });

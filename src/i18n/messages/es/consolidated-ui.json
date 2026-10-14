@@ -166,5 +166,7 @@
   "registryFocus": "Misión destacada por el registro · fuera de la selección del hilo actual",
   "openSourceDetails": "Consultar datos de origen",
   "technicalDisciplines": "Áreas técnicas",
-  "contactName": "Nombre del contacto"
+  "contactName": "Nombre del contacto",
+  "nativeAccessLocked": "Acceso nativo bloqueado",
+  "nativeAccessHelp": "Se conservan los recursos históricos. Su propietario y proyecto deben acreditarse explícitamente antes de consultarlos o modificarlos."
 }

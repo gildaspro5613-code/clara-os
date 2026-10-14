@@ -1,3 +1,4 @@
+import { nativeOperationFence } from "@/lib/native/authority";
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { getTranslations } from "next-intl/server";
@@ -52,6 +53,9 @@ const MAX_REASONING_HISTORY = 16;
  * Cockpit and /clara are two views over this same persisted conversation.
  */
 export async function POST(request: Request) {
+  const nativeDenied=await nativeOperationFence(request);
+  if(nativeDenied)return nativeDenied;
+
   const locale = resolveLocale((await cookies()).get(LOCALE_COOKIE)?.value);
   const ui = await getTranslations("ui");
   try {

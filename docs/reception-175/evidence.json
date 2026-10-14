@@ -240,5 +240,185 @@
     ]
   },
   "translatedMessages": 2870,
-  "staticTranslationCalls": 534
+  "staticTranslationCalls": 534,
+  "historicalEvidenceNote": "Earlier checks describe pre-native-fence revision f410335; populated global native access is now deliberately locked. See nativeAuthorityFollowup.",
+  "nativeAuthorityFollowup": {
+    "checkedAt": "2026-10-14T15:19:33.878618+02:00",
+    "base": "781976a3b53d6a8a53d31a892c33168af0b3b4f5",
+    "previousPrHead": "f41033525717f2edaa46212e8e6c575509d42aa4",
+    "pr": 176,
+    "branch": "fix/os-operational-reception-175",
+    "draft": true,
+    "decision": "NO-GO",
+    "leakFix": "PASS_ISOLATED_NOT_DEPLOYED",
+    "migration": "db/migrations/012_native_resource_authority.sql",
+    "productionMigrationExecuted": false,
+    "automaticHistoricalBinding": false,
+    "productionProviderCalls": false,
+    "nativeMutations": "LOCKED_EVEN_WITH_ATTESTED_SESSION",
+    "nativePages": "LOCKED_BEFORE_GLOBAL_LOADERS",
+    "checks": [
+      {
+        "id": "native-authority",
+        "completedAt": "2026-10-14T15:16:11.453664+02:00",
+        "scope": "real PostgreSQL isolated and actual handler/page functions",
+        "counts": {
+          "tests": 7,
+          "pass": 7,
+          "fail": 0,
+          "skipped": 0
+        },
+        "result": "PASS"
+      },
+      {
+        "id": "native-http-browser",
+        "completedAt": "2026-10-14T15:13:41.316856+02:00",
+        "scope": "optimized local server, populated synthetic global data, actual API no interception",
+        "counts": {
+          "tests": 2,
+          "pass": 2,
+          "fail": 0,
+          "skipped": 0
+        },
+        "result": "PASS"
+      },
+      {
+        "id": "contracts",
+        "completedAt": "2026-10-14T15:13:28.640791+02:00",
+        "scope": "business/UI unit tests; native fence explicitly mocked in legacy units",
+        "counts": {
+          "tests": 29,
+          "pass": 29,
+          "fail": 0,
+          "skipped": 0
+        },
+        "result": "PASS"
+      },
+      {
+        "id": "documents",
+        "completedAt": "2026-10-14T15:12:07.520368+02:00",
+        "scope": "PDF + PostgreSQL isolated; legacy Drive adapter fence mocked",
+        "counts": {
+          "tests": 29,
+          "pass": 29,
+          "fail": 0,
+          "skipped": 0
+        },
+        "result": "PASS"
+      },
+      {
+        "id": "p0-continuity",
+        "completedAt": "2026-10-14T15:12:14.628403+02:00",
+        "scope": "external actual handlers and isolated durable PostgreSQL; provider doubles",
+        "counts": {
+          "tests": 36,
+          "pass": 36,
+          "fail": 0,
+          "skipped": 0
+        },
+        "result": "PASS"
+      },
+      {
+        "id": "canonical-os-live",
+        "completedAt": "2026-10-14T15:12:28.924472+02:00",
+        "scope": "actual OS/Live canonical handlers, PostgreSQL/MongoDB fixtures, no production",
+        "counts": {
+          "tests": 11,
+          "pass": 11,
+          "fail": 0,
+          "skipped": 0
+        },
+        "result": "PASS"
+      },
+      {
+        "id": "ui-browser",
+        "completedAt": "2026-10-14T15:15:13.033343+02:00",
+        "scope": "client UI API mocks plus local i18n pages",
+        "counts": {
+          "tests": 8,
+          "pass": 8,
+          "fail": 0,
+          "skipped": 0
+        },
+        "result": "PASS"
+      }
+    ],
+    "nativePostgresReads": 18,
+    "handlerRefusals": 32,
+    "httpRefusalsMissingInvalidCookie": 20,
+    "httpUnknownOpaqueSessionRefused": 1,
+    "privateHtmlRscVisits": 30,
+    "continuityConcurrencyChecks": 18,
+    "translatedMessages": 2880,
+    "build": "PASS_LOCAL_WEBPACK_MOCKED_FONT_ONLY",
+    "typescript": "PASS",
+    "targetedLint": "PASS",
+    "baselineLint": {
+      "base": "781976a3b53d6a8a53d31a892c33168af0b3b4f5",
+      "errors": 10,
+      "warnings": 14,
+      "sameNormalizedDiagnostics": true,
+      "diagnosticSha256": "5862c6a879a09261914ff5fce58b10f2ae02ee509051d6845f652798f15e80fa"
+    },
+    "baselineVitest": {
+      "pass": 20,
+      "failedTests": 2,
+      "failedInitializationSuites": 1,
+      "sameFailedFiles": [
+        "src/lib/acquisition/acquisition-store.test.ts",
+        "src/lib/acquisition/decision-brief.test.ts",
+        "src/app/api/external/project-intake/route.test.ts"
+      ]
+    },
+    "physicalApprovalOfflineCheck": "PASS",
+    "modifiedFiles": [
+      ".github/workflows/documents-workspace-validation.yml",
+      ".github/workflows/native-authority-validation.yml",
+      ".github/workflows/production-p0-validation.yml",
+      "db/migrations/012_native_resource_authority.sql",
+      "docs/reception-175/README.md",
+      "docs/reception-175/native-authority.md",
+      "src/app/api/calendar/route.ts",
+      "src/app/api/clara/acquisition/commercial-draft/route.ts",
+      "src/app/api/clara/acquisition/decision/route.ts",
+      "src/app/api/clara/acquisition/decisions/route.ts",
+      "src/app/api/clara/acquisition/status/[submissionId]/route.ts",
+      "src/app/api/clara/actions/navigation/route.ts",
+      "src/app/api/clara/approvals/route.ts",
+      "src/app/api/clara/chat/route.ts",
+      "src/app/api/clara/session/route.ts",
+      "src/app/api/contacts/route.ts",
+      "src/app/api/documents/route.ts",
+      "src/app/api/internal/prospect-e2e-trace/[submissionId]/route.ts",
+      "src/app/api/missions/execute/route.ts",
+      "src/app/api/missions/resume/route.ts",
+      "src/app/api/openai/test/route.ts",
+      "src/app/api/workspace/install/route.ts",
+      "src/app/brain/page.tsx",
+      "src/app/clara/page.tsx",
+      "src/app/conversations/page.tsx",
+      "src/app/journal/page.tsx",
+      "src/app/missions/page.tsx",
+      "src/app/page.tsx",
+      "src/i18n/messages/de/consolidated-ui.json",
+      "src/i18n/messages/en/consolidated-ui.json",
+      "src/i18n/messages/es/consolidated-ui.json",
+      "src/i18n/messages/fr/consolidated-ui.json",
+      "src/i18n/messages/it/consolidated-ui.json",
+      "src/lib/native/authority.ts",
+      "src/lib/native/page-fence.tsx",
+      "src/tests/helpers/documents-route-harness.ts",
+      "src/tests/i18n-consolidation.test.ts",
+      "src/tests/native-authority-postgres.test.ts",
+      "src/tests/native-authority.test.ts",
+      "src/tests/operational-reception-browser.e2e.mjs",
+      "src/tests/operational-reception.test.tsx"
+    ],
+    "limitations": [
+      "No native scoped write runtime or Drive authorization implemented; authenticated legacy operations remain unavailable.",
+      "Manual independent ownership evidence required before creating an attestation; unknown history retained unbound.",
+      "Production auth, providers and connection/OAuth legacy surfaces not certified by this native-resource fix.",
+      "No Preview, deployment, merge or production migration authorized/executed."
+    ]
+  }
 }

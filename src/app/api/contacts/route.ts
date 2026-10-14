@@ -1,3 +1,4 @@
+import { nativeOperationFence } from "@/lib/native/authority";
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/core/store/database";
 
@@ -18,6 +19,9 @@ function contactsWorkspaceId(): string {
 }
 
 export async function GET(request: Request) {
+  const nativeDenied=await nativeOperationFence(request);
+  if(nativeDenied)return nativeDenied;
+
   const url = new URL(request.url);
   const query = url.searchParams.get("q")?.trim().toLowerCase() ?? "";
   const pattern = `%${query}%`;

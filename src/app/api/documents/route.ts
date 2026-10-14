@@ -1,3 +1,4 @@
+import { nativeOperationFence } from "@/lib/native/authority";
 /**
  * ============================================
  * CLARA OS
@@ -47,6 +48,9 @@ function failure(error: unknown, fallback: string) {
 }
 
 export async function GET(request: Request) {
+  const nativeDenied=await nativeOperationFence(request);
+  if(nativeDenied)return nativeDenied;
+
   try {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("query")?.trim() ?? "";
@@ -173,6 +177,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const nativeDenied=await nativeOperationFence(request);
+  if(nativeDenied)return nativeDenied;
+
   try {
     const contentType = request.headers.get("content-type") ?? "";
     if (contentType.includes("application/json")) {
