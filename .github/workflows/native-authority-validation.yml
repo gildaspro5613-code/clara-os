@@ -69,7 +69,18 @@ jobs:
             if curl --cacert /tmp/native-runtime-cert.pem --fail --silent https://127.0.0.1:3060/clara > /dev/null; then ready=true; break; fi
             sleep 1
           done
-          if [ "$ready" != true ]; then cat /tmp/native-app.log; exit 1; fi
+          if [ "$ready" != true ]; then
+            python - <<'PYDIAG'
+          from pathlib import Path
+          import re
+          for name in ('native-app.log', 'native-tls-proxy.log'):
+              value=Path('/tmp/'+name).read_text()[-2500:]
+              value=re.sub(r'https?://[^\s]+', '[local URL]', value)
+              value=value.replace('%','%25').replace('\r','%0D').replace('\n','%0A')
+              print('::error file=.github/workflows/native-authority-validation.yml,title=Isolated startup '+name+'::'+value)
+          PYDIAG
+            exit 1
+          fi
           NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node --test src/tests/native-runtime-browser.e2e.mjs
       - name: Stop isolated fixture
         if: always()
