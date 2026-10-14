@@ -2,6 +2,14 @@
 
 **Décision : NO-GO pour la réception Production. Issue #175 non clôturée.** Les corrections ciblées sont proposées dans une seule PR Draft ; aucun fournisseur OS n’est certifié réel. Base : `consolidation/clara-os-clean-base`, SHA `781976a3b53d6a8a53d31a892c33168af0b3b4f5`, après merges #173/#174. Audit du 14 octobre 2026, fuseau Europe/Paris.
 
+## Suite — restauration native sécurisée
+
+Le runtime existant est maintenant rouvert sous contexte canonique **par requête** : sélection explicite workspace/client/projet/fil, Cockpit, Clara, Missions, Journal, Conversations et snapshot Brain. Lectures privées, écritures groupées et contrôle des droits au commit ; aucun retour au singleton global pour ces parcours.
+
+[Registre courant de restauration](native-runtime-restoration.md) : parcours réellement rouverts, preuves positives/négatives, migration additive **013 non appliquée en Production** et vérifications restantes. **GO pour ce socle isolé ; NO-GO Production complète.** Drive, acquisition/transport et dépendances externes non certifiées restent verrouillés. Les données historiques inconnues restent sans attribution automatique.
+
+Le verrouillage total décrit dans la passe `505c4e7` ci-dessous est conservé comme historique de la mesure P0, désormais remplacé uniquement sur les parcours explicitement certifiés par le registre courant. Les autres barrières subsistent.
+
 ## Suite P0 — autorité native, 14 octobre 2026
 
 Le défaut `/api/clara/session` qui renvoyait une mission globale sans session valide est corrigé sur la branche de la **PR #176, conservée en Draft**. [Rapport d'autorité native](native-authority.md) : inventaire Mission/Session/Document, contrat exact, migration additive 012 non exécutée en Production, preuves négatives et limites.

@@ -121,6 +121,7 @@ test('native chat localizes empty requests and network failures in all five sele
  const output=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
  const exported:{exports:Record<string,unknown>}={exports:{}};
  const dependencies:Record<string,unknown>={
+  '@/lib/native/scoped-context':{nativeRequest:async(_request:Request,render:()=>Promise<Response>)=>render(),nativeContext:()=>undefined},
   '@/lib/native/authority':{nativeOperationFence:async()=>null},
   'next/server':{NextResponse:{json:(body:unknown,options?:ResponseInit)=>Response.json(body,options)}},
   'next/headers':{cookies:async()=>({get:()=>({value:locale})})},

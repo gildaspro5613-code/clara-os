@@ -78,7 +78,7 @@ test("server Missions page preserves blocked status without execution metadata a
  const fixture:Mission={id:'owned-blocked',title:'Original title',objective:'Original objective',status:'blocked',priority:'high',createdAt:new Date('2026-10-14'),tasks:[{id:'manual',title:'Original action',completed:false}],progress:0};
  const before=JSON.stringify(fixture),exports:Record<string,unknown>={},require=createRequire(resolve('src/app/missions/page.tsx'));
  const mocks:Record<string,unknown>={
-  "@/lib/native/page-fence":{nativePageFence:async()=>null},
+  "@/lib/native/page-fence":{nativePageFence:async()=>null,nativePage:async(render:()=>Promise<unknown>)=>render()},
   '@/components/layout/MainLayout':{default:()=>null},'@/modules/missions/MissionsStage':{default:()=>null},
   '@/modules/missions/mission-store':{loadMissions:async()=>[fixture]},
   '@/lib/core/operational-context':{resolveOperationalContext:async()=>({session:{mission:fixture}})}

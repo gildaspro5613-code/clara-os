@@ -14,15 +14,20 @@ on:
       - 'src/app/api/internal/prospect-e2e-trace/**'
       - 'src/app/**/*.tsx'
       - 'src/tests/native-authority*'
+      - 'src/tests/native-runtime*'
+      - 'src/tests/helpers/native-runtime*'
+      - 'src/components/native/**'
+      - 'src/app/api/native/**'
       - 'src/tests/operational-reception*'
       - 'db/migrations/012_native_resource_authority.sql'
+      - 'db/migrations/013_native_scoped_runtime.sql'
       - '.github/workflows/native-authority-validation.yml'
 permissions:
   contents: read
 jobs:
   native-authority:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 25
     env:
       CANONICAL_TEST_CONTAINER: clara-canonical-test-postgres
     steps:
@@ -41,9 +46,31 @@ jobs:
           done
           exit 1
       - name: Actual handlers and database isolation, revocation, snapshot and history
-        run: node --import tsx --test src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts
+        run: node --import tsx --test src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts
       - run: npx tsc --noEmit --pretty false
-      - run: npx eslint src/lib/native src/app/api/clara/session src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts
+      - run: npx eslint src/lib/native src/app/api/clara/session src/app/api/native src/components/native src/tests/native-runtime-browser.e2e.mjs src/tests/helpers/native-runtime* src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts
+      - name: Optimized local app build in GitHub only
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+      - run: npx playwright install --with-deps chromium
+      - name: HTTPS isolated native UI and actual authority, no real providers
+        run: |
+          export NATIVE_TEST_DATABASE="native_browser_$(node -e 'process.stdout.write(require("crypto").randomUUID().replaceAll("-",""))')"
+          node --import tsx src/tests/helpers/native-runtime-browser-fixture.mts "$NATIVE_TEST_DATABASE"
+          openssl req -x509 -newkey rsa:2048 -nodes -keyout /tmp/native-runtime-key.pem -out /tmp/native-runtime-cert.pem -subj /CN=localhost -addext 'subjectAltName=DNS:localhost,IP:127.0.0.1' -days 1 > /tmp/native-tls-generation.log 2>&1
+          DATABASE_URL=postgresql://synthetic:synthetic@documents-e2e.invalid/synthetic OPENAI_API_KEY=synthetic-test-only CLARA_AUTH_APP_ORIGIN=https://127.0.0.1:3060 NODE_OPTIONS="--import=$PWD/src/tests/helpers/native-runtime-browser-preload.mjs" node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3058 > /tmp/native-app.log 2>&1 &
+          native_app_pid=$!
+          node src/tests/helpers/native-runtime-tls-proxy.mjs > /tmp/native-tls-proxy.log 2>&1 &
+          native_tls_pid=$!
+          trap 'kill "$native_app_pid" "$native_tls_pid" 2>/dev/null || true' EXIT
+          ready=false
+          for attempt in $(seq 1 60); do
+            if curl --cacert /tmp/native-runtime-cert.pem --fail --silent https://127.0.0.1:3060/clara > /dev/null; then ready=true; break; fi
+            sleep 1
+          done
+          if [ "$ready" != true ]; then cat /tmp/native-app.log; exit 1; fi
+          NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node --test src/tests/native-runtime-browser.e2e.mjs
       - name: Stop isolated fixture
         if: always()
         run: docker rm -f "$CANONICAL_TEST_CONTAINER" || true

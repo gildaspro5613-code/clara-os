@@ -1,9 +1,8 @@
-import { nativePageFence } from "@/lib/native/page-fence";
+import { nativePage } from "@/lib/native/page-fence";
 import MainLayout from "@/components/layout/MainLayout";
 import JournalStage from "@/modules/journal/JournalStage";
 import { getRuntime } from "@/lib/core/runtime";
 import { listBrevoEvents } from "@/lib/connectors/brevo/event-store";
-import { CURRENT_WORKSPACE_ID } from "@/lib/connections/current-workspace";
 import { JournalEntryType, type JournalEntry } from "@/lib/core/journal-entry";
 
 const labels: Record<string,string> = {
@@ -12,13 +11,12 @@ const labels: Record<string,string> = {
 };
 
 export default async function JournalPage() {
-  const nativeLocked=await nativePageFence();
-  if(nativeLocked)return nativeLocked;
+  return nativePage(async()=>{
 
   const runtimeEntries = await getRuntime().getJournal();
   let brevoEntries: JournalEntry[] = [];
   try {
-    const events = await listBrevoEvents(CURRENT_WORKSPACE_ID);
+    const events: Awaited<ReturnType<typeof listBrevoEvents>> = []; // Native Brevo ownership is not certified.
     brevoEntries = events.map(event=>({
       id:`brevo-${event.id}`, type:JournalEntryType.ACTION, createdAt:event.occurredAt,
       summary:`Brevo · ${labels[event.event] ?? event.event}`,
@@ -27,4 +25,5 @@ export default async function JournalPage() {
   } catch { /* Journal remains available even if Brevo storage is unavailable. */ }
   const entries=[...runtimeEntries,...brevoEntries].sort((a,b)=>a.createdAt.getTime()-b.createdAt.getTime());
   return <MainLayout><JournalStage entries={entries}/></MainLayout>;
+  });
 }

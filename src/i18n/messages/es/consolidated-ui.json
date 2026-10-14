@@ -168,5 +168,16 @@
   "technicalDisciplines": "Áreas técnicas",
   "contactName": "Nombre del contacto",
   "nativeAccessLocked": "Acceso nativo bloqueado",
-  "nativeAccessHelp": "Se conservan los recursos históricos. Su propietario y proyecto deben acreditarse explícitamente antes de consultarlos o modificarlos."
+  "nativeAccessHelp": "Se conservan los recursos históricos. Su propietario y proyecto deben acreditarse explícitamente antes de consultarlos o modificarlos.",
+  "nativeContextLabel": "Contexto canónico privado",
+  "nativeNewSession": "Crear un nuevo hilo",
+  "nativeOpenSession": "Abrir este hilo",
+  "nativeSelectionError": "Selección u operación denegada. Compruebe permisos e identificadores.",
+  "nativeSessionId": "Identificador del hilo",
+  "nativeMissionTitle": "Título de la misión",
+  "nativeMissionObjective": "Objetivo de la misión",
+  "nativeCreateMission": "Crear misión",
+  "nativeScopedActiveCount": "Proyecto privado seleccionado: {count, plural, one {# misión activa} other {# misiones activas}}",
+  "nativePendingSelection": "Confirme la selección abriendo o creando un hilo; el contexto activo sigue siendo el indicado arriba.",
+  "nativeProviderBlocked": "Este servicio externo no está disponible en el contexto nativo hasta certificar sus permisos."
 }

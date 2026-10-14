@@ -6,6 +6,8 @@ import {resolve} from "node:path";
 import vm from "node:vm";
 import ts from "typescript";
 import {createNativeAuthority,nativeOperationFence,nativeFailure} from "../lib/native/authority";
+import {nativeRequest,nativeContext,nativeCommand} from "../lib/native/scoped-context";
+import {fields,registryBody,sameOrigin} from "../lib/canonical/http";
 import {RegistryError,registryContext,opaque} from "../lib/canonical/registry";
 
 function compiled(file:string,modules:Record<string,unknown>){
@@ -63,8 +65,25 @@ test('all six native server pages return before invoking any global data loader'
  for(const file of ['src/app/page.tsx','src/app/clara/page.tsx','src/app/missions/page.tsx','src/app/journal/page.tsx','src/app/brain/page.tsx','src/app/conversations/page.tsx']){
   const modules:Record<string,unknown>={};let legacyCalls=0;
   for(const match of readFileSync(file,'utf8').matchAll(/from\s+["']([^"']+)["']/g))modules[match[1]]=new Proxy({},{get:()=>()=>{legacyCalls++;throw Error('Global loader reached');}});
-  const locked={locked:true};modules['@/lib/native/page-fence']={nativePageFence:async()=>locked};
+  const locked={locked:true};modules['@/lib/native/page-fence']={nativePageFence:async()=>locked,nativePage:async()=>locked};
   const page=compiled(file,modules).default as(props:{searchParams:Promise<Record<string,string>>})=>Promise<unknown>;assert.equal(await page({searchParams:Promise.resolve({})}),locked);assert.equal(legacyCalls,0,file);checked++;
  }
  assert.equal(checked,6);
+});
+
+test('reopened chat and native runtime/document handlers still refuse invalid authentication before business code',async()=>{
+ let checked=0;
+ for(const file of ['src/app/api/clara/chat/route.ts','src/app/api/native/runtime/route.ts','src/app/api/native/documents/authorization/route.ts']){
+  const modules:Record<string,unknown>={};let business=0;
+  for(const match of readFileSync(file,'utf8').matchAll(/from\s+["']([^"']+)["']/g))modules[match[1]]=new Proxy({},{get:()=>()=>{business++;throw Error('Business/provider reached');}});
+  modules['@/lib/native/scoped-context']={nativeRequest,nativeContext,nativeCommand};
+  modules['@/lib/native/authority']={nativeSelectors:(await import('../lib/native/authority')).nativeSelectors,nativeFailure};
+  modules['@/lib/canonical/registry']={RegistryError,registryContext,opaque};modules['@/lib/canonical/http']={fields,registryBody,sameOrigin};
+  const handlers=compiled(file,modules);
+  for(const method of ['GET','POST'])if(typeof handlers[method]==='function')for(const cookie of ['', 'clara_auth_session=invalid']){
+   const request=new Request('https://fixture.invalid/api/native/runtime',{method,headers:{cookie,...(method==='POST'?{'Content-Type':'application/json'}:{})},...(method==='POST'?{body:'{"action":"createSession","workspaceId":"foreign","clientId":"foreign","projectId":"foreign"}'}:{})});
+   const response=await (handlers[method] as(request:Request)=>Promise<Response>)(request);assert.equal(response.status,401,file);assert.equal(business,0,file);checked++;
+  }
+ }
+ assert.equal(checked,8);
 });

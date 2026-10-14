@@ -168,5 +168,16 @@
   "technicalDisciplines": "Ambiti tecnici",
   "contactName": "Nome del contatto",
   "nativeAccessLocked": "Accesso nativo bloccato",
-  "nativeAccessHelp": "Le risorse storiche sono conservate. Proprietario e progetto devono essere attestati esplicitamente prima di consultarli o modificarli."
+  "nativeAccessHelp": "Le risorse storiche sono conservate. Proprietario e progetto devono essere attestati esplicitamente prima di consultarli o modificarli.",
+  "nativeContextLabel": "Contesto canonico privato",
+  "nativeNewSession": "Crea un nuovo thread",
+  "nativeOpenSession": "Apri questo thread",
+  "nativeSelectionError": "Selezione o operazione negata. Verifica permessi e identificatori.",
+  "nativeSessionId": "Identificativo del thread",
+  "nativeMissionTitle": "Titolo della missione",
+  "nativeMissionObjective": "Obiettivo della missione",
+  "nativeCreateMission": "Crea missione",
+  "nativeScopedActiveCount": "Progetto privato selezionato: {count, plural, one {# missione attiva} other {# missioni attive}}",
+  "nativePendingSelection": "Conferma la selezione aprendo o creando un thread; il contesto attivo resta quello indicato sopra.",
+  "nativeProviderBlocked": "Questo servizio esterno resta indisponibile nel contesto nativo finché i permessi non saranno certificati."
 }

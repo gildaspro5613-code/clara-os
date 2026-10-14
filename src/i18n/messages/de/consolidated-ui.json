@@ -168,5 +168,16 @@
   "technicalDisciplines": "Technische Bereiche",
   "contactName": "Name der Kontaktperson",
   "nativeAccessLocked": "Nativer Zugriff gesperrt",
-  "nativeAccessHelp": "Historische Ressourcen bleiben erhalten. Eigentümer und Projekt müssen vor dem Lesen oder Ändern ausdrücklich bestätigt werden."
+  "nativeAccessHelp": "Historische Ressourcen bleiben erhalten. Eigentümer und Projekt müssen vor dem Lesen oder Ändern ausdrücklich bestätigt werden.",
+  "nativeContextLabel": "Privater kanonischer Kontext",
+  "nativeNewSession": "Neuen Verlauf erstellen",
+  "nativeOpenSession": "Diesen Verlauf öffnen",
+  "nativeSelectionError": "Auswahl oder Vorgang abgelehnt. Rechte und Kennungen prüfen.",
+  "nativeSessionId": "Verlaufskennung",
+  "nativeMissionTitle": "Missionstitel",
+  "nativeMissionObjective": "Missionsziel",
+  "nativeCreateMission": "Mission erstellen",
+  "nativeScopedActiveCount": "Ausgewähltes privates Projekt: {count, plural, one {# aktive Mission} other {# aktive Missionen}}",
+  "nativePendingSelection": "Bestätigen Sie die Auswahl durch Öffnen oder Erstellen eines Verlaufs; der aktive Kontext bleibt oben angegeben.",
+  "nativeProviderBlocked": "Dieser externe Dienst bleibt im nativen Kontext nicht verfügbar, bis seine Berechtigungen bestätigt sind."
 }

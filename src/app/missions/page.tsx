@@ -1,4 +1,4 @@
-import { nativePageFence } from "@/lib/native/page-fence";
+import { nativePage } from "@/lib/native/page-fence";
 export const dynamic = "force-dynamic";
 
 import MainLayout from "@/components/layout/MainLayout";
@@ -7,8 +7,7 @@ import { loadMissions } from "@/modules/missions/mission-store";
 import { resolveOperationalContext } from "@/lib/core/operational-context";
 
 export default async function MissionsPage() {
-  const nativeLocked=await nativePageFence();
-  if(nativeLocked)return nativeLocked;
+  return nativePage(async()=>{
 
   let missions: Awaited<ReturnType<typeof loadMissions>> = [];
 
@@ -32,4 +31,5 @@ export default async function MissionsPage() {
       <MissionsStage initialMissions={missions} currentMissionId={currentMissionId} />
     </MainLayout>
   );
+  });
 }

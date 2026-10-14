@@ -5,7 +5,16 @@ export interface NativeSelectors { workspaceId: string; clientId: string; projec
 export function nativeSelectors(request: Request) {
   // Parse the existing canonical cookie before any selector or storage access.
   const context = registryContext(request.headers.get("cookie"), "native-selector");
-  const query = new URL(request.url).searchParams;
+  let query = new URL(request.url).searchParams;
+  if(!["workspaceId","clientId","projectId","sessionId"].some(key=>query.has(key))) {
+    const selected=(request.headers.get("cookie")??"").split(";").map(x=>x.trim()).filter(x=>x.startsWith("clara_native_selection="));
+    if(selected.length===1) {
+      try { const value=JSON.parse(decodeURIComponent(selected[0].slice("clara_native_selection=".length)));
+        if(!value||typeof value!=="object"||Array.isArray(value))throw Error();
+        query=new URLSearchParams(value);
+      } catch {throw new RegistryError(400,"EXPLICIT_NATIVE_SCOPE_REQUIRED");}
+    }
+  }
   const selectors = Object.fromEntries(["workspaceId","clientId","projectId","sessionId"].map(key => {
     if(query.getAll(key).length !== 1) throw new RegistryError(400,"EXPLICIT_NATIVE_SCOPE_REQUIRED");
     const value=query.get(key);

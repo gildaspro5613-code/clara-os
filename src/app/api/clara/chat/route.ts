@@ -1,4 +1,4 @@
-import { nativeOperationFence } from "@/lib/native/authority";
+import {nativeRequest,nativeContext} from "@/lib/native/scoped-context";
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { getTranslations } from "next-intl/server";
@@ -53,8 +53,9 @@ const MAX_REASONING_HISTORY = 16;
  * Cockpit and /clara are two views over this same persisted conversation.
  */
 export async function POST(request: Request) {
-  const nativeDenied=await nativeOperationFence(request);
-  if(nativeDenied)return nativeDenied;
+  return nativeRequest(request,()=>scopedChat(request));
+}
+async function scopedChat(request:Request) {
 
   const locale = resolveLocale((await cookies()).get(LOCALE_COOKIE)?.value);
   const ui = await getTranslations("ui");
@@ -110,7 +111,7 @@ export async function POST(request: Request) {
 
     // One user request = one Clara/Brain decision cycle, except bounded
     // commercial commands which keep the existing mission/session unchanged.
-    const workspaceId = operational.acquisition?.workspaceId
+    const workspaceId = nativeContext()?.scope.workspaceId ?? operational.acquisition?.workspaceId
       ?? (typeof persistedBeforeCycle.brainDashboard?.context.metadata?.workspaceId === "string"
         ? persistedBeforeCycle.brainDashboard.context.metadata.workspaceId
         : undefined);
@@ -129,6 +130,7 @@ export async function POST(request: Request) {
     const composed = await composeClaraResponseWithProposal(message, session, locale);
     let responseMessage = composed.content;
     if (composed.generation.status !== "completed" && !isCommercialCommand) {
+      const native=nativeContext();if(native)native.commitOnFailure=true;
       const at=new Date().toISOString();
       session.conversation=[...session.conversation,
         {id:crypto.randomUUID(),role:"user" as const,content:message,createdAt:at},
@@ -149,6 +151,7 @@ export async function POST(request: Request) {
       summary: string;
       expiresAt: string;
     }>;
+    if(nativeContext()&&executionPlan.physicalActions.length>0)return NextResponse.json({success:false,code:"NATIVE_CAPABILITY_NOT_CERTIFIED"},{status:503});
     if (executionPlan.physicalActions.length > 0) {
       const token = readAuthCookie(request.headers.get("cookie"));
       const principal = await resolveSoleAuthenticatedWorkspace(token, "connections:manage");

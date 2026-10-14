@@ -1,3 +1,4 @@
+import {nativeContext} from "@/lib/native/scoped-context";
 /**
  * ============================================
  * CLARA OS
@@ -69,6 +70,7 @@ function formatMemoryEntry(event: Event): string {
  * - limits the amount of memory exposed to the Brain
  */
 export function loadMemory(context: Context): Memory {
+  if(nativeContext())return {shortTerm:[],longTerm:[],facts:[]};
   const currentEvent = context.event;
 
   const relevantEvents = getRememberedEvents()

@@ -1,3 +1,4 @@
+import {nativeContext} from "@/lib/native/scoped-context";
 import type { AcquisitionRecord } from "@/lib/acquisition/acquisition-store";
 import { loadAcquisitionRecord, loadActiveAcquisitionQualifications } from "@/lib/acquisition/acquisition-store";
 import type { ClaraSession } from "./session";
@@ -24,6 +25,7 @@ function stringMetadata(value: unknown): string | null {
  * It never merges sessions and never persists the projection into `default`.
  */
 export async function resolveOperationalContext(): Promise<OperationalContext> {
+  const native=nativeContext();if(native)return {sessionKey:native.scope.sessionId,session:native.session,acquisition:null};
   // Resume the most recently persisted operational thread first. Mission
   // orchestration is a fallback for work that has no durable Clara session yet.
   const recentOwner = await loadMostRecentMissionSession(true).catch(() => null);

@@ -168,5 +168,16 @@
   "technicalDisciplines": "Domaines techniques",
   "contactName": "Nom du contact",
   "nativeAccessLocked": "Accès natif verrouillé",
-  "nativeAccessHelp": "Les ressources historiques sont conservées. Leur propriétaire et leur projet doivent être attestés explicitement avant toute consultation ou modification."
+  "nativeAccessHelp": "Les ressources historiques sont conservées. Leur propriétaire et leur projet doivent être attestés explicitement avant toute consultation ou modification.",
+  "nativeContextLabel": "Contexte canonique privé",
+  "nativeNewSession": "Créer un nouveau fil",
+  "nativeOpenSession": "Ouvrir ce fil",
+  "nativeSelectionError": "Sélection ou opération refusée. Vérifiez vos droits et les identifiants.",
+  "nativeSessionId": "Identifiant du fil",
+  "nativeMissionTitle": "Titre de la mission",
+  "nativeMissionObjective": "Objectif de la mission",
+  "nativeCreateMission": "Créer la mission",
+  "nativeScopedActiveCount": "Projet privé sélectionné : {count, plural, one {# mission active} other {# missions actives}}",
+  "nativePendingSelection": "Confirmez cette sélection en ouvrant ou créant un fil ; le contexte actif reste celui indiqué ci-dessus.",
+  "nativeProviderBlocked": "Ce service externe reste indisponible dans le contexte natif tant que ses autorisations ne sont pas certifiées."
 }

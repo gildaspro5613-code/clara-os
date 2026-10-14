@@ -1,4 +1,5 @@
-import { nativePageFence } from "@/lib/native/page-fence";
+import {nativeContext} from "@/lib/native/scoped-context";
+import { nativePage } from "@/lib/native/page-fence";
 import { getTranslations } from "next-intl/server";
 import CommercialDraftEditor from "@/components/cockpit/panels/CommercialDraftEditor";
 import { buildCommercialQualificationDraft } from "@/lib/acquisition/commercial-communication-draft";
@@ -19,8 +20,7 @@ interface ClaraPageProps {
 export default async function ClaraPage({
   searchParams,
 }: ClaraPageProps) {
-  const nativeLocked=await nativePageFence();
-  if(nativeLocked)return nativeLocked;
+  return nativePage(async()=>{
 
   const t = await getTranslations("pages");
   const ui = await getTranslations("ui");
@@ -97,9 +97,10 @@ export default async function ClaraPage({
             initialMessages={session.conversation}
             userFirstName={session.user.firstName}
           />
-          <ClaraVoiceWidget />
+          {nativeContext()?<p className="text-sm text-white/60">{ui("nativeProviderBlocked")}</p>:<ClaraVoiceWidget />}
         </div>
       </div>
     </MainLayout>
   );
+  });
 }

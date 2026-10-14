@@ -1,3 +1,4 @@
+import type {Mission} from "@/modules/missions/types/Mission";
 import EmailSummaryPanel from "../panels/EmailSummaryPanel";
 import AgendaWidget from "./agenda/AgendaWidget";
 import MissionWidget from "./missions/MissionWidget";
@@ -23,16 +24,19 @@ import { getTranslations } from "next-intl/server";
 
 interface CockpitWidgetsProps {
   session: ClaraSession;
+  nativeMissions?:Mission[];
   acquisition?: AcquisitionRecord | null;
 }
 
-export default async function CockpitWidgets({ session, acquisition }: CockpitWidgetsProps) {
+export default async function CockpitWidgets({ session, acquisition,nativeMissions }: CockpitWidgetsProps) {
   const t = await getTranslations("cockpitUi");
+  const ui = await getTranslations("ui");
+  const providerBlocked = <p className="rounded-xl border border-white/10 p-5 text-sm text-white/60">{ui("nativeProviderBlocked")}</p>;
   const workspaceId = process.env.CLARA_MD_WORKSPACE_ID?.trim()
     || process.env.CLARA_WORKSPACE_ID?.trim()
     || "melodie-digital";
 
-  const [acquisitionDecisions, acquisitionQualifications, missions] = await Promise.all([
+  const [acquisitionDecisions, acquisitionQualifications, missions] = nativeMissions ? [[],[],nativeMissions] : await Promise.all([
     loadAcquisitionDecisionQueue(workspaceId),
     loadActiveAcquisitionQualifications(workspaceId),
     loadMissions().catch(() => []),
@@ -82,20 +86,20 @@ export default async function CockpitWidgets({ session, acquisition }: CockpitWi
             <ConversationsPanel session={session} />
           </div>
           <div className="min-w-0">
-            <AgendaWidget />
+            {nativeMissions!==undefined?providerBlocked:<AgendaWidget />}
           </div>
         </div>
 
         <div className="mt-5 grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-[1.35fr_1fr_1fr]">
           <div className="min-w-0 md:col-span-2 xl:col-span-1">
-            <MissionWidget
+            <MissionWidget nativeScope={nativeMissions!==undefined}
               mission={currentMission}
               activeCount={orchestration.active.length}
               blockedCount={orchestration.blocked.length}
             />
           </div>
-          <div className="min-w-0"><WazeWidget /></div>
-          <div className="min-w-0"><WeatherWidget /></div>
+          <div className="min-w-0">{nativeMissions!==undefined?providerBlocked:<WazeWidget />}</div>
+          <div className="min-w-0">{nativeMissions!==undefined?providerBlocked:<WeatherWidget />}</div>
         </div>
 
         <div className="mt-5">

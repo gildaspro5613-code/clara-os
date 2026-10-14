@@ -1,0 +1,30 @@
+'use client';
+import {useEffect,useRef,useState} from 'react';
+import {useTranslations} from 'next-intl';
+type Item={id:string;displayName:string};
+export default function NativeScopeSelector(){
+ const t=useTranslations('ui'),generation=useRef(0);
+ const [workspaces,setWorkspaces]=useState<string[]>([]),[clients,setClients]=useState<Item[]>([]),[projects,setProjects]=useState<Item[]>([]),[sessions,setSessions]=useState<{sessionId:string;updatedAt:string}[]>([]),[currentScope,setCurrentScope]=useState(''),[activeSessionId,setActiveSessionId]=useState('');
+ const [workspaceId,setWorkspace]=useState(''),[clientId,setClient]=useState(''),[projectId,setProject]=useState(''),[sessionId,setSession]=useState('');
+ const [message,setMessage]=useState(''),[busy,setBusy]=useState(false),[selected,setSelected]=useState(false),[canWrite,setCanWrite]=useState(false),[title,setTitle]=useState(''),[objective,setObjective]=useState('');
+ useEffect(()=>{let live=true;void fetch('/api/canonical/registry').then(r=>r.json()).then(b=>{if(live&&b.success)setWorkspaces(b.data.map((row:{workspace_id:string})=>row.workspace_id));}).catch(()=>{});void fetch('/api/native/runtime').then(r=>r.json()).then(b=>{if(live&&b.success){setSelected(true);setCanWrite(b.permissions?.write===true);setSession(b.data.sessionId);setActiveSessionId(b.data.sessionId);setCurrentScope([b.data.workspaceId,b.data.clientId,b.data.projectId].join(" / "));}}).catch(()=>{});return()=>{live=false;};},[]);
+ async function registry(action:string,scope:Record<string,string>){const r=await fetch('/api/canonical/registry',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...scope})});const b=await r.json();if(!r.ok||!b.success)throw Error();return b.data as Item[];}
+ async function chooseWorkspace(value:string){const version=++generation.current;setWorkspace(value);setClient('');setProject('');setSession('');setSelected(false);setCanWrite(false);setClients([]);setProjects([]);setMessage('');if(!value)return;try{const data=await registry('list',{workspaceId:value});if(version===generation.current)setClients(data);}catch{if(version===generation.current)setMessage(t('nativeSelectionError'));}}
+ async function chooseClient(value:string){const version=++generation.current;setClient(value);setProject('');setSession('');setSelected(false);setCanWrite(false);setProjects([]);setMessage('');if(!value)return;try{const data=await registry('listProjects',{workspaceId,clientId:value});if(version===generation.current)setProjects(data);}catch{if(version===generation.current)setMessage(t('nativeSelectionError'));}}
+ async function chooseProject(value:string){const version=++generation.current;setProject(value);setSession('');setSessions([]);setSelected(false);setCanWrite(false);setMessage('');if(!value)return;try{const r=await fetch('/api/native/runtime?'+new URLSearchParams({workspaceId,clientId,projectId:value,sessionId:'native:listing',list:'1'}));const b=await r.json();if(!r.ok||!b.success)throw Error();if(version===generation.current){setSessions(b.data.sessions);setCanWrite(b.data.canWrite===true);}}catch{if(version===generation.current)setMessage(t('nativeSelectionError'));}}
+ async function command(body:Record<string,string>){setBusy(true);setMessage('');try{const response=await fetch('/api/native/runtime',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const result=await response.json();if(!response.ok||!result.success)throw Error();location.reload();}catch{setMessage(t('nativeSelectionError'));}finally{setBusy(false);}}
+ return <section aria-label={t('nativeContextLabel')} className="border-b border-white/10 p-4 text-sm text-white">
+ <p>{t('nativeContextLabel')}{currentScope?' · '+currentScope+' · '+activeSessionId:''}</p>
+ {!selected&&projectId&&<p>{t("nativePendingSelection")}</p>}
+ <div className="mt-2 flex flex-wrap gap-3">
+ <label>{t('workspace')} <select className="bg-slate-900" disabled={busy} value={workspaceId} onChange={e=>void chooseWorkspace(e.target.value)}><option value="">{t('choose')}</option>{workspaces.map(w=><option key={w}>{w}</option>)}</select></label>
+ <label>{t('client')} <select className="bg-slate-900" disabled={busy||!workspaceId} value={clientId} onChange={e=>void chooseClient(e.target.value)}><option value="">{t('chooseAClient')}</option>{clients.map(c=><option key={c.id} value={c.id}>{c.displayName}</option>)}</select></label>
+ <label>{t('project')} <select className="bg-slate-900" disabled={busy||!clientId} value={projectId} onChange={e=>void chooseProject(e.target.value)}><option value="">{t('chooseAProject')}</option>{projects.map(p=><option key={p.id} value={p.id}>{p.displayName}</option>)}</select></label>
+ <button disabled={busy||!projectId||!canWrite} onClick={()=>void command({action:'createSession',workspaceId,clientId,projectId})}>{t('nativeNewSession')}</button>
+ <label>{t('nativeSessionId')} <select className="bg-slate-900" value={sessionId} disabled={busy||!projectId} onChange={e=>setSession(e.target.value)}><option value="">{t("choose")}</option>{sessions.map(s=><option key={s.sessionId} value={s.sessionId}>{s.sessionId}</option>)}</select></label>
+ <button disabled={busy||!projectId||!sessionId} onClick={()=>void command({action:'selectSession',workspaceId,clientId,projectId,sessionId})}>{t('nativeOpenSession')}</button>
+ </div>
+ {selected&&<form className="mt-3 flex flex-wrap gap-3" onSubmit={e=>{e.preventDefault();void command({action:'createMission',title,objective});}}><label>{t('nativeMissionTitle')} <input required maxLength={160} className="bg-slate-900" value={title} onChange={e=>setTitle(e.target.value)}/></label><label>{t('nativeMissionObjective')} <input required maxLength={4000} className="bg-slate-900" value={objective} onChange={e=>setObjective(e.target.value)}/></label><button disabled={busy||!canWrite}>{t('nativeCreateMission')}</button></form>}
+ {message&&<p role="alert">{message}</p>}
+ </section>;
+}

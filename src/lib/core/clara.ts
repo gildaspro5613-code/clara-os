@@ -1,3 +1,4 @@
+import {nativeContext} from "@/lib/native/scoped-context";
 /**
  * ============================================
  * CLARA OS
@@ -61,7 +62,7 @@ export class Clara {
       ? await loadMission(this.session.mission.id)
       : null;
 
-    if (!persistedMission && !this.sessionKey.startsWith("external:")) {
+    if (!persistedMission && !this.sessionKey.startsWith("external:") && !nativeContext()) {
       const candidate=await getCurrentMission();
       const owner=candidate ? await loadSessionOwningMission(candidate.id) : null;
       persistedMission=owner?.key.startsWith("external:") ? null : candidate;

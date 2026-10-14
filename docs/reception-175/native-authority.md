@@ -1,5 +1,7 @@
 # P0 — Autorité serveur native, suite #175 / PR #176
 
+**Historique du correctif `505c4e7`.** Pour le statut courant des parcours progressivement rouverts, voir [native-runtime-restoration.md](native-runtime-restoration.md). Les conditions d’identité/appartenance/version restent obligatoires ; le verrouillage total décrit ici concerne la passe précédente.
+
 **Décision : NO-GO pour la réception opérationnelle.** Le défaut de lecture anonyme de `/api/clara/session` est corrigé sur la branche Draft #176. Ce correctif est conservatoire : les opérations et pages utilisant encore le runtime global sont verrouillées, y compris pour un utilisateur authentifié. Il ne constitue pas une réception fonctionnelle native multi-utilisateur.
 
 ## Inventaire vérifié et propriétaire

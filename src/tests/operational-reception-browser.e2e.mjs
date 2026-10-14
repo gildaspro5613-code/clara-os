@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {chromium} from 'playwright';
 const origin=process.env.DOCUMENTS_E2E_ORIGIN;
 if(!origin||!['localhost','127.0.0.1'].includes(new URL(origin).hostname))throw new Error('Isolated localhost server required');
-const privateMarkers=['PRIVATE_FULL_EMAIL_BODY','PRIVATE_EMAIL_SNIPPET','PRIVATE_DRAFT_BODY','PRIVATE_REQUEST_SOURCE','Source mission 0','Synthetic draft subject','sender@example.invalid'];
+const privateMarkers=['PRIVATE_LEGACY_HISTORY','PRIVATE_FULL_EMAIL_BODY','PRIVATE_EMAIL_SNIPPET','PRIVATE_DRAFT_BODY','PRIVATE_REQUEST_SOURCE','Source mission 0','Synthetic draft subject','sender@example.invalid'];
 // The populated fixture deliberately contains global/private data. These are
 // actual server requests: no API fulfill/mocks can bypass the production fence.
 test('native server pages: no private HTML/RSC leakage across six pages and five locales',async()=>{
@@ -38,7 +38,7 @@ test('real native HTTP rejects missing/invalid cookies and forged ownership with
   const body=await response.text();for(const marker of privateMarkers)assert.ok(!body.includes(marker));assert.ok(!body.includes('mission-0'));checked++;
  }
  // A well-formed but unknown opaque cookie is not an authenticated session.
- const unknown=await fetch(origin+'/api/clara/session?workspaceId=foreign&clientId=c&projectId=p&sessionId=native:victim',{headers:{cookie:'clara_auth_session='+'A'.repeat(43)}});
+ const unknown=await fetch(origin+'/api/clara/session?workspaceId=foreign&clientId=c&projectId=p&sessionId=native:victim',{headers:{cookie:'clara_auth_session='+'C'.repeat(43)}});
  assert.equal(unknown.status,403);assert.deepEqual(await unknown.json(),{success:false,code:'NATIVE_SCOPE_DENIED'});
  console.info(`Checked ${checked} unauthenticated HTTP refusals and one unknown session.`);
 });

@@ -1,3 +1,4 @@
+import {nativeContext} from "@/lib/native/scoped-context";
 /**
  * ============================================
  * CLARA OS
@@ -180,6 +181,7 @@ export async function buildBrainSources(
   event: Event,
   now: Date,
 ): Promise<BrainSourceContext[]> {
+  if(nativeContext())return brainSources.filter(source=>source.shouldLoad(event)).map(source=>({source:source.id,available:false,data:null,summary:"Native source authorization is not certified; no provider was queried."}));
   const projectSource=liveProjectSource(event);
   const contexts: BrainSourceContext[] = projectSource ? [projectSource] : [];
 
