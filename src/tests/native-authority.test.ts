@@ -87,3 +87,10 @@ test('reopened chat and native runtime/document handlers still refuse invalid au
  }
  assert.equal(checked,8);
 });
+
+test('server instrumentation never imports or starts a global business runtime',async()=>{
+ let calls=0;
+ const startupExports=compiled('instrumentation.ts',{'./src/lib/core/runtime':{startRuntime:async()=>{calls++;throw Error('Global startup forbidden');}}});
+ await (startupExports.register as()=>Promise<void>)();assert.equal(calls,0);
+ assert.ok(!readFileSync('instrumentation.ts','utf8').includes('import('));
+});

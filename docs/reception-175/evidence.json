@@ -439,13 +439,13 @@
       {
         "id": "native-authority-runtime",
         "counts": {
-          "tests": 9,
-          "pass": 9,
+          "tests": 10,
+          "pass": 10,
           "fail": 0,
           "skipped": 0
         },
         "scope": "actual PostgreSQL, native Core/stores and actual negative handlers",
-        "completedAt": "2026-10-14T16:39:34.555213+02:00",
+        "completedAt": "2026-10-14T17:25:13.134611+02:00",
         "result": "PASS"
       },
       {
@@ -521,7 +521,7 @@
         "result": "PASS"
       }
     ],
-    "totalTests": 125,
+    "totalTests": 126,
     "build": "PASS_WEBPACK_LOCAL_ONLY",
     "typescript": "PASS",
     "targetedLint": "PASS",
@@ -587,8 +587,10 @@
       ".github/workflows/native-authority-validation.yml",
       "db/migrations/013_native_scoped_runtime.sql",
       "docs/reception-175/README.md",
+      "docs/reception-175/evidence.json",
       "docs/reception-175/native-authority.md",
       "docs/reception-175/native-runtime-restoration.md",
+      "instrumentation.ts",
       "src/app/api/clara/chat/route.ts",
       "src/app/api/native/documents/authorization/route.ts",
       "src/app/api/native/runtime/route.ts",
@@ -633,6 +635,16 @@
       "src/tests/native-runtime-postgres.test.ts",
       "src/tests/operational-reception-browser.e2e.mjs",
       "src/tests/operational-reception.test.tsx"
-    ]
+    ],
+    "startupGlobalRuntime": "REMOVED_AND_TESTED",
+    "ciRegressionFoundAndCorrected": {
+      "failedRuns": [
+        38587130211,
+        38588435236
+      ],
+      "cause": "Turbopack startup instrumentation hydrated global default runtime; strict fixture correctly rejected it",
+      "correction": "instrumentation never imports/starts business runtime; authority test and strict fixture retained"
+    },
+    "localTurbopackBuild": "BLOCKED_LOCAL_FONT_MOCK_FETCH_PANIC; default build passes in GitHub, local webpack passes"
   }
 }

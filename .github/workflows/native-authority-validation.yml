@@ -4,6 +4,7 @@ on:
     branches: [consolidation/clara-os-clean-base]
     paths:
       - 'src/lib/native/**'
+      - 'instrumentation.ts'
       - 'src/app/api/clara/**'
       - 'src/app/api/missions/**'
       - 'src/app/api/documents/**'

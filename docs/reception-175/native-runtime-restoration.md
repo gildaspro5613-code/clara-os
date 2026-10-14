@@ -24,6 +24,7 @@ Le contexte actif reste affiché pendant la préparation d'une autre sélection 
 
 - Identité : cookie/digest, identités vérifiées, memberships et ACL canoniques existants. Les noms, emails, titres et missions récentes ne participent pas à l'autorité.
 - Stores Mission/Session/Journal : lecture de données autorisées et écritures préparées dans la requête ; aucune requête au store global dans ce mode.
+- Démarrage : `instrumentation.register` ne charge ni ne démarre le runtime global, sans option de contournement. La CI stricte avait révélé cet ancien bootstrap, absent du démarrage webpack local ; il est désormais explicitement testé.
 - Runtime : instance Clara du fil choisi ; aucun repli `getCurrentMission` global. `dispatchEvent` injecte le contexte canonique serveur ; aucune confiance dans un contexte fourni dans le message.
 - Le Cockpit transmet les missions déjà autorisées à ses composants asynchrones : ceux-ci ne relancent pas de loaders globaux après le rendu du parent.
 - Les nouvelles ressources sont créées dans les tables métier existantes, avec IDs `native:*` générés par le serveur et attestation liée au principal dès l'origine. Le préfixe **n'accorde aucun droit** : les checks SQL restent nécessaires. Les anciens stores sans contexte excluent/refusent ce namespace, y compris journal et mutations, pour protéger aussi le raccord externe.
@@ -64,11 +65,13 @@ Acquisition, brouillons commerciaux, approbations de transport, navigation, agen
 
 ## Vérifications exécutées
 
-- **9 tests d'autorité/runtime**, zéro ignoré : PostgreSQL réel, deux utilisateurs avec ACL ouvertes sur les mêmes projets, deux clients et trois projets ; création, reprise/stop Core, journal, isolation, écriture concurrente CAS, révocation avant commit, utilisateur devenu lecture seule, références de mission multi-fils, namespace protégé et histoire inconnue préservée.
+- **10 tests d'autorité/runtime**, zéro ignoré : PostgreSQL réel, deux utilisateurs avec ACL ouvertes sur les mêmes projets, deux clients et trois projets ; création, reprise/stop Core, journal, isolation, écriture concurrente CAS, révocation avant commit, utilisateur devenu lecture seule, références de mission multi-fils, namespace protégé et histoire inconnue préservée.
 - **1 E2E HTTPS réel local**, APIs non mockées : sélection/création par l'UI, mission et chat persistés, 30 visites (six pages × cinq langues), second utilisateur avec mission distincte dans le même projet, confirmation puis réouverture de tâche manuelle réellement persistées ; mutation inter-utilisateurs, lecture inter-projets et origine étrangère refusées. Aucune tentative de loader SQL global acceptée ou masquée. **OpenAI seul simulé**, aucun fournisseur réel.
 - **2 E2E négatifs**, 30 visites anonymes, 20 refus HTTP sans/invalide cookie et un token opaque inconnu ; absence de fuite HTML/RSC.
 - **36 tests P0**, **11 canonique/OS↔Live/OIDC** (dont 18 scénarios/checks de concurrence), **29 Documents/PDF**, **29 i18n/rendu/voix/commercial/OAuth**, **8 browser UI**, tous passés sans ignoré. Les adapters/UI documentaires avec mocks ne certifient pas une lecture Drive native réelle.
 - Build webpack local, TypeScript, ESLint ciblé et contrôle offline d'approbation physique : succès. Lint global : mêmes **10 erreurs/14 warnings** ; Vitest : mêmes **20 succès, 2 échecs, 1 suite en erreur** que la base, mêmes fichiers documentés précédemment. Aucune décision Brain changée pour masquer ces dettes.
+
+Le build Turbopack par défaut passe dans GitHub ; son exécution locale est bloquée par le fetch du mock de police (panic Turbopack). Le bootstrap global révélé par la CI a été supprimé du code, sans assouplir la fixture.
 
 Preuves et horodatages : section `nativeRuntimeRestoration` de `evidence.json`. Le workflow Native teste PostgreSQL et le vrai navigateur avec serveur HTTPS local, certificat de test épinglé et OpenAI simulé ; aucun secret ni déploiement Vercel requis.
 
