@@ -1,3 +1,5 @@
+> **Lot 1 — GO en isolation, NO-GO Production** : [continuité commerciale et recette](lot-1-commercial-continuity.md), [preuves](lot-1-evidence.json), [politique permanente](non-regression-policy.md). Les rapports antérieurs ci-dessous décrivent leurs commits et verrouillages historiques.
+
 > Audit final préproduction : [rapport et matrice GO/NO-GO](preproduction-audit.md), [preuves](preproduction-evidence.json). NO-GO Production ; gestion Google/Brevo/Make fermée jusqu’à certification canonique. Les sections antérieures ci-dessous conservent leurs preuves datées.
 
 # Réception opérationnelle Clara OS — #175
