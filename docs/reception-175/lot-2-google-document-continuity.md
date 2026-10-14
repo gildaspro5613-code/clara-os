@@ -77,7 +77,7 @@ Comptages par commande, non cumulés : certains tests sont communs à plusieurs 
 
 Lot 1 : contacts attestés, mission liée, dialogue, Journal privé, préparation/édition de brouillon, Cockpit, rechargement et reprise après logout/nouvelle session ; refus inter-utilisateurs et projets, révocation et conflits de brouillon. **Aucun envoi commercial.** OS↔Live : 4 tests, dont 18 ordonnancements/checks réels PostgreSQL/MongoDB en isolation ; aucun changement Live.
 
-TypeScript et lint ciblé réussis. Build webpack optimisé réussi, polices Google substituées localement ; aucun déploiement. Les workflows GitHub seront consignés séparément après publication.
+TypeScript et lint ciblé réussis. Build webpack optimisé réussi, polices Google substituées localement ; aucun déploiement. Les six workflows GitHub sont réussis sur `cb7bc6f886c69c12ca4d95b63abdc42ac796947e` : natif, Documents, i18n, Microsoft, auth/workspaces et P0. Le workflow natif a aussi exécuté le build Next par défaut en GitHub et les trois E2E. Liens dans le JSON de preuves. La dernière mise à jour après ces contrôles ne modifie que ce rapport et les preuves, sans changement applicatif ou de tests.
 
 Lint global : **10 erreurs, 13 avertissements préexistants** ; les 18 fichiers portant ces diagnostics sont identiques byte à byte à `334c8ec` (hashs dans les preuves). Vitest historique : **20 succès, 2 échecs, 1 suite en erreur**, mêmes trois fichiers que le lot 1 : comptage SQL acquisition, attente de décision spécialiste, mock hoist dispatchEvent. Aucun changement Brain ni test désactivé pour les rendre verts.
 
@@ -107,7 +107,7 @@ Retour arrière non destructif : désactiver le raccord par retour au code sécu
 | CLARA_AUTH_APP_ORIGIN, CLARA_CREDENTIALS_ENCRYPTION_KEY et URL SQL serveur existante | Injectés pour fixtures | Noms/privilèges présents et corrects à vérifier ; aucun changement effectué |
 | OPENAI_API_KEY et fournisseur de génération existant | Simulés, prompts contrôlés | Certification réelle sous autorisation, aucun appel ici |
 | Revocations et documents partagés | Partage direct et retrait de permission testés | Vérifier les cas Google réels et indisponibilités |
-| Publications GitHub / builds Vercel | PR Draft, contrôle à consigner | Aucun merge, aucune Preview/Production, configuration inchangée |
+| Publications GitHub / builds Vercel | Six workflows réussis ; Vercel Canceled by Ignored Build Step ; zéro déploiement GitHub sur le SHA contrôlé | Aucun merge, aucune Preview/Production, configuration inchangée |
 
 Limites volontairement fermées : utilisateur sans Google identity canonique ou avec plusieurs subjects ambigus ; connexion/document historique non prouvé ; plus de 100 attestations à examiner par batch ; ensembles de permissions paginés ou sans permission ID du principal/anyone prouvée (groupes/domaines non certifiés) ; écritures Drive et Gmail ; transfert de propriétaire/client/projet d’un fichier déjà attesté (revue séparée requise, sans réaffectation implicite). Le diagnostic manque d'autorité reste un refus, sans déduire d'un nom/email/dossier ni bloquer les fonctions commerciales déjà autorisées.
 

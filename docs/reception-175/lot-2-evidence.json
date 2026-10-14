@@ -304,12 +304,47 @@
     "integrationConcurrencyChecks": 18
   },
   "github": {
-    "publicationStatus": "PENDING_PUBLICATION_AND_CHECKS",
-    "prepublicationVercelStatus": {
-      "sha": "334c8ec1693337cbc89068863b01f3192da45bde",
+    "publicationStatus": "PUBLISHED_DRAFT",
+    "verifiedCommit": "cb7bc6f886c69c12ca4d95b63abdc42ac796947e",
+    "allSixWorkflowsPassed": true,
+    "checks": [
+      {
+        "workflow": "Authenticated workspace validation",
+        "conclusion": "SUCCESS",
+        "url": "https://github.com/gildaspro5613-code/clara-os/actions/runs/38631111235/job/116082676316"
+      },
+      {
+        "workflow": "Clara OS i18n consolidation validation",
+        "conclusion": "SUCCESS",
+        "url": "https://github.com/gildaspro5613-code/clara-os/actions/runs/38631111215/job/116082676680"
+      },
+      {
+        "workflow": "Documents Workspace V2 validation",
+        "conclusion": "SUCCESS",
+        "url": "https://github.com/gildaspro5613-code/clara-os/actions/runs/38631111219/job/116082675981"
+      },
+      {
+        "workflow": "Microsoft connector validation",
+        "conclusion": "SUCCESS",
+        "url": "https://github.com/gildaspro5613-code/clara-os/actions/runs/38631111255/job/116082676796"
+      },
+      {
+        "workflow": "Native resource authority validation",
+        "conclusion": "SUCCESS",
+        "url": "https://github.com/gildaspro5613-code/clara-os/actions/runs/38631111481/job/116082679897"
+      },
+      {
+        "workflow": "Production P0 validation",
+        "conclusion": "SUCCESS",
+        "url": "https://github.com/gildaspro5613-code/clara-os/actions/runs/38631111281/job/116082676416"
+      }
+    ],
+    "vercel": {
       "state": "success",
-      "description": "Canceled by Ignored Build Step"
-    }
+      "description": "Canceled by Ignored Build Step",
+      "githubDeploymentsForVerifiedCommit": 0
+    },
+    "finalDocumentationOnlyUpdate": true
   },
   "governance": {
     "merge": false,
