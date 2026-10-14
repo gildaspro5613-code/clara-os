@@ -9,6 +9,8 @@
  * ============================================
  */
 
+import { isProjectContext } from "./live-project-context";
+import type { Event } from "@/types";
 import { GoogleDriveEngine } from "@/lib/connectors/internal/google/drive/google-drive-engine";
 
 export interface BrainDriveFile {
@@ -64,10 +66,12 @@ export async function buildDriveContext(
   _event: {
     type: string;
     payload?: unknown;
+    context?: Event["context"];
   },
   _now: Date,
   query: string,
 ): Promise<BrainDriveContext> {
+  if (isProjectContext(_event)) return {available:false,source:"google-drive",query,files:[],error:"Project documents must come from explicitly associated, authorized context; global Drive search disabled."};
   try {
     const engine = new GoogleDriveEngine();
 

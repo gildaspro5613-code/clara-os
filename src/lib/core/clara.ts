@@ -9,6 +9,8 @@
  * ============================================
  */
 
+import { sameConversationScope } from "./conversation-context";
+import { isLiveAdvice } from "@/lib/brain/live-project-context";
 import { Event } from "@/types";
 import { EventType } from "@/types/event";
 
@@ -27,11 +29,11 @@ import {
   canExecuteAutonomously,
 } from "@/modules/missions";
 import { getCurrentMission } from "@/modules/missions/current-mission";
-import { dispatchEvent } from "./event-bus";
 import { Journal } from "./journal";
 import type { JournalEntry } from "./journal-entry";
 import {
   loadSession,
+  loadSessionOwningMission,
   saveSession,
 } from "./store/session-store";
 import { loadMission } from "@/modules/missions/mission-store";
@@ -49,15 +51,20 @@ export class Clara {
   private runtime: Runtime | null = null;
   private readonly journal = new Journal();
 
-  private async hydrateSession(): Promise<void> {
+  private async hydrateSession(event?: Event): Promise<void> {
     this.session = await loadSession(this.sessionKey);
+    const previous=this.session.brainDashboard?.context.event;
+    if(event?.context?.productId && previous && !sameConversationScope(previous,event))
+      this.session=createSession();
 
     let persistedMission = this.session.mission
       ? await loadMission(this.session.mission.id)
       : null;
 
-    if (!persistedMission) {
-      persistedMission = await getCurrentMission();
+    if (!persistedMission && !this.sessionKey.startsWith("external:")) {
+      const candidate=await getCurrentMission();
+      const owner=candidate ? await loadSessionOwningMission(candidate.id) : null;
+      persistedMission=owner?.key.startsWith("external:") ? null : candidate;
     }
 
     if (persistedMission) {
@@ -107,7 +114,8 @@ export class Clara {
   }
 
   public async processEvent(event: Event): Promise<ClaraSession> {
-    await this.hydrateSession();
+    await this.hydrateSession(event);
+    if(event.context?.productId)this.session.user={firstName:null};
 
     this.session = await orchestrate(this.session, event);
 
@@ -138,7 +146,7 @@ export class Clara {
     let autonomousTasksExecuted = 0;
 
     while (
-      this.session.mission &&
+      this.session.mission && !isLiveAdvice(event) &&
       autonomousTasksExecuted < MAX_AUTONOMOUS_TASKS_PER_EVENT
     ) {
       const nextPendingTask = this.session.mission.tasks.find(

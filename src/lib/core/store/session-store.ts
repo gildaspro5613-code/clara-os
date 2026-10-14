@@ -43,11 +43,12 @@ export async function saveSession(
  * mission. This preserves the user's active Clara thread across a page refresh
  * instead of recomputing focus from the global mission priority queue.
  */
-export async function loadMostRecentMissionSession(): Promise<StoredClaraSession | null> {
+export async function loadMostRecentMissionSession(excludeExternal = false): Promise<StoredClaraSession | null> {
   const rows = await sql`
     SELECT id, data
     FROM clara_sessions
     WHERE data->'mission'->>'id' IS NOT NULL
+      AND (${excludeExternal} = false OR id NOT LIKE 'external:%')
     ORDER BY updated_at DESC
     LIMIT 1
   ` as Array<{ id: string; data: ClaraSession }>;

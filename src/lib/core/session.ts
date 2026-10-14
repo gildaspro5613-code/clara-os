@@ -7,6 +7,7 @@
 // Represents Clara's current working session.
 // ============================================
 
+import type { ResponseGeneration } from "@/lib/brain/response-generation";
 import type { Recommendation } from "@/types";
 import type { BrainSourceContext } from "@/lib/brain/brain-source";
 import type { BrainDashboard } from "@/lib/brain/dashboard";
@@ -22,6 +23,7 @@ export interface ClaraConversationMessage {
   role: "user" | "clara";
   content: string;
   createdAt: string;
+  generation?: ResponseGeneration;
 }
 
 function resolveDefaultUser(): ClaraUserIdentity {

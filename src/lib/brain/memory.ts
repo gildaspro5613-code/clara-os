@@ -9,7 +9,9 @@
  * ============================================
  */
 
-import { Context, Memory } from "@/types";
+import { sameConversationScope } from "@/lib/core/conversation-context";
+import { object } from "./live-project-context";
+import { Context, Memory, type Event } from "@/types";
 import { getRememberedEvents } from "./memory-store";
 
 /**
@@ -44,13 +46,11 @@ function isRelevantToContext(
 /**
  * Creates a readable memory entry from an event.
  */
-function formatMemoryEntry(event: {
-  id: string;
-  type: string;
-  source: string;
-  timestamp: Date;
-  payload?: unknown;
-}): string {
+function formatMemoryEntry(event: Event): string {
+  if(event.context?.productId){
+    const message=object(event.payload).message;
+    return `[${event.timestamp.toISOString()}] Événement antérieur (pas une preuve du statut actuel). ${typeof message==='string' ? message.slice(0,2000) : ''}`;
+  }
   const payload =
     event.payload !== undefined
       ? ` | payload: ${JSON.stringify(event.payload)}`
@@ -73,6 +73,8 @@ export function loadMemory(context: Context): Memory {
 
   const relevantEvents = getRememberedEvents()
     .filter((event) => event.id !== currentEvent.id)
+    .filter(event => currentEvent.context?.productId || event.context?.productId
+      ? sameConversationScope(event,currentEvent) : true)
     .filter((event) =>
       isRelevantToContext(
         event.type,

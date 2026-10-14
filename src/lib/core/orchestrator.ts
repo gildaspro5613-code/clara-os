@@ -18,6 +18,7 @@ import { saveMission } from "@/modules/missions/mission-store";
 import { acquisitionLocale } from "@/lib/brain/acquisition-event";
 import { saveAcquisitionRecord } from "@/lib/acquisition/acquisition-store";
 
+import { withPersistedConversation } from "./conversation-context";
 import { ClaraSession } from "./session";
 
 /** Executes one complete Clara reasoning cycle. */
@@ -33,7 +34,7 @@ export async function orchestrate(
       : undefined;
 
   const dashboard = await runBrainDashboard(
-    event,
+    withPersistedConversation(session,event),
     activeMission,
     acquisitionLocale(event),
   );

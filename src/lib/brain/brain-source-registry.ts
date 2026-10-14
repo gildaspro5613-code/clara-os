@@ -9,6 +9,7 @@
  * ============================================
  */
 
+import { isProjectContext, liveProjectSource } from "./live-project-context";
 import { Event } from "@/types";
 
 import {
@@ -138,6 +139,7 @@ const driveSource: BrainSource<BrainDriveContext> = {
   id: "google-drive",
 
   shouldLoad(event: Event): boolean {
+    if (isProjectContext(event)) return false;
     return /\b(drive|google drive|fichier|fichiers|document|documents|dossier|dossiers)\b/i.test(
       extractMessage(event),
     );
@@ -178,7 +180,8 @@ export async function buildBrainSources(
   event: Event,
   now: Date,
 ): Promise<BrainSourceContext[]> {
-  const contexts: BrainSourceContext[] = [];
+  const projectSource=liveProjectSource(event);
+  const contexts: BrainSourceContext[] = projectSource ? [projectSource] : [];
 
   for (const source of brainSources) {
     if (!source.shouldLoad(event)) {

@@ -320,7 +320,7 @@ export async function reasoning(
     model: process.env.OPENAI_MODEL ?? "gpt-5.5",
   });
 
-  if (!result.success || !result.content.trim()) return fallback;
+  if (!result.success || result.responseStatus !== "completed" || !result.content.trim()) return fallback;
 
   try {
     const parsed = JSON.parse(result.content) as Partial<Understanding>;

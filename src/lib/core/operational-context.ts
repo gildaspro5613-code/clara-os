@@ -26,10 +26,13 @@ function stringMetadata(value: unknown): string | null {
 export async function resolveOperationalContext(): Promise<OperationalContext> {
   // Resume the most recently persisted operational thread first. Mission
   // orchestration is a fallback for work that has no durable Clara session yet.
-  const recentOwner = await loadMostRecentMissionSession().catch(() => null);
-  const mission = recentOwner?.session.mission ?? await getCurrentMission();
-  const owner = recentOwner
+  const recentOwner = await loadMostRecentMissionSession(true).catch(() => null);
+  let mission = recentOwner?.session.mission ?? await getCurrentMission();
+  let owner = recentOwner
     ?? (mission ? await loadSessionOwningMission(mission.id).catch(() => null) : null);
+  // The native OS surface has no Live user/project/session authority. Never
+  // resume an external thread through the global mission fallback.
+  if(owner?.key.startsWith("external:")){owner=null;mission=null;}
   const defaultSession = owner?.session ?? await loadSession();
   const projected = projectOwnedSession(mission, owner, defaultSession);
   const { sessionKey, session } = projected;

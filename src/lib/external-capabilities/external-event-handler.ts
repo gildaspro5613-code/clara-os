@@ -8,7 +8,9 @@ import {
 } from "@/lib/external-capabilities/config";
 import { Clara } from "@/lib/core/clara";
 import { dispatchEvent } from "@/lib/core/event-bus";
-import { composeClaraResponse } from "@/lib/brain/response-composer";
+import { activeProjectId, object } from "@/lib/brain/live-project-context";
+import { safeResponseLocale } from "@/i18n/response-language";
+import { composeClaraResponseWithProposal } from "@/lib/brain/response-composer";
 import { saveSession } from "@/lib/core/store/session-store";
 import type { ClaraConversationMessage } from "@/lib/core/session";
 import { OpenAIResponsesEngine } from "@/lib/connectors/internal/openai/responses/openai-responses-engine";
@@ -167,7 +169,7 @@ function opaque(value: unknown, max = 160): value is string {
   return typeof value === "string" &&
     value.trim().length > 0 &&
     value.length <= max &&
-    !/[\\/\0]/.test(value);
+    !/[\\/\u0000-\u001f\u007f]/.test(value);
 }
 
 export function parseBody(value: unknown): ExternalEventBody | null {
@@ -189,12 +191,16 @@ export function parseBody(value: unknown): ExternalEventBody | null {
   return body;
 }
 
-function sessionKey(scope: Scope): string {
-  const canonical = [scope.productId, scope.workspaceId, scope.userId, scope.sessionId].join("\u001f");
+export function sessionKey(scope: Scope, projectId?: string | null): string {
+  // Existing Live sessions already use project ID as workspace ID. Preserve
+  // those keys; add the explicit project only when a shared workspace is used.
+  const parts = [scope.productId, scope.workspaceId, scope.userId, scope.sessionId];
+  if(projectId && projectId!==scope.workspaceId)parts.push(projectId);
+  const canonical = parts.join("\u001f");
   return "external:" + createHash("sha256").update(canonical).digest("hex");
 }
 
-type Execution = { product: ExternalProductConfig; body: ExternalEventBody; correlationId: string; jobId: string; progress: (phase: string) => Promise<void>; persist?: (data: Record<string, unknown>, session: unknown, key: string) => Promise<void> };
+type Execution = { product: ExternalProductConfig; body: ExternalEventBody; correlationId: string; jobId: string; progress: (phase: string) => Promise<void>; persist?: (data: Record<string, unknown>, session: unknown, key: string) => Promise<void>; persistFailure?: (category: string, session: unknown, key: string) => Promise<void> };
 export async function handleExternalEvent(request: Request) { return handleEvent(request); }
 export async function executeExternalEvent(execution: Execution) {
   return handleEvent(new Request("http://internal.invalid"), execution);
@@ -284,7 +290,11 @@ async function handleEvent(request: Request, execution?: Execution) {
       }
       reserved = reservation.operation;
     }
-    const key = sessionKey(scope);
+    const projectId=activeProjectId({context:{productId:product.productId},payload:body});
+    const declaredProject=object(object(body.context?.projectContext).project).id;
+    if(projectId && declaredProject && declaredProject!==projectId)
+      return respond({success:false,code:"CORE_EVENT_PROCESSING_FAILED",error:"Project context mismatch."},400);
+    const key = sessionKey(scope,projectId);
     const clara = new Clara(key, product.workspaceId);
     const event = {
       id: crypto.randomUUID(),
@@ -317,7 +327,27 @@ async function handleEvent(request: Request, execution?: Execution) {
     await advance("core_dispatch");
     const session = await dispatchEvent(clara, event);
     await advance("response_composition");
-    const response = await composeClaraResponse(message, session);
+    const composed = await composeClaraResponseWithProposal(message, session,safeResponseLocale(body.context?.language));
+    const response=composed.content;
+    const now=new Date().toISOString();
+    const prefix=execution?.jobId ?? crypto.randomUUID();
+    const messages: ClaraConversationMessage[] = [
+      {id:prefix+":user",role:"user",content:message,createdAt:now},
+      {id:prefix+":clara",role:"clara",content:response,createdAt:new Date().toISOString(),generation:composed.generation},
+    ];
+    const ids=new Set(session.conversation.map(entry=>entry.id));
+    session.conversation=[...session.conversation,...messages.filter(entry=>!ids.has(entry.id))].slice(-MAX_PERSISTED_MESSAGES);
+    session.updatedAt=new Date();
+    if(body.eventType==="USER_MESSAGE" && composed.generation.status!=="completed"){
+      await advance("response_incomplete");
+      const category=composed.generation.failureCategory ?? "provider_failed";
+      if(execution){
+        if(!execution.persistFailure)throw new Error("Failure/session atomic persistence required");
+        await execution.persistFailure(category,session,key);
+      } else await saveSession(session,key);
+      return respond({success:false,code:"CORE_EVENT_PROCESSING_FAILED",failureCategory:category,
+        error:"Clara response generation did not complete.",data:{response,generation:composed.generation,sessionId:scope.sessionId}},500);
+    }
     await advance("document_analysis");
     const documentAnalysis = await analyzeExternalDocument(body);
     if (reserved && !documentAnalysis) throw new Error("Document analysis unavailable.");
@@ -326,6 +356,7 @@ async function handleEvent(request: Request, execution?: Execution) {
       sessionId: body.scope.sessionId,
       missionId: session.mission?.id ?? null,
       structuredResult: {
+        generation:composed.generation,
         state: session.state,
         recommendation: session.recommendation
           ? { summary: session.recommendation.summary, rationale: session.recommendation.rationale }
@@ -350,13 +381,6 @@ async function handleEvent(request: Request, execution?: Execution) {
       resultPersisted = true;
     }
     await advance("session_persistence");
-    const now = new Date().toISOString();
-    const messages: ClaraConversationMessage[] = [
-      { id: crypto.randomUUID(), role: "user", content: message, createdAt: now },
-      { id: crypto.randomUUID(), role: "clara", content: response, createdAt: new Date().toISOString() },
-    ];
-    session.conversation = [...session.conversation, ...messages].slice(-MAX_PERSISTED_MESSAGES);
-    session.updatedAt = new Date();
     if (execution?.persist) await execution.persist(data, session, key);
     else await saveSession(session, key);
 

@@ -66,6 +66,15 @@ export function createEventJobStore(query: Query) {
       const saved = await lookup(job.scope_key, job.job_id);
       if (saved?.status !== 'completed') throw new Error('EVENT_JOB_COMMIT_REJECTED');
     },
+    async failWithSession(job:EventJob, category:string, session:unknown, sessionKey:string) {
+      await query`WITH owned AS (UPDATE clara_external_event_jobs SET status='failed', result=NULL,
+        failure_code='CORE_EVENT_PROCESSING_FAILED', failure_category=${category},phase='response_incomplete',updated_at=clock_timestamp()
+        WHERE job_id=${job.job_id} AND owner_token=${job.owner_token} AND status IN ('processing','uncertain') RETURNING job_id)
+        INSERT INTO clara_sessions(id,data,updated_at) SELECT ${sessionKey},${JSON.stringify(session)}::jsonb,clock_timestamp() FROM owned
+        ON CONFLICT(id) DO UPDATE SET data=EXCLUDED.data,updated_at=EXCLUDED.updated_at`;
+      const saved=await lookup(job.scope_key,job.job_id);
+      if(saved?.status!=='failed' || saved.failure_category!==category)throw new Error('EVENT_JOB_FAILURE_COMMIT_REJECTED');
+    },
     async complete(job: EventJob, result: Record<string, unknown>) {
       const rows = await query`UPDATE clara_external_event_jobs SET status = 'completed', result = ${JSON.stringify(result)}::jsonb,
         phase = 'completed', updated_at = clock_timestamp() WHERE job_id = ${job.job_id} AND owner_token = ${job.owner_token}
