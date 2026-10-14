@@ -65,5 +65,16 @@ test('native documentary continuity uses real Core/Brain/PDF and PostgreSQL; Goo
  await assert.rejects(()=>run(async()=>{const d=await docs();await d.read('document-a');await nativeGoogleCommand('revoke',{connectionId:'google-owned'});}));assert.equal(pg(`SELECT data::text FROM clara_sessions WHERE id='${sid}'`).trim(),before);
  await assert.rejects(()=>run(()=>nativeGoogleCommand('authority',{connectionId:'google-owned'})));
  for(const r of [new Request('https://os.fixture.example/api'),request('D'),request('B','c1','p1',sid)])await assert.rejects(()=>run(async()=>{},r,false));
- const role='lot2_'+randomUUID().replaceAll('-','');pg('CREATE ROLE '+role);try{assert.match(pg(`SELECT has_function_privilege('${role}','clara_native_google_command(text,text,text,text,text,text,jsonb)','EXECUTE')`),/f/);}finally{pg('DROP ROLE '+role);}
+ const role='lot2_'+randomUUID().replaceAll('-','');pg('CREATE ROLE '+role);
+ try{
+  assert.match(pg(`SELECT has_function_privilege('${role}','clara_native_google_command(text,text,text,text,text,text,jsonb)','EXECUTE')`),/f/);
+  pg(`GRANT USAGE ON SCHEMA public TO ${role};GRANT SELECT ON ALL TABLES IN SCHEMA public TO ${role};GRANT EXECUTE ON FUNCTION clara_native_google_command(text,text,text,text,text,text,jsonb),clara_native_runtime_command(text,text,text,text,text,text,jsonb),clara_native_read_session(text,text,text,text,text),clara_native_acquisition_snapshot(text,text) TO ${role}`);
+  const invoke=(operation:string,payload:object={})=>`SET ROLE ${role};SELECT clara_native_google_command('${scope().digest}','w','c1','p1','${sid}','${operation}','${JSON.stringify(payload).replaceAll("'","''")}'::jsonb);RESET ROLE`;
+  assert.throws(()=>pg(invoke('list')),/permission denied/,'SELECT alone does not permit the existing authorization locks');
+  // Broad grants are restricted to this throwaway fixture database. Production
+  // grants must be reviewed per table/column for the trusted application role.
+  pg(`GRANT INSERT,UPDATE ON ALL TABLES IN SCHEMA public TO ${role}`);
+  assert.ok(pg(invoke('list')).includes('connections'));
+  assert.ok(pg(invoke('begin',{connectionId:'role-owned-google',stateHash:googleProofHash('role-state'),nonceHash:googleProofHash('role-nonce')})).includes('role-owned-google'));
+ }finally{pg('DROP OWNED BY '+role);pg('DROP ROLE '+role);}
 });
