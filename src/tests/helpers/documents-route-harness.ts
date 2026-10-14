@@ -7,7 +7,7 @@ import ts from "typescript";
 import type { drive_v3 } from "googleapis";
 import { DriveFiles } from "@/lib/connectors/internal/google/drive/drive-files";
 
-/** Execute the real Documents handler, replacing only external auth/storage/
+/** Execute the retained, fenced connector compatibility handler, replacing only external auth/storage/
  * cognition. The real Drive reader and PDF subprocess are exercised unchanged.
  */
 export function documentsRouteHarness(drive: drive_v3.Drive) {
@@ -36,7 +36,7 @@ export function documentsRouteHarness(drive: drive_v3.Drive) {
     "@/lib/core/journal": { Journal: class { async addEntry(entry: unknown) { journal.push(entry); } } },
     "@/lib/core/journal-writer": { writeActionEntry: (title: string, detail: string) => ({ title, detail }) },
   };
-  const source = readFileSync(new URL("../../app/api/documents/route.ts", import.meta.url), "utf8");
+  const source = readFileSync(new URL("../../lib/documents/workspace-handler.ts", import.meta.url), "utf8");
   const exports: Record<string, unknown> = {};
   const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   vm.runInNewContext(compiled, { exports, require: (name: string) => modules[name] ?? require(name), Response, Request, URL, Buffer, File, Blob, TextDecoder, crypto: globalThis.crypto });

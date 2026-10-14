@@ -97,6 +97,8 @@ test('server instrumentation never imports or starts a global business runtime',
 
 const uncertifiedConnectorRoutes = [
  ['src/app/api/connections/google/route.ts','GET'],
+ ['src/app/api/connections/google/route.ts','POST'],
+ ['src/app/api/connections/google/connect/route.ts','POST'],
  ['src/app/api/connections/google/connect/route.ts','GET'],
  ['src/app/api/connections/google/callback/route.ts','GET'],
  ['src/app/api/connections/make/configure/route.ts','POST'],
@@ -110,7 +112,8 @@ function fencedConnector(file:string, fence:typeof nativeOperationFence, onLegac
  const modules:Record<string,unknown>={};
  for(const match of readFileSync(file,'utf8').matchAll(/from\s+["']([^"']+)["']/g))
   modules[match[1]]=new Proxy({},{get:()=>function(){onLegacy();throw Error('Uncertified connector reached');}});
- modules['@/lib/native/authority']={nativeOperationFence:fence};
+ modules['@/lib/native/authority']={nativeOperationFence:fence,nativeFailure};
+ modules['@/lib/native/scoped-context']={withNativeScope,nativeRequest,nativeContext};
  return compiled(file,modules);
 }
 test('Uncertified Google/Brevo/Make connection routes reject invalid OS sessions before storage or provider I/O',async()=>{
@@ -130,11 +133,12 @@ test('a verified native session cannot unlock Google credentials or Make configu
   '@/lib/core/store/database':{sql:async()=>{authorityReads++;return [{data:{state:'WORKING',mission:null}}];}},
   '@/lib/canonical/registry':{RegistryError,registryContext,opaque},
  });
- for(const [file,method] of uncertifiedConnectorRoutes){
+ for(const [file,method] of uncertifiedConnectorRoutes.filter(([file])=>!file.includes('/google/')||file.includes('/google/connect/')) .filter(([,method])=>method==='GET'||method==='POST')){
+  if(file.includes('/google/')&&method==='POST')continue;
   const handler=fencedConnector(file,authority.nativeOperationFence as typeof nativeOperationFence,()=>legacyCalls++)[method] as(request:Request)=>Promise<Response>;
   const response=await handler(new Request('https://fixture.invalid/api?workspaceId=w&clientId=c&projectId=p&sessionId=native:a',{method,headers:{cookie:'clara_auth_session='+ 'A'.repeat(43)}}));
   assert.equal(response.status,503,file);assert.equal(response.headers.get('Cache-Control'),'no-store');
   assert.deepEqual(await response.json(),{success:false,code:'NATIVE_SCOPED_OPERATION_UNAVAILABLE'});
  }
- assert.equal(authorityReads,uncertifiedConnectorRoutes.length);assert.equal(legacyCalls,0);
+ assert.equal(authorityReads,7);assert.equal(legacyCalls,0);
 });

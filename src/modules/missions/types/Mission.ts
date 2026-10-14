@@ -40,6 +40,7 @@ export interface MissionTask {
 }
 
 export interface Mission {
+  documentReferences?:import("@/lib/core/session").NativeDocumentReference[];
   acquisitionSubmissionId?: string;
   id: string;
 

@@ -12,9 +12,10 @@ import type {AcquisitionRecord} from '@/lib/acquisition/acquisition-store';
 import type {MdProjectIntake} from '@/types';
 import type {CommercialCommunicationDraft} from '@/lib/acquisition/commercial-communication-draft';
 export interface ScopedNativeContext {
- scope:NativeSelectors&{digest:string};userId:string;session:ClaraSession;
+ query:RegistryQuery;scope:NativeSelectors&{digest:string};userId:string;session:ClaraSession;
  missions:Map<string,Mission>;journal:JournalEntry[];writes:Map<string,Mission>;entries:JournalEntry[];
  acquisitions:Map<string,AcquisitionRecord>;intakes:Map<string,MdProjectIntake>;intakeMetadata:Map<string,{productId:string;sessionKey:string;eventId:string}>;acquisitionSnapshots:Record<string,unknown>;draftWrites:Map<string,CommercialCommunicationDraft>;draftRevisionSteps:Map<string,number>;
+ documentSource?:import("@/lib/brain/brain-source").BrainSourceContext;documentCommitProof?:Record<string,unknown>;
  writable:boolean;runtime?:Clara;dirty:boolean;commitOnFailure?:boolean;
 }
 const storage=new AsyncLocalStorage<ScopedNativeContext>();
@@ -58,12 +59,14 @@ export async function withNativeScope<T>(request:Request,write:boolean,render:()
   const row=snapshot.record,id=String(row.submission_id);acquisitionSnapshots[id]=snapshot;intakes.set(id,snapshot.intake);intakeMetadata.set(id,snapshot.intakeMetadata);
   acquisitions.set(id,{submissionId:id,workspaceId:String(row.workspace_id),qualification:row.qualification as AcquisitionRecord['qualification'],decisionBrief:row.decision_brief as AcquisitionRecord['decisionBrief'],lifecycle:row.lifecycle as AcquisitionRecord['lifecycle'],commercialDraft:row.commercial_draft as CommercialCommunicationDraft|null,createdAt:new Date(String(row.created_at)),updatedAt:new Date(String(row.updated_at))});
  }
- const ctx:ScopedNativeContext={scope,userId:String(data.userId),session,acquisitions,intakes,intakeMetadata,acquisitionSnapshots,draftWrites:new Map(),draftRevisionSteps:new Map(),missions:new Map(missions.map(m=>[m.id,m])),journal:(data.journal as JournalEntry[]).map(j=>({...j,createdAt:new Date(j.createdAt)})),writes:new Map(),entries:[],writable:write,dirty:false};
+ const ctx:ScopedNativeContext={query,scope,userId:String(data.userId),session,acquisitions,intakes,intakeMetadata,acquisitionSnapshots,draftWrites:new Map(),draftRevisionSteps:new Map(),missions:new Map(missions.map(m=>[m.id,m])),journal:(data.journal as JournalEntry[]).map(j=>({...j,createdAt:new Date(j.createdAt)})),writes:new Map(),entries:[],writable:write,dirty:false};
  return storage.run(ctx,async()=>{
   const result=await render();
   if(write&&ctx.dirty){
    if(result instanceof Response&&result.status>=400&&!ctx.commitOnFailure)return result;
-   await command(scope,'commit',{expected,session:ctx.session,missions:[...ctx.writes.values()],journal:ctx.entries,expectedAcquisitions:ctx.acquisitionSnapshots,acquisitions:[...ctx.draftWrites].map(([submissionId,draft])=>({submissionId,draft,revisionSteps:ctx.draftRevisionSteps.get(submissionId)}))});
+   const commit={expected,session:ctx.session,missions:[...ctx.writes.values()],journal:ctx.entries,expectedAcquisitions:ctx.acquisitionSnapshots,acquisitions:[...ctx.draftWrites].map(([submissionId,draft])=>({submissionId,draft,revisionSteps:ctx.draftRevisionSteps.get(submissionId)}))};
+   if(ctx.documentCommitProof){const {nativeGoogleCommands}=await import('./google-authority');await nativeGoogleCommands(query)('commit',{...ctx.documentCommitProof,commit});}
+   else await command(scope,'commit',commit);
   }
   return result;
  });

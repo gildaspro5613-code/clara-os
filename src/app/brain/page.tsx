@@ -1,3 +1,4 @@
+import NativeDocumentsPanel from "@/components/native/NativeDocumentsPanel";
 import { nativePage } from "@/lib/native/page-fence";
 import { getTranslations } from "next-intl/server";
 // ============================================
@@ -25,6 +26,7 @@ export default async function BrainPage() {
 
   return (
     <MainLayout>
+      <NativeDocumentsPanel referencesOnly />
       {dashboard ? (
         <BrainStage dashboard={dashboard} />
       ) : (

@@ -181,7 +181,9 @@ export async function buildBrainSources(
   event: Event,
   now: Date,
 ): Promise<BrainSourceContext[]> {
-  if(nativeContext())return brainSources.filter(source=>source.shouldLoad(event)).map(source=>({source:source.id,available:false,data:null,summary:"Native source authorization is not certified; no provider was queried."}));
+  const native=nativeContext();
+  if(native?.documentSource)return [native.documentSource];
+  if(native)return brainSources.filter(source=>source.shouldLoad(event)).map(source=>({source:source.id,available:false,data:null,summary:"Native source authorization is not certified; no provider was queried."}));
   const projectSource=liveProjectSource(event);
   const contexts: BrainSourceContext[] = projectSource ? [projectSource] : [];
 

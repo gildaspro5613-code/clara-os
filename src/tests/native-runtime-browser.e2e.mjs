@@ -40,7 +40,7 @@ test('native browser: explicit selection, positive persisted mission/chat and cr
  const foreign=await fetch(origin+'/api/clara/session?'+new URLSearchParams(scope),{headers:{cookie:'clara_auth_session='+'B'.repeat(43)}});assert.equal(foreign.status,403);
  const other=await fetch(origin+'/api/clara/session?'+new URLSearchParams({...scope,projectId:'p2'}),{headers:{cookie:'clara_auth_session='+'A'.repeat(43)}});assert.equal(other.status,403);
  const originDenied=await fetch(origin+'/api/clara/chat',{method:'POST',headers:{cookie:headerCookie,origin:'https://foreign.example','Content-Type':'application/json'},body:'{"message":"MUST_NOT_PERSIST"}'});assert.equal(originDenied.status,403);
- const drive=await fetch(origin+'/api/documents?fileId=foreign-drive-file',{headers:{cookie:headerCookie}});assert.equal(drive.status,503);assert.ok(!(await drive.text()).includes('PRIVATE_OBJECTIVE_A'));
+ const drive=await fetch(origin+'/api/documents?fileId=foreign-drive-file',{headers:{cookie:headerCookie}});assert.equal(drive.status,409);const driveBody=await drive.text();assert.ok(driveBody.includes('NATIVE_GOOGLE_EXPLICIT_SELECTION_REQUIRED'));assert.ok(!driveBody.includes('PRIVATE_OBJECTIVE_A'));
  assert.equal(readFileSync('/tmp/native-fixture-global-attempts-'+process.env.NATIVE_TEST_DATABASE,'utf8'),'','No global loader may be attempted, even if its error is caught.');
  await context.close();
  }finally{await browser.close();}

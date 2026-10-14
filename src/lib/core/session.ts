@@ -38,7 +38,12 @@ function resolveDefaultUser(): ClaraUserIdentity {
   };
 }
 
+export interface NativeDocumentReference {
+  connectionId:string;fileId:string;version:string;missionId:string;encryptedAnalysis:string;checkedAt:string;
+}
 export interface ClaraSession {
+  googleConnectionId?:string;
+  documentReferences?:NativeDocumentReference[];
   /** Explicit canonical-authorized commercial selection; no historical inference. */
   acquisitionSubmissionId?: string;
   state: ClaraState;

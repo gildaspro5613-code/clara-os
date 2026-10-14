@@ -26,6 +26,14 @@ on:
       - 'db/migrations/012_native_resource_authority.sql'
       - 'db/migrations/013_native_scoped_runtime.sql'
       - 'db/migrations/014_native_commercial_continuity.sql'
+      - 'db/migrations/015_native_google_document_authority.sql'
+      - 'src/lib/connections/**'
+      - 'src/lib/connectors/**/google/**'
+      - 'src/lib/auth/oauth/**'
+      - 'src/lib/auth/google-sign-in.ts'
+      - 'src/tests/native-documents*'
+      - 'src/tests/native-google*'
+      - 'src/tests/helpers/native-google*'
       - 'src/lib/acquisition/**'
       - 'src/lib/intake/**'
       - 'src/lib/core/**'
@@ -61,10 +69,10 @@ jobs:
           done
           exit 1
       - name: Actual handlers and database isolation, revocation, snapshot and history
-        run: node --import tsx --test src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts src/tests/native-commercial-postgres.test.ts
+        run: node --import tsx --test src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts src/tests/native-commercial-postgres.test.ts src/tests/native-documents-postgres.test.ts src/tests/native-google-oauth.test.ts
       - run: npx tsc --noEmit --pretty false
       - run: npx eslint src/lib/native src/app/api/clara/session src/app/api/native src/components/native src/tests/native-runtime-browser.e2e.mjs src/tests/helpers/native-runtime* src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts
-      - run: npx eslint src/app/api/contacts src/app/api/clara/acquisition/commercial-draft src/lib/acquisition/acquisition-store.ts src/lib/intake/md-project-intake-inbox.ts src/tests/native-commercial* src/tests/helpers/native-commercial*
+      - run: npx eslint src/app/api/contacts src/app/api/clara/acquisition/commercial-draft src/lib/acquisition/acquisition-store.ts src/lib/intake/md-project-intake-inbox.ts src/tests/native-commercial* src/tests/helpers/native-commercial* src/tests/native-documents* src/tests/native-google-oauth.test.ts
       - name: Optimized local app build in GitHub only
         run: npm run build
         env:
@@ -75,7 +83,7 @@ jobs:
           export NATIVE_TEST_DATABASE="native_browser_$(node -e 'process.stdout.write(require("crypto").randomUUID().replaceAll("-",""))')"
           node --import tsx src/tests/helpers/native-runtime-browser-fixture.mts "$NATIVE_TEST_DATABASE"
           openssl req -x509 -newkey rsa:2048 -nodes -keyout /tmp/native-runtime-key.pem -out /tmp/native-runtime-cert.pem -subj /CN=localhost -addext 'subjectAltName=DNS:localhost,IP:127.0.0.1' -days 1 > /tmp/native-tls-generation.log 2>&1
-          DATABASE_URL=postgresql://synthetic:synthetic@documents-e2e.invalid/synthetic OPENAI_API_KEY=synthetic-test-only CLARA_AUTH_APP_ORIGIN=https://127.0.0.1:3060 NODE_OPTIONS="--import=$PWD/src/tests/helpers/native-runtime-browser-preload.mjs" node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3058 > /tmp/native-app.log 2>&1 &
+          DATABASE_URL=postgresql://synthetic:synthetic@documents-e2e.invalid/synthetic OPENAI_API_KEY=synthetic-test-only CLARA_AUTH_APP_ORIGIN=https://127.0.0.1:3060 GOOGLE_CLIENT_ID=synthetic-google-client GOOGLE_CLIENT_SECRET=synthetic-google-secret GOOGLE_REDIRECT_URI=https://127.0.0.1:3060/api/connections/google/callback CLARA_CREDENTIALS_ENCRYPTION_KEY=CQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQk= NODE_OPTIONS="--import=$PWD/src/tests/helpers/native-runtime-browser-preload.mjs" node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3058 > /tmp/native-app.log 2>&1 &
           native_app_pid=$!
           node src/tests/helpers/native-runtime-tls-proxy.mjs > /tmp/native-tls-proxy.log 2>&1 &
           native_tls_pid=$!
@@ -97,7 +105,7 @@ jobs:
           PYDIAG
             exit 1
           fi
-          NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node --test --test-concurrency=1 src/tests/native-runtime-browser.e2e.mjs src/tests/native-commercial-browser.e2e.mjs
+          NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node --test --test-concurrency=1 src/tests/native-runtime-browser.e2e.mjs src/tests/native-commercial-browser.e2e.mjs src/tests/native-documents-browser.e2e.mjs
       - name: Stop isolated fixture
         if: always()
         run: docker rm -f "$CANONICAL_TEST_CONTAINER" || true

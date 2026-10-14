@@ -44,6 +44,12 @@ export async function POST(request:Request){
     const mission={id:'new',title:body.title.trim(),objective:body.objective.trim(),status:'planned' as const,priority:'medium' as const,createdAt:new Date(),tasks:[],progress:0};
     nativeMission(mission);ctx.session.mission=mission;ctx.session.updatedAt=new Date();
     await new Journal().addEntry(writeActionEntry(ui("nativeCreateMission"),mission.title));
+   }else if(action==='selectMission'){
+    fields(body,['action','missionId']);const mission=ctx.missions.get(opaque(body.missionId));
+    if(!mission)throw new RegistryError(403,'NATIVE_SCOPE_DENIED');
+    if(mission.acquisitionSubmissionId!==ctx.session.acquisitionSubmissionId)throw new RegistryError(409,'NATIVE_EXPLICIT_CONTACT_SELECTION_REQUIRED');
+    ctx.session.mission=mission;ctx.session.documentReferences=mission.documentReferences??[];ctx.session.updatedAt=new Date();
+    await new Journal().addEntry(writeActionEntry(ui('nativeOpenMission'),mission.id));
    }else if(action==='toggleTask'){
     fields(body,['action','missionId','taskId','completed']);
     const mission=ctx.missions.get(opaque(body.missionId));if(!mission)throw new RegistryError(403,'NATIVE_SCOPE_DENIED');
@@ -73,6 +79,6 @@ export async function GET(request:Request){
   const scope=nativeSelectors(request);
   if(new URL(request.url).searchParams.get('list')==='1')return Response.json({success:true,data:await nativeCommand(scope,'list')},{headers:{'Cache-Control':'no-store'}});
   const data=await nativeCommand(scope,'read');
-  return Response.json({success:true,data:{workspaceId:scope.workspaceId,clientId:scope.clientId,projectId:scope.projectId,sessionId:scope.sessionId},session:data.session,permissions:{read:true,write:data.canWrite===true}},{headers:{'Cache-Control':'no-store'}});
+  return Response.json({success:true,data:{workspaceId:scope.workspaceId,clientId:scope.clientId,projectId:scope.projectId,sessionId:scope.sessionId},session:data.session,missions:(data.missions as {id:string;title:string}[]).map(m=>({id:m.id,title:m.title})),permissions:{read:true,write:data.canWrite===true}},{headers:{'Cache-Control':'no-store'}});
  }catch(error){return nativeFailure(error);}
 }
