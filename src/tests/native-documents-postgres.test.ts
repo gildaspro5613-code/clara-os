@@ -42,6 +42,14 @@ test('native documentary continuity uses real Core/Brain/PDF and PostgreSQL; Goo
  const raw=await command(scope('A','c1','p1',sid),'read');assert.equal((raw.journal as unknown[]).length,1);assert.equal((raw.session as {mission:{title:string}}).mission.title,'Documentary commercial mission');assert.ok(!JSON.stringify(raw).includes('LOT2_AUTHORIZED_PDF'));assert.ok(!JSON.stringify(raw).includes('Capacity: 800 places'));
  await run(async()=>{const saved=await (await docs()).references();assert.equal(saved.references[0].available,true);assert.ok(JSON.stringify(saved).includes('800 places'));},request(),false);
  await assert.rejects(()=>run(async()=>{await (await docs()).read('unbound-history');}));
+ // Having management rights in two projects is NOT permission to redeclare
+ // the same canonical document in the second project or change its owner.
+ await run(async()=>{const ctx=writableNativeContext();const mission={id:'new',title:'Independent P2 mission',objective:'No document reassignment',status:'planned' as const,priority:'medium' as const,createdAt:new Date(),tasks:[],progress:0};nativeMission(mission);ctx.session.mission=mission;},request('A','c1','p2',p2));
+ await assert.rejects(()=>run(async()=>{await (await docs()).bind('document-a','1');},request('A','c1','p2',p2)));
+ await assert.rejects(()=>run(async()=>{await (await docs()).inspect('document-a');},request('A','c1','p2',p2)));
+ await run(async()=>{const ctx=writableNativeContext();const mission={id:'new',title:'Independent B mission',objective:'No ownership reassignment',status:'planned' as const,priority:'medium' as const,createdAt:new Date(),tasks:[],progress:0};nativeMission(mission);ctx.session.mission=mission;},request('B','c1','p1',bid));
+ principal='google-b';await assert.rejects(()=>run(async()=>{await (await new NativeDocuments('foreign-google-b',async()=>drive).initialize()).bind('document-a','1');},request('B','c1','p1',bid)));principal='google-a';
+
  for(const r of [request('A','c1','p2',p2),request('A','c2','p3',p3)])await run(async()=>{assert.deepEqual((await (await docs()).list()).files,[]);await assert.rejects(()=>(async()=>{await (await docs()).read('document-a');})());},r);
  rights=false;await run(async()=>{assert.deepEqual((await (await docs()).list()).files,[]);assert.equal((await (await docs()).references()).references[0].available,false);await assert.rejects(()=>(async()=>{await (await docs()).read('document-a');})());});rights=true;
  version='2';await run(async()=>{assert.equal((await (await docs()).references()).references[0].available,false);await assert.rejects(()=>(async()=>{await (await docs()).read('document-a');})());await (await docs()).bind('document-a','2');await (await docs()).read('document-a');const revisions=await (await docs()).references();assert.ok(revisions.references.some(r=>r.version==='2'&&r.available));assert.ok(revisions.references.some(r=>r.version==='1'&&!r.available));});

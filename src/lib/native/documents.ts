@@ -61,10 +61,12 @@ export class NativeDocuments {
  async inspect(fileId:string){
   if(this.proof.ownerUserId!==nativeContext()!.userId)throw new RegistryError(403,'NATIVE_DOCUMENT_BIND_DENIED');
   // An explicit file ID is reviewed; this does not search a whole account or infer OS membership.
+  await nativeGoogleCommand('inspect',{connectionId:this.connectionId,fileId,revision:this.proof.revision});
   const m=await this.rights(fileId);return {success:true,file:{id:m.id,name:m.name,mimeType:m.mimeType,version:m.version}};
  }
  async bind(fileId:string,version:string){
   const ctx=writableNativeContext();if(!ctx.session.mission)throw new RegistryError(409,'NATIVE_DOCUMENT_MISSION_REQUIRED');
+  await nativeGoogleCommand('inspect',{connectionId:this.connectionId,fileId,revision:this.proof.revision});
   const m=await this.rights(fileId,version);const metadata={connectionId:this.connectionId,fileId,version:m.version,issuer:this.proof.issuer,subject:this.proof.subject};
   const bound=await nativeGoogleCommand('bind',{connectionId:this.connectionId,fileId,version,metadata,revision:this.proof.revision});return {success:true,bindingId:bound.bindingId};
  }

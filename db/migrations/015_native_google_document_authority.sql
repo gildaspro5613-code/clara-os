@@ -97,18 +97,31 @@ BEGIN
   ELSIF operation='refresh' THEN
    IF (payload->>'revision')::bigint IS DISTINCT FROM a.revision THEN RAISE EXCEPTION 'NATIVE_GOOGLE_REVISION_CONFLICT' USING ERRCODE='40001'; END IF;
    UPDATE clara_connection_credentials SET encrypted_payload=payload->>'encryptedPayload',updated_at=clock_timestamp() WHERE connection_id=conn;
-  ELSIF operation IN ('documents','document','bind','commit') THEN
+  ELSIF operation IN ('documents','document','inspect','bind','commit') THEN
    IF operation='documents' THEN
     RETURN jsonb_build_object('bindings',COALESCE((SELECT jsonb_agg(jsonb_build_object('bindingId',binding_id,'fileId',metadata->>'fileId','version',metadata->>'version')) FROM clara_native_resource_authority WHERE resource_kind='document' AND workspace_id=w AND client_id=c AND project_id=p AND owner_user_id=a.owner_user_id AND revoked_at IS NULL AND metadata->>'connectionId'=conn),'[]'::jsonb));
+   END IF;
+   IF operation IN ('inspect','bind') THEN
+    IF actor<>a.owner_user_id OR view->>'canWrite'<>'true' OR length(payload->>'fileId') NOT BETWEEN 1 AND 400 THEN RAISE EXCEPTION 'NATIVE_DOCUMENT_BIND_DENIED' USING ERRCODE='42501'; END IF;
+    -- A Google file has ONE canonical owner/workspace/client/project. Being a
+    -- manager in another project is not permission to redeclare or steal it.
+    IF EXISTS(SELECT 1 FROM clara_native_resource_authority known WHERE known.resource_kind='document' AND known.revoked_at IS NULL
+      AND (known.metadata->>'fileId'=payload->>'fileId' OR known.resource_id=payload->>'fileId')
+      AND (known.owner_user_id<>a.owner_user_id OR known.workspace_id<>w OR known.client_id<>c OR known.project_id<>p)) THEN
+     RAISE EXCEPTION 'NATIVE_DOCUMENT_SCOPE_CONFLICT' USING ERRCODE='42501'; END IF;
+    IF (payload->>'revision')::bigint IS DISTINCT FROM a.revision THEN RAISE EXCEPTION 'NATIVE_GOOGLE_REVISION_CONFLICT' USING ERRCODE='40001'; END IF;
+    IF operation='inspect' THEN RETURN jsonb_build_object('reviewAllowed',true); END IF;
    END IF;
    IF operation='bind' THEN
     IF (payload->>'revision')::bigint IS DISTINCT FROM a.revision THEN RAISE EXCEPTION 'NATIVE_GOOGLE_REVISION_CONFLICT' USING ERRCODE='40001'; END IF;
     IF payload#>>'{metadata,connectionId}' IS DISTINCT FROM conn OR payload#>>'{metadata,fileId}' IS DISTINCT FROM payload->>'fileId' OR payload#>>'{metadata,version}' IS DISTINCT FROM payload->>'version' OR payload#>>'{metadata,issuer}' IS DISTINCT FROM a.issuer OR payload#>>'{metadata,subject}' IS DISTINCT FROM a.subject OR actor<>a.owner_user_id OR view->>'canWrite'<>'true' OR length(payload->>'fileId') NOT BETWEEN 1 AND 400 OR length(payload->>'version') NOT BETWEEN 1 AND 100 OR (view#>>'{session,mission,id}') IS NULL THEN RAISE EXCEPTION 'NATIVE_DOCUMENT_BIND_DENIED' USING ERRCODE='42501'; END IF;
-    SELECT * INTO b FROM clara_native_resource_authority WHERE resource_kind='document' AND resource_id='google:'||encode(sha256(convert_to(jsonb_build_array(conn,w,c,p,payload->>'fileId')::text,'UTF8')),'hex') AND revoked_at IS NULL FOR UPDATE;
+    SELECT * INTO b FROM clara_native_resource_authority WHERE resource_kind='document' AND resource_id='google:'||encode(sha256(convert_to(payload->>'fileId','UTF8')),'hex') AND revoked_at IS NULL FOR UPDATE;
     IF b.binding_id IS NOT NULL AND (b.owner_user_id<>actor OR b.workspace_id<>w OR b.client_id<>c OR b.project_id<>p) THEN RAISE EXCEPTION 'NATIVE_DOCUMENT_SCOPE_DENIED' USING ERRCODE='42501'; END IF;
-    UPDATE clara_native_resource_authority SET revoked_at=clock_timestamp() WHERE binding_id=b.binding_id;
+    UPDATE clara_native_resource_authority SET revoked_at=clock_timestamp()
+     WHERE resource_kind='document' AND revoked_at IS NULL AND owner_user_id=a.owner_user_id AND workspace_id=w AND client_id=c AND project_id=p
+      AND (metadata->>'fileId'=payload->>'fileId' OR resource_id=payload->>'fileId');
     INSERT INTO clara_native_resource_authority(resource_kind,resource_id,owner_user_id,workspace_id,client_id,project_id,snapshot_sha256,reviewed_by,review_reason,metadata)
-    VALUES('document','google:'||encode(sha256(convert_to(jsonb_build_array(conn,w,c,p,payload->>'fileId')::text,'UTF8')),'hex'),actor,w,c,p,encode(sha256(convert_to((payload->'metadata')::text,'UTF8')),'hex'),actor,'Explicit project document review with current Google principal and revision',payload->'metadata') RETURNING * INTO b;
+    VALUES('document','google:'||encode(sha256(convert_to(payload->>'fileId','UTF8')),'hex'),actor,w,c,p,encode(sha256(convert_to((payload->'metadata')::text,'UTF8')),'hex'),actor,'Explicit project document review with current Google principal and revision',payload->'metadata') RETURNING * INTO b;
     RETURN jsonb_build_object('bindingId',b.binding_id);
    END IF;
    SELECT * INTO b FROM clara_native_resource_authority WHERE resource_kind='document' AND binding_id=(payload->>'bindingId')::uuid AND owner_user_id=a.owner_user_id AND workspace_id=w AND client_id=c AND project_id=p AND revoked_at IS NULL AND metadata->>'connectionId'=conn FOR UPDATE;
