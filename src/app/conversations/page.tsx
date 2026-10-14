@@ -6,6 +6,8 @@ import { resolveOperationalContext } from "@/lib/core/operational-context";
 export const dynamic = "force-dynamic";
 
 export default async function ConversationsPage() {
+  const ui = await getTranslations("ui");
+
   const [t, locale, session] = await Promise.all([
     getTranslations("pages"),
     getLocale(),
@@ -49,7 +51,7 @@ export default async function ConversationsPage() {
                   <li key={message.id} className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
                     <div className="flex items-center justify-between gap-4">
                       <span className="text-xs uppercase tracking-[0.18em] text-cyan-300/70">
-                        {message.role === "clara" ? "Clara" : session.session.user.firstName ?? "Utilisateur"}
+                        {message.role === "clara" ? "Clara" : session.session.user.firstName ?? ui("user")}
                       </span>
                       <time dateTime={message.createdAt} className="text-xs text-white/30">
                         {new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(new Date(message.createdAt))}

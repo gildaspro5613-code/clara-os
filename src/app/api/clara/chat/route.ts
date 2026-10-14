@@ -1,5 +1,8 @@
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
+import { cookies } from "next/headers";
+import { LOCALE_COOKIE, resolveLocale } from "@/i18n/config";
 import { readAuthCookie } from "@/lib/connectors/microsoft/security/request-authorization";
 import { resolveSoleAuthenticatedWorkspace } from "@/lib/auth/sole-authenticated-workspace";
 import { PostgresPhysicalActionProposalStore } from "@/lib/connectors/clara-live/postgres-physical-action-store";
@@ -49,13 +52,15 @@ const MAX_REASONING_HISTORY = 16;
  * Cockpit and /clara are two views over this same persisted conversation.
  */
 export async function POST(request: Request) {
+  const locale = resolveLocale((await cookies()).get(LOCALE_COOKIE)?.value);
+  const ui = await getTranslations("ui");
   try {
     const body = (await request.json()) as ChatRequest;
     const message = body.message?.trim();
 
     if (!message) {
       return NextResponse.json(
-        { success: false, message: "Message vide." },
+        { success: false, message: ui("emptyMessage") },
         { status: 400 },
       );
     }
@@ -117,7 +122,7 @@ export async function POST(request: Request) {
 
     // The composer only gives Clara a conversational voice. It receives the
     // already-decided Brain/session state and cannot call Clara capabilities.
-    const composed = await composeClaraResponseWithProposal(message, session);
+    const composed = await composeClaraResponseWithProposal(message, session, locale);
     let responseMessage = composed.content;
     const executionPlan = recommendation?.decision
       ? buildExecutionPlan(recommendation.decision, "fr", composed.physicalAction)
@@ -136,7 +141,7 @@ export async function POST(request: Request) {
       const principal = await resolveSoleAuthenticatedWorkspace(token, "connections:manage");
       if (!principal) {
         return NextResponse.json(
-          { success: false, message: "Authenticated operator workspace required for physical action proposals." },
+          { success: false, message: ui("operatorWorkspaceRequired") },
           { status: 401 },
         );
       }
@@ -175,7 +180,7 @@ export async function POST(request: Request) {
             })
           : null;
         if (draft) {
-          responseMessage = `J’ai mis à jour le même brouillon commercial (révision ${draft.revision}). Il reste en attente de validation et aucun e-mail n’a été envoyé.`;
+          responseMessage = ui("commercialDraftUpdated",{revision:draft.revision});
           if (session.mission) {
             session.mission.lastAction = "Révision conversationnelle du brouillon commercial";
             session.mission.nextAction = "Valider la communication commerciale avec Clara.";
@@ -187,15 +192,15 @@ export async function POST(request: Request) {
           ));
         } else {
           responseMessage = current
-            ? "Je n’ai pas pu produire une révision fiable du brouillon. Je l’ai laissé inchangé et aucun e-mail n’a été envoyé."
-            : "Je ne trouve aucun brouillon commercial dans le dossier courant. Aucun e-mail n’a été envoyé.";
+            ? ui("commercialRevisionFailed")
+            : ui("commercialDraftMissing");
         }
       } else if (commercialIntent.kind === "send-confirmation") {
         const token = readAuthCookie(request.headers.get("cookie"));
         const principal = await resolveSoleAuthenticatedWorkspace(token, "connections:manage");
         if (!principal || principal.workspaceId !== operational.acquisition.workspaceId) {
           return NextResponse.json(
-            { success: false, message: "La validation commerciale exige la session opérateur du workspace propriétaire." },
+            { success: false, message: ui("commercialOperatorRequired") },
             { status: 401 },
           );
         }
@@ -223,8 +228,8 @@ export async function POST(request: Request) {
           }, new CapabilityToolBridge());
           if (proposal.approvalRequest) approvals.push(proposal.approvalRequest);
           responseMessage = proposal.approvalRequest
-            ? `J’ai préparé la validation du brouillon destiné à ${resolved.draft.recipient.email}. Confirmez l’autorisation ci-dessous. Cela ne déclenchera aucun envoi tant que le transport IONOS clara@melodie.digital n’est pas configuré.`
-            : proposal.message;
+            ? ui("commercialApprovalPrepared",{recipient:resolved.draft.recipient.email})
+            : ui("commercialApprovalUnavailable");
           if (proposal.approvalRequest && session.mission) {
             session.mission.lastAction = "Demande de validation de la communication commerciale";
             session.mission.nextAction = "Approuver ou refuser la communication préparée.";
@@ -294,14 +299,12 @@ export async function POST(request: Request) {
         conversationId: physicalConversationId,
       })),
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       {
         success: false,
         message:
-          error instanceof Error
-            ? error.message
-            : "Erreur lors de la communication avec Clara.",
+          ui("chatUnavailable"),
       },
       { status: 500 },
     );

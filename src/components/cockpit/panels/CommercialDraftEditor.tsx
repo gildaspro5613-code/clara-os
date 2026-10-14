@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import type { CommercialCommunicationDraft } from "@/lib/acquisition/commercial-communication-draft";
 import type { ClaraConversationMessage } from "@/lib/core/session";
@@ -9,6 +10,8 @@ export default function CommercialDraftEditor({
 }: {
   initialDraft: CommercialCommunicationDraft;
 }) {
+  const ui = useTranslations("ui");
+
   const [draft, setDraft] = useState(initialDraft);
   const [subject, setSubject] = useState(initialDraft.subject);
   const [body, setBody] = useState(initialDraft.body);
@@ -32,7 +35,7 @@ export default function CommercialDraftEditor({
         conversation?: ClaraConversationMessage[];
       };
       if (!response.ok || !data.success || !data.draft) {
-        throw new Error(data.message ?? "Impossible d’enregistrer le brouillon.");
+        throw new Error(ui("unableToSaveTheDraft"));
       }
       setDraft(data.draft);
       setSubject(data.draft.subject);
@@ -43,8 +46,8 @@ export default function CommercialDraftEditor({
           detail: { conversation: data.conversation },
         }));
       }
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Impossible d’enregistrer le brouillon.");
+    } catch {
+      setError(ui("unableToSaveTheDraft"));
     } finally {
       setSaving(false);
     }
@@ -52,48 +55,46 @@ export default function CommercialDraftEditor({
 
   const status = draft.approval.status === "approved"
     ? draft.delivery.reason === "transport-not-configured"
-      ? "Validation obtenue · transport IONOS non configuré"
-      : "Validé"
+      ? ui("approvedIONOSTransportNotConfigured")
+      : ui("approved")
     : draft.approval.status === "rejected"
-      ? "Refusé"
-      : "Validation requise";
+      ? ui("rejected")
+      : ui("approvalRequired");
 
   return (
     <div className="rounded-xl border border-amber-200/20 bg-amber-200/[0.04] p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <p className="text-xs uppercase tracking-wide text-amber-100/70">Communication préparée par Clara</p>
-          <p className="mt-1 text-xs text-white/45">Révision {draft.revision} · aucun envoi automatique</p>
+          <p className="text-xs uppercase tracking-wide text-amber-100/70">{ui("communicationPreparedByClara")}</p>
+          <p className="mt-1 text-xs text-white/45">{ui("revision")}{" "}{draft.revision}{" "}{ui("noAutomaticSending")}</p>
         </div>
         <span className="rounded-full border border-amber-200/20 px-3 py-1 text-xs text-amber-100/80">{status}</span>
       </div>
 
       <div className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
-        <p className="text-white/60">De : <span className="text-white/85">{draft.sender.name} &lt;{draft.sender.email}&gt;</span></p>
-        <p className="text-white/60">À : <span className="text-white/85">{draft.recipient.name} &lt;{draft.recipient.email}&gt;</span></p>
+        <p className="text-white/60">{ui("from")}{" "}<span className="text-white/85">{draft.sender.name} &lt;{draft.sender.email}&gt;</span></p>
+        <p className="text-white/60">{ui("to")}{" "}<span className="text-white/85">{draft.recipient.name} &lt;{draft.recipient.email}&gt;</span></p>
       </div>
 
       {editing ? (
         <div className="mt-4 space-y-3">
-          <label className="block text-xs text-white/55">Objet
-            <input value={subject} onChange={(event) => setSubject(event.target.value)} className="mt-1 w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-white outline-none focus:border-cyan-300/30" />
+          <label className="block text-xs text-white/55">{ui("subject")}{" "}<input value={subject} onChange={(event) => setSubject(event.target.value)} className="mt-1 w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-white outline-none focus:border-cyan-300/30" />
           </label>
-          <label className="block text-xs text-white/55">Message
-            <textarea value={body} onChange={(event) => setBody(event.target.value)} rows={12} className="mt-1 w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm leading-relaxed text-white outline-none focus:border-cyan-300/30" />
+          <label className="block text-xs text-white/55">{ui("message")}{" "}<textarea value={body} onChange={(event) => setBody(event.target.value)} rows={12} className="mt-1 w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm leading-relaxed text-white outline-none focus:border-cyan-300/30" />
           </label>
           {error && <p className="text-xs text-red-200">{error}</p>}
           <div className="flex gap-2">
-            <button type="button" disabled={saving} onClick={() => void save()} className="rounded-lg bg-cyan-300/10 px-4 py-2 text-xs text-cyan-100 disabled:opacity-50">{saving ? "Enregistrement…" : "Enregistrer"}</button>
-            <button type="button" disabled={saving} onClick={() => { setEditing(false); setSubject(draft.subject); setBody(draft.body); }} className="rounded-lg border border-white/10 px-4 py-2 text-xs text-white/65">Annuler</button>
+            <button type="button" disabled={saving} onClick={() => void save()} className="rounded-lg bg-cyan-300/10 px-4 py-2 text-xs text-cyan-100 disabled:opacity-50">{saving ? ui("saving") : ui("save")}</button>
+            <button type="button" disabled={saving} onClick={() => { setEditing(false); setSubject(draft.subject); setBody(draft.body); }} className="rounded-lg border border-white/10 px-4 py-2 text-xs text-white/65">{ui("cancel")}</button>
           </div>
         </div>
       ) : (
         <>
-          <p className="mt-3 text-sm text-white/60">Objet : <span className="text-white/90">{draft.subject}</span></p>
+          <p className="mt-3 text-sm text-white/60">{ui("subjectLabel77")}{" "}<span className="text-white/90">{draft.subject}</span></p>
           <div className="mt-3 whitespace-pre-line rounded-lg border border-white/10 bg-black/10 p-4 text-sm leading-relaxed text-white/80">{draft.body}</div>
           <div className="mt-3 flex flex-wrap items-center gap-3">
-            <button type="button" onClick={() => setEditing(true)} className="rounded-lg border border-white/10 px-4 py-2 text-xs text-white/75 hover:bg-white/5">Modifier</button>
-            <span className="text-xs text-white/40">Vous pouvez aussi demander à Clara de reformuler ce message, puis confirmer l’envoi dans la conversation.</span>
+            <button type="button" onClick={() => setEditing(true)} className="rounded-lg border border-white/10 px-4 py-2 text-xs text-white/75 hover:bg-white/5">{ui("edit")}</button>
+            <span className="text-xs text-white/40">{ui("youCanAlsoAskClaraToRephraseThisMessage")}</span>
           </div>
         </>
       )}

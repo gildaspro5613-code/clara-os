@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   CalendarDays,
   CheckSquare,
@@ -53,9 +54,12 @@ const ACTIONS: CockpitAction[] = [
 ];
 
 export default function CockpitActionBar() {
+  const ui = useTranslations("ui");
+  const nav = useTranslations("navigation");
+
   return (
     <nav
-      aria-label="Actions Clara OS"
+      aria-label={ui("claraOSActions")}
       className="w-full border-y border-white/10 bg-black/20 px-4 py-3 backdrop-blur-md"
     >
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-2">
@@ -74,7 +78,7 @@ export default function CockpitActionBar() {
                 className="text-white/55 transition group-hover:text-white"
               />
 
-              <span>{action.label}</span>
+              <span>{action.id === "mission" ? ui("newMission") : nav(action.id === "automations" ? "automatisations" : action.id)}</span>
             </button>
           );
         })}

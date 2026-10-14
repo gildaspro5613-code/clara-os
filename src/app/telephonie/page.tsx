@@ -52,19 +52,15 @@ export default function TelephoniePage() {
 
       if (!response.ok || !data.success) {
         throw new Error(
-          data.error ?? t("callError"),
+          t("callError"),
         );
       }
 
       setStatus(
-        data.message ?? t("callStarted"),
+        t("callStarted"),
       );
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : t("callError"),
-      );
+    } catch {
+      setError(t("callError"));
     } finally {
       setCalling(false);
     }
@@ -116,9 +112,9 @@ export default function TelephoniePage() {
                   </p>
 
                   <div className="mt-1 flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.45)]" />
+                    <span className="h-2 w-2 rounded-full bg-slate-500" />
                     <span className="text-xs text-white/40">
-                      {t("available")}
+                      {t("unknown")}
                     </span>
                   </div>
                 </div>
@@ -224,16 +220,16 @@ export default function TelephoniePage() {
               <span className="absolute inset-y-0 left-0 w-[2px] bg-cyan-400/70" />
 
               <p className="text-[11px] uppercase tracking-[0.18em] text-white/35">
-                Appels récents
+                {t("recent")}
               </p>
 
               <div className="mt-6 rounded-xl border border-dashed border-white/10 px-4 py-8 text-center">
                 <p className="text-sm text-white/35">
-                  Aucun appel enregistré pour l'instant.
+                  {t("empty")}
                 </p>
 
                 <p className="mt-2 text-xs text-white/20">
-                  L'historique sera raccordé à la mémoire téléphonique.
+                  {t("history")}
                 </p>
               </div>
             </section>

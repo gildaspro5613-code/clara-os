@@ -23,6 +23,8 @@ const pageTitleKeys: Record<string, string> = {
 };
 
 export default function Header() {
+  const ui = useTranslations("ui");
+
   const pathname = usePathname();
   const locale = useLocale() as Locale;
 
@@ -69,7 +71,7 @@ export default function Header() {
 
         <div
           aria-label={tc("profile")}
-          title="Profil Clara OS"
+          title={ui("claraOSProfile")}
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cyan-500 text-sm font-semibold text-white"
         >
           G

@@ -23,12 +23,14 @@ export default getRequestConfig(async () => {
     automationsBrevoMessagesModule,
     automationsMakeMessagesModule,
     missionsMessagesModule,
+    uiMessagesModule,
   ] = await Promise.all([
     import(`./messages/${locale}/index.json`),
     import(`./messages/${locale}/journal.json`),
     import(`./messages/${locale}/automations-brevo.json`),
     import(`./messages/${locale}/automations-make.json`),
     import(`./messages/${locale}/missions.json`),
+    import(`./messages/${locale}/consolidated-ui.json`),
   ]);
 
   const baseMessages = baseMessagesModule.default as Record<string, unknown>;
@@ -45,6 +47,7 @@ export default getRequestConfig(async () => {
       automationsBrevo: automationsBrevoMessages,
       automationsMake: automationsMakeMessages,
       missionsPage: missionsMessages,
+      ui: uiMessagesModule.default,
     },
     onError(error) {
       if (process.env.NODE_ENV !== "production") {

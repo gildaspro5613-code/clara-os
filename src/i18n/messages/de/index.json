@@ -179,7 +179,12 @@
     "provider": "Infrastruktur",
     "providerValue": "Twilio · ElevenLabs",
     "notice": "Anrufe erfolgen nur auf Ihre Anforderung.",
-    "title": "Telefonie"
+    "title": "Telefonie",
+    "unknown": "Verfügbarkeit nicht geprüft",
+    "recent": "Letzte Anrufe",
+    "empty": "Der Anrufverlauf ist in dieser Oberfläche nicht verfügbar.",
+    "history": "Der Anrufverlauf wird mit dem Telefonspeicher verbunden.",
+    "missingNumber": "Zielrufnummer fehlt."
   },
   "chat": {
     "greeting": "Hallo. Ich bin da. Was machen wir heute?",

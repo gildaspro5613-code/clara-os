@@ -179,7 +179,12 @@
     "provider": "Infrastructure",
     "providerValue": "Twilio · ElevenLabs",
     "notice": "Calls are placed only at your request.",
-    "title": "Telephony"
+    "title": "Telephony",
+    "unknown": "Availability not verified",
+    "recent": "Recent calls",
+    "empty": "Call history is unavailable in this interface.",
+    "history": "Call history will be connected to telephony memory.",
+    "missingNumber": "Destination number is missing."
   },
   "chat": {
     "greeting": "Hello. I’m here. What shall we do today?",

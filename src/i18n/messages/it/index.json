@@ -179,7 +179,12 @@
     "provider": "Infrastruttura",
     "providerValue": "Twilio · ElevenLabs",
     "notice": "Le chiamate vengono effettuate solo su tua richiesta.",
-    "title": "Telefonia"
+    "title": "Telefonia",
+    "unknown": "Disponibilità non verificata",
+    "recent": "Chiamate recenti",
+    "empty": "La cronologia delle chiamate non è disponibile in questa interfaccia.",
+    "history": "La cronologia sarà collegata alla memoria telefonica.",
+    "missingNumber": "Numero di destinazione mancante."
   },
   "chat": {
     "greeting": "Ciao. Eccomi. Cosa facciamo oggi?",

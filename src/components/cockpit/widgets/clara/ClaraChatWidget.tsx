@@ -50,6 +50,8 @@ export default function ClaraChatWidget({
   initialMessages = [],
   userFirstName,
 }: ClaraChatWidgetProps) {
+  const ui = useTranslations("ui");
+
   const t = useTranslations("chat");
   const [messages, setMessages] = useState<ClaraConversationMessage[]>(
     initialMessages.length > 0
@@ -270,9 +272,7 @@ export default function ClaraChatWidget({
         <div className="mt-4 space-y-3" aria-live="polite">
           {physicalActions.map((action) => (
             <section key={action.id} className="rounded-2xl border border-amber-300/25 bg-amber-300/[0.06] p-4">
-              <p className="text-[10px] uppercase tracking-[0.2em] text-amber-200/80">
-                Action physique — confirmation explicite requise
-              </p>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-amber-200/80">{" "}{ui("physicalActionExplicitConfirmationRequired")}{" "}</p>
               <p className="mt-2 text-sm text-white/80">{action.connector} · {action.capability}</p>
               <button
                 type="button"
@@ -293,15 +293,15 @@ export default function ClaraChatWidget({
                         physicalExecutionConfirmed?: boolean;
                       };
                     };
-                    if (!response.ok || !data.success) throw new Error("Physical action approval denied.");
+                    if (!response.ok || !data.success) throw new Error(ui("physicalActionApprovalDenied"));
                     setPhysicalActions((current) => current.filter((item) => item.id !== action.id));
                     const execution = data.execution;
                     const content =
                       execution?.state === "QUEUED"
-                        ? "Action autorisée et transmise au Connector Runtime. La commande a été mise en file d’attente, mais aucun effet physique n’est confirmé."
+                        ? ui("actionAuthorizedAndSentToConnectorRuntimeTheCommand")
                         : execution?.state === "FAILED"
-                          ? "Action autorisée, mais la transmission au Connector Runtime a échoué. Aucun effet physique n’est confirmé."
-                          : "Action autorisée. L’exécution physique est actuellement désactivée : aucune commande n’a été envoyée.";
+                          ? ui("actionAuthorizedButDeliveryToConnectorRuntimeFailedNo")
+                          : ui("actionAuthorizedPhysicalExecutionIsCurrentlyDisabledNoCommand");
                     setMessages((current) => [
                       ...current,
                       {
@@ -311,14 +311,15 @@ export default function ClaraChatWidget({
                         createdAt: new Date().toISOString(),
                       },
                     ]);
+                  } catch {
+                    setMessages(current=>[...current,{id:crypto.randomUUID(),role:"clara",content:t("approvalError"),createdAt:new Date().toISOString()}]);
                   } finally {
                     setLoading(false);
                   }
                 }}
                 className="mt-4 inline-flex items-center gap-2 rounded-xl border border-amber-200/30 px-3 py-2 text-xs text-amber-100 disabled:opacity-40"
               >
-                <Check size={14} /> Confirmer cette action physique
-              </button>
+                <Check size={14} />{" "}{ui("confirmThisPhysicalAction")}{" "}</button>
             </section>
           ))}
         </div>

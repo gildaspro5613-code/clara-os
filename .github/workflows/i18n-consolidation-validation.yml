@@ -1,0 +1,33 @@
+name: Clara OS i18n consolidation validation
+on:
+  pull_request:
+    branches: [consolidation/clara-os-clean-base]
+    paths:
+      - "src/i18n/**"
+      - "src/app/api/clara/chat/route.ts"
+      - "src/lib/brain/response-composer.ts"
+      - "src/app/**/*.tsx"
+      - "src/app/api/telephony/route.ts"
+      - "src/components/**"
+      - "src/modules/**"
+      - "src/tests/i18n-consolidation.test.ts"
+      - ".github/workflows/i18n-consolidation-validation.yml"
+permissions:
+  contents: read
+jobs:
+  i18n:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - name: Five-language parity and response-locale contracts
+        run: node --import tsx --test src/tests/i18n-consolidation.test.ts
+      - name: Typecheck
+        run: npx tsc --noEmit --pretty false
+      - name: Lint changed i18n surfaces
+        run: npx eslint src/app/api/clara/chat/route.ts src/app/api/telephony/route.ts src/app/brain/page.tsx src/app/connexions/page.tsx src/app/conversations/page.tsx src/app/documents/page.tsx src/app/telephonie/page.tsx src/components/cockpit/QuickActions.tsx src/components/cockpit/panels/AcquisitionQualificationPanel.tsx src/components/cockpit/panels/BriefPanel.tsx src/components/cockpit/panels/CommercialDraftEditor.tsx src/components/cockpit/panels/ConversationsPanel.tsx src/components/cockpit/widgets/CockpitActionBar.tsx src/components/cockpit/widgets/clara/ClaraChatWidget.tsx src/components/cockpit/widgets/missions/MissionWidget.tsx src/components/cockpit/widgets/waze/WazeWidget.tsx src/components/connections/ConnectionsHub.tsx src/components/documents/CanonicalArchivesPanel.tsx src/components/layout/Header.tsx src/i18n/request.ts src/tests/i18n-consolidation.test.ts src/i18n/response-language.ts src/lib/brain/response-composer.ts

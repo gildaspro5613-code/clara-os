@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 // ============================================
 // CLARA OS
 // Brain Route
@@ -14,6 +15,8 @@ import { resolveOperationalContext } from "@/lib/core/operational-context";
 export const dynamic = "force-dynamic";
 
 export default async function BrainPage() {
+  const ui = await getTranslations("ui");
+
   const { session } = await resolveOperationalContext();
   const dashboard = session.brainDashboard;
 
@@ -27,13 +30,11 @@ export default async function BrainPage() {
             <header className="mb-10 border-b border-white/10 pb-8">
               <span className="text-[11px] uppercase tracking-[0.28em] text-cyan-400/70">CLARA OS</span>
               <h1 className="mt-3 text-4xl font-medium tracking-tight">Brain</h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-white/50">
-                Aucun cycle Brain opérationnel n’a encore été enregistré dans cette session.
-              </p>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-white/50">{" "}{ui("noOperationalBrainCycleHasBeenRecordedInThis")}{" "}</p>
             </header>
             {session.mission && (
               <section className="max-w-3xl rounded-3xl border border-white/10 bg-white/[0.035] p-7 lg:p-9">
-                <span className="text-[10px] uppercase tracking-[0.22em] text-cyan-400/70">Mission actuelle</span>
+                <span className="text-[10px] uppercase tracking-[0.22em] text-cyan-400/70">{ui("currentMission")}</span>
                 <h2 className="mt-4 text-xl font-medium">{session.mission.title}</h2>
                 <p className="mt-3 text-sm leading-7 text-white/60">{session.mission.objective}</p>
                 {session.mission.nextAction && (

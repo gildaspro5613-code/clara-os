@@ -63,14 +63,15 @@ test("browser: search and document reading display text and Brain recommendation
     assert.equal(await h.page.getByText("Recommandation documentaire", { exact: true }).isVisible(), true);
   } finally { await h.close(); }
 });
-test("browser: non-extractible, invalid and oversized PDF errors remain explicit", async () => {
-  let message = "PDF sans texte. Aucun OCR n’est effectué.";
-  const h = await fixture(async url => url.searchParams.get("action") === "read" ? { status: 422, json: { success: false, message } } : undefined);
+test("browser: non-extractible, invalid and oversized PDF errors remain explicit and ignore provider secrets", async () => {
+  let code = "PDF_NO_TEXT";
+  const h = await fixture(async url => url.searchParams.get("action") === "read" ? { status: 422, json: { success: false, code, message: "PRIVATE_PROVIDER_SECRET" } } : undefined);
   try {
-    for (const next of [message, "PDF invalide ou corrompu.", "PDF trop volumineux (10 Mo maximum).", "PDF protégé par un mot de passe."]) {
-      message = next;
+    for (const [next, expected] of [["PDF_NO_TEXT", "PDF sans texte extractible. Aucun OCR n’est effectué."], ["PDF_INVALID", "PDF invalide ou corrompu."], ["PDF_TOO_LARGE", "PDF trop volumineux (10 Mo maximum)."], ["PDF_ENCRYPTED", "PDF protégé par un mot de passe."]]) {
+      code = next;
       await article(h.page, "Rapport.pdf").getByRole("button", { name: "Lire avec Clara" }).click();
-      await h.page.getByText(message, { exact: true }).waitFor();
+      await h.page.getByText(expected, { exact: true }).waitFor();
+      assert.equal(await h.page.getByText("PRIVATE_PROVIDER_SECRET").count(), 0);
       assert.equal(await h.page.locator("pre").count(), 0);
     }
   } finally { await h.close(); }

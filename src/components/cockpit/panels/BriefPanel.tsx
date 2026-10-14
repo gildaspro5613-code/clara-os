@@ -34,6 +34,8 @@ function personalizeGreeting(
 }
 
 export default function BriefPanel({ session, acquisition }: BriefPanelProps) {
+  const ui = useTranslations("ui");
+
   const t = useTranslations("cockpitUi");
   const mission = session.mission;
   const latestClaraMessage = [...session.conversation]
@@ -87,8 +89,8 @@ export default function BriefPanel({ session, acquisition }: BriefPanelProps) {
         {mission && <Link href="/missions" className="text-cyan-300/80 hover:text-cyan-200">{t("viewMissions")}</Link>}
         <Link href="/clara" className="text-cyan-300/80 hover:text-cyan-200">Clara →</Link>
         {session.conversation.length > 0 && <Link href="/conversations" className="text-cyan-300/80 hover:text-cyan-200">{t("latestConversations")} →</Link>}
-        {acquisition && <a href="#acquisition" className="text-amber-200/80 hover:text-amber-100">Dossier commercial ↓</a>}
-        {documentEvent && <Link href="/documents" className="text-cyan-300/80 hover:text-cyan-200">Documents →</Link>}
+        {acquisition && <a href="#acquisition" className="text-amber-200/80 hover:text-amber-100">{ui("commercialBrief")}</a>}
+        {documentEvent && <Link href="/documents" className="text-cyan-300/80 hover:text-cyan-200">{ui("documents")}</Link>}
       </div>
     </GlassPanel>
   );

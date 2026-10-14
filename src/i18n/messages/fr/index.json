@@ -179,7 +179,12 @@
     "provider": "Infrastructure",
     "providerValue": "Twilio · ElevenLabs",
     "notice": "Les appels sont lancés uniquement à votre demande.",
-    "title": "Téléphonie"
+    "title": "Téléphonie",
+    "unknown": "Disponibilité non vérifiée",
+    "recent": "Appels récents",
+    "empty": "Historique des appels indisponible dans cette interface.",
+    "history": "L'historique sera raccordé à la mémoire téléphonique.",
+    "missingNumber": "Numéro de destination manquant."
   },
   "chat": {
     "greeting": "Bonjour. Me voilà. Que faisons-nous aujourd’hui ?",
