@@ -1,3 +1,5 @@
+> Audit final préproduction : [rapport et matrice GO/NO-GO](preproduction-audit.md), [preuves](preproduction-evidence.json). NO-GO Production ; gestion Google/Brevo/Make fermée jusqu’à certification canonique. Les sections antérieures ci-dessous conservent leurs preuves datées.
+
 # Réception opérationnelle Clara OS — #175
 
 **Décision : NO-GO pour la réception Production. Issue #175 non clôturée.** Les corrections ciblées sont proposées dans une seule PR Draft ; aucun fournisseur OS n’est certifié réel. Base : `consolidation/clara-os-clean-base`, SHA `781976a3b53d6a8a53d31a892c33168af0b3b4f5`, après merges #173/#174. Audit du 14 octobre 2026, fuseau Europe/Paris.

@@ -94,3 +94,47 @@ test('server instrumentation never imports or starts a global business runtime',
  await (startupExports.register as()=>Promise<void>)();assert.equal(calls,0);
  assert.ok(!readFileSync('instrumentation.ts','utf8').includes('import('));
 });
+
+const uncertifiedConnectorRoutes = [
+ ['src/app/api/connections/google/route.ts','GET'],
+ ['src/app/api/connections/google/connect/route.ts','GET'],
+ ['src/app/api/connections/google/callback/route.ts','GET'],
+ ['src/app/api/connections/make/configure/route.ts','POST'],
+ ['src/app/api/connections/make/status/route.ts','GET'],
+ ['src/app/api/connections/make/verify/route.ts','POST'],
+ ['src/app/api/connections/brevo/route.ts','GET'],
+ ['src/app/api/connections/brevo/connect/route.ts','GET'],
+ ['src/app/api/connections/brevo/callback/route.ts','GET'],
+] as const;
+function fencedConnector(file:string, fence:typeof nativeOperationFence, onLegacy:()=>void){
+ const modules:Record<string,unknown>={};
+ for(const match of readFileSync(file,'utf8').matchAll(/from\s+["']([^"']+)["']/g))
+  modules[match[1]]=new Proxy({},{get:()=>function(){onLegacy();throw Error('Uncertified connector reached');}});
+ modules['@/lib/native/authority']={nativeOperationFence:fence};
+ return compiled(file,modules);
+}
+test('Uncertified Google/Brevo/Make connection routes reject invalid OS sessions before storage or provider I/O',async()=>{
+ let legacyCalls=0;
+ for(const [file,method] of uncertifiedConnectorRoutes){
+  const handler=fencedConnector(file,nativeOperationFence,()=>legacyCalls++)[method] as(request:Request)=>Promise<Response>;
+  for(const cookie of ['', 'clara_auth_session=invalid', 'clara_auth_session='+ 'A'.repeat(43)+'; clara_auth_session='+ 'B'.repeat(43)]){
+   const response=await handler(new Request('https://fixture.invalid/api?state=synthetic&code=synthetic',{method,headers:{cookie}}));
+   assert.equal(response.status,401,file);assert.equal(response.headers.get('Cache-Control'),'no-store');
+  }
+ }
+ assert.equal(legacyCalls,0);
+});
+test('a verified native session cannot unlock Google credentials or Make configuration before connector certification',async()=>{
+ let legacyCalls=0,authorityReads=0;
+ const authority=compiled('src/lib/native/authority.ts',{
+  '@/lib/core/store/database':{sql:async()=>{authorityReads++;return [{data:{state:'WORKING',mission:null}}];}},
+  '@/lib/canonical/registry':{RegistryError,registryContext,opaque},
+ });
+ for(const [file,method] of uncertifiedConnectorRoutes){
+  const handler=fencedConnector(file,authority.nativeOperationFence as typeof nativeOperationFence,()=>legacyCalls++)[method] as(request:Request)=>Promise<Response>;
+  const response=await handler(new Request('https://fixture.invalid/api?workspaceId=w&clientId=c&projectId=p&sessionId=native:a',{method,headers:{cookie:'clara_auth_session='+ 'A'.repeat(43)}}));
+  assert.equal(response.status,503,file);assert.equal(response.headers.get('Cache-Control'),'no-store');
+  assert.deepEqual(await response.json(),{success:false,code:'NATIVE_SCOPED_OPERATION_UNAVAILABLE'});
+ }
+ assert.equal(authorityReads,uncertifiedConnectorRoutes.length);assert.equal(legacyCalls,0);
+});

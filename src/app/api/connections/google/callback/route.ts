@@ -1,3 +1,4 @@
+import { nativeOperationFence } from "@/lib/native/authority";
 import { NextResponse } from "next/server";
 import { DatabaseConnectionRepository } from "@/lib/connections/connection-repository";
 import { CredentialStore } from "@/lib/connections/credential-store";
@@ -24,6 +25,8 @@ function finishRedirect(request: Request, status: string): NextResponse {
 }
 
 export async function GET(request: Request) {
+  const denied = await nativeOperationFence(request);
+  if (denied) return denied;
   const url = new URL(request.url);
   const stateValue = url.searchParams.get("state");
   const code = url.searchParams.get("code");

@@ -1,8 +1,8 @@
 {
-  "checkedAt": "2026-10-14T07:12:50.239685+02:00",
-  "base": "781976a3b53d6a8a53d31a892c33168af0b3b4f5",
+  "checkedAt": "2026-10-14T16:35:03.164430+00:00",
+  "base": "1b7b718f80eafc4195b12fd1bd677ec64b6f89c1",
   "scope": "Production for deployed connectors; Development for isolated tests only; Preview not required and prohibited",
-  "productionMetadataStatus": "BLOCKED: owner reports Vercel team authorization HTTP 403; no automated Production variable-name/scope access",
+  "productionMetadataStatus": "UNVERIFIED: no callable Vercel tool or Vercel credential-name binding in this environment; prior owner-reported team HTTP 403 not retested",
   "variables": [
     {
       "name": "BREVO_CLIENT_ID",

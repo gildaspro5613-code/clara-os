@@ -1,3 +1,4 @@
+import { nativeOperationFence } from "@/lib/native/authority";
 import { NextResponse } from "next/server";
 import { ConnectionStatus } from "@/lib/connections/connection";
 import {
@@ -14,7 +15,9 @@ import { createGoogleOAuthNonce } from "@/lib/connectors/google/oauth/google-oau
 export const dynamic = "force-dynamic";
 const GOOGLE_OAUTH_COOKIE = "clara_google_oauth_nonce";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const denied = await nativeOperationFence(request);
+  if (denied) return denied;
   const repository = new DatabaseConnectionRepository();
   let connection = await repository.findByWorkspaceAndProvider(
     CURRENT_WORKSPACE_ID,
