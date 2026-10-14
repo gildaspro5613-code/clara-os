@@ -6,7 +6,7 @@ import {resolve} from "node:path";
 import vm from "node:vm";
 import ts from "typescript";
 import {createNativeAuthority,nativeOperationFence,nativeFailure} from "../lib/native/authority";
-import {nativeRequest,nativeContext,nativeCommand} from "../lib/native/scoped-context";
+import {nativeRequest,nativeContext,nativeCommand,withNativeScope} from "../lib/native/scoped-context";
 import {fields,registryBody,sameOrigin} from "../lib/canonical/http";
 import {RegistryError,registryContext,opaque} from "../lib/canonical/registry";
 
@@ -30,13 +30,13 @@ test('default, external and absent explicit selectors cannot resume a global/nat
 });
 test('every fenced native HTTP handler refuses anonymous/invalid cookies without entering legacy business logic',async()=>{
  const roots=['src/app/api/clara','src/app/api/missions','src/app/api/documents','src/app/api/contacts','src/app/api/calendar','src/app/api/workspace/install','src/app/api/openai/test','src/app/api/internal/prospect-e2e-trace'];
- const files=roots.flatMap(root=>readdirSync(root,{recursive:true,withFileTypes:true}).filter(f=>f.isFile()&&f.name==='route.ts').map(f=>resolve(f.parentPath,f.name))).filter(file=>readFileSync(file,'utf8').includes('nativeOperationFence'));
+ const files=roots.flatMap(root=>readdirSync(root,{recursive:true,withFileTypes:true}).filter(f=>f.isFile()&&f.name==='route.ts').map(f=>resolve(f.parentPath,f.name))).filter(file=>readFileSync(file,'utf8').match(/nativeOperationFence|nativeRequest|withNativeScope/));
  let checked=0;
  for(const file of files){
   const imports=new Set([...readFileSync(file,'utf8').matchAll(/from\s+["']([^"']+)["']/g)].map(match=>match[1]));
   const modules:Record<string,unknown>={};let legacyCalls=0;
   for(const name of imports)modules[name]=new Proxy({},{get:()=>function(){legacyCalls++;throw Error('Legacy code reached');}});
-  modules['@/lib/native/authority']={nativeOperationFence};modules['next/server']={NextResponse:Response};
+  modules['@/lib/native/authority']={nativeOperationFence,nativeFailure};modules['@/lib/native/scoped-context']={nativeRequest,withNativeScope,nativeContext};modules['next/server']={NextResponse:Response};
   const exported=compiled(file,modules);
   for(const method of ['GET','POST','PATCH','DELETE'])if(typeof exported[method]==='function')for(const cookie of ['', 'clara_auth_session=invalid']){
     const request=new Request('https://fixture.invalid/native',{method,headers:{cookie}});
@@ -76,7 +76,7 @@ test('reopened chat and native runtime/document handlers still refuse invalid au
  for(const file of ['src/app/api/clara/chat/route.ts','src/app/api/native/runtime/route.ts','src/app/api/native/documents/authorization/route.ts']){
   const modules:Record<string,unknown>={};let business=0;
   for(const match of readFileSync(file,'utf8').matchAll(/from\s+["']([^"']+)["']/g))modules[match[1]]=new Proxy({},{get:()=>()=>{business++;throw Error('Business/provider reached');}});
-  modules['@/lib/native/scoped-context']={nativeRequest,nativeContext,nativeCommand};
+  modules['@/lib/native/scoped-context']={nativeRequest,nativeContext,nativeCommand,withNativeScope};
   modules['@/lib/native/authority']={nativeSelectors:(await import('../lib/native/authority')).nativeSelectors,nativeFailure};
   modules['@/lib/canonical/registry']={RegistryError,registryContext,opaque};modules['@/lib/canonical/http']={fields,registryBody,sameOrigin};
   const handlers=compiled(file,modules);

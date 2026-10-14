@@ -17,6 +17,8 @@ test('native authority: actual PostgreSQL owner/workspace/client/project ACL, re
  const historical=pg("SELECT data::text FROM clara_sessions WHERE id='default'");
  execFileSync('docker',['exec','-i',container,'psql','-U','postgres','-d',database,'-q','-v','ON_ERROR_STOP=1'],{input:readFileSync('db/migrations/012_native_resource_authority.sql'),stdio:['pipe','pipe','pipe']});
  assert.equal(pg("SELECT data::text FROM clara_sessions WHERE id='default'"),historical);assert.equal(pg('SELECT count(*) FROM clara_native_resource_authority').trim(),'0');
+ for(const file of ['013_native_scoped_runtime.sql','014_native_commercial_continuity.sql'])execFileSync('docker',['exec','-i',container,'psql','-U','postgres','-d',database,'-q','-v','ON_ERROR_STOP=1'],{input:readFileSync('db/migrations/'+file),stdio:['pipe','pipe','pipe']});
+ assert.equal(pg("SELECT data::text FROM clara_sessions WHERE id='default'"),historical);
  const tokens=[randomBytes(32).toString('base64url'),randomBytes(32).toString('base64url')],digest=(value:string)=>createHash('sha256').update(value).digest('hex');
  pg(`INSERT INTO clara_auth_users(id) VALUES('a'),('b'); INSERT INTO clara_auth_workspaces(id) VALUES('w'),('other-w'); INSERT INTO clara_auth_identities(issuer,subject,user_id) VALUES('fixture','a','a'),('fixture','b','b'); INSERT INTO clara_workspace_memberships(user_id,workspace_id,role) VALUES('a','w','owner'),('b','w','member'),('a','other-w','owner'); INSERT INTO clara_auth_sessions(token_hash,user_id,expires_at) VALUES('${digest(tokens[0])}','a',NOW()+INTERVAL '1 hour'),('${digest(tokens[1])}','b',NOW()+INTERVAL '1 hour');`);
  for(const w of ['w','other-w']){

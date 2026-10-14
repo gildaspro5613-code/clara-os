@@ -25,7 +25,7 @@ function stringMetadata(value: unknown): string | null {
  * It never merges sessions and never persists the projection into `default`.
  */
 export async function resolveOperationalContext(): Promise<OperationalContext> {
-  const native=nativeContext();if(native)return {sessionKey:native.scope.sessionId,session:native.session,acquisition:null};
+  const native=nativeContext();if(native)return {sessionKey:native.scope.sessionId,session:native.session,acquisition:native.session.acquisitionSubmissionId?native.acquisitions.get(native.session.acquisitionSubmissionId)??null:null};
   // Resume the most recently persisted operational thread first. Mission
   // orchestration is a fallback for work that has no durable Clara session yet.
   const recentOwner = await loadMostRecentMissionSession(true).catch(() => null);

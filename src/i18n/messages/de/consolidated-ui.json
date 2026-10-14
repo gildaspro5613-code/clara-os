@@ -179,5 +179,7 @@
   "nativeCreateMission": "Mission erstellen",
   "nativeScopedActiveCount": "Ausgewähltes privates Projekt: {count, plural, one {# aktive Mission} other {# aktive Missionen}}",
   "nativePendingSelection": "Bestätigen Sie die Auswahl durch Öffnen oder Erstellen eines Verlaufs; der aktive Kontext bleibt oben angegeben.",
-  "nativeProviderBlocked": "Dieser externe Dienst bleibt im nativen Kontext nicht verfügbar, bis seine Berechtigungen bestätigt sind."
+  "nativeProviderBlocked": "Dieser externe Dienst bleibt im nativen Kontext nicht verfügbar, bis seine Berechtigungen bestätigt sind.",
+  "nativeContact": "Kontakt / Interessent",
+  "nativeSelectContact": "Kontakt auswählen"
 }

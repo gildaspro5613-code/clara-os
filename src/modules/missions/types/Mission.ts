@@ -40,6 +40,7 @@ export interface MissionTask {
 }
 
 export interface Mission {
+  acquisitionSubmissionId?: string;
   id: string;
 
   title: string;

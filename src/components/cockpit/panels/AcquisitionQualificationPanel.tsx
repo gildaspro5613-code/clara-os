@@ -1,3 +1,4 @@
+import type {MdProjectIntake} from "@/types";
 import { getTranslations } from "next-intl/server";
 import GlassPanel from "@/components/ui/GlassPanel";
 import type { AcquisitionRecord } from "@/lib/acquisition/acquisition-store";
@@ -8,10 +9,12 @@ import { originalLabel } from "@/lib/presentation/cockpit-summary";
 
 interface AcquisitionQualificationPanelProps {
   qualifications: AcquisitionRecord[];
+  nativeIntake?:MdProjectIntake|null;
 }
 
 export default async function AcquisitionQualificationPanel({
   qualifications,
+  nativeIntake,
 }: AcquisitionQualificationPanelProps) {
   const ui = await getTranslations("ui");
 
@@ -20,7 +23,7 @@ export default async function AcquisitionQualificationPanel({
 
   const opportunity = current.qualification.opportunity;
   const state = current.qualification.qualification;
-  const intake = await loadProjectIntake(current.workspaceId, current.submissionId).catch(() => null);
+  const intake = nativeIntake===undefined?await loadProjectIntake(current.workspaceId, current.submissionId).catch(() => null):nativeIntake?{intake:nativeIntake}:null;
   const draft = current.commercialDraft
     ?? (intake ? buildCommercialQualificationDraft(current, intake.intake) : null);
 

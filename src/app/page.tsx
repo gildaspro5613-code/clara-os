@@ -1,3 +1,4 @@
+import {nativeContext} from "@/lib/native/scoped-context";
 import {loadMissions} from "@/modules/missions/mission-store";
 import { nativePage } from "@/lib/native/page-fence";
 export const dynamic = "force-dynamic";
@@ -13,7 +14,7 @@ export default async function HomePage() {
 
   return (
     <MainLayout>
-      <Cockpit nativeMissions={await loadMissions()} session={operational.session} acquisition={operational.acquisition} />
+      <Cockpit nativeIntake={operational.acquisition?nativeContext()!.intakes.get(operational.acquisition.submissionId)??null:null} nativeMissions={await loadMissions()} session={operational.session} acquisition={operational.acquisition} />
     </MainLayout>
   );
   });

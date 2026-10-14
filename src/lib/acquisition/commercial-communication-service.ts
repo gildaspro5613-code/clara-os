@@ -1,3 +1,4 @@
+import {nativeContext} from "@/lib/native/scoped-context";
 import type { CapabilityExecutionPrincipal } from "@/lib/capabilities/capability-policy";
 import type { ToolApprovalRequest } from "@/lib/capabilities/tool-approval-repository";
 import type { AcquisitionRecord } from "./acquisition-store";
@@ -162,6 +163,7 @@ export async function createCommercialSendProposal(input: {
   context: CommercialSendContext;
   principal: CapabilityExecutionPrincipal;
 }, bridge: CommercialApprovalBridge): Promise<CommercialApprovalResult> {
+  if(nativeContext())return {success:false,message:'NATIVE_COMMERCIAL_SEND_DISABLED'};
   return bridge.execute({
     callId: crypto.randomUUID(),
     name: COMMERCIAL_EMAIL_SEND_CAPABILITY,
@@ -194,6 +196,7 @@ export async function executeCommercialTransportBoundary(
   input: CommercialSendContext,
   repository: CommercialDraftRepository = databaseRepository,
 ) {
+  if(nativeContext())return {success:false,code:'NATIVE_COMMERCIAL_SEND_DISABLED',message:'NATIVE_COMMERCIAL_SEND_DISABLED'};
   const context = parseCommercialSendContext(input);
   if (!context) {
     return { success: false, code: "commercial-draft-context-invalid", message: "Le contexte du brouillon commercial est invalide." };

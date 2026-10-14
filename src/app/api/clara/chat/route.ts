@@ -85,6 +85,7 @@ async function scopedChat(request:Request) {
         message,
         userFirstName: persistedBeforeCycle.user.firstName,
         conversationHistory: recentConversation,
+        ...(operational.acquisition?{selectedAcquisition:{submissionId:operational.acquisition.submissionId,contact:nativeContext()?.intakes.get(operational.acquisition.submissionId)?.contact,opportunity:operational.acquisition.qualification.opportunity}}:{}),
       },
       context: operational.acquisition
         ? {
@@ -100,6 +101,8 @@ async function scopedChat(request:Request) {
     const commercialIntent = operational.acquisition
       ? classifyCommercialConversationIntent(message)
       : { kind: "none" as const };
+
+    if(nativeContext()&&commercialIntent.kind==='send-confirmation')return NextResponse.json({success:false,code:'NATIVE_COMMERCIAL_SEND_DISABLED'},{status:403,headers:{'Cache-Control':'no-store'}});
 
     // A commercial rewrite/send confirmation is a command inside the current
     // acquisition workflow, not a new operational objective. Handle it against

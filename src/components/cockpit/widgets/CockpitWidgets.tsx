@@ -1,3 +1,4 @@
+import type {MdProjectIntake} from "@/types";
 import type {Mission} from "@/modules/missions/types/Mission";
 import EmailSummaryPanel from "../panels/EmailSummaryPanel";
 import AgendaWidget from "./agenda/AgendaWidget";
@@ -25,10 +26,11 @@ import { getTranslations } from "next-intl/server";
 interface CockpitWidgetsProps {
   session: ClaraSession;
   nativeMissions?:Mission[];
+  nativeIntake?:MdProjectIntake|null;
   acquisition?: AcquisitionRecord | null;
 }
 
-export default async function CockpitWidgets({ session, acquisition,nativeMissions }: CockpitWidgetsProps) {
+export default async function CockpitWidgets({ session, acquisition,nativeMissions,nativeIntake }: CockpitWidgetsProps) {
   const t = await getTranslations("cockpitUi");
   const ui = await getTranslations("ui");
   const providerBlocked = <p className="rounded-xl border border-white/10 p-5 text-sm text-white/60">{ui("nativeProviderBlocked")}</p>;
@@ -69,7 +71,7 @@ export default async function CockpitWidgets({ session, acquisition,nativeMissio
 
         {orderedQualifications.length > 0 && (
           <div id="acquisition" className="mt-5 scroll-mt-6">
-            <AcquisitionQualificationPanel qualifications={orderedQualifications} />
+            <AcquisitionQualificationPanel nativeIntake={nativeIntake} qualifications={orderedQualifications} />
           </div>
         )}
 

@@ -39,6 +39,8 @@ function resolveDefaultUser(): ClaraUserIdentity {
 }
 
 export interface ClaraSession {
+  /** Explicit canonical-authorized commercial selection; no historical inference. */
+  acquisitionSubmissionId?: string;
   state: ClaraState;
   recommendation: Recommendation | null;
   /** Latest complete dashboard produced by a real Brain execution cycle. */

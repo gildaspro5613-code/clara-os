@@ -8,9 +8,13 @@ import {normalizeSession,type ClaraSession} from '@/lib/core/session';
 import type {Mission} from '@/modules/missions/types/Mission';
 import type {JournalEntry} from '@/lib/core/journal-entry';
 import type {Clara} from '@/lib/core/clara';
+import type {AcquisitionRecord} from '@/lib/acquisition/acquisition-store';
+import type {MdProjectIntake} from '@/types';
+import type {CommercialCommunicationDraft} from '@/lib/acquisition/commercial-communication-draft';
 export interface ScopedNativeContext {
  scope:NativeSelectors&{digest:string};userId:string;session:ClaraSession;
  missions:Map<string,Mission>;journal:JournalEntry[];writes:Map<string,Mission>;entries:JournalEntry[];
+ acquisitions:Map<string,AcquisitionRecord>;intakes:Map<string,MdProjectIntake>;intakeMetadata:Map<string,{productId:string;sessionKey:string;eventId:string}>;acquisitionSnapshots:Record<string,unknown>;draftWrites:Map<string,CommercialCommunicationDraft>;draftRevisionSteps:Map<string,number>;
  writable:boolean;runtime?:Clara;dirty:boolean;commitOnFailure?:boolean;
 }
 const storage=new AsyncLocalStorage<ScopedNativeContext>();
@@ -18,9 +22,16 @@ export const nativeContext=()=>storage.getStore();
 export function writableNativeContext(){const context=nativeContext();if(!context||!context.writable)throw new RegistryError(403,'NATIVE_WRITE_DENIED');context.dirty=true;return context;}
 export function nativeMission(mission:Mission){
  const ctx=writableNativeContext();
- if(!ctx.missions.has(mission.id)&&!ctx.writes.has(mission.id)){
+ const isNew=!ctx.missions.has(mission.id)&&!ctx.writes.has(mission.id);
+ if(isNew){
   if(mission.id.startsWith('native:'))throw new RegistryError(403,'NATIVE_SCOPE_DENIED');
   mission.id='native:'+randomUUID();
+ }
+ const linked=ctx.missions.get(mission.id)?.acquisitionSubmissionId;
+ if(linked){if(mission.acquisitionSubmissionId&&mission.acquisitionSubmissionId!==linked)throw new RegistryError(403,'NATIVE_ACQUISITION_DENIED');mission.acquisitionSubmissionId=linked;}
+ if(ctx.session.acquisitionSubmissionId){
+  if(mission.acquisitionSubmissionId&&mission.acquisitionSubmissionId!==ctx.session.acquisitionSubmissionId)throw new RegistryError(403,'NATIVE_ACQUISITION_DENIED');
+  if(isNew)mission.acquisitionSubmissionId=ctx.session.acquisitionSubmissionId;
  }
  ctx.missions.set(mission.id,mission);ctx.writes.set(mission.id,mission);
 }
@@ -42,12 +53,17 @@ export async function withNativeScope<T>(request:Request,write:boolean,render:()
  const command=nativeCommands(query),data=await command(scope,write?'write':'read');
  const expected=structuredClone(data.session),session=hydrateNative(data.session as Record<string,unknown>);
  const missions=(data.missions as Mission[]).map(m=>({...m,createdAt:new Date(m.createdAt)}));
- const ctx:ScopedNativeContext={scope,userId:String(data.userId),session,missions:new Map(missions.map(m=>[m.id,m])),journal:(data.journal as JournalEntry[]).map(j=>({...j,createdAt:new Date(j.createdAt)})),writes:new Map(),entries:[],writable:write,dirty:false};
+ const acquisitions=new Map<string,AcquisitionRecord>(),intakes=new Map<string,MdProjectIntake>(),acquisitionSnapshots:Record<string,unknown>={},intakeMetadata=new Map<string,{productId:string;sessionKey:string;eventId:string}>();
+ for(const snapshot of (data.acquisitions??[]) as Array<{record:Record<string,unknown>;intake:MdProjectIntake;intakeMetadata:{productId:string;sessionKey:string;eventId:string}}>){
+  const row=snapshot.record,id=String(row.submission_id);acquisitionSnapshots[id]=snapshot;intakes.set(id,snapshot.intake);intakeMetadata.set(id,snapshot.intakeMetadata);
+  acquisitions.set(id,{submissionId:id,workspaceId:String(row.workspace_id),qualification:row.qualification as AcquisitionRecord['qualification'],decisionBrief:row.decision_brief as AcquisitionRecord['decisionBrief'],lifecycle:row.lifecycle as AcquisitionRecord['lifecycle'],commercialDraft:row.commercial_draft as CommercialCommunicationDraft|null,createdAt:new Date(String(row.created_at)),updatedAt:new Date(String(row.updated_at))});
+ }
+ const ctx:ScopedNativeContext={scope,userId:String(data.userId),session,acquisitions,intakes,intakeMetadata,acquisitionSnapshots,draftWrites:new Map(),draftRevisionSteps:new Map(),missions:new Map(missions.map(m=>[m.id,m])),journal:(data.journal as JournalEntry[]).map(j=>({...j,createdAt:new Date(j.createdAt)})),writes:new Map(),entries:[],writable:write,dirty:false};
  return storage.run(ctx,async()=>{
   const result=await render();
   if(write&&ctx.dirty){
    if(result instanceof Response&&result.status>=400&&!ctx.commitOnFailure)return result;
-   await command(scope,'commit',{expected,session:ctx.session,missions:[...ctx.writes.values()],journal:ctx.entries});
+   await command(scope,'commit',{expected,session:ctx.session,missions:[...ctx.writes.values()],journal:ctx.entries,expectedAcquisitions:ctx.acquisitionSnapshots,acquisitions:[...ctx.draftWrites].map(([submissionId,draft])=>({submissionId,draft,revisionSteps:ctx.draftRevisionSteps.get(submissionId)}))});
   }
   return result;
  });

@@ -179,5 +179,7 @@
   "nativeCreateMission": "Create mission",
   "nativeScopedActiveCount": "Selected private project: {count, plural, one {# active mission} other {# active missions}}",
   "nativePendingSelection": "Confirm this selection by opening or creating a thread; the active context remains the one shown above.",
-  "nativeProviderBlocked": "This external service remains unavailable in the native context until its permissions are certified."
+  "nativeProviderBlocked": "This external service remains unavailable in the native context until its permissions are certified.",
+  "nativeContact": "Contact / prospect",
+  "nativeSelectContact": "Select contact"
 }

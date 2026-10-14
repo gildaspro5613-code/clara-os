@@ -179,5 +179,7 @@
   "nativeCreateMission": "Crea missione",
   "nativeScopedActiveCount": "Progetto privato selezionato: {count, plural, one {# missione attiva} other {# missioni attive}}",
   "nativePendingSelection": "Conferma la selezione aprendo o creando un thread; il contesto attivo resta quello indicato sopra.",
-  "nativeProviderBlocked": "Questo servizio esterno resta indisponibile nel contesto nativo finché i permessi non saranno certificati."
+  "nativeProviderBlocked": "Questo servizio esterno resta indisponibile nel contesto nativo finché i permessi non saranno certificati.",
+  "nativeContact": "Contatto / potenziale cliente",
+  "nativeSelectContact": "Seleziona contatto"
 }

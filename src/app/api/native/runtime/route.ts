@@ -1,3 +1,4 @@
+import {resolveCommercialDraft} from "@/lib/acquisition/commercial-communication-service";
 import {getTranslations} from "next-intl/server";
 import {Journal} from "@/lib/core/journal";
 import {writeActionEntry} from "@/lib/core/journal-writer";
@@ -21,9 +22,25 @@ export async function POST(request:Request){
   return await nativeRequest(request,async()=>{
    const ctx=writableNativeContext();
    const ui=await getTranslations("ui");
-   if(action==='createMission'){
+   if(action==='selectAcquisition'){
+    fields(body,['action','submissionId']);const submissionId=opaque(body.submissionId);
+    if(!ctx.acquisitions.has(submissionId))throw new RegistryError(403,'NATIVE_ACQUISITION_DENIED');
+    if(ctx.session.acquisitionSubmissionId&&ctx.session.acquisitionSubmissionId!==submissionId)throw new RegistryError(409,'NATIVE_NEW_SESSION_REQUIRED');
+    if(!ctx.session.acquisitionSubmissionId&&ctx.session.mission)throw new RegistryError(409,'NATIVE_NEW_SESSION_REQUIRED');
+    ctx.session.acquisitionSubmissionId=submissionId;ctx.session.updatedAt=new Date();
+    await new Journal().addEntry(writeActionEntry(ui('nativeSelectContact'),ctx.intakes.get(submissionId)!.contact.name));
+   }else if(action==='prepareCommercialDraft'){
+    fields(body,['action']);const submissionId=ctx.session.acquisitionSubmissionId;
+    if(!submissionId||!ctx.acquisitions.has(submissionId))throw new RegistryError(403,'NATIVE_ACQUISITION_DENIED');
+    const resolved=await resolveCommercialDraft(ctx.scope.workspaceId,submissionId);
+    if(!resolved)throw new RegistryError(409,'NATIVE_COMMERCIAL_DRAFT_UNAVAILABLE');
+    await new Journal().addEntry(writeActionEntry(ui('communicationPreparedByClara'),resolved.draft.recipient.name));
+    return Response.json({success:true,draft:resolved.draft},{headers:{'Cache-Control':'no-store'}});
+   }else if(action==='createMission'){
     fields(body,['action','title','objective']);
     if(typeof body.title!=='string'||!body.title.trim()||body.title.length>160||typeof body.objective!=='string'||!body.objective.trim()||body.objective.length>4000)throw new RegistryError(400,'INVALID_NATIVE_MISSION');
+    const existing=ctx.session.acquisitionSubmissionId?[...ctx.missions.values()].find(m=>m.acquisitionSubmissionId===ctx.session.acquisitionSubmissionId):undefined;
+    if(existing){ctx.session.mission=existing;return Response.json({success:true,mission:existing},{headers:{'Cache-Control':'no-store'}});}
     const mission={id:'new',title:body.title.trim(),objective:body.objective.trim(),status:'planned' as const,priority:'medium' as const,createdAt:new Date(),tasks:[],progress:0};
     nativeMission(mission);ctx.session.mission=mission;ctx.session.updatedAt=new Date();
     await new Journal().addEntry(writeActionEntry(ui("nativeCreateMission"),mission.title));
