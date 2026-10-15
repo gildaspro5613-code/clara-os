@@ -81,8 +81,8 @@
       "failed": 0,
       "skipped": 0,
       "scope": "Controlled providers",
-      "artifact": "/tmp/lot2bis-contracts.log",
-      "sha256": "572e1b09c19fb8e51ec6df3f15623ed3590c4583dbea08535cc396897447acd2",
+      "artifact": "/tmp/lot2bis-contracts-lockfixed.log",
+      "sha256": "b1eea59679be0fd67a77e760a9a423e20655ea14e9d90d33e69218e561dc97d0",
       "command": "node --import tsx --test src/tests/i18n-consolidation.test.ts src/tests/operational-reception.test.tsx src/tests/voice-route-security.test.ts src/tests/commercial-operational-continuity.test.ts src/tests/google-durable-oauth.test.ts src/tests/brevo-connector.test.ts src/tests/make-connector.test.ts src/tests/microsoft-authenticated-routes.test.ts src/tests/universal-oauth.test.ts"
     },
     {
@@ -302,6 +302,22 @@
     "/tmp/lot2bis-final-lint.log": {
       "sha256": "76162e465989f3f070a9de8db711fbf358e53b74d09ce1bbdb57c727e4c4a16d",
       "bytes": 208
+    },
+    "/tmp/lot2bis-npm10-ci.log": {
+      "sha256": "5ba488e756777331511385311c3d5d74b11642e6e47f41953c1c4f825c7d78d2",
+      "bytes": 3753
+    },
+    "/tmp/lot2bis-npm10-ci-fixed.log": {
+      "sha256": "a2466075628f9ef61c12dc6a7ffed35cfc774c8baf79e19bb21653ce603f8f9e",
+      "bytes": 3020
+    },
+    "/tmp/lot2bis-npm11-ci-fixed.log": {
+      "sha256": "f3afde0c7be9b265e96aabaf10e5f8b789da9c31c5014250fd0e1abe2f500111",
+      "bytes": 3020
+    },
+    "/tmp/lot2bis-contracts-lockfixed.log": {
+      "sha256": "b1eea59679be0fd67a77e760a9a423e20655ea14e9d90d33e69218e561dc97d0",
+      "bytes": 5755
     }
   },
   "live": {
@@ -317,8 +333,17 @@
     "providerMessagesSent": false
   },
   "github": {
-    "publication": "pending",
-    "checks": "pending"
+    "publication": "PUBLISHED_DRAFT",
+    "pullRequest": "https://github.com/gildaspro5613-code/clara-os/pull/176",
+    "initialNode24WorkflowsPassed": [
+      "i18n",
+      "documents",
+      "native-authority"
+    ],
+    "initialNode22InstallFailures": true,
+    "finalChecks": "Inspect PR #176 checks at published SHA; final outcome reported in reception delivery",
+    "vercelObservedAtInitialPublication": "Canceled by Ignored Build Step",
+    "githubDeploymentsAtInitialPublication": 0
   },
   "typescript": {
     "command": "npx tsc --noEmit --pretty false",
@@ -327,5 +352,15 @@
   "targetedLint": {
     "result": "PASS",
     "artifact": "/tmp/lot2bis-final-lint.log"
+  },
+  "lockfileCompatibilityCommit": "3c735a117235c0d2c9cb667bd4ed7827e1125506",
+  "lockfileCompatibility": {
+    "initialPublishedCommit": "f2c9ae3d5cb62785650b173897c956f1476c069f",
+    "initialFailure": "npm 10 EUSAGE: Missing @swc/helpers@0.5.23 from lock file",
+    "fixedBy": "one optional nested peer entry; no existing versions changed",
+    "npm10RealCi": "PASS (Node24 local; Node22 checked by CI)",
+    "npm11RealCi": "PASS",
+    "ignoreScriptsUsedForFinalCi": false,
+    "legacyPeerDeps": false
   }
 }
