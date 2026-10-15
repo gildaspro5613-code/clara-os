@@ -16,6 +16,7 @@ export interface ScopedNativeContext {
  missions:Map<string,Mission>;journal:JournalEntry[];writes:Map<string,Mission>;entries:JournalEntry[];
  acquisitions:Map<string,AcquisitionRecord>;intakes:Map<string,MdProjectIntake>;intakeMetadata:Map<string,{productId:string;sessionKey:string;eventId:string}>;acquisitionSnapshots:Record<string,unknown>;draftWrites:Map<string,CommercialCommunicationDraft>;draftRevisionSteps:Map<string,number>;
  documentSource?:import("@/lib/brain/brain-source").BrainSourceContext;documentCommitProof?:Record<string,unknown>;
+ mailCommitProof?:Record<string,unknown>;
  writable:boolean;runtime?:Clara;dirty:boolean;commitOnFailure?:boolean;
 }
 const storage=new AsyncLocalStorage<ScopedNativeContext>();
@@ -65,7 +66,8 @@ export async function withNativeScope<T>(request:Request,write:boolean,render:()
   if(write&&ctx.dirty){
    if(result instanceof Response&&result.status>=400&&!ctx.commitOnFailure)return result;
    const commit={expected,session:ctx.session,missions:[...ctx.writes.values()],journal:ctx.entries,expectedAcquisitions:ctx.acquisitionSnapshots,acquisitions:[...ctx.draftWrites].map(([submissionId,draft])=>({submissionId,draft,revisionSteps:ctx.draftRevisionSteps.get(submissionId)}))};
-   if(ctx.documentCommitProof){const {nativeGoogleCommands}=await import('./google-authority');await nativeGoogleCommands(query)('commit',{...ctx.documentCommitProof,commit});}
+   if(ctx.mailCommitProof){const {nativeMailCommands}=await import('./mail-authority');const {operation,...proof}=ctx.mailCommitProof;await nativeMailCommands(query)(String(operation),{...proof,commit});}
+   else if(ctx.documentCommitProof){const {nativeGoogleCommands}=await import('./google-authority');await nativeGoogleCommands(query)('commit',{...ctx.documentCommitProof,commit});}
    else await command(scope,'commit',commit);
   }
   return result;

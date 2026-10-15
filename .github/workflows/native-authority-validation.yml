@@ -27,6 +27,14 @@ on:
       - 'db/migrations/013_native_scoped_runtime.sql'
       - 'db/migrations/014_native_commercial_continuity.sql'
       - 'db/migrations/015_native_google_document_authority.sql'
+      - 'db/migrations/016_native_ionos_mail.sql'
+      - 'src/lib/connectors/ionos/**'
+      - 'src/tests/native-mail*'
+      - 'src/tests/ionos-transport.test.ts'
+      - 'src/tests/helpers/native-mail*'
+      - 'src/types/project-intake.ts'
+      - 'package.json'
+      - 'package-lock.json'
       - 'src/lib/connections/**'
       - 'src/lib/connectors/**/google/**'
       - 'src/lib/auth/oauth/**'
@@ -69,10 +77,11 @@ jobs:
           done
           exit 1
       - name: Actual handlers and database isolation, revocation, snapshot and history
-        run: node --import tsx --test src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts src/tests/native-commercial-postgres.test.ts src/tests/native-documents-postgres.test.ts src/tests/native-google-oauth.test.ts
+        run: node --import tsx --test src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts src/tests/native-commercial-postgres.test.ts src/tests/native-documents-postgres.test.ts src/tests/native-google-oauth.test.ts src/tests/native-mail-postgres.test.ts src/tests/ionos-transport.test.ts
       - run: npx tsc --noEmit --pretty false
       - run: npx eslint src/lib/native src/app/api/clara/session src/app/api/native src/components/native src/tests/native-runtime-browser.e2e.mjs src/tests/helpers/native-runtime* src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts
       - run: npx eslint src/app/api/contacts src/app/api/clara/acquisition/commercial-draft src/lib/acquisition/acquisition-store.ts src/lib/intake/md-project-intake-inbox.ts src/tests/native-commercial* src/tests/helpers/native-commercial* src/tests/native-documents* src/tests/native-google-oauth.test.ts
+      - run: npx eslint src/lib/connectors/ionos src/lib/acquisition/mailbox-communication-draft.ts src/tests/native-mail* src/tests/ionos-transport.test.ts src/tests/helpers/native-mail*
       - name: Optimized local app build in GitHub only
         run: npm run build
         env:
@@ -105,7 +114,7 @@ jobs:
           PYDIAG
             exit 1
           fi
-          NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node --test --test-concurrency=1 src/tests/native-runtime-browser.e2e.mjs src/tests/native-commercial-browser.e2e.mjs src/tests/native-documents-browser.e2e.mjs
+          NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node --import tsx --test --test-concurrency=1 src/tests/native-runtime-browser.e2e.mjs src/tests/native-commercial-browser.e2e.mjs src/tests/native-documents-browser.e2e.mjs src/tests/native-mail-browser.e2e.mjs
       - name: Stop isolated fixture
         if: always()
         run: docker rm -f "$CANONICAL_TEST_CONTAINER" || true

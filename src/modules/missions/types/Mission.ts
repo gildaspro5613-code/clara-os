@@ -40,6 +40,8 @@ export interface MissionTask {
 }
 
 export interface Mission {
+  emailDraft?:import('@/lib/acquisition/mailbox-communication-draft').StoredMailboxDraft;
+  mailReferences?:Array<{connectionId:string;messageId:string;contactId:string}>;
   documentReferences?:import("@/lib/core/session").NativeDocumentReference[];
   acquisitionSubmissionId?: string;
   id: string;

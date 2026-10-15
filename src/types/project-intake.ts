@@ -4,8 +4,10 @@ export interface MdProjectIntake {
   schema: typeof MD_PROJECT_INTAKE_SCHEMA;
   submissionId: string;
   source: {
-    system: "melodie-digital-site";
-    channel: "website";
+    // email-reviewed is created only by the canonical native mailbox service.
+    // The external website validator below deliberately keeps its original gate.
+    system: "melodie-digital-site" | "clara-os";
+    channel: "website" | "email-reviewed";
     locale: string;
   };
   contact: {

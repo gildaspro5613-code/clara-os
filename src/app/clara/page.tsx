@@ -1,4 +1,5 @@
 import NativeDocumentsPanel from "@/components/native/NativeDocumentsPanel";
+import NativeMailPanel from "@/components/native/NativeMailPanel";
 import {nativeContext} from "@/lib/native/scoped-context";
 import { nativePage } from "@/lib/native/page-fence";
 import { getTranslations } from "next-intl/server";
@@ -36,6 +37,7 @@ export default async function ClaraPage({
   return (
     <MainLayout>
       <NativeDocumentsPanel />
+      <NativeMailPanel />
       <div className="w-full p-8">
         <div className="mb-6">
           <p className="text-xs uppercase tracking-[0.22em] text-cyan-400">
