@@ -1,3 +1,5 @@
+> **Lot 2 bis IONOS — GO en isolation, NO-GO Production** : [contrats, recette et limites](lot-2-bis-ionos.md), [preuves](lot-2-bis-evidence.json). Deux boîtes séparées, délégations révocables, approbation propriétaire et registre SMTP sans renvoi automatique ; fournisseurs simulés uniquement. PR #176 Draft.
+
 > **Lot 2 — GO en isolation, NO-GO Production** : [raccord canonique Google/Drive/Documents](lot-2-google-document-continuity.md), [preuves](lot-2-evidence.json). Le parcours documentaire est réellement exercé avec PostgreSQL/Core/Brain et Google simulé ; le lot 1 reste validé. Les verrouillages des rapports antérieurs sont historiques et ne remplacent pas cette décision datée. PR #176 toujours Draft.
 
 > **Lot 1 — GO en isolation, NO-GO Production** : [continuité commerciale et recette](lot-1-commercial-continuity.md), [preuves](lot-1-evidence.json), [politique permanente](non-regression-policy.md). Les rapports antérieurs ci-dessous décrivent leurs commits et verrouillages historiques.
