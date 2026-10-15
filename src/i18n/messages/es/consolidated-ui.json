@@ -232,5 +232,15 @@
   "mailContactReview": "Crear contacto solo tras revisión explícita",
   "mailContactName": "Nombre del contacto",
   "mailContactEmail": "Correo del contacto",
-  "mailCreateContact": "Confirmar creación del contacto"
+  "mailCreateContact": "Confirmar creación del contacto",
+  "nativeEarlierMessages": "Mostrar mensajes anteriores",
+  "nativeHistoryUnavailable": "El historial no está disponible en este contexto. Actualice después de verificar los permisos.",
+  "nativeChatPending": "Hay un proceso en curso o su resultado es incierto. Compruebe la respuesta; no vuelva a enviar la solicitud.",
+  "nativeCheckChat": "Comprobar respuesta",
+  "nativeChatFailed": "La solicitud ha fallado. Revise el hilo antes de iniciar otra solicitud.",
+  "nativeThreadMissionBound": "Este hilo ya está vinculado a una misión. Cree o seleccione otro hilo explícitamente.",
+  "nativeThreadReviewRequired": "Este hilo se conserva en modo de solo lectura: su contexto histórico no se puede asignar automáticamente. Cree un nuevo hilo para trabajar.",
+  "nativeCancelChat": "Abandonar este turno",
+  "nativeCancelChatConfirm": "¿Abandonar este turno? Un proceso ya iniciado puede continuar en el proveedor. No se reenviará nada automáticamente.",
+  "nativeChatCancelled": "Turno abandonado. No se guardará ningún resultado tardío de este turno."
 }

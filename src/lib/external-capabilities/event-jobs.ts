@@ -40,7 +40,7 @@ export function createEventJobStore(query: Query) {
         const rows = await query`UPDATE clara_external_event_jobs SET status = 'processing', owner_token = ${owner},
           phase = 'starting', started_at = clock_timestamp(), updated_at = clock_timestamp()
           WHERE job_id = (SELECT j.job_id FROM clara_external_event_jobs j
-            WHERE j.status = 'queued' AND j.expires_at > clock_timestamp() AND (${id ?? ''} = '' OR j.job_id = ${id ?? ''})
+            WHERE j.scope_key NOT LIKE 'native-chat:%' AND j.status = 'queued' AND j.expires_at > clock_timestamp() AND (${id ?? ''} = '' OR j.job_id = ${id ?? ''})
               AND NOT EXISTS (SELECT 1 FROM clara_external_event_jobs active WHERE active.scope_key = j.scope_key AND active.status IN ('processing','uncertain'))
             ORDER BY j.created_at LIMIT 1 FOR UPDATE SKIP LOCKED) AND status = 'queued' RETURNING *`;
         return rows[0] ?? null;
@@ -92,10 +92,10 @@ export function createEventJobStore(query: Query) {
     },
     async maintain() {
       await query`UPDATE clara_external_event_jobs SET status = 'uncertain', updated_at = clock_timestamp()
-        WHERE status = 'processing' AND started_at < clock_timestamp() - interval '10 minutes'`;
+        WHERE scope_key NOT LIKE 'native-chat:%' AND status = 'processing' AND started_at < clock_timestamp() - interval '10 minutes'`;
       // Keep identity/fingerprint tombstones; never erase an ambiguous request.
       await query`UPDATE clara_external_event_jobs SET status = 'expired', request = NULL, result = NULL, updated_at = clock_timestamp()
-        WHERE expires_at <= clock_timestamp() AND status IN ('queued','completed','failed')`;
+        WHERE scope_key NOT LIKE 'native-chat:%' AND expires_at <= clock_timestamp() AND status IN ('queued','completed','failed')`;
     },
   };
 }

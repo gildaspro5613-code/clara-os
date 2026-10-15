@@ -1,4 +1,5 @@
-import {nativeRequest,nativeContext} from "@/lib/native/scoped-context";
+import {nativeChatRequest,cancelNativeChat} from '@/lib/native/chat';
+import {nativeContext} from "@/lib/native/scoped-context";
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { getTranslations } from "next-intl/server";
@@ -40,7 +41,8 @@ interface ChatRequest {
   message?: string;
 }
 
-const MAX_PERSISTED_MESSAGES = 100;
+// Active Session cache only. Migration 017 archives old/new messages atomically.
+const ACTIVE_CONVERSATION_WINDOW = 100;
 const MAX_REASONING_HISTORY = 16;
 
 /**
@@ -53,7 +55,7 @@ const MAX_REASONING_HISTORY = 16;
  * Cockpit and /clara are two views over this same persisted conversation.
  */
 export async function POST(request: Request) {
-  return nativeRequest(request,()=>scopedChat(request));
+  return nativeChatRequest(request,()=>scopedChat(request));
 }
 async function scopedChat(request:Request) {
 
@@ -138,7 +140,7 @@ async function scopedChat(request:Request) {
       session.conversation=[...session.conversation,
         {id:crypto.randomUUID(),role:"user" as const,content:message,createdAt:at},
         {id:crypto.randomUUID(),role:"clara" as const,content:composed.content,createdAt:at,generation:composed.generation},
-      ].slice(-MAX_PERSISTED_MESSAGES);
+      ].slice(-ACTIVE_CONVERSATION_WINDOW);
       session.updatedAt=new Date();await saveSession(session,operational.sessionKey);
       return NextResponse.json({success:false,message:composed.content,generation:composed.generation,conversation:session.conversation},{status:502});
     }
@@ -281,7 +283,7 @@ async function scopedChat(request:Request) {
     session.conversation = [
       ...session.conversation,
       ...newMessages,
-    ].slice(-MAX_PERSISTED_MESSAGES);
+    ].slice(-ACTIVE_CONVERSATION_WINDOW);
     session.updatedAt = new Date();
     await saveSession(session, operational.sessionKey);
 
@@ -329,3 +331,5 @@ async function scopedChat(request:Request) {
     );
   }
 }
+
+export async function DELETE(request:Request){return cancelNativeChat(request);}

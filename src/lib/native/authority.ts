@@ -27,6 +27,12 @@ export function nativeSelectors(request: Request) {
   if(selectors.sessionId.startsWith("external:")) throw new RegistryError(403,"NATIVE_SCOPE_DENIED");
   return { ...selectors, digest:context.digest };
 }
+/** Historical snapshots remain readable, never advertised as certified active cognition. */
+export function nativeSessionView(data:Record<string,unknown>){
+ const mission=data.mission as {id?:unknown}|null;
+ const historyOnly=mission?.id ? data.nativeMissionId!==mission.id : (Array.isArray(data.conversation)&&data.conversation.length>0)||!!data.brainDashboard||!!data.recommendation||(Array.isArray(data.sources)&&data.sources.length>0)||(Array.isArray(data.documentReferences)&&data.documentReferences.length>0);
+ return historyOnly?{...data,state:'STOPPED',recommendation:null,brainDashboard:null,sources:[],historyOnly:true}:data;
+}
 export function createNativeAuthority(query: RegistryQuery = sql) {
   return async function readSession(request: Request): Promise<Record<string,unknown>> {
     const scope=nativeSelectors(request);
@@ -34,7 +40,7 @@ export function createNativeAuthority(query: RegistryQuery = sql) {
       const rows=await query`SELECT clara_native_read_session(${scope.digest},${scope.workspaceId},${scope.clientId},${scope.projectId},${scope.sessionId}) AS data`;
       const data=(rows[0] as {data?:unknown}|undefined)?.data;
       if(!data || typeof data!=="object" || Array.isArray(data)) throw new RegistryError(403,"NATIVE_SCOPE_DENIED");
-      return data as Record<string,unknown>;
+      return nativeSessionView(data as Record<string,unknown>);
     } catch(error) {
       if(error instanceof RegistryError) throw error;
       throw new RegistryError(503,"NATIVE_AUTHORITY_UNAVAILABLE");

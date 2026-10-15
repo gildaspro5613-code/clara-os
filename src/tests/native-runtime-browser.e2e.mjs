@@ -22,7 +22,7 @@ test('native browser: explicit selection, positive persisted mission/chat and cr
   const response=await page.goto(origin+path);assert.equal(response.status(),200);assert.equal(await page.locator('[data-native-authority="locked"]').count(),0,path);assert.ok(!(await response.text()).includes('PRIVATE_LEGACY_HISTORY'));assert.equal(await page.locator('html').getAttribute('lang'),locale);
  }}
  const headerCookie=cookies.map(c=>c.name+'='+c.value).join(';');
- const response=await fetch(origin+'/api/clara/chat',{method:'POST',headers:{cookie:headerCookie,origin,'Content-Type':'application/json'},body:JSON.stringify({message:'NATIVE_CHAT_A'})});assert.equal(response.status,200,await response.clone().text());
+ const response=await fetch(origin+'/api/clara/chat',{method:'POST',headers:{cookie:headerCookie,origin,'Content-Type':'application/json'},body:JSON.stringify({operationId:crypto.randomUUID(),message:'NATIVE_CHAT_A'})});assert.equal(response.status,200,await response.clone().text());
  await page.goto(origin+'/conversations');await page.getByText('NATIVE_CHAT_A',{exact:true}).waitFor();await page.getByText('Isolated Clara response',{exact:true}).waitFor();
  const current=await (await fetch(origin+'/api/clara/session?'+new URLSearchParams(scope),{headers:{cookie:headerCookie}})).json();
  const manual=current.mission.tasks.find(task=>!task.execution);assert.ok(manual,'The real Brain fallback exposes a non-executable manual task in this fixture.');

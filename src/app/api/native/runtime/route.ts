@@ -5,7 +5,7 @@ import {writeActionEntry} from "@/lib/core/journal-writer";
 import {registryContext,opaque,RegistryError} from '@/lib/canonical/registry';
 import {fields,registryBody,sameOrigin} from '@/lib/canonical/http';
 import {nativeCommand,nativeRequest,nativeContext,writableNativeContext,nativeMission} from '@/lib/native/scoped-context';
-import {nativeFailure} from '@/lib/native/authority';
+import {nativeFailure,nativeSessionView} from '@/lib/native/authority';
 export const dynamic='force-dynamic';
 export async function POST(request:Request){
  try{
@@ -15,6 +15,8 @@ export async function POST(request:Request){
    fields(body,['action','workspaceId','clientId','projectId',...(action==='selectSession'?['sessionId']:[])]);
    const context=registryContext(request.headers.get('cookie'),body.workspaceId);
    const scope={...context,clientId:opaque(body.clientId),projectId:opaque(body.projectId),sessionId:action==='selectSession'?opaque(body.sessionId):'native:new'};
+   const capabilities=await nativeCommand(scope,'list');
+   if(capabilities.protocolVersion!==2)throw new RegistryError(503,'NATIVE_CONVERSATION_MIGRATION_REQUIRED');
    const result=await nativeCommand(scope,action==='createSession'?'create':'read');
    const selected={workspaceId:scope.workspaceId,clientId:scope.clientId,projectId:scope.projectId,sessionId:action==='createSession'?String(result.sessionId):scope.sessionId};
    return Response.json({success:true,data:selected},{headers:{'Cache-Control':'no-store','Set-Cookie':`clara_native_selection=${encodeURIComponent(JSON.stringify(selected))}; Path=/; HttpOnly; Secure; SameSite=Lax`}});
@@ -41,6 +43,7 @@ export async function POST(request:Request){
     if(typeof body.title!=='string'||!body.title.trim()||body.title.length>160||typeof body.objective!=='string'||!body.objective.trim()||body.objective.length>4000)throw new RegistryError(400,'INVALID_NATIVE_MISSION');
     const existing=ctx.session.acquisitionSubmissionId?[...ctx.missions.values()].find(m=>m.acquisitionSubmissionId===ctx.session.acquisitionSubmissionId):undefined;
     if(existing){ctx.session.mission=existing;return Response.json({success:true,mission:existing},{headers:{'Cache-Control':'no-store'}});}
+    if(ctx.session.mission||ctx.session.conversation.length||ctx.session.brainDashboard)throw new RegistryError(409,'NATIVE_THREAD_MISSION_BOUND');
     const mission={id:'new',title:body.title.trim(),objective:body.objective.trim(),status:'planned' as const,priority:'medium' as const,createdAt:new Date(),tasks:[],progress:0};
     nativeMission(mission);ctx.session.mission=mission;ctx.session.updatedAt=new Date();
     await new Journal().addEntry(writeActionEntry(ui("nativeCreateMission"),mission.title));
@@ -48,6 +51,8 @@ export async function POST(request:Request){
     fields(body,['action','missionId']);const mission=ctx.missions.get(opaque(body.missionId));
     if(!mission)throw new RegistryError(403,'NATIVE_SCOPE_DENIED');
     if(mission.acquisitionSubmissionId!==ctx.session.acquisitionSubmissionId)throw new RegistryError(409,'NATIVE_EXPLICIT_CONTACT_SELECTION_REQUIRED');
+    if(ctx.session.mission?.id===mission.id)return Response.json({success:true,mission},{headers:{'Cache-Control':'no-store'}});
+    if(ctx.session.mission||ctx.session.conversation.length||ctx.session.brainDashboard)throw new RegistryError(409,'NATIVE_THREAD_MISSION_BOUND');
     ctx.session.mission=mission;ctx.session.documentReferences=mission.documentReferences??[];ctx.session.updatedAt=new Date();
     await new Journal().addEntry(writeActionEntry(ui('nativeOpenMission'),mission.id));
    }else if(action==='toggleTask'){
@@ -79,6 +84,6 @@ export async function GET(request:Request){
   const scope=nativeSelectors(request);
   if(new URL(request.url).searchParams.get('list')==='1')return Response.json({success:true,data:await nativeCommand(scope,'list')},{headers:{'Cache-Control':'no-store'}});
   const data=await nativeCommand(scope,'read');
-  return Response.json({success:true,data:{workspaceId:scope.workspaceId,clientId:scope.clientId,projectId:scope.projectId,sessionId:scope.sessionId},session:data.session,missions:(data.missions as {id:string;title:string}[]).map(m=>({id:m.id,title:m.title})),permissions:{read:true,write:data.canWrite===true}},{headers:{'Cache-Control':'no-store'}});
+  return Response.json({success:true,data:{workspaceId:scope.workspaceId,clientId:scope.clientId,projectId:scope.projectId,sessionId:scope.sessionId},session:nativeSessionView(data.session as Record<string,unknown>),missions:(data.missions as {id:string;title:string}[]).map(m=>({id:m.id,title:m.title})),permissions:{read:true,write:data.canWrite===true}},{headers:{'Cache-Control':'no-store'}});
  }catch(error){return nativeFailure(error);}
 }

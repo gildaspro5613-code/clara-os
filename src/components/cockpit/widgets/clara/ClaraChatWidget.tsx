@@ -1,5 +1,7 @@
 "use client";
 
+import NativeEarlierMessages from '@/components/native/NativeEarlierMessages';
+
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -25,6 +27,8 @@ interface PhysicalActionProposalView {
 }
 
 interface ClaraChatWidgetProps {
+  nativeSessionId?:string;
+  nativeThreadReadOnly?:boolean;
   compact?: boolean;
   autoFocus?: boolean;
   initialMessages?: ClaraConversationMessage[];
@@ -48,6 +52,8 @@ function personalizedGreeting(
 }
 
 export default function ClaraChatWidget({
+  nativeSessionId,
+  nativeThreadReadOnly=false,
   compact = false,
   autoFocus = false,
   initialMessages = [],
@@ -72,6 +78,10 @@ export default function ClaraChatWidget({
         ],
   );
 
+  const [pending,setPending]=useState<{operationId:string;message:string;sessionId?:string}|null>(null);
+  const [chatError,setChatError]=useState('');
+  const pendingKey=nativeSessionId?'clara.pending-chat:'+nativeSessionId:null;
+  useEffect(()=>{if(!pendingKey)return;try{const saved=sessionStorage.getItem(pendingKey);if(saved){const value=JSON.parse(saved);if(typeof value.operationId==='string'&&typeof value.message==='string'&&value.sessionId===nativeSessionId)setPending(value);}}catch{/* unavailable browser storage does not authorize execution */}},[pendingKey,nativeSessionId]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [approvals, setApprovals] = useState<PendingApproval[]>([]);
@@ -104,7 +114,7 @@ export default function ClaraChatWidget({
 
     const message = input.trim();
 
-    if (!message || loading) {
+    if (!message || loading || pending || nativeThreadReadOnly) {
       return;
     }
 
@@ -120,63 +130,39 @@ export default function ClaraChatWidget({
       },
     ]);
 
+    const operation={operationId:crypto.randomUUID(),message,...(nativeSessionId?{sessionId:nativeSessionId}:{})};
+    setPending(operation);if(pendingKey)try{sessionStorage.setItem(pendingKey,JSON.stringify(operation));}catch{/* memory-only pending identity */}
+    await submitOperation(operation);
+  }
+  async function submitOperation(operation:{operationId:string;message:string;sessionId?:string}){
+    setLoading(true);setChatError('');
+    try{
+      const response=await fetch('/api/clara/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(operation)});
+      const data=await response.json();
+      if(response.status===202){
+        const original=data.pendingRequest??operation;setPending(original);if(pendingKey)try{sessionStorage.setItem(pendingKey,JSON.stringify(original));}catch{/* keep the in-memory reservation */}setChatError(ui('nativeChatPending'));return;
+      }
+      if(nativeSessionId){
+        const history=await fetch('/api/clara/conversation?'+new URLSearchParams({thread:nativeSessionId,limit:'100'}));const current=await history.json();
+        if(!history.ok||!current.success)throw Error(ui('nativeHistoryUnavailable'));setMessages(current.messages);
+      }else if(Array.isArray(data.conversation))setMessages(data.conversation);
+      if(pendingKey)try{sessionStorage.removeItem(pendingKey);}catch{/* acknowledged receipt remains server-owned */}setPending(null);
+      if(!response.ok||!data.success){setChatError(data.message??ui('nativeChatFailed'));router.refresh();return;}
+      setApprovals(current=>[...current,...(data.approvals??[])]);setPhysicalActions(data.physicalActions??[]);router.refresh();
+    }catch{setChatError(ui('nativeChatPending'));}
+    finally{setLoading(false);}
+  }
+
+  async function cancelPending(){
+    if(!pending||!nativeSessionId||!window.confirm(ui('nativeCancelChatConfirm')))return;
     setLoading(true);
-
-    try {
-      const response = await fetch("/api/clara/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ message }),
-      });
-
-      const data = (await response.json()) as {
-        success?: boolean;
-        message?: string;
-        approvals?: PendingApproval[];
-        conversation?: ClaraConversationMessage[];
-        physicalActions?: PhysicalActionProposalView[];
-      };
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.message ?? t("unavailable"));
-      }
-
-      if (Array.isArray(data.conversation)) {
-        setMessages(data.conversation);
-      } else {
-        setMessages((current) => [
-          ...current,
-          {
-            id: crypto.randomUUID(),
-            role: "clara",
-            content: data.message ?? "",
-            createdAt: new Date().toISOString(),
-          },
-        ]);
-      }
-
-      setApprovals((current) => [...current, ...(data.approvals ?? [])]);
-      setPhysicalActions(data.physicalActions ?? []);
-
-      router.refresh();
-    } catch (error) {
-      setMessages((current) => [
-        ...current,
-        {
-          id: crypto.randomUUID(),
-          role: "clara",
-          content:
-            error instanceof Error
-              ? error.message
-              : t("unavailable"),
-          createdAt: new Date().toISOString(),
-        },
-      ]);
-    } finally {
-      setLoading(false);
-    }
+    try{
+      const response=await fetch('/api/clara/chat',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({operationId:pending.operationId,sessionId:nativeSessionId,confirm:true})});const body=await response.json();
+      if(!response.ok||!body.success)throw Error();
+      const history=await fetch('/api/clara/conversation?'+new URLSearchParams({thread:nativeSessionId,limit:'100'}));const current=await history.json();if(!history.ok||!current.success)throw Error();setMessages(current.messages);
+      if(pendingKey)try{sessionStorage.removeItem(pendingKey);}catch{/* durable cancellation is server-owned */}
+      setPending(null);setChatError(body.cancelled?ui('nativeChatCancelled'):'');router.refresh();
+    }catch{setChatError(ui('nativeChatPending'));}finally{setLoading(false);}
   }
 
   async function decideApproval(
@@ -251,6 +237,7 @@ export default function ClaraChatWidget({
       </div>
 
       <div className="max-h-[360px] space-y-3 overflow-y-auto pr-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <NativeEarlierMessages sessionId={nativeSessionId} firstMessageId={initialMessages[0]?.id} windowSize={initialMessages.length}/>
         {messages.map((message) => (
           <div
             key={message.id}
@@ -363,6 +350,10 @@ export default function ClaraChatWidget({
         </div>
       )}
 
+      {nativeThreadReadOnly&&<p role="alert">{ui('nativeThreadReviewRequired')}</p>}
+      {chatError&&<p role="alert">{chatError}</p>}
+      {pending&&!nativeThreadReadOnly&&<button type="button" disabled={loading} onClick={()=>void submitOperation(pending)}>{ui('nativeCheckChat')}</button>}
+      {pending&&!nativeThreadReadOnly&&<button type="button" disabled={loading} onClick={()=>void cancelPending()}>{ui('nativeCancelChat')}</button>}
       <form
         onSubmit={handleSubmit}
         className="mt-4 flex items-center gap-2"
@@ -370,7 +361,7 @@ export default function ClaraChatWidget({
         <input
           value={input}
           onChange={(event) => setInput(event.target.value)}
-          disabled={loading}
+          disabled={loading||!!pending||nativeThreadReadOnly}
           autoFocus={autoFocus}
           placeholder={t("placeholder")}
           className="h-11 flex-1 rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-cyan-400/40"
@@ -378,7 +369,7 @@ export default function ClaraChatWidget({
 
         <button
           type="submit"
-          disabled={loading || !input.trim()}
+          disabled={loading || !!pending || nativeThreadReadOnly || !input.trim()}
           aria-label={t("send")}
           className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/60 transition hover:border-white/20 hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
         >

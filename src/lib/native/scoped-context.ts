@@ -1,3 +1,4 @@
+import {ClaraState} from '@/lib/core/state';
 import {AsyncLocalStorage} from 'node:async_hooks';
 import {randomUUID} from 'node:crypto';
 import {sql} from '@/lib/core/store/database';
@@ -17,6 +18,7 @@ export interface ScopedNativeContext {
  acquisitions:Map<string,AcquisitionRecord>;intakes:Map<string,MdProjectIntake>;intakeMetadata:Map<string,{productId:string;sessionKey:string;eventId:string}>;acquisitionSnapshots:Record<string,unknown>;draftWrites:Map<string,CommercialCommunicationDraft>;draftRevisionSteps:Map<string,number>;
  documentSource?:import("@/lib/brain/brain-source").BrainSourceContext;documentCommitProof?:Record<string,unknown>;
  mailCommitProof?:Record<string,unknown>;
+ chatCommitProof?:Record<string,unknown>;
  writable:boolean;runtime?:Clara;dirty:boolean;commitOnFailure?:boolean;
 }
 const storage=new AsyncLocalStorage<ScopedNativeContext>();
@@ -37,6 +39,7 @@ export function nativeMission(mission:Mission){
  }
  ctx.missions.set(mission.id,mission);ctx.writes.set(mission.id,mission);
 }
+export function nativeThreadCertified(session:ClaraSession){return session.mission ? session.nativeMissionId===session.mission.id : !session.conversation.length&&!session.brainDashboard&&!session.recommendation&&!session.sources?.length&&!session.documentReferences?.length;}
 export function hydrateNative(data:Record<string,unknown>):ClaraSession {
  const parsed=normalizeSession(data as unknown as ClaraSession);
  return {...parsed,startedAt:new Date(parsed.startedAt),updatedAt:new Date(parsed.updatedAt)};
@@ -54,6 +57,9 @@ export async function withNativeScope<T>(request:Request,write:boolean,render:()
  const scope=nativeSelectors(request);if(write)sameOrigin(request);
  const command=nativeCommands(query),data=await command(scope,write?'write':'read');
  const expected=structuredClone(data.session),session=hydrateNative(data.session as Record<string,unknown>);
+ if(write&&data.protocolVersion!==2)throw new RegistryError(503,'NATIVE_CONVERSATION_MIGRATION_REQUIRED');
+ if(write&&!nativeThreadCertified(session))throw new RegistryError(409,'NATIVE_THREAD_REVIEW_REQUIRED');
+ if(!nativeThreadCertified(session)){session.state=ClaraState.STOPPED;session.brainDashboard=null;session.recommendation=null;session.sources=[];}
  const missions=(data.missions as Mission[]).map(m=>({...m,createdAt:new Date(m.createdAt)}));
  const acquisitions=new Map<string,AcquisitionRecord>(),intakes=new Map<string,MdProjectIntake>(),acquisitionSnapshots:Record<string,unknown>={},intakeMetadata=new Map<string,{productId:string;sessionKey:string;eventId:string}>();
  for(const snapshot of (data.acquisitions??[]) as Array<{record:Record<string,unknown>;intake:MdProjectIntake;intakeMetadata:{productId:string;sessionKey:string;eventId:string}}>){
@@ -63,10 +69,12 @@ export async function withNativeScope<T>(request:Request,write:boolean,render:()
  const ctx:ScopedNativeContext={query,scope,userId:String(data.userId),session,acquisitions,intakes,intakeMetadata,acquisitionSnapshots,draftWrites:new Map(),draftRevisionSteps:new Map(),missions:new Map(missions.map(m=>[m.id,m])),journal:(data.journal as JournalEntry[]).map(j=>({...j,createdAt:new Date(j.createdAt)})),writes:new Map(),entries:[],writable:write,dirty:false};
  return storage.run(ctx,async()=>{
   const result=await render();
-  if(write&&ctx.dirty){
-   if(result instanceof Response&&result.status>=400&&!ctx.commitOnFailure)return result;
+  if(write&&(ctx.dirty||ctx.chatCommitProof)){
+   const discard=result instanceof Response&&result.status>=400&&!ctx.commitOnFailure;
+   if(discard&&!ctx.chatCommitProof)return result;
    const commit={expected,session:ctx.session,missions:[...ctx.writes.values()],journal:ctx.entries,expectedAcquisitions:ctx.acquisitionSnapshots,acquisitions:[...ctx.draftWrites].map(([submissionId,draft])=>({submissionId,draft,revisionSteps:ctx.draftRevisionSteps.get(submissionId)}))};
-   if(ctx.mailCommitProof){const {nativeMailCommands}=await import('./mail-authority');const {operation,...proof}=ctx.mailCommitProof;await nativeMailCommands(query)(String(operation),{...proof,commit});}
+   if(ctx.chatCommitProof){const {nativeChatCommands}=await import('./chat');await nativeChatCommands(query)(scope,'finish',{...ctx.chatCommitProof,commit:ctx.dirty&&!discard?commit:null});}
+   else if(ctx.mailCommitProof){const {nativeMailCommands}=await import('./mail-authority');const {operation,...proof}=ctx.mailCommitProof;await nativeMailCommands(query)(String(operation),{...proof,commit});}
    else if(ctx.documentCommitProof){const {nativeGoogleCommands}=await import('./google-authority');await nativeGoogleCommands(query)('commit',{...ctx.documentCommitProof,commit});}
    else await command(scope,'commit',commit);
   }

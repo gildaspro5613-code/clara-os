@@ -232,5 +232,15 @@
   "mailContactReview": "Create a contact only after explicit review",
   "mailContactName": "Contact name",
   "mailContactEmail": "Contact email",
-  "mailCreateContact": "Confirm contact creation"
+  "mailCreateContact": "Confirm contact creation",
+  "nativeEarlierMessages": "Show earlier messages",
+  "nativeHistoryUnavailable": "History is unavailable in this context. Refresh after checking access.",
+  "nativeChatPending": "Processing is ongoing or its outcome is uncertain. Check its response; do not resubmit the request.",
+  "nativeCheckChat": "Check response",
+  "nativeChatFailed": "The request failed. Review the thread before starting a new request.",
+  "nativeThreadMissionBound": "This thread is already linked to a mission. Explicitly create or select another thread.",
+  "nativeThreadReviewRequired": "This thread is preserved read-only: its historical context cannot be assigned automatically. Create a new thread to work.",
+  "nativeCancelChat": "Abandon this turn",
+  "nativeCancelChatConfirm": "Abandon this turn? Processing already started may continue at the provider. Nothing will be resent automatically.",
+  "nativeChatCancelled": "Turn abandoned. No late result from this turn will be saved."
 }

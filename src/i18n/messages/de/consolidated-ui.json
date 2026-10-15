@@ -232,5 +232,15 @@
   "mailContactReview": "Kontakt nur nach ausdrücklicher Prüfung erstellen",
   "mailContactName": "Kontaktname",
   "mailContactEmail": "Kontaktadresse",
-  "mailCreateContact": "Kontakterstellung bestätigen"
+  "mailCreateContact": "Kontakterstellung bestätigen",
+  "nativeEarlierMessages": "Frühere Nachrichten anzeigen",
+  "nativeHistoryUnavailable": "Der Verlauf ist in diesem Kontext nicht verfügbar. Prüfen Sie die Zugriffsrechte und laden Sie neu.",
+  "nativeChatPending": "Die Verarbeitung läuft oder ihr Ergebnis ist ungewiss. Prüfen Sie die Antwort; senden Sie die Anfrage nicht erneut.",
+  "nativeCheckChat": "Antwort prüfen",
+  "nativeChatFailed": "Die Anfrage ist fehlgeschlagen. Prüfen Sie den Verlauf vor einer neuen Anfrage.",
+  "nativeThreadMissionBound": "Dieser Verlauf ist bereits einer Mission zugeordnet. Erstellen oder wählen Sie ausdrücklich einen anderen Verlauf.",
+  "nativeThreadReviewRequired": "Dieser Verlauf bleibt schreibgeschützt: Sein historischer Kontext kann nicht automatisch zugeordnet werden. Erstellen Sie zum Arbeiten einen neuen Verlauf.",
+  "nativeCancelChat": "Diesen Beitrag abbrechen",
+  "nativeCancelChatConfirm": "Diesen Beitrag abbrechen? Eine bereits gestartete Verarbeitung kann beim Anbieter weiterlaufen. Es wird nichts automatisch erneut gesendet.",
+  "nativeChatCancelled": "Beitrag abgebrochen. Spätere Ergebnisse dieses Beitrags werden nicht gespeichert."
 }

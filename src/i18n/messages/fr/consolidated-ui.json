@@ -232,5 +232,15 @@
   "mailContactReview": "Créer un contact uniquement après vérification explicite",
   "mailContactName": "Nom du contact",
   "mailContactEmail": "Adresse du contact",
-  "mailCreateContact": "Confirmer la création du contact"
+  "mailCreateContact": "Confirmer la création du contact",
+  "nativeEarlierMessages": "Afficher les messages précédents",
+  "nativeHistoryUnavailable": "Historique indisponible dans ce contexte. Rafraîchissez après vérification des droits.",
+  "nativeChatPending": "Un traitement est en cours ou son résultat est incertain. Vérifiez sa réponse ; ne renvoyez pas la demande.",
+  "nativeCheckChat": "Vérifier la réponse",
+  "nativeChatFailed": "La demande a échoué. Consultez le fil avant toute nouvelle demande.",
+  "nativeThreadMissionBound": "Ce fil est déjà lié à une mission. Créez ou sélectionnez explicitement un autre fil.",
+  "nativeThreadReviewRequired": "Ce fil est conservé en lecture seule : son contexte historique ne peut pas être attribué automatiquement. Créez un nouveau fil pour travailler.",
+  "nativeCancelChat": "Abandonner ce tour",
+  "nativeCancelChatConfirm": "Abandonner ce tour ? Un traitement déjà engagé peut continuer chez le fournisseur. Aucun renvoi automatique ne sera effectué.",
+  "nativeChatCancelled": "Tour abandonné. Aucun résultat tardif de ce tour ne sera enregistré."
 }

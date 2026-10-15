@@ -1,3 +1,4 @@
+import {nativeContext,nativeThreadCertified} from '@/lib/native/scoped-context';
 import type {MdProjectIntake} from "@/types";
 import type {Mission} from "@/modules/missions/types/Mission";
 import EmailSummaryPanel from "../panels/EmailSummaryPanel";
@@ -105,7 +106,7 @@ export default async function CockpitWidgets({ session, acquisition,nativeMissio
         </div>
 
         <div className="mt-5">
-          <ClaraChatWidget compact initialMessages={session.conversation} userFirstName={session.user.firstName} />
+          <ClaraChatWidget nativeThreadReadOnly={!!nativeContext()&&!nativeThreadCertified(session)} key={nativeContext()?.scope.sessionId} nativeSessionId={nativeContext()?.scope.sessionId} compact initialMessages={session.conversation} userFirstName={session.user.firstName} />
         </div>
       </div>
     </section>

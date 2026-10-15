@@ -1,6 +1,6 @@
 import NativeDocumentsPanel from "@/components/native/NativeDocumentsPanel";
 import NativeMailPanel from "@/components/native/NativeMailPanel";
-import {nativeContext} from "@/lib/native/scoped-context";
+import {nativeContext,nativeThreadCertified} from "@/lib/native/scoped-context";
 import { nativePage } from "@/lib/native/page-fence";
 import { getTranslations } from "next-intl/server";
 import CommercialDraftEditor from "@/components/cockpit/panels/CommercialDraftEditor";
@@ -96,7 +96,7 @@ export default async function ClaraPage({
         {draft && <section id="commercial-draft" className="mb-6 max-w-5xl"><CommercialDraftEditor initialDraft={draft} /></section>}
 
         <div className="grid max-w-5xl gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
-          <ClaraChatWidget
+          <ClaraChatWidget nativeThreadReadOnly={!!nativeContext()&&!nativeThreadCertified(session)} key={nativeContext()?.scope.sessionId} nativeSessionId={nativeContext()?.scope.sessionId}
             autoFocus={focusClaraInput}
             initialMessages={session.conversation}
             userFirstName={session.user.firstName}
