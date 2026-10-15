@@ -1,3 +1,5 @@
+> **Lot 3 OS ↔ Live — NO-GO en isolation et Production** : [audit, blocage de contrat et correction du transport OS](lot-3-os-live-continuity.md), [preuves](lot-3-evidence.json). Les quatre parcours natifs Live restent fermés faute de contrat d’autorité et de reprise attestée ; aucun changement Clara Live. Les GO isolés des lots précédents restent distincts. PR #176 Draft.
+
 > **Lot 2 bis IONOS — GO en isolation, NO-GO Production** : [contrats, recette et limites](lot-2-bis-ionos.md), [preuves](lot-2-bis-evidence.json). Deux boîtes séparées, délégations révocables, approbation propriétaire et registre SMTP sans renvoi automatique ; fournisseurs simulés uniquement. PR #176 Draft.
 
 > **Lot 2 — GO en isolation, NO-GO Production** : [raccord canonique Google/Drive/Documents](lot-2-google-document-continuity.md), [preuves](lot-2-evidence.json). Le parcours documentaire est réellement exercé avec PostgreSQL/Core/Brain et Google simulé ; le lot 1 reste validé. Les verrouillages des rapports antérieurs sont historiques et ne remplacent pas cette décision datée. PR #176 toujours Draft.
