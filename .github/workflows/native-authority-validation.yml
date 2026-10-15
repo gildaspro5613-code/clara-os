@@ -4,6 +4,8 @@ on:
     branches: [main, consolidation/clara-os-clean-base]
     paths:
       - 'src/lib/native/**'
+      - 'src/lib/external-capabilities/product-callback.ts'
+      - 'src/tests/live-callback-transport.test.ts'
       - 'instrumentation.ts'
       - 'src/app/api/clara/**'
       - 'src/app/api/missions/**'
@@ -78,6 +80,9 @@ jobs:
           exit 1
       - name: Actual handlers and database isolation, revocation, snapshot and history
         run: node --import tsx --test src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts src/tests/native-commercial-postgres.test.ts src/tests/native-documents-postgres.test.ts src/tests/native-google-oauth.test.ts src/tests/native-mail-postgres.test.ts src/tests/ionos-transport.test.ts
+      - name: Existing Live callback bounded transport and authentication
+        run: node --import tsx --test src/tests/live-callback-transport.test.ts src/tests/clara-live-product-auth.test.ts src/tests/external-event-message-contract.test.ts
+      - run: npx eslint src/lib/external-capabilities/product-callback.ts src/tests/live-callback-transport.test.ts
       - run: npx tsc --noEmit --pretty false
       - run: npx eslint src/lib/native src/app/api/clara/session src/app/api/native src/components/native src/tests/native-runtime-browser.e2e.mjs src/tests/helpers/native-runtime* src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts
       - run: npx eslint src/app/api/contacts src/app/api/clara/acquisition/commercial-draft src/lib/acquisition/acquisition-store.ts src/lib/intake/md-project-intake-inbox.ts src/tests/native-commercial* src/tests/helpers/native-commercial* src/tests/native-documents* src/tests/native-google-oauth.test.ts
