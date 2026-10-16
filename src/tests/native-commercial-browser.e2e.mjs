@@ -20,7 +20,7 @@ test('commercial browser E2E: authenticated canonical selection → contact → 
   assert.equal(await page.getByLabel('Contact / prospect',{exact:true}).locator('option').count(),2);
   await Promise.all([page.waitForEvent('framenavigated'),page.getByRole('button',{name:'Sélectionner le contact',exact:true}).click()]);await page.getByLabel('Contact / prospect',{exact:true}).waitFor();
   await page.getByLabel('Titre de la mission',{exact:true}).fill('LOT1_MISSION_A');await page.getByLabel('Objectif de la mission',{exact:true}).fill('Préparer une communication sans envoi');
-  await page.getByRole('button',{name:'Créer la mission',exact:true}).click();await page.getByText('LOT1_MISSION_A',{exact:true}).first().waitFor();
+  await page.getByRole('button',{name:'Créer la mission',exact:true}).click();await page.locator('article').getByText('LOT1_MISSION_A',{exact:true}).waitFor();
   const cookies=await context.cookies(),cookie=cookies.map(c=>c.name+'='+c.value).join(';');const selected=JSON.parse(decodeURIComponent(cookies.find(c=>c.name==='clara_native_selection').value));
   const call=(path,method='GET',body,auth=cookie)=>fetch(origin+path,{method,headers:{cookie:auth,...(method!=='GET'?{origin,'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
   const contacts=await (await call('/api/contacts')).json();assert.deepEqual(contacts.contacts.map(c=>c.id),['prospect-a']);assert.equal(contacts.selectedSubmissionId,'prospect-a');

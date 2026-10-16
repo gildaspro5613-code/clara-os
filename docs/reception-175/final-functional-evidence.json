@@ -164,7 +164,13 @@
     "typeScriptExit": 0,
     "targetedLintExit": 0,
     "optimizedLocalWebpackBuildExit": 0,
-    "globalLintVitest": "Not rerun in this task; documented pre-existing 4 ter failures retained, not green."
+    "globalLintVitest": "Not rerun in this task; documented pre-existing 4 ter failures retained, not green.",
+    "commercialVisibleCardSelectorRetest": {
+      "pass": 1,
+      "fail": 0,
+      "skipped": 0,
+      "seconds": 21.29
+    }
   },
   "nativeBackendAndMigrationsByteIdentical": [
     {
@@ -339,7 +345,25 @@
     {
       "file": "/workspace/reception-finale-176/typescript-final.log",
       "sha256": "76162e465989f3f070a9de8db711fbf358e53b74d09ce1bbdb57c727e4c4a16d"
+    },
+    {
+      "file": "/workspace/reception-finale-176/commercial-selector-final.log",
+      "sha256": "9e7ad7835663aabe568c10a3f4ea4ff38612a60cb71afa8029a55834f382247e"
     }
   ],
-  "ci": "Final SHA checks recorded on PR #176; no Production GO inferred from CI."
+  "ci": "Final SHA checks recorded on PR #176; no Production GO inferred from CI.",
+  "ciDiagnostics": {
+    "firstFailedHead": "e4dda30560754164680af1e21a4a3dc07af39673",
+    "logsUnavailableHTTP": 403,
+    "diagnosticHead": "59056d7aaf501c59d3ac2f16909e2dc69ada205f",
+    "diagnosticRun": 38854094367,
+    "nativeBrowserOutcome": {
+      "pass": 4,
+      "fail": 1
+    },
+    "failingCase": "native-commercial-browser.e2e.mjs: mission title visibility",
+    "actualLocatorTarget": "hidden option, not the mission card",
+    "correction": "Scope getByText to article and keep waitFor visibility; no assertion removed",
+    "applicationSourceChangedByDiagnosticOrSelectorFix": false
+  }
 }
