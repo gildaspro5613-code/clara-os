@@ -1,5 +1,7 @@
 "use client";
 
+import NativeDocumentsPanel from "@/components/native/NativeDocumentsPanel";
+import {todayCalendarUrl} from "./calendar-window";
 import { useEffect, useState } from "react";
 import { CalendarDays, Clock, MapPin } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -51,7 +53,7 @@ export default function AgendaStage() {
 
     async function loadAgenda() {
       try {
-        const response = await fetch("/api/calendar", {
+        const response = await fetch(todayCalendarUrl(), {
           cache: "no-store",
         });
 
@@ -62,7 +64,7 @@ export default function AgendaStage() {
         }
 
         if (!cancelled) {
-          setEvents(data.events ?? []);
+          setEvents(data.events ?? []);setError(false);
         }
       } catch {
         if (!cancelled) {
@@ -75,12 +77,13 @@ export default function AgendaStage() {
       }
     }
 
-    loadAgenda();
+    void loadAgenda();
+    const changed=()=>{void loadAgenda();};window.addEventListener("clara:google-work-updated",changed);
 
     return () => {
-      cancelled = true;
+      cancelled = true;window.removeEventListener("clara:google-work-updated",changed);
     };
-  }, []);
+  }, [t]);
 
   const today = new Intl.DateTimeFormat(locale, {
     weekday: "long",
@@ -112,6 +115,7 @@ export default function AgendaStage() {
           </div>
         </header>
 
+        <NativeDocumentsPanel workspaceMode="agenda"/>
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1.7fr)_minmax(280px,0.8fr)]">
           <section className="rounded-3xl border border-white/10 bg-white/[0.025] p-7 lg:p-8">
             <div className="mb-7 flex items-center justify-between border-b border-white/10 pb-5">

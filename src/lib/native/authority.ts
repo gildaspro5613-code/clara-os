@@ -54,9 +54,21 @@ export function nativeFailure(error:unknown):Response {
 }
 /** The legacy runtime/provider adapters still load global resources. Do not
  * unlock them merely because a session was authenticated or a scope exists. */
-export async function nativeOperationFence(request:Request):Promise<Response|null> {
+export async function nativeOperationFence(request:Request,operation?:'google-calendar-read'):Promise<Response|null> {
   try {
     await readAuthorizedNativeSession(request);
+    if(operation==='google-calendar-read'){
+      const {withNativeScope,nativeContext}=await import('./scoped-context');
+      const {googleWorkCommand}=await import('./google-work');
+      await withNativeScope(request,false,async()=>{
+        const ctx=nativeContext()!,connectionId=ctx.session.googleConnectionId,calendarId=ctx.session.googleCalendarId;
+        if(!connectionId||!calendarId)throw new RegistryError(503,'NATIVE_SCOPED_OPERATION_UNAVAILABLE');
+        const caps=await googleWorkCommand('capabilities',{connectionId});if(!caps.calendar)throw new RegistryError(403,'GOOGLE_CONSENT_REQUIRED');
+        const resources=await googleWorkCommand('resources',{connectionId});
+        const bound=(resources.resources as Array<{kind:string;metadata:{id:string}}>).some(r=>r.kind==='calendar'&&r.metadata.id===calendarId);
+        if(!bound)throw new RegistryError(403,'GOOGLE_RESOURCE_DENIED');
+      });return null;
+    }
     return nativeFailure(new RegistryError(503,"NATIVE_SCOPED_OPERATION_UNAVAILABLE"));
   } catch(error) { return nativeFailure(error); }
 }

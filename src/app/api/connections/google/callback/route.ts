@@ -20,12 +20,14 @@ export async function GET(request:Request){try{return await withNativeScope(requ
  const authority=await nativeGoogleCommand('callback',{connectionId:state.connectionId,...transaction});
  const verified={...transaction,issuer:'',subject:''};
  const store=scopedGoogleCredentialStore(state.connectionId,undefined,verified);
- await new OAuthCallbackService(oauthProviders,scopedGoogleRepository(state.connectionId,transaction),store).complete({provider:'google',state:stateValue,nonce,code,redirectUri:googleConfig.redirectUri,workspaceId:scope.workspaceId,validateTokens:async tokens=>{
+ const completed=await new OAuthCallbackService(oauthProviders,scopedGoogleRepository(state.connectionId,transaction),store).complete({provider:'google',state:stateValue,nonce,code,redirectUri:googleConfig.redirectUri,workspaceId:scope.workspaceId,validateTokens:async tokens=>{
   if(!tokens.idToken)throw new RegistryError(403,'NATIVE_GOOGLE_IDENTITY_REQUIRED');
   const claims=await verifyGoogleIdToken(tokens.idToken,nonce,googleConfig.clientId).catch(error=>{if(error instanceof Error&&/^(INVALID|EXPIRED)_GOOGLE_/.test(error.message))throw new RegistryError(403,'NATIVE_GOOGLE_IDENTITY_DENIED');throw error;});
   if(claims.sub!==authority.subject)throw new RegistryError(403,'NATIVE_GOOGLE_PRINCIPAL_CHANGED');
+  const requested=(authority.requestedScopes??['openid','https://www.googleapis.com/auth/drive.readonly']) as string[];
+  if(!tokens.scope||!requested.every(scope=>tokens.scope!.includes(scope)))throw new RegistryError(403,'NATIVE_GOOGLE_CONSENT_INCOMPLETE');
   verified.issuer='https://accounts.google.com';verified.subject=claims.sub!;delete tokens.idToken;
  }});
  const origin=process.env.CLARA_AUTH_APP_ORIGIN;if(!origin)throw new RegistryError(503,'NATIVE_GOOGLE_CALLBACK_ORIGIN_REQUIRED');
- const response=NextResponse.redirect(new URL('/documents',origin));response.cookies.set('clara_google_oauth_nonce','',{httpOnly:true,sameSite:'lax',secure:true,maxAge:0,path:'/api/connections/google/callback'});response.headers.set('Cache-Control','no-store');return response;
+ const response=NextResponse.redirect(new URL(completed.redirectPath==='/agenda'?'/agenda':'/documents',origin));response.cookies.set('clara_google_oauth_nonce','',{httpOnly:true,sameSite:'lax',secure:true,maxAge:0,path:'/api/connections/google/callback'});response.headers.set('Cache-Control','no-store');return response;
 });}catch(error){if(error instanceof OAuthError&&['INVALID_STATE','EXPIRED_STATE','PROVIDER_MISMATCH','CONNECTION_MISMATCH','MISSING_AUTHORIZATION_CODE'].includes(error.code))return nativeFailure(new RegistryError(403,'NATIVE_GOOGLE_OAUTH_TRANSACTION_DENIED'));return nativeFailure(error);}}

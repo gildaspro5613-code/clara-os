@@ -17,6 +17,7 @@ export interface ScopedNativeContext {
  missions:Map<string,Mission>;journal:JournalEntry[];writes:Map<string,Mission>;entries:JournalEntry[];
  acquisitions:Map<string,AcquisitionRecord>;intakes:Map<string,MdProjectIntake>;intakeMetadata:Map<string,{productId:string;sessionKey:string;eventId:string}>;acquisitionSnapshots:Record<string,unknown>;draftWrites:Map<string,CommercialCommunicationDraft>;draftRevisionSteps:Map<string,number>;
  documentSource?:import("@/lib/brain/brain-source").BrainSourceContext;documentCommitProof?:Record<string,unknown>;
+ googleWorkCommitProof?:Record<string,unknown>;
  mailCommitProof?:Record<string,unknown>;
  chatCommitProof?:Record<string,unknown>;
  contactProtocolVersion?:number;contactWrite?:Record<string,unknown>;
@@ -75,6 +76,7 @@ export async function withNativeScope<T>(request:Request,write:boolean,render:()
    if(discard&&!ctx.chatCommitProof)return result;
    const commit={expected,session:ctx.session,missions:[...ctx.writes.values()],journal:ctx.entries,contactWrite:ctx.contactWrite,expectedAcquisitions:ctx.acquisitionSnapshots,acquisitions:[...ctx.draftWrites].map(([submissionId,draft])=>({submissionId,draft,revisionSteps:ctx.draftRevisionSteps.get(submissionId)}))};
    if(ctx.chatCommitProof){const {nativeChatCommands}=await import('./chat');await nativeChatCommands(query)(scope,'finish',{...ctx.chatCommitProof,commit:ctx.dirty&&!discard?commit:null});}
+   else if(ctx.googleWorkCommitProof){const {googleWorkCommands}=await import('./google-work');const {operation,...proof}=ctx.googleWorkCommitProof;await googleWorkCommands(query)(String(operation),{...proof,commit});}
    else if(ctx.mailCommitProof){const {nativeMailCommands}=await import('./mail-authority');const {operation,...proof}=ctx.mailCommitProof;await nativeMailCommands(query)(String(operation),{...proof,commit});}
    else if(ctx.documentCommitProof){const {nativeGoogleCommands}=await import('./google-authority');await nativeGoogleCommands(query)('commit',{...ctx.documentCommitProof,commit});}
    else await command(scope,'commit',commit);

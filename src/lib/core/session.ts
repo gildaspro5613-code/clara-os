@@ -45,6 +45,8 @@ export interface ClaraSession {
   /** Server-attested immutable Mission of a native thread; never inferred for old history. */
   nativeMissionId?:string|null;
   googleConnectionId?:string;
+  googleCalendarId?:string;
+  googleFolderId?:string;
   documentReferences?:NativeDocumentReference[];
   /** Explicit canonical-authorized commercial selection; no historical inference. */
   acquisitionSubmissionId?: string;

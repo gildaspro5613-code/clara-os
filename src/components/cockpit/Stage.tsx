@@ -53,7 +53,7 @@ export default async function Stage({ session, acquisition, nativeScope = false 
       </div>
 
       <div className="pointer-events-auto absolute right-[5%] top-[7%] z-20 hidden w-[28%] max-w-[420px] lg:block">
-        {native ? unavailable : <AgendaPanel />}
+        {native&&(!session.googleConnectionId||!session.googleCalendarId) ? unavailable : <AgendaPanel />}
       </div>
 
       <div className="pointer-events-auto absolute right-[5%] top-[61%] z-20 hidden w-[28%] max-w-[420px] lg:block">

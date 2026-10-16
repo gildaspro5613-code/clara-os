@@ -40,6 +40,7 @@ export interface MissionTask {
 }
 
 export interface Mission {
+  googleOperations?:Array<{operationId:string;connectionId:string;kind:string;resourceId:string;version:string}>;
   emailDraft?:import('@/lib/acquisition/mailbox-communication-draft').StoredMailboxDraft;
   mailReferences?:Array<{connectionId:string;messageId:string;contactId:string}>;
   documentReferences?:import("@/lib/core/session").NativeDocumentReference[];

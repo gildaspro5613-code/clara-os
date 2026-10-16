@@ -1,3 +1,4 @@
+import {googleWorkHttp} from './native-google-work-http-fixture.mjs';
 import {generateKeyPairSync,sign} from 'node:crypto';
 import {appendFileSync,writeFileSync,readFileSync} from 'node:fs';
 import {execFileSync} from 'node:child_process';
@@ -30,14 +31,15 @@ globalThis.fetch=async(input,init)=>{
   if(url.pathname==='/oauth2/v3/certs')return Response.json({keys:[publicJwk]});
   if(url.hostname==='oauth2.googleapis.com'&&url.pathname==='/token'){
    const body=new URLSearchParams(typeof init?.body==='string'?init.body:String(init?.body)),code=body.get('code')??'';
-   if(body.get('grant_type')==='refresh_token'){const refresh=body.get('refresh_token');if(!/^synthetic-refresh-google-[ab]$/.test(refresh??''))throw Error('Synthetic refresh only');const sub=refresh.endsWith('-b')?'google-b':'google-a';appendFileSync(googleProofFile,JSON.stringify({phase:'refresh',foreignAbsent:true})+'\n');return Response.json({access_token:'synthetic-'+sub,token_type:'Bearer',expires_in:3600,scope:'openid https://www.googleapis.com/auth/drive.readonly'});}
+   if(body.get('grant_type')==='refresh_token'){const refresh=body.get('refresh_token');if(!/^synthetic-refresh-google-[ab]$/.test(refresh??''))throw Error('Synthetic refresh only');const sub=refresh.endsWith('-b')?'google-b':'google-a';appendFileSync(googleProofFile,JSON.stringify({phase:'refresh',foreignAbsent:true})+'\n');return Response.json({access_token:'synthetic-'+sub,token_type:'Bearer',expires_in:3600,scope:(state.grantedScopes??['openid','https://www.googleapis.com/auth/drive.readonly']).join(' ')});}
    if(!/^fixture-[ab]\./.test(code))throw Error('Unrecognized synthetic authorization code');
    const [account,nonce]=code.split('.'),sub=account==='fixture-b'?'google-b':'google-a',now=Math.floor(Date.now()/1000);
    const parts=[Buffer.from(JSON.stringify({alg:'RS256',kid:publicJwk.kid})).toString('base64url'),Buffer.from(JSON.stringify({iss:'https://accounts.google.com',sub,aud:'synthetic-google-client',nonce:Buffer.from(nonce,'base64url').toString(),iat:now,exp:now+3600})).toString('base64url')].join('.');
-   return Response.json({access_token:'synthetic-'+sub,refresh_token:'synthetic-refresh-'+sub,token_type:'Bearer',expires_in:3600,scope:'openid https://www.googleapis.com/auth/drive.readonly',id_token:parts+'.'+sign('RSA-SHA256',Buffer.from(parts),syntheticKey.privateKey).toString('base64url')});
+   return Response.json({access_token:'synthetic-'+sub,refresh_token:'synthetic-refresh-'+sub,token_type:'Bearer',expires_in:3600,scope:(state.grantedScopes??['openid','https://www.googleapis.com/auth/drive.readonly']).join(' '),id_token:parts+'.'+sign('RSA-SHA256',Buffer.from(parts),syntheticKey.privateKey).toString('base64url')});
   }
   if(!bearer.startsWith('Bearer synthetic-google-'))throw Error('Synthetic Google bearer required');
   if(url.hostname==='openidconnect.googleapis.com'&&url.pathname==='/v1/userinfo')return Response.json({sub:state.principal??'google-'+actor});
+  const workspaceResponse=googleWorkHttp(url,init,state,'/tmp/native-fixture-google-state-'+process.env.NATIVE_TEST_DATABASE,actor);if(workspaceResponse)return workspaceResponse;
   if(url.pathname==='/drive/v3/about')return Response.json({user:{permissionId:'permission-'+actor}});
   const match=url.pathname.match(/^\/drive\/v3\/files\/(document-[a-z0-9-]+)(\/permissions)?$/);
   if(!match)throw Error('No global Drive listing or unrecognized Google operation allowed');

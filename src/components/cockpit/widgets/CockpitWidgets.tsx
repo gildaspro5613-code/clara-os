@@ -90,7 +90,7 @@ export default async function CockpitWidgets({ session, acquisition,nativeMissio
             <ConversationsPanel session={session} />
           </div>
           <div className="min-w-0">
-            {nativeMissions!==undefined?providerBlocked:<AgendaWidget />}
+            {nativeMissions!==undefined&&(!session.googleConnectionId||!session.googleCalendarId)?providerBlocked:<AgendaWidget />}
           </div>
         </div>
 

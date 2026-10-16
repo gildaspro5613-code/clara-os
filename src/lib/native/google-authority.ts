@@ -2,7 +2,7 @@ import {createHash} from 'node:crypto';
 import {sql} from '@/lib/core/store/database';
 import {databaseError,RegistryError,type RegistryQuery} from '@/lib/canonical/registry';
 import {nativeContext} from './scoped-context';
-import {CredentialStore,type CredentialPersistence} from '@/lib/connections/credential-store';
+import {CredentialStore,decryptCredentialPayload,type CredentialPersistence} from '@/lib/connections/credential-store';
 import type {ConnectionRepository} from '@/lib/connections/connection-repository';
 import type {Connection} from '@/lib/connections/connection';
 export const googleProofHash=(v:string)=>createHash('sha256').update(v).digest('hex');
@@ -18,7 +18,7 @@ export async function googleAuthority(connectionId:string){return await nativeGo
 export function scopedGoogleCredentialStore(connectionId:string,proof?:NativeGoogleProof,finish?:{stateHash:string;nonceHash:string;issuer:string;subject:string}){
  const persistence:CredentialPersistence={
   async load(id){if(id!==connectionId)throw new RegistryError(403,'NATIVE_GOOGLE_SCOPE_DENIED');const data=await nativeGoogleCommand(finish?'callback':'credentials',{connectionId,...finish});return typeof data.encryptedPayload==='string'?data.encryptedPayload:null;},
-  async save(id,encryptedPayload){if(id!==connectionId)throw new RegistryError(403,'NATIVE_GOOGLE_SCOPE_DENIED');await nativeGoogleCommand(finish?'finish':'refresh',{connectionId,encryptedPayload,revision:proof?.revision,...finish});},
+  async save(id,encryptedPayload){if(id!==connectionId)throw new RegistryError(403,'NATIVE_GOOGLE_SCOPE_DENIED');const tokens=decryptCredentialPayload<{scope?:string[]}>(encryptedPayload);await nativeGoogleCommand(finish?'finish':'refresh',{connectionId,encryptedPayload,revision:proof?.revision,...finish,...(tokens.scope?{grantedScopes:tokens.scope}:{})});},
  };
  return new CredentialStore(persistence);
 }

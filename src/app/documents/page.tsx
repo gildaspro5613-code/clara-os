@@ -280,7 +280,7 @@ export default function DocumentsPage() {
             </div>
             <div>
               <input ref={fileInput} type="file" className="hidden" onChange={(event) => void handleUpload(event.target.files?.[0])} />
-              <button type="button" disabled={working !== null||readOnly} onClick={() => fileInput.current?.click()} className="inline-flex items-center gap-2 rounded-xl border border-cyan-300/20 bg-cyan-300/[0.08] px-4 py-2.5 text-sm text-cyan-50 transition hover:bg-cyan-300/[0.12] disabled:opacity-50">
+              <button type="button" disabled={working !== null} onClick={() => readOnly?(document.getElementById("native-drive-writes")??document.getElementById("native-google-document-authority"))?.scrollIntoView({behavior:"smooth"}):fileInput.current?.click()} className="inline-flex items-center gap-2 rounded-xl border border-cyan-300/20 bg-cyan-300/[0.08] px-4 py-2.5 text-sm text-cyan-50 transition hover:bg-cyan-300/[0.12] disabled:opacity-50">
                 <Upload size={15} />{working === "upload" ? ui("uploading") : ui("uploadADocument")}
               </button>
             </div>
