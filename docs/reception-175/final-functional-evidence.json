@@ -1,0 +1,345 @@
+{
+  "dateClient": "2026-10-16",
+  "timezone": "Europe/Paris",
+  "baseline": "6bee6b16aaa3037e1d4f7fe4ad327c9254236228",
+  "testedSourceCommit": "a523f5c6930b4abbd2a31b69cb832b3cba3c8e59",
+  "branch": "fix/os-operational-reception-175",
+  "pr": 176,
+  "draft": true,
+  "decision": "NO-GO_CONTROLLED_PRODUCTION_DEPLOYMENT",
+  "isolatedCoreDecision": "GO_RETAINED",
+  "interface": {
+    "pages": 12,
+    "visibleControls": 419,
+    "glassPanels": 10,
+    "sourceSites": 172,
+    "sourceFiles": 42,
+    "pageJavaScriptErrors": [],
+    "pageCounts": [
+      {
+        "path": "/",
+        "http": 200,
+        "controls": 50
+      },
+      {
+        "path": "/missions",
+        "http": 200,
+        "controls": 31
+      },
+      {
+        "path": "/clara",
+        "http": 200,
+        "controls": 43
+      },
+      {
+        "path": "/brain",
+        "http": 200,
+        "controls": 30
+      },
+      {
+        "path": "/contacts",
+        "http": 200,
+        "controls": 33
+      },
+      {
+        "path": "/documents",
+        "http": 200,
+        "controls": 42
+      },
+      {
+        "path": "/journal",
+        "http": 200,
+        "controls": 30
+      },
+      {
+        "path": "/agenda",
+        "http": 200,
+        "controls": 30
+      },
+      {
+        "path": "/conversations",
+        "http": 200,
+        "controls": 31
+      },
+      {
+        "path": "/connexions",
+        "http": 200,
+        "controls": 31
+      },
+      {
+        "path": "/automatisations",
+        "http": 200,
+        "controls": 35
+      },
+      {
+        "path": "/telephonie",
+        "http": 200,
+        "controls": 33
+      }
+    ],
+    "checks": {
+      "headerSearchDisabled": true,
+      "headerNotificationsDisabled": true,
+      "claraMailPanel": 1,
+      "contactSearchExcludedOwn": true,
+      "contactSearchFindsOwn": true,
+      "documentsMailPanel": 0,
+      "mobileMenuExpanded": "true",
+      "mobileNavigationClosed": "false",
+      "/api/calendar": {
+        "status": 503,
+        "body": {
+          "success": false,
+          "code": "NATIVE_SCOPED_OPERATION_UNAVAILABLE"
+        }
+      },
+      "/api/native/mail?action=connections": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "connections": []
+        }
+      },
+      "/api/contacts": {
+        "status": 200,
+        "body": {
+          "connected": true,
+          "source": "clara-os",
+          "workspaceId": "w",
+          "selectedSubmissionId": "prospect-a",
+          "contacts": [
+            {
+              "id": "prospect-a",
+              "submissionId": "prospect-a",
+              "email": "prospect-a@example.invalid",
+              "name": "PRIVATE_prospect-a",
+              "projectType": "Production",
+              "lifecycleState": "qualifying",
+              "createdAt": "2026-10-16T04:52:11.292Z",
+              "updatedAt": "2026-10-16T04:52:11.292Z"
+            }
+          ]
+        }
+      }
+    },
+    "captureScope": "Selected canonical A/c1/p1 with synthetic prospect, no Google or mailbox selected for the broad page capture. Conditional provider states use separate existing E2E proofs, never inferred from this snapshot."
+  },
+  "before": {
+    "inertHeader": "Search Enter 0 API requests; notification DOM unchanged 0 requests; voice 403; raw summary in interface-before.log. Initial raw JSON overwritten by runner metadata collision, not claimed as retained.",
+    "cockpitLostAck": {
+      "actualSessionId": "native:3e79158c-27ee-4d33-bc88-fc1758c996a1",
+      "bodyIncludesExpectedSession": false,
+      "pendingKeyPresent": false,
+      "verifyButtonAfterReload": 0
+    }
+  },
+  "emailDiscovery": {
+    "persistedMessages": 51,
+    "listedMessages": 50,
+    "onePersistedMessageMissingFromList": true,
+    "missingMessageReadableByKnownId": true,
+    "listCursorReturned": false,
+    "externalSends": 0,
+    "provider": "SimulatedMail",
+    "productionCalls": 0
+  },
+  "tests": {
+    "nativeBrowser": {
+      "pass": 5,
+      "fail": 0,
+      "skipped": 0,
+      "seconds": 223.61
+    },
+    "cockpitAvailabilityRecoveryHistory": {
+      "pass": 1,
+      "fail": 0,
+      "skipped": 0,
+      "seconds": 18.26
+    },
+    "contractsI18nReceptionAuthority": {
+      "pass": 24,
+      "fail": 0,
+      "skipped": 0
+    },
+    "typeScriptExit": 0,
+    "targetedLintExit": 0,
+    "optimizedLocalWebpackBuildExit": 0,
+    "globalLintVitest": "Not rerun in this task; documented pre-existing 4 ter failures retained, not green."
+  },
+  "nativeBackendAndMigrationsByteIdentical": [
+    {
+      "file": "src/lib/native/chat.ts",
+      "unchanged": true,
+      "sha256": "3a2242dd88f9b89982e1403fd871e8aa62a4964e8842e8df05937b612bd9d33c"
+    },
+    {
+      "file": "src/lib/native/scoped-context.ts",
+      "unchanged": true,
+      "sha256": "d23d1a12a2b51889884517c04d062feda1dde1e33c775f000ea105295e59c760"
+    },
+    {
+      "file": "src/lib/native/authority.ts",
+      "unchanged": true,
+      "sha256": "9711ffae95211814abde063ce1f5dc02f75b8569a256c62ab51bb780cfbd483b"
+    },
+    {
+      "file": "src/app/api/clara/chat/route.ts",
+      "unchanged": true,
+      "sha256": "fe963c92573cec26c438126260b4787767aa9ca7813cfb2c964c43b0010350d0"
+    },
+    {
+      "file": "src/app/api/clara/conversation/route.ts",
+      "unchanged": true,
+      "sha256": "f6e704d14b8bb0a63eaf6da9275ed5ffdc373538b0ec00c64dd131dfb3088d66"
+    },
+    {
+      "file": "src/lib/native/mail.ts",
+      "unchanged": true,
+      "sha256": "745d828196480a496b273ab46b1df289a1ff6c5f9096ef4b1970ad3a4f9cf307"
+    },
+    {
+      "file": "src/lib/native/documents.ts",
+      "unchanged": true,
+      "sha256": "934bd7e399778a5eeb097f73acb5443fcfeb739b4c3f87d716ca0727552849f2"
+    },
+    {
+      "file": "db/migrations/016_native_ionos_mail.sql",
+      "unchanged": true,
+      "sha256": "83a4c1c295c4f7fe6f062d00436ad50dba4f5fa4bc0777f40f7a2d4cfa3131c7"
+    },
+    {
+      "file": "db/migrations/014_native_commercial_continuity.sql",
+      "unchanged": true,
+      "sha256": "db4af2406f401fc7c0c16358791010d52c4ab7d24d827892ea949ec1630265c1"
+    },
+    {
+      "file": "db/migrations/013_native_scoped_runtime.sql",
+      "unchanged": true,
+      "sha256": "2a73f67c056575249d1eb43da315583d29fb2a4311a84953f7d73ef5b715fead"
+    },
+    {
+      "file": "db/migrations/017_native_conversation_continuity.sql",
+      "unchanged": true,
+      "sha256": "c31f6096dfa44c98efc8786a40af2a3695926c5f1aec36cc33014eaad259ba85"
+    },
+    {
+      "file": "db/migrations/015_native_google_document_authority.sql",
+      "unchanged": true,
+      "sha256": "401681bc0b1b7a10af8137b85fb19d961b58affaabb08c3dd7773b0e01f70f5d"
+    },
+    {
+      "file": "db/migrations/012_native_resource_authority.sql",
+      "unchanged": true,
+      "sha256": "2d2865da1663dfae72a3aea3688ee437aedf08ff91c8fc2df786c058e3257f0f"
+    }
+  ],
+  "productionCalls": 0,
+  "productionMigrations": 0,
+  "externalRealSends": 0,
+  "liveChanged": false,
+  "ownedIsolatedServicesAndDatabasesCleaned": true,
+  "remainingGates": [
+    "Mail panel absent from Documents",
+    "51 persisted emails -> list 50 without cursor; one omitted still readable by ID",
+    "Calendar returns 503 native scope operation unavailable",
+    "General Contacts create/update contract absent; only received mail-specific creation exists",
+    "Drive write/import not certified and closed",
+    "Telephony and automation availability not certified",
+    "Real Vercel/Neon target, roles, backup, key continuity and provider certifications unknown"
+  ],
+  "logs": [
+    {
+      "file": "/workspace/reception-finale-176/application.log",
+      "sha256": "b39d7545f01967115efd1d5b57809b9bc39339a92972d77315a48690180ee9c2"
+    },
+    {
+      "file": "/workspace/reception-finale-176/browser-after.log",
+      "sha256": "171070edcaecb30aab4ec6602a03f7ec33a1f28dd64f3e320727bfb28d1e1c27"
+    },
+    {
+      "file": "/workspace/reception-finale-176/browser-fixture.log",
+      "sha256": "72fe92a606a4decc0dcbe76a3e2a4dc09f553714fbb1f20041890174e87c6b36"
+    },
+    {
+      "file": "/workspace/reception-finale-176/build-after.log",
+      "sha256": "4779dd998f9ec65b2d7c493d138a3d8d38b783743832b096f7dcfd80e37853f1"
+    },
+    {
+      "file": "/workspace/reception-finale-176/build-final.log",
+      "sha256": "4a6130719da1da9c1e101f95853273fc351b0c70cca4b70e53fd40ab5a16cf68"
+    },
+    {
+      "file": "/workspace/reception-finale-176/cockpit-browser-final.log",
+      "sha256": "6e9a0a051239daed1b874d4fd8d586cd31f1ec6a997aab2a32916ec0874d3c6d"
+    },
+    {
+      "file": "/workspace/reception-finale-176/cockpit-chat-before.log",
+      "sha256": "0d26c3526a5760bf2130e694afb07b4095dc2b15f2a4c577222f4c1c484caad2"
+    },
+    {
+      "file": "/workspace/reception-finale-176/contracts-after.log",
+      "sha256": "3a3b36cb71ed8f4cc6fe768a6648fea2d091b5531f4b6090173fdef42ae2bd8c"
+    },
+    {
+      "file": "/workspace/reception-finale-176/contracts-final.log",
+      "sha256": "71eaf3a2c66b0d159a4a2dff019b92b65496f1d61149c2dd2a617f8ca783d9b7"
+    },
+    {
+      "file": "/workspace/reception-finale-176/interface-after.log",
+      "sha256": "a3535e16329db4d32ad86e1312649520adbece70e21821ad12460600ede46486"
+    },
+    {
+      "file": "/workspace/reception-finale-176/interface-before.log",
+      "sha256": "6a274e6c4b31fd30f640ded6a261025e914bc5217be0901dae5c3e413e3af75f"
+    },
+    {
+      "file": "/workspace/reception-finale-176/lint-after.log",
+      "sha256": "76162e465989f3f070a9de8db711fbf358e53b74d09ce1bbdb57c727e4c4a16d"
+    },
+    {
+      "file": "/workspace/reception-finale-176/lint-final.log",
+      "sha256": "76162e465989f3f070a9de8db711fbf358e53b74d09ce1bbdb57c727e4c4a16d"
+    },
+    {
+      "file": "/workspace/reception-finale-176/mail-discovery.log",
+      "sha256": "b3d0823d182dbcc571e74526731738380acaf7740dd30dfc84951474d8982891"
+    },
+    {
+      "file": "/workspace/reception-finale-176/run-before-complete.log",
+      "sha256": "8cdc8fea1effe1a5fe62af5290fd7d4d1cc091248fb226be81a7cdab8466c04b"
+    },
+    {
+      "file": "/workspace/reception-finale-176/run-before.log",
+      "sha256": "873d7926773fe87f8d8a2373e42ad89b5819ccfcd2cd2733d69d188bf03869dd"
+    },
+    {
+      "file": "/workspace/reception-finale-176/run-browser-final.log",
+      "sha256": "e936c9bc56059445e41f84d59586b4330eccf61f48f576ff0d5df19f8ed1d782"
+    },
+    {
+      "file": "/workspace/reception-finale-176/run-chat-before-final.log",
+      "sha256": "3e7c54ece32f1ceec2c1853cf207ff857e0e7804af8a592d8c78fae766866c3e"
+    },
+    {
+      "file": "/workspace/reception-finale-176/run-chat-before.log",
+      "sha256": "c12c23abf9ab00771be0ae11a7351b41f7519bc78e107737647a91d7c6119711"
+    },
+    {
+      "file": "/workspace/reception-finale-176/run-interface-final.log",
+      "sha256": "5fdc0942d2258981c0e0972c46525ca5481d12ddc4fe339e46ae27147ffa8e05"
+    },
+    {
+      "file": "/workspace/reception-finale-176/tls.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "/workspace/reception-finale-176/typescript-after.log",
+      "sha256": "76162e465989f3f070a9de8db711fbf358e53b74d09ce1bbdb57c727e4c4a16d"
+    },
+    {
+      "file": "/workspace/reception-finale-176/typescript-final.log",
+      "sha256": "76162e465989f3f070a9de8db711fbf358e53b74d09ce1bbdb57c727e4c4a16d"
+    }
+  ],
+  "ci": "Final SHA checks recorded on PR #176; no Production GO inferred from CI."
+}
