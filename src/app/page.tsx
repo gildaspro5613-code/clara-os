@@ -14,7 +14,7 @@ export default async function HomePage() {
 
   return (
     <MainLayout>
-      <Cockpit nativeIntake={operational.acquisition?nativeContext()!.intakes.get(operational.acquisition.submissionId)??null:null} nativeMissions={await loadMissions()} session={operational.session} acquisition={operational.acquisition} />
+      <Cockpit nativeSessionId={nativeContext()!.scope.sessionId} nativeIntake={operational.acquisition?nativeContext()!.intakes.get(operational.acquisition.submissionId)??null:null} nativeMissions={await loadMissions()} session={operational.session} acquisition={operational.acquisition} />
     </MainLayout>
   );
   });

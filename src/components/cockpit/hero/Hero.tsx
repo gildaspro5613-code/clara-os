@@ -4,11 +4,12 @@ import type { AcquisitionRecord } from "@/lib/acquisition/acquisition-store";
 import Stage from "../Stage";
 
 interface HeroProps {
+  nativeScope?: boolean;
   session: ClaraSession;
   acquisition?: AcquisitionRecord | null;
 }
 
-export default function Hero({ session, acquisition }: HeroProps) {
+export default function Hero({ session, acquisition, nativeScope }: HeroProps) {
   return (
     <section className="relative h-full min-h-[720px] overflow-hidden bg-[#020914]">
       {/*
@@ -33,7 +34,7 @@ export default function Hero({ session, acquisition }: HeroProps) {
         <div className="absolute bottom-0 left-0 right-0 h-[34%] bg-[linear-gradient(180deg,rgba(2,9,20,0),rgba(1,6,14,0.78))]" />
       </div>
 
-      <Stage session={session} acquisition={acquisition} />
+      <Stage nativeScope={nativeScope} session={session} acquisition={acquisition} />
     </section>
   );
 }

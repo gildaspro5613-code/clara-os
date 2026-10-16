@@ -1,4 +1,4 @@
-import {nativeContext,nativeThreadCertified} from '@/lib/native/scoped-context';
+import {nativeThreadCertified} from '@/lib/native/scoped-context';
 import type {MdProjectIntake} from "@/types";
 import type {Mission} from "@/modules/missions/types/Mission";
 import EmailSummaryPanel from "../panels/EmailSummaryPanel";
@@ -25,13 +25,14 @@ import type { AcquisitionRecord } from "@/lib/acquisition/acquisition-store";
 import { getTranslations } from "next-intl/server";
 
 interface CockpitWidgetsProps {
+  nativeSessionId?:string;
   session: ClaraSession;
   nativeMissions?:Mission[];
   nativeIntake?:MdProjectIntake|null;
   acquisition?: AcquisitionRecord | null;
 }
 
-export default async function CockpitWidgets({ session, acquisition,nativeMissions,nativeIntake }: CockpitWidgetsProps) {
+export default async function CockpitWidgets({ session, acquisition,nativeMissions,nativeIntake,nativeSessionId }: CockpitWidgetsProps) {
   const t = await getTranslations("cockpitUi");
   const ui = await getTranslations("ui");
   const providerBlocked = <p className="rounded-xl border border-white/10 p-5 text-sm text-white/60">{ui("nativeProviderBlocked")}</p>;
@@ -106,7 +107,7 @@ export default async function CockpitWidgets({ session, acquisition,nativeMissio
         </div>
 
         <div className="mt-5">
-          <ClaraChatWidget nativeThreadReadOnly={!!nativeContext()&&!nativeThreadCertified(session)} key={nativeContext()?.scope.sessionId} nativeSessionId={nativeContext()?.scope.sessionId} compact initialMessages={session.conversation} userFirstName={session.user.firstName} />
+          <ClaraChatWidget nativeThreadReadOnly={nativeMissions!==undefined&&!nativeThreadCertified(session)} key={nativeSessionId} nativeSessionId={nativeSessionId} compact initialMessages={session.conversation} userFirstName={session.user.firstName} />
         </div>
       </div>
     </section>
