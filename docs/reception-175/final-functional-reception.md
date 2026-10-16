@@ -1,5 +1,7 @@
 # Réception fonctionnelle finale — PR #176
 
+> Suite sur la base a16497f : voir le [rapport unique du lot de fermeture](functional-closure-176.md) et sa [matrice ciblée](functional-closure-matrix.csv). Les constats ci-dessous restent la preuve historique de cette réception ; les corrections ultérieures sont distinguées dans ce dossier.
+
 **NO-GO pour le déploiement contrôlé du périmètre métier demandé.** Le noyau autonome reçu en isolation reste préservé ; les écarts ci-dessous ne doivent pas être transformés en fonctionnalités certifiées. Référence initiale : `6bee6b16aaa3037e1d4f7fe4ad327c9254236228`, branche `fix/os-operational-reception-175`, PR #176 conservée Draft. Date : 16 octobre 2026, Europe/Paris. Aucun merge/déploiement/migration Production, appel fournisseur réel, envoi ou modification Clara Live/#303.
 
 ## Périmètre et méthode

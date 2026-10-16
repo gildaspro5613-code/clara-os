@@ -1,3 +1,5 @@
+> Dernier lot : [fermeture fonctionnelle PR #176](functional-closure-176.md) — emails/Documents, contacts, régression commune et blocages contractuels Agenda/Drive.
+
 > **Réception fonctionnelle finale — NO-GO déploiement contrôlé du périmètre demandé** : [rapport et corrections Cockpit](final-functional-reception.md), [matrice des 419 contrôles](final-functional-elements.csv), [Glass Panels](final-functional-panels.csv), [preuves](final-functional-evidence.json). Les acquis autonomes restent reçus en isolation ; emails dans Documents, découverte des emails au-delà de 50, Agenda, Contacts CRUD et certifications réelles restent des gates distinctes. PR #176 Draft.
 
 > **Lot 4 bis — GO pour une nouvelle réception autonome isolée, NO-GO Production** : [corrections, migration et limites](lot-4-bis-autonomous-reception.md), [preuves avant/après](lot-4-bis-evidence.json). Fils liés à leur Mission, tours idempotents et historique durable paginé ; anciens fils non attestés conservés en lecture seule. PR #176 Draft. Le raccord métier Live reste distinct et fermé selon le lot 3.
