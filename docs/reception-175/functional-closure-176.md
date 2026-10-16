@@ -1,5 +1,7 @@
 # Lot de fermeture fonctionnelle — PR #176
 
+> État historique : le raccordement Agenda/Drive autorisé ensuite est documenté dans [la réception Google finale](google-agenda-drive-final.md). Les preuves de ce lot restent conservées.
+
 Référence de départ obligatoire : `a16497fce1e780bf9109a360dc75cf00fd56b6f0`. Branche `fix/os-operational-reception-175`. PR existante conservée Draft. Ce dossier complète la réception finale, sans refaire l'inventaire des 419 contrôles ni rouvrir les lots déjà reçus.
 
 Commit de corrections : `4e5d5c3f9c286b5402feb5b8ff48acd449af6984`. Les commits de documentation ultérieurs ne changent pas ce code.
