@@ -313,5 +313,6 @@
   "googleKind_drive_upload": "Importer un fichier",
   "googleKind_drive_update": "Modifier le contenu d’un fichier texte",
   "googleKind_drive_move": "Déplacer et classer un fichier",
-  "googleExistingUncertain": "Une opération précédente a une issue incertaine. Retrouvez-la et vérifiez son résultat sans renvoyer l’écriture."
+  "googleExistingUncertain": "Une opération précédente a une issue incertaine. Retrouvez-la et vérifiez son résultat sans renvoyer l’écriture.",
+  "googleCalendarReadOnly": "Ce calendrier est accessible en lecture seule. Les écritures sont indisponibles."
 }

@@ -313,5 +313,6 @@
   "googleKind_drive_upload": "Datei importieren",
   "googleKind_drive_update": "Textdateiinhalt ändern",
   "googleKind_drive_move": "Datei verschieben und einordnen",
-  "googleExistingUncertain": "Ein vorheriger Vorgang hat ein ungewisses Ergebnis. Öffnen und prüfen Sie ihn, ohne die Änderung zu wiederholen."
+  "googleExistingUncertain": "Ein vorheriger Vorgang hat ein ungewisses Ergebnis. Öffnen und prüfen Sie ihn, ohne die Änderung zu wiederholen.",
+  "googleCalendarReadOnly": "Dieser Kalender ist schreibgeschützt. Änderungen sind nicht verfügbar."
 }

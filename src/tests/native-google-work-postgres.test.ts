@@ -5,7 +5,7 @@ import {promisify} from 'node:util';
 import {randomUUID,createHash} from 'node:crypto';
 import {readFileSync} from 'node:fs';
 import {nativeCommands,withNativeScope,writableNativeContext,nativeMission,nativeContext} from '@/lib/native/scoped-context';
-import {NativeGoogleWork,executeGoogleWork,type GoogleWorkInput,normalizeGoogleWorkInput} from '@/lib/native/google-work';
+import {NativeGoogleWork,executeGoogleWork,googleWorkCommand,type GoogleWorkInput,normalizeGoogleWorkInput} from '@/lib/native/google-work';
 import {nativeGoogleCommand,googleProofHash} from '@/lib/native/google-authority';
 import {encryptCredentialPayload} from '@/lib/connections/credential-store';
 import {seedGoogleWork,SimulatedGoogleWork,workScopes} from './helpers/native-google-work-fixture';
@@ -33,6 +33,10 @@ test('Google native workspace: real PostgreSQL, exact confirmations, immutable s
   const payload={connectionId:'google-work-a',stateHash,nonceHash,issuer:'https://accounts.google.com',subject:'google-a',encryptedPayload:encryptCredentialPayload({accessToken:'synthetic-google-a',refreshToken:'synthetic-refresh-google-a',scope:workScopes},Buffer.alloc(32,9))};
   await assert.rejects(()=>run(()=>nativeGoogleCommand('finish',payload)));await assert.rejects(()=>run(()=>nativeGoogleCommand('finish',{...payload,grantedScopes:['openid']})));
   await run(()=>nativeGoogleCommand('finish',{...payload,grantedScopes:workScopes}));assert.deepEqual(JSON.parse(pg("SELECT scopes FROM clara_connections WHERE id='google-work-a'")),workScopes);
+  provider.files.get('folder-a')!.isAppAuthorized=false;await assert.rejects(()=>run(async()=>await(await work()).inspect('folder','folder-a')));
+  for(const scopes of [[...workScopes.filter(s=>s!=='https://www.googleapis.com/auth/drive.file'),'https://www.googleapis.com/auth/drive'],workScopes]){const stateHash=googleProofHash(randomUUID()),nonceHash=googleProofHash(randomUUID());await run(()=>nativeGoogleCommand('begin',{connectionId:'google-work-a',stateHash,nonceHash,requestedScopes:scopes}));await run(()=>nativeGoogleCommand('finish',{...payload,stateHash,nonceHash,grantedScopes:scopes,encryptedPayload:encryptCredentialPayload({accessToken:'synthetic-google-a',refreshToken:'synthetic-refresh-google-a',scope:scopes},Buffer.alloc(32,9))}));if(scopes.includes('https://www.googleapis.com/auth/drive'))assert.equal((await run(async()=>await(await work()).inspect('folder','folder-a'))).resource.id,'folder-a');}
+  provider.files.get('folder-a')!.isAppAuthorized=true;
+
  });
  await t.test('explicit resource binding, two users/clients/projects and historical/primary/root refusals',async()=>{
   for(const [kind,id] of [['calendar','calendar-a'],['folder','folder-a'],['folder','folder-other']] as const){const check=await run(async()=>await(await work()).inspect(kind,id));await run(async()=>await(await work()).bind(kind,id,check.resource.version!),request(),true);}
@@ -50,6 +54,8 @@ test('Google native workspace: real PostgreSQL, exact confirmations, immutable s
   await assert.rejects(()=>execute(i.operationId,review.reviewHash,false));await assert.rejects(()=>execute(i.operationId,'wrong-hash'));
   const replies=await Promise.allSettled([execute(i.operationId,review.reviewHash),execute(i.operationId,review.reviewHash)]);assert.ok(replies.some(r=>r.status==='fulfilled'&&r.value.status==='completed'));assert.equal(provider.calls.length,1);
   const replay=await execute(i.operationId,review.reviewHash);assert.equal(replay.status,'completed');assert.equal(provider.calls.length,1);file=(replay.result as {id:string}).id;
+
+  const cancelled=await prepare(input('calendar.create',{name:'Human cancelled before handoff'}));await run(()=>googleWorkCommand('cancel',{connectionId:'google-work-a',operationId:cancelled.operationId}),request(),true);assert.equal((await execute(cancelled.operationId,cancelled.reviewHash)).status,'failed');assert.equal(provider.calls.length,1);await assert.rejects(()=>run(()=>googleWorkCommand('cancel',{connectionId:'google-work-a',operationId:i.operationId}),request(),true));
   assert.equal(pg('SELECT COUNT(*) FROM clara_tool_approvals').trim(),'1');assert.equal(pg("SELECT COUNT(*) FROM clara_external_event_jobs WHERE job_kind='native-google' AND status='completed'").trim(),'1');
   assert.ok(!pg("SELECT request::text FROM clara_external_event_jobs WHERE job_kind='native-google'").includes('DURABLE_APPROVED_CONTENT'));
   const data=await run(async()=>nativeContext()!.session.mission);assert.ok(data?.googleOperations?.some(r=>r.resourceId===file));assert.ok((await run(async()=>await(await work()).resources())).resources.some(r=>r.id===file));
@@ -64,8 +70,12 @@ test('Google native workspace: real PostgreSQL, exact confirmations, immutable s
   const update=await prepare(input('drive.update',{fileId:file,name:'Updated text',content:Buffer.from('UPDATED_BYTES').toString('base64')}));assert.equal((await execute(update.operationId,update.reviewHash)).status,'completed');assert.equal(provider.files.get(file)!.content.toString(),'UPDATED_BYTES');
   const move=await prepare(input('drive.move',{resourceId:'folder-other',fileId:file,name:'Classified text',content:undefined,mimeType:undefined}));assert.equal((await execute(move.operationId,move.reviewHash)).status,'completed');assert.deepEqual(provider.files.get(file)!.parents,['folder-other']);
   const stale=await prepare(input('drive.move',{resourceId:'folder-a',fileId:file,name:'Must not overwrite',content:undefined,mimeType:undefined}));provider.files.get(file)!.etag='"foreign-version"';const before=provider.calls.length;await assert.rejects(()=>execute(stale.operationId,stale.reviewHash));assert.equal(provider.calls.length,before);
+  const racing=await prepare(input('drive.update',{resourceId:'folder-other',fileId:file,name:'Approved text remains classified',content:Buffer.from('RACE_SAFE_CONTENT').toString('base64')}));provider.onMutation=()=>{provider.files.get(file)!.parents=['folder-a'];};assert.equal((await execute(racing.operationId,racing.reviewHash)).status,'uncertain');provider.onMutation=undefined;const handoffs=provider.calls.length;assert.equal((await reconcile(racing.operationId)).status,'uncertain');provider.files.get(file)!.parents=['folder-other'];assert.equal((await reconcile(racing.operationId)).status,'completed');assert.equal(provider.calls.length,handoffs);
+
  });
  await t.test('project and Google resource revocation, read-only delegations, expired consent/proposals',async()=>{
+  provider.calendars.get('calendar-a')!.accessRole='reader';assert.ok((await run(async()=>await(await work()).events())).events.length>0);await assert.rejects(()=>prepare(input('calendar.create')));provider.calendars.get('calendar-a')!.accessRole='owner';
+  const event=[...provider.events.values()][0],eventId=String(event.id);for(const extra of [{attendees:[{email:'synthetic@example.invalid'}]},{recurrence:['RRULE:FREQ=DAILY']},{recurringEventId:'series-id'},{status:'cancelled'}]){Object.assign(event,extra);await assert.rejects(()=>prepare(input('calendar.update',{eventId})));for(const key of Object.keys(extra))delete event[key];}
   const i=input('calendar.create'),r=await prepare(i),before=provider.calls.length;
   pg("UPDATE clara_registry_project_access SET revoked_at=NOW() WHERE user_id='a' AND project_id='p1'");await assert.rejects(()=>execute(i.operationId,r.reviewHash));pg("UPDATE clara_registry_project_access SET revoked_at=NULL WHERE user_id='a' AND project_id='p1'");
   provider.deny=true;await assert.rejects(()=>execute(i.operationId,r.reviewHash));provider.deny=false;assert.equal(provider.calls.length,before);
@@ -79,6 +89,7 @@ test('Google native workspace: real PostgreSQL, exact confirmations, immutable s
   const calls=provider.calls.length;await assert.rejects(()=>run(async()=>await(await work()).prepare(input('calendar.create')),request('B',b)));assert.equal(provider.calls.length,calls);
   await run(()=>nativeGoogleCommand('revokeDelegation',{connectionId:'google-work-a',userId:'b'}));await assert.rejects(()=>run(async()=>await(await work()).events(),request('B',b)));
   const second=new SimulatedGoogleWork();second.principal='google-b';second.generated=100;second.folder('folder-b');const own=async()=>new NativeGoogleWork('google-work-b',second.factory).initialize();
+  const capabilities=await run(async()=>await(await own()).capabilities(),request('B',b));assert.equal(capabilities.canConsent,false);assert.equal(capabilities.canManage,true);
   const folder=await run(async()=>await(await own()).inspect('folder','folder-b'),request('B',b));await run(async()=>await(await own()).bind('folder','folder-b',folder.resource.version!),request('B',b),true);
   const i=input('drive.upload',{resourceId:'folder-b',name:'Independent B file'});const r=await run(async()=>await(await own()).prepare(i),request('B',b));assert.equal((await executeGoogleWork(request('B',b),'google-work-b',i.operationId,r.reviewHash,true,second.factory,query)).status,'completed');assert.equal(second.calls.length,1);
   await assert.rejects(()=>run(async()=>new NativeGoogleWork('google-work-b',second.factory).initialize()));
@@ -95,6 +106,7 @@ test('Google native workspace: real PostgreSQL, exact confirmations, immutable s
   assert.equal((await run(async()=>await(await new NativeGoogleWork('google-work-a',provider.factory).initialize(false)).review(receipt.operationId))).status,'completed');
   assert.equal((await execute(receipt.operationId,receipt.reviewHash)).status,'completed');assert.equal(provider.calls.length,before);
   provider.deny=false;pg("UPDATE clara_connections SET status='ACTIVE' WHERE id='google-work-a'");
+  const created=await prepare(input('drive.create',{name:'Persisted plain text creation',content:Buffer.from('CREATED_TEXT_BYTES').toString('base64')}));const completed=await execute(created.operationId,created.reviewHash);assert.equal(completed.status,'completed');assert.equal(provider.files.get((completed.result as {id:string}).id)!.content.toString(),'CREATED_TEXT_BYTES');
  });
  await t.test('uncertain no-effect blocks new handoffs and inbound maintenance cannot consume or expire native Google receipts',async()=>{
   provider.outcome='no-effect';const r=await prepare(input('calendar.create'));assert.equal((await execute(r.operationId,r.reviewHash)).status,'uncertain');const calls=provider.calls.length;assert.equal((await reconcile(r.operationId)).status,'uncertain');assert.equal(provider.calls.length,calls);

@@ -5,6 +5,7 @@ export function googleWorkHttp(url,init,state,stateFile,actor){
  const work=state.workspace;if(!work)return undefined;
  const method=init?.method??'GET',headers=new Headers(init?.headers),save=()=>writeFileSync(stateFile,JSON.stringify(state));
  const fail=status=>Response.json({error:{code:status,message:'Synthetic Google refusal'}},{status});
+ if(work.unavailable)return fail(503);
  if(work.deny||actor!=='a')return fail(403);
  const calendarPath=url.pathname.match(/^\/calendar\/v3\/users\/me\/calendarList(?:\/(.+))?$/);
  if(calendarPath){if(calendarPath[1]){const c=work.calendars[decodeURIComponent(calendarPath[1])];return c?Response.json(c):fail(404);}const values=Object.values(work.calendars),offset=Number(url.searchParams.get('pageToken')??0),size=work.calendarPageSize??50;return Response.json({items:values.slice(offset,offset+size),...(offset+size<values.length?{nextPageToken:String(offset+size)}:{})});}

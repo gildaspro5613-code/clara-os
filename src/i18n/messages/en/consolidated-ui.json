@@ -313,5 +313,6 @@
   "googleKind_drive_upload": "Upload a file",
   "googleKind_drive_update": "Update text file content",
   "googleKind_drive_move": "Move and organize a file",
-  "googleExistingUncertain": "An earlier operation has an uncertain outcome. Retrieve it and check its result without repeating the write."
+  "googleExistingUncertain": "An earlier operation has an uncertain outcome. Retrieve it and check its result without repeating the write.",
+  "googleCalendarReadOnly": "This calendar is read-only. Writes are unavailable."
 }
