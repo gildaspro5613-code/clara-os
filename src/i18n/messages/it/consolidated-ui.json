@@ -242,5 +242,15 @@
   "nativeThreadReviewRequired": "Questa conversazione è conservata in sola lettura: il contesto storico non può essere attribuito automaticamente. Creare una nuova conversazione per lavorare.",
   "nativeCancelChat": "Abbandona questo turno",
   "nativeCancelChatConfirm": "Abbandonare questo turno? Un processo già avviato può continuare presso il fornitore. Non verrà reinviato nulla automaticamente.",
-  "nativeChatCancelled": "Turno abbandonato. Nessun risultato tardivo di questo turno verrà salvato."
+  "nativeChatCancelled": "Turno abbandonato. Nessun risultato tardivo di questo turno verrà salvato.",
+  "mailMore": "Mostra altre email",
+  "contactCreate": "Crea un contatto",
+  "contactEdit": "Modifica contatto",
+  "contactDraftReview": "Questo contatto ha una bozza: le modifiche richiedono la verifica del destinatario. Le bozze esistenti non vengono modificate automaticamente.",
+  "contactConflict": "Il contatto è cambiato. Aggiorna prima di modificarlo.",
+  "contactSaveError": "Impossibile salvare. Verifica il contesto e le autorizzazioni.",
+  "capabilityNotCertified": "Non disponibile: funzionalità non certificata. Non è possibile avviare chiamate da questa pagina.",
+  "automationsNotCertified": "Automazioni non disponibili: funzionalità non certificate. I collegamenti aprono pagine di lavoro senza eseguire azioni.",
+  "driveReadOnlyAuthority": "Drive in sola lettura: importazione, creazione di cartelle e spostamento non disponibili con i permessi attuali.",
+  "contactSave": "Salva contatto"
 }

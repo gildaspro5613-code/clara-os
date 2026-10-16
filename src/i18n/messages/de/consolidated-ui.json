@@ -242,5 +242,15 @@
   "nativeThreadReviewRequired": "Dieser Verlauf bleibt schreibgeschützt: Sein historischer Kontext kann nicht automatisch zugeordnet werden. Erstellen Sie zum Arbeiten einen neuen Verlauf.",
   "nativeCancelChat": "Diesen Beitrag abbrechen",
   "nativeCancelChatConfirm": "Diesen Beitrag abbrechen? Eine bereits gestartete Verarbeitung kann beim Anbieter weiterlaufen. Es wird nichts automatisch erneut gesendet.",
-  "nativeChatCancelled": "Beitrag abgebrochen. Spätere Ergebnisse dieses Beitrags werden nicht gespeichert."
+  "nativeChatCancelled": "Beitrag abgebrochen. Spätere Ergebnisse dieses Beitrags werden nicht gespeichert.",
+  "mailMore": "Weitere E-Mails anzeigen",
+  "contactCreate": "Kontakt erstellen",
+  "contactEdit": "Kontakt bearbeiten",
+  "contactDraftReview": "Für diesen Kontakt gibt es einen Entwurf: Änderungen erfordern eine Prüfung des Empfängers. Vorhandene Entwürfe werden nie stillschweigend geändert.",
+  "contactConflict": "Der Kontakt wurde geändert. Aktualisieren Sie vor der Bearbeitung.",
+  "contactSaveError": "Speichern nicht möglich. Prüfen Sie Kontext und Berechtigungen.",
+  "capabilityNotCertified": "Nicht verfügbar — Funktion nicht zertifiziert. Von dieser Seite können keine Anrufe gestartet werden.",
+  "automationsNotCertified": "Automatisierungen nicht verfügbar — Funktionen nicht zertifiziert. Die Links öffnen Arbeitsseiten und lösen keine Aktionen aus.",
+  "driveReadOnlyAuthority": "Drive mit Lesezugriff: Import, Ordnererstellung und Verschieben sind mit den aktuellen Berechtigungen nicht verfügbar.",
+  "contactSave": "Kontakt speichern"
 }

@@ -12,21 +12,22 @@ export default function NativeMailPanel({referencesOnly=false}:{referencesOnly?:
  const [connections,setConnections]=useState<Connection[]>([]),[connectionId,setConnection]=useState(''),[folders,setFolders]=useState<string[]>([]),[folder,setFolder]=useState(''),[messages,setMessages]=useState<Message[]>([]),[messageId,setMessage]=useState(''),[opened,setOpened]=useState<OpenMail|null>(null),[draft,setDraft]=useState<MailboxCommunicationDraft|null>(null),[operations,setOperations]=useState<Operation[]>([]),[review,setReview]=useState<{id:string;envelope:Review}|null>(null),[approval,setApproval]=useState<{id:string;token:string}|null>(null),[delegate,setDelegate]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
  useEffect(()=>{let active=true;fetch('/api/native/mail',{cache:'no-store'}).then(r=>r.json()).then(b=>{if(active&&b.success)setConnections(b.connections);}).catch(()=>{});return()=>{active=false;};},[]);
  const owned=connections.find(c=>c.id===connectionId)?.owned;
+ const [nextCursor,setNextCursor]=useState<string|null>(null);
  const [contactName,setContactName]=useState(''),[contactEmail,setContactEmail]=useState('');
  async function get(action:string,extra:Record<string,string>={}){const r=await fetch('/api/native/mail?'+new URLSearchParams({action,connectionId,...extra}),{cache:'no-store'}),b=await r.json();if(!r.ok||!b.success)throw Error();return b;}
  async function post(action:string,extra:Record<string,unknown>={}){const r=await fetch('/api/native/mail',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,connectionId,...extra})}),b=await r.json();if(!r.ok)throw Error();return b;}
  async function perform(work:()=>Promise<void>){setBusy(true);setError('');try{await work();}catch{setError(t('mailUnavailable'));}finally{setBusy(false);}}
  async function refresh(){
-  setMessages([]);setOperations([]);setDraft(null);
+  setMessages([]);setNextCursor(null);setOpened(null);setMessage('');setOperations([]);setDraft(null);
   const [list,ops,d]=await Promise.allSettled([get('messages'),get('operations'),get('draft')]);
-  if(list.status==='fulfilled')setMessages(list.value.messages);
+  if(list.status==='fulfilled'){setMessages(list.value.messages);setNextCursor(list.value.nextCursor);}
   if(ops.status==='fulfilled')setOperations(ops.value.operations);
   if(d.status==='fulfilled')setDraft(d.value.draft);
   if([list,ops,d].some(r=>r.status==='rejected'))setError(t('mailUnavailable'));
  }
  return <section aria-label={t('mailTitle')} className="my-5 rounded-xl border border-white/10 p-4 text-sm text-white">
  <h2 className="font-semibold">{t('mailTitle')}</h2><p className="my-2 text-white/60">{t('mailIsolation')}</p>
- <label>{t('mailAccount')} <select aria-label={t('mailAccount')} className="bg-slate-900" value={connectionId} disabled={busy} onChange={e=>{setConnection(e.target.value);setFolder('');setFolders([]);setMessages([]);setOpened(null);setMessage('');setDraft(null);setOperations([]);setReview(null);setApproval(null);}}><option value="">{t('choose')}</option>{connections.map(c=><option key={c.id} value={c.id}>{c.address}</option>)}</select></label>
+ <label>{t('mailAccount')} <select aria-label={t('mailAccount')} className="bg-slate-900" value={connectionId} disabled={busy} onChange={e=>{setConnection(e.target.value);setNextCursor(null);setFolder('');setFolders([]);setMessages([]);setOpened(null);setMessage('');setDraft(null);setOperations([]);setReview(null);setApproval(null);}}><option value="">{t('choose')}</option>{connections.map(c=><option key={c.id} value={c.id}>{c.address}</option>)}</select></label>
  <button className="m-2 border p-2" disabled={busy||!connectionId} onClick={()=>void perform(refresh)}>{t('mailRefresh')}</button>
  {!referencesOnly&&<>
  <button className="m-2 border p-2" disabled={busy||!connectionId} onClick={()=>void perform(async()=>{setFolders((await get('folders')).folders);})}>{t('mailFolders')}</button>
@@ -34,6 +35,7 @@ export default function NativeMailPanel({referencesOnly=false}:{referencesOnly?:
  <button className="m-2 border p-2" disabled={busy||!owned||!folder} onClick={()=>void perform(async()=>{await post('sync',{folder});await refresh();})}>{t('mailSync')}</button>
  <p className="mt-2">{t('mailContextHelp')}</p>
  <ul>{messages.map(m=><li className="my-2" key={m.id}><button disabled={busy||m.quarantined} onClick={()=>void perform(async()=>{setOpened((await get('message',{messageId:m.id})).message);setMessage(m.id);setReview(null);setApproval(null);})}>{m.from} · {m.subject}{m.quarantined?' · '+t('mailQuarantine'):''}</button></li>)}</ul>
+ {nextCursor&&<button className="m-2 border p-2" disabled={busy} onClick={()=>void perform(async()=>{const page=await get('messages',{beforeId:nextCursor});setMessages(previous=>[...previous,...page.messages.filter((m:Message)=>!previous.some(p=>p.id===m.id))]);setNextCursor(page.nextCursor);})}>{t('mailMore')}</button>}
  {opened&&<article className="my-3 rounded border border-white/10 p-3"><h3>{opened.subject}</h3><pre className="whitespace-pre-wrap">{opened.text}</pre><ul>{opened.attachments.map(a=><li key={a.id}><a href={'/api/native/mail?'+new URLSearchParams({action:'attachment',connectionId,messageId,attachmentId:a.id})}>{a.name} · {a.size}</a></li>)}</ul>
  {<fieldset className="my-3 border p-2"><legend>{t('mailContactReview')}</legend><label>{t('mailContactName')} <input disabled={busy} aria-label={t('mailContactName')} className="bg-slate-900" value={contactName} onChange={e=>setContactName(e.target.value)}/></label><label>{t('mailContactEmail')} <input disabled={busy} aria-label={t('mailContactEmail')} className="bg-slate-900" value={contactEmail} onChange={e=>setContactEmail(e.target.value)}/></label><button disabled={busy||!contactName||!contactEmail} onClick={()=>void perform(async()=>{await post('createContact',{messageId,name:contactName,email:contactEmail,locale});location.reload();})}>{t('mailCreateContact')}</button></fieldset>}
  <button className="m-2 border p-2" disabled={busy} onClick={()=>void perform(async()=>{await post('bind',{messageId});location.reload();})}>{t('mailBind')}</button>

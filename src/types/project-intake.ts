@@ -7,7 +7,7 @@ export interface MdProjectIntake {
     // email-reviewed is created only by the canonical native mailbox service.
     // The external website validator below deliberately keeps its original gate.
     system: "melodie-digital-site" | "clara-os";
-    channel: "website" | "email-reviewed";
+    channel: "website" | "email-reviewed" | "contact-reviewed";
     locale: string;
   };
   contact: {

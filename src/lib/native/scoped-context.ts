@@ -19,6 +19,7 @@ export interface ScopedNativeContext {
  documentSource?:import("@/lib/brain/brain-source").BrainSourceContext;documentCommitProof?:Record<string,unknown>;
  mailCommitProof?:Record<string,unknown>;
  chatCommitProof?:Record<string,unknown>;
+ contactProtocolVersion?:number;contactWrite?:Record<string,unknown>;
  writable:boolean;runtime?:Clara;dirty:boolean;commitOnFailure?:boolean;
 }
 const storage=new AsyncLocalStorage<ScopedNativeContext>();
@@ -66,13 +67,13 @@ export async function withNativeScope<T>(request:Request,write:boolean,render:()
   const row=snapshot.record,id=String(row.submission_id);acquisitionSnapshots[id]=snapshot;intakes.set(id,snapshot.intake);intakeMetadata.set(id,snapshot.intakeMetadata);
   acquisitions.set(id,{submissionId:id,workspaceId:String(row.workspace_id),qualification:row.qualification as AcquisitionRecord['qualification'],decisionBrief:row.decision_brief as AcquisitionRecord['decisionBrief'],lifecycle:row.lifecycle as AcquisitionRecord['lifecycle'],commercialDraft:row.commercial_draft as CommercialCommunicationDraft|null,createdAt:new Date(String(row.created_at)),updatedAt:new Date(String(row.updated_at))});
  }
- const ctx:ScopedNativeContext={query,scope,userId:String(data.userId),session,acquisitions,intakes,intakeMetadata,acquisitionSnapshots,draftWrites:new Map(),draftRevisionSteps:new Map(),missions:new Map(missions.map(m=>[m.id,m])),journal:(data.journal as JournalEntry[]).map(j=>({...j,createdAt:new Date(j.createdAt)})),writes:new Map(),entries:[],writable:write,dirty:false};
+ const ctx:ScopedNativeContext={contactProtocolVersion:Number(data.contactProtocolVersion??0),query,scope,userId:String(data.userId),session,acquisitions,intakes,intakeMetadata,acquisitionSnapshots,draftWrites:new Map(),draftRevisionSteps:new Map(),missions:new Map(missions.map(m=>[m.id,m])),journal:(data.journal as JournalEntry[]).map(j=>({...j,createdAt:new Date(j.createdAt)})),writes:new Map(),entries:[],writable:write,dirty:false};
  return storage.run(ctx,async()=>{
   const result=await render();
   if(write&&(ctx.dirty||ctx.chatCommitProof)){
    const discard=result instanceof Response&&result.status>=400&&!ctx.commitOnFailure;
    if(discard&&!ctx.chatCommitProof)return result;
-   const commit={expected,session:ctx.session,missions:[...ctx.writes.values()],journal:ctx.entries,expectedAcquisitions:ctx.acquisitionSnapshots,acquisitions:[...ctx.draftWrites].map(([submissionId,draft])=>({submissionId,draft,revisionSteps:ctx.draftRevisionSteps.get(submissionId)}))};
+   const commit={expected,session:ctx.session,missions:[...ctx.writes.values()],journal:ctx.entries,contactWrite:ctx.contactWrite,expectedAcquisitions:ctx.acquisitionSnapshots,acquisitions:[...ctx.draftWrites].map(([submissionId,draft])=>({submissionId,draft,revisionSteps:ctx.draftRevisionSteps.get(submissionId)}))};
    if(ctx.chatCommitProof){const {nativeChatCommands}=await import('./chat');await nativeChatCommands(query)(scope,'finish',{...ctx.chatCommitProof,commit:ctx.dirty&&!discard?commit:null});}
    else if(ctx.mailCommitProof){const {nativeMailCommands}=await import('./mail-authority');const {operation,...proof}=ctx.mailCommitProof;await nativeMailCommands(query)(String(operation),{...proof,commit});}
    else if(ctx.documentCommitProof){const {nativeGoogleCommands}=await import('./google-authority');await nativeGoogleCommands(query)('commit',{...ctx.documentCommitProof,commit});}

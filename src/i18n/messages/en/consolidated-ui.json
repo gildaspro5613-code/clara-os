@@ -242,5 +242,15 @@
   "nativeThreadReviewRequired": "This thread is preserved read-only: its historical context cannot be assigned automatically. Create a new thread to work.",
   "nativeCancelChat": "Abandon this turn",
   "nativeCancelChatConfirm": "Abandon this turn? Processing already started may continue at the provider. Nothing will be resent automatically.",
-  "nativeChatCancelled": "Turn abandoned. No late result from this turn will be saved."
+  "nativeChatCancelled": "Turn abandoned. No late result from this turn will be saved.",
+  "mailMore": "Show more emails",
+  "contactCreate": "Create a contact",
+  "contactEdit": "Edit contact",
+  "contactDraftReview": "This contact has a draft: changing it requires recipient review. Existing drafts are never silently changed.",
+  "contactConflict": "The contact changed. Refresh before editing again.",
+  "contactSaveError": "Unable to save. Check the context and permissions.",
+  "capabilityNotCertified": "Unavailable — capability not certified. Calls cannot be started from this page.",
+  "automationsNotCertified": "Automation execution unavailable — capabilities not certified. The links below open work pages and do not trigger actions.",
+  "driveReadOnlyAuthority": "Read-only Drive: upload, folder creation and moving files are unavailable with the current permissions.",
+  "contactSave": "Save contact"
 }

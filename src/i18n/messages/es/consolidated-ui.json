@@ -242,5 +242,15 @@
   "nativeThreadReviewRequired": "Este hilo se conserva en modo de solo lectura: su contexto histórico no se puede asignar automáticamente. Cree un nuevo hilo para trabajar.",
   "nativeCancelChat": "Abandonar este turno",
   "nativeCancelChatConfirm": "¿Abandonar este turno? Un proceso ya iniciado puede continuar en el proveedor. No se reenviará nada automáticamente.",
-  "nativeChatCancelled": "Turno abandonado. No se guardará ningún resultado tardío de este turno."
+  "nativeChatCancelled": "Turno abandonado. No se guardará ningún resultado tardío de este turno.",
+  "mailMore": "Mostrar más correos",
+  "contactCreate": "Crear un contacto",
+  "contactEdit": "Editar contacto",
+  "contactDraftReview": "Este contacto tiene un borrador: los cambios requieren revisar el destinatario. Los borradores existentes no se modifican automáticamente.",
+  "contactConflict": "El contacto ha cambiado. Actualice antes de editar de nuevo.",
+  "contactSaveError": "No se pudo guardar. Compruebe el contexto y los permisos.",
+  "capabilityNotCertified": "No disponible: capacidad no certificada. No se pueden iniciar llamadas desde esta página.",
+  "automationsNotCertified": "Ejecución de automatizaciones no disponible: capacidades no certificadas. Los enlaces abren páginas de trabajo sin ejecutar acciones.",
+  "driveReadOnlyAuthority": "Drive de solo lectura: la importación, la creación de carpetas y el traslado no están disponibles con los permisos actuales.",
+  "contactSave": "Guardar contacto"
 }

@@ -242,5 +242,15 @@
   "nativeThreadReviewRequired": "Ce fil est conservé en lecture seule : son contexte historique ne peut pas être attribué automatiquement. Créez un nouveau fil pour travailler.",
   "nativeCancelChat": "Abandonner ce tour",
   "nativeCancelChatConfirm": "Abandonner ce tour ? Un traitement déjà engagé peut continuer chez le fournisseur. Aucun renvoi automatique ne sera effectué.",
-  "nativeChatCancelled": "Tour abandonné. Aucun résultat tardif de ce tour ne sera enregistré."
+  "nativeChatCancelled": "Tour abandonné. Aucun résultat tardif de ce tour ne sera enregistré.",
+  "mailMore": "Afficher les emails suivants",
+  "contactCreate": "Créer un contact",
+  "contactEdit": "Modifier le contact",
+  "contactDraftReview": "Ce contact possède un brouillon : sa modification nécessite une revue du destinataire. Aucun brouillon existant ne sera modifié silencieusement.",
+  "contactConflict": "Le contact a changé. Actualisez avant de reprendre la modification.",
+  "contactSaveError": "Enregistrement impossible. Vérifiez le contexte et les autorisations.",
+  "capabilityNotCertified": "Indisponible — capacité non certifiée. Aucun appel ne peut être lancé depuis cette page.",
+  "automationsNotCertified": "Exécution des automatisations indisponible — capacités non certifiées. Les liens ci-dessous ouvrent les pages de travail et ne déclenchent aucune action.",
+  "driveReadOnlyAuthority": "Drive en lecture seule : importation, création de dossiers et déplacement indisponibles avec les autorisations actuelles.",
+  "contactSave": "Enregistrer le contact"
 }

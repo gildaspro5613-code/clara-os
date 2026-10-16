@@ -33,6 +33,10 @@ on:
       - 'db/migrations/015_native_google_document_authority.sql'
       - 'db/migrations/016_native_ionos_mail.sql'
       - 'db/migrations/017_native_conversation_continuity.sql'
+      - 'db/migrations/018_native_mail_pagination.sql'
+      - 'db/migrations/019_native_contact_editing.sql'
+      - 'src/components/contacts/**'
+      - 'src/tests/native-functional-closure*'
       - 'src/tests/native-conversation*'
       - 'src/tests/cockpit-availability*'
       - 'src/tests/helpers/native-conversation*'
@@ -85,14 +89,14 @@ jobs:
           done
           exit 1
       - name: Actual handlers and database isolation, revocation, snapshot and history
-        run: node --import tsx --test src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts src/tests/native-commercial-postgres.test.ts src/tests/native-documents-postgres.test.ts src/tests/native-google-oauth.test.ts src/tests/native-mail-postgres.test.ts src/tests/ionos-transport.test.ts src/tests/native-conversation-postgres.test.ts
+        run: node --import tsx --test src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts src/tests/native-commercial-postgres.test.ts src/tests/native-documents-postgres.test.ts src/tests/native-google-oauth.test.ts src/tests/native-mail-postgres.test.ts src/tests/ionos-transport.test.ts src/tests/native-conversation-postgres.test.ts src/tests/native-functional-closure.test.ts
       - name: Existing Live callback bounded transport and authentication
         run: node --import tsx --test src/tests/live-callback-transport.test.ts src/tests/clara-live-product-auth.test.ts src/tests/external-event-message-contract.test.ts
       - run: npx eslint src/lib/external-capabilities/product-callback.ts src/tests/live-callback-transport.test.ts
       - run: npx tsc --noEmit --pretty false
       - run: npx eslint src/lib/native src/app/api/clara/session src/app/api/native src/components/native src/tests/native-runtime-browser.e2e.mjs src/tests/helpers/native-runtime* src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts
       - run: npx eslint src/app/api/contacts src/app/api/clara/acquisition/commercial-draft src/lib/acquisition/acquisition-store.ts src/lib/intake/md-project-intake-inbox.ts src/tests/native-commercial* src/tests/helpers/native-commercial* src/tests/native-documents* src/tests/native-google-oauth.test.ts
-      - run: npx eslint src/lib/connectors/ionos src/lib/acquisition/mailbox-communication-draft.ts src/tests/native-mail* src/tests/ionos-transport.test.ts src/tests/helpers/native-mail*
+      - run: npx eslint src/lib/connectors/ionos src/lib/acquisition/mailbox-communication-draft.ts src/tests/native-mail* src/tests/native-functional-closure* src/components/contacts/ContactsDirectory.tsx src/tests/ionos-transport.test.ts src/tests/helpers/native-mail*
       - run: npx eslint src/tests/helpers/native-browser-diagnostics.mjs src/tests/native-conversation* src/tests/cockpit-availability* src/tests/helpers/native-conversation* src/lib/native/chat.ts src/components/cockpit/widgets/clara/ClaraChatWidget.tsx src/lib/external-capabilities/event-jobs.ts src/components/layout/Header.tsx src/components/cockpit/Stage.tsx src/components/cockpit/hero/Hero.tsx src/components/cockpit/Cockpit.tsx src/components/cockpit/widgets/CockpitWidgets.tsx src/app/page.tsx
       - name: Optimized local app build in GitHub only
         run: npm run build
@@ -127,6 +131,7 @@ jobs:
             exit 1
           fi
           NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node src/tests/helpers/native-browser-diagnostics.mjs core --import tsx --test --test-concurrency=1 src/tests/native-runtime-browser.e2e.mjs src/tests/native-commercial-browser.e2e.mjs src/tests/native-documents-browser.e2e.mjs src/tests/native-mail-browser.e2e.mjs src/tests/native-conversation-browser.e2e.mjs
+          NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node src/tests/helpers/native-browser-diagnostics.mjs core --import tsx --test src/tests/native-functional-closure-browser.e2e.mjs
           NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node src/tests/helpers/native-browser-diagnostics.mjs cockpit --import tsx --test src/tests/cockpit-availability-browser.e2e.mjs
       - name: Stop isolated fixture
         if: always()

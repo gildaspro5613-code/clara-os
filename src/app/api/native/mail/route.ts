@@ -11,7 +11,7 @@ export async function GET(request:Request){try{return await withNativeScope(requ
  const q=new URL(request.url).searchParams,action=q.get('action')??'connections';
  if(action==='connections')return ok(await nativeMailCommand('list'));
  const connectionId=opaque(q.get('connectionId')),mail=await new NativeMail(connectionId).initialize();
- if(action==='messages')return ok(await mail.list());
+ if(action==='messages')return ok(await mail.list(q.has('beforeId')?q.get('beforeId')!:undefined));
  if(action==='folders')return ok(await mail.folders());
  if(action==='draft')return ok({draft:await mail.draft()});
  if(action==='operations')return ok(await nativeMailCommand('operations',{connectionId}));

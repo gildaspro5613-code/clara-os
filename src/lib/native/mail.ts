@@ -37,7 +37,7 @@ export class NativeMail {
   const ctx=writableNativeContext();ctx.mailCommitProof=this.proof({operation:'sync',folder,...result,messages,cursorRevision:Number(cursor.revision??0)});
   await mailJournal('MAIL_SYNC',{connectionId:this.connectionId,folder,count:messages.length});return {success:true,count:messages.length};
  }
- async list(){const r=await nativeMailCommand('messages',this.proof());return {messages:(r.messages as Array<{id:string;encrypted_payload:string}>).map(m=>{const content=decryptCredentialPayload<MailContent>(m.encrypted_payload);return {id:m.id,subject:content.subject,from:content.from,quarantined:content.quarantined};})};}
+ async list(beforeId?:string){if(beforeId!==undefined&&!/^[a-f0-9]{64}$/.test(beforeId))throw new RegistryError(400,'MAIL_INVALID_CURSOR');const r=await nativeMailCommand('messages',this.proof(beforeId?{beforeId}:{}));if(!Object.hasOwn(r,'nextCursor'))throw new RegistryError(503,'MAIL_PAGINATION_MIGRATION_REQUIRED');return {nextCursor:r.nextCursor as string|null,messages:(r.messages as Array<{id:string;encrypted_payload:string}>).map(m=>{const content=decryptCredentialPayload<MailContent>(m.encrypted_payload);return {id:m.id,subject:content.subject,from:content.from,quarantined:content.quarantined};})};}
  async read(messageId:string){
   const m=await nativeMailCommand('message',this.proof({messageId}));
   if(!await (await this.transport()).exists(String(m.folder),String(m.uid_validity),Number(m.uid)))throw new RegistryError(409,'MAIL_MESSAGE_UNAVAILABLE');

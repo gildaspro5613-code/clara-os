@@ -13,6 +13,7 @@ const capabilities = [
 
 export default async function AutomatisationsPage() {
   const t = await getTranslations("automations");
+  const ui=await getTranslations("ui");
   const brevo = await getTranslations("automationsBrevo");
 
   return (
@@ -24,6 +25,7 @@ export default async function AutomatisationsPage() {
             <h1 className="mt-3 text-4xl font-medium tracking-tight">{t("title")}</h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-white/50">{t("subtitle")}</p>
           </header>
+          <p role="status" className="mb-4 text-amber-200">{ui("automationsNotCertified")}</p>
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
             <section>
               <h2 className="mb-5 text-[11px] uppercase tracking-[0.25em] text-white/45">{t("availableTitle")}</h2>
