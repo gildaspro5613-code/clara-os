@@ -20,6 +20,7 @@ on:
       - 'src/tests/native-authority*'
       - 'src/tests/native-runtime*'
       - 'src/tests/helpers/native-runtime*'
+      - 'src/tests/helpers/native-browser-diagnostics.mjs'
       - 'src/components/native/**'
       - 'src/app/api/native/**'
       - 'src/app/api/connections/google/**'
@@ -92,7 +93,7 @@ jobs:
       - run: npx eslint src/lib/native src/app/api/clara/session src/app/api/native src/components/native src/tests/native-runtime-browser.e2e.mjs src/tests/helpers/native-runtime* src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts
       - run: npx eslint src/app/api/contacts src/app/api/clara/acquisition/commercial-draft src/lib/acquisition/acquisition-store.ts src/lib/intake/md-project-intake-inbox.ts src/tests/native-commercial* src/tests/helpers/native-commercial* src/tests/native-documents* src/tests/native-google-oauth.test.ts
       - run: npx eslint src/lib/connectors/ionos src/lib/acquisition/mailbox-communication-draft.ts src/tests/native-mail* src/tests/ionos-transport.test.ts src/tests/helpers/native-mail*
-      - run: npx eslint src/tests/native-conversation* src/tests/cockpit-availability* src/tests/helpers/native-conversation* src/lib/native/chat.ts src/components/cockpit/widgets/clara/ClaraChatWidget.tsx src/lib/external-capabilities/event-jobs.ts src/components/layout/Header.tsx src/components/cockpit/Stage.tsx src/components/cockpit/hero/Hero.tsx src/components/cockpit/Cockpit.tsx src/components/cockpit/widgets/CockpitWidgets.tsx src/app/page.tsx
+      - run: npx eslint src/tests/helpers/native-browser-diagnostics.mjs src/tests/native-conversation* src/tests/cockpit-availability* src/tests/helpers/native-conversation* src/lib/native/chat.ts src/components/cockpit/widgets/clara/ClaraChatWidget.tsx src/lib/external-capabilities/event-jobs.ts src/components/layout/Header.tsx src/components/cockpit/Stage.tsx src/components/cockpit/hero/Hero.tsx src/components/cockpit/Cockpit.tsx src/components/cockpit/widgets/CockpitWidgets.tsx src/app/page.tsx
       - name: Optimized local app build in GitHub only
         run: npm run build
         env:
@@ -125,8 +126,8 @@ jobs:
           PYDIAG
             exit 1
           fi
-          NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node --import tsx --test --test-concurrency=1 src/tests/native-runtime-browser.e2e.mjs src/tests/native-commercial-browser.e2e.mjs src/tests/native-documents-browser.e2e.mjs src/tests/native-mail-browser.e2e.mjs src/tests/native-conversation-browser.e2e.mjs
-          NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node --import tsx --test src/tests/cockpit-availability-browser.e2e.mjs
+          NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node src/tests/helpers/native-browser-diagnostics.mjs core --import tsx --test --test-concurrency=1 src/tests/native-runtime-browser.e2e.mjs src/tests/native-commercial-browser.e2e.mjs src/tests/native-documents-browser.e2e.mjs src/tests/native-mail-browser.e2e.mjs src/tests/native-conversation-browser.e2e.mjs
+          NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node src/tests/helpers/native-browser-diagnostics.mjs cockpit --import tsx --test src/tests/cockpit-availability-browser.e2e.mjs
       - name: Stop isolated fixture
         if: always()
         run: docker rm -f "$CANONICAL_TEST_CONTAINER" || true
