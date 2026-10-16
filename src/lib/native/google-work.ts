@@ -173,24 +173,27 @@ export class NativeGoogleWork {
  }
 }
 /** Durable claim/approval BEFORE HTTP; finish+receipt+Mission+Journal in one PG commit. */
-export async function executeGoogleWork(request:Request,connectionId:string,operationId:string,reviewHash:string,confirm:boolean,clients?:GoogleClientFactory,query?:RegistryQuery,reconcile=false){
+export async function executeGoogleWork(request:Request,connectionId:string,operationId:string,reviewHash:string,confirm:boolean,clients?:GoogleClientFactory,query?:RegistryQuery,reconcile=false):Promise<Record<string,unknown>>{
  let plan!:GooglePlan,job!:Job,work!:NativeGoogleWork;const ownerToken=randomUUID();
- const initial=await withNativeScope(request,false,async()=>{work=await new NativeGoogleWork(connectionId,clients).initialize(false);job=await work.lookup(operationId);if(!job.request)throw new RegistryError(403,'GOOGLE_OPERATION_DENIED');if(job.status==='completed'||job.status==='failed')return work.review(operationId);plan=decryptCredentialPayload<GooglePlan>(job.request.encryptedPlan);if(reconcile)return null;if(job.status!=='queued')return {...await work.review(operationId),status:'uncertain'};await work.initialize();await work.preflight(plan);return null;},query);
+ const committedReview=()=>withNativeScope(request,false,async()=>{const saved=await(await new NativeGoogleWork(connectionId,clients).initialize(false)).review(operationId);return {...saved,success:saved.status==='completed'};},query);
+ const readTerminal=async()=>{try{const saved=await committedReview();if(saved.status==='completed'||saved.status==='failed')return saved;}catch{/* Current access and availability still govern receipt consultation. */}return undefined;};
+ const terminalOrUncertain=async()=>await readTerminal()??{success:false,status:'uncertain',operationId};
+ let initial:Awaited<ReturnType<NativeGoogleWork['review']>>|null;try{initial=await withNativeScope(request,false,async()=>{work=await new NativeGoogleWork(connectionId,clients).initialize(false);job=await work.lookup(operationId);if(!job.request)throw new RegistryError(403,'GOOGLE_OPERATION_DENIED');if(job.status==='completed'||job.status==='failed')return work.review(operationId);plan=decryptCredentialPayload<GooglePlan>(job.request.encryptedPlan);if(reconcile)return null;if(job.status!=='queued')return {...await work.review(operationId),status:'uncertain'};await work.initialize();await work.preflight(plan);return null;},query);}catch(error){const saved=job?.request?await readTerminal():undefined;if(saved)return saved;throw error;}
  if(initial)return initial;
  if(reconcile){
   if(!['processing','uncertain'].includes(job.status??''))throw new RegistryError(409,'GOOGLE_NOT_HANDED_OFF');
-  let receipt:Receipt;try{receipt=await withNativeScope(request,false,async()=>{const current=await new NativeGoogleWork(connectionId,clients).initialize();return current.verify(plan);},query);}catch{return {success:false,status:'uncertain',operationId};}
-  return withNativeScope(request,true,async()=>await(await new NativeGoogleWork(connectionId,clients).initialize()).complete(operationId,plan,receipt,job.ownerToken!,true),query);
+  let receipt:Receipt;try{receipt=await withNativeScope(request,false,async()=>{const current=await new NativeGoogleWork(connectionId,clients).initialize();return current.verify(plan);},query);}catch{return terminalOrUncertain();}
+  try{await withNativeScope(request,true,async()=>await(await new NativeGoogleWork(connectionId,clients).initialize()).complete(operationId,plan,receipt,job.ownerToken!,true),query);return await committedReview();}catch{return terminalOrUncertain();}
  }
  const claimed=await withNativeScope(request,false,()=>googleWorkCommand('claim',{connectionId,operationId,ownerToken,planHash:reviewHash,confirm,journal:writeActionEntry('GOOGLE_WRITE_CONFIRMED',JSON.stringify({operationId,kind:plan.input.kind,missionId:plan.missionId}))}),query);
- if(!claimed.owned)return {success:false,status:claimed.status==='completed'?'completed':'uncertain',operationId};
+ if(!claimed.owned)return terminalOrUncertain();
  try{
   await withNativeScope(request,false,async()=>{await googleWorkCommand('attempt',{connectionId,operationId,ownerToken});await work.mutate(plan);},query);
   const receipt=await withNativeScope(request,false,async()=>await(await new NativeGoogleWork(connectionId,clients).initialize()).verify(plan),query);
-  return await withNativeScope(request,true,async()=>await(await new NativeGoogleWork(connectionId,clients).initialize()).complete(operationId,plan,receipt,ownerToken),query);
+  await withNativeScope(request,true,async()=>await(await new NativeGoogleWork(connectionId,clients).initialize()).complete(operationId,plan,receipt,ownerToken),query);return await committedReview();
  }catch(error){
-  if(error instanceof GoogleWorkRefused){try{await withNativeScope(request,false,()=>googleWorkCommand('refuse',{connectionId,operationId,ownerToken,journal:writeActionEntry('GOOGLE_WRITE_REFUSED',JSON.stringify({operationId,status:error.status}))}),query);return {success:false,status:'failed',operationId};}catch{/* Preserve ambiguity if the refusal receipt cannot be committed. */}}
+  if(error instanceof GoogleWorkRefused){try{await withNativeScope(request,false,()=>googleWorkCommand('refuse',{connectionId,operationId,ownerToken,journal:writeActionEntry('GOOGLE_WRITE_REFUSED',JSON.stringify({operationId,status:error.status}))}),query);return await committedReview();}catch{/* Preserve ambiguity if the refusal receipt cannot be committed. */}}
   await withNativeScope(request,false,()=>googleWorkCommand('uncertain',{connectionId,operationId,ownerToken,journal:writeActionEntry('GOOGLE_WRITE_UNCERTAIN',JSON.stringify({operationId}))}),query).catch(()=>{});
-  return {success:false,status:'uncertain',operationId};
+  return terminalOrUncertain();
  }
 }

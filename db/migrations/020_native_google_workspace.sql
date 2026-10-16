@@ -171,6 +171,8 @@ BEGIN
   IF job.job_id IS NULL THEN RAISE EXCEPTION 'GOOGLE_OPERATION_DENIED' USING ERRCODE='42501'; END IF;
   kind_:=job.request->>'kind';
  END IF;
+ -- A completed receipt is immutable; an overlapping finisher must not revalidate a binding superseded by that completion.
+ IF operation='finish' AND job.status='completed' THEN RETURN job.result; END IF;
  IF operation='claim' AND job.status<>'queued' THEN RETURN jsonb_build_object('owned',false,'status',job.status); END IF;
  IF operation IN ('claim','prepare','attempt','finish') THEN
   IF kind_ LIKE 'calendar.%' AND NOT (grants_ @> '["https://www.googleapis.com/auth/calendar.calendarlist.readonly","https://www.googleapis.com/auth/calendar.events"]'::jsonb)

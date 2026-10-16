@@ -11,7 +11,7 @@ export function seedGoogleWork(pg:(s:string)=>unknown){
 type FileRecord={id:string;name:string;mimeType:string;version:string;etag:string;parents:string[];isAppAuthorized:boolean;trashed:boolean;capabilities:{canEdit:boolean;canAddChildren:boolean;canMoveItemWithinDrive:boolean;canDownload:boolean};appProperties:Record<string,string>;md5Checksum:string;content:Buffer};
 type CalendarRecord={id:string;summary:string;etag:string;accessRole:string;deleted:boolean};
 export class SimulatedGoogleWork {
- principal='google-a';generated=0;calls:GooglePlan[]=[];outcome:'ok'|'lost-ack'|'no-effect'|'refuse'='ok';deny=false;beforeMutation?:()=>Promise<void>;onMutation?:()=>void;
+ principal='google-a';generated=0;calls:GooglePlan[]=[];outcome:'ok'|'lost-ack'|'no-effect'|'refuse'='ok';deny=false;beforeMutation?:()=>Promise<void>;onMutation?:()=>void;afterMutation?:()=>Promise<void>;
  files=new Map<string,FileRecord>();calendars=new Map<string,CalendarRecord>();events=new Map<string,Record<string,unknown>>();
  constructor(){this.folder('folder-a');this.folder('folder-other');this.calendar('calendar-a');this.calendar('calendar-other');}
  folder(id:string){this.files.set(id,{id,name:id,mimeType:'application/vnd.google-apps.folder',version:'1',etag:'"'+id+'-1"',parents:[],isAppAuthorized:true,trashed:false,capabilities:{canEdit:true,canAddChildren:true,canMoveItemWithinDrive:true,canDownload:false},appProperties:{},md5Checksum:'',content:Buffer.alloc(0)});}
@@ -39,6 +39,6 @@ export class SimulatedGoogleWork {
    const content=i.content!==undefined?Buffer.from(i.content,'base64'):current!.content;
    this.files.set(plan.targetId,{id:plan.targetId,name:i.name,mimeType:current?.mimeType??i.mimeType!,version:String(Number(current?.version??0)+1),etag:'"file-'+this.calls.length+'"',parents:i.kind==='drive.update'?current!.parents:[i.resourceId],isAppAuthorized:true,trashed:false,capabilities:{canEdit:true,canAddChildren:false,canMoveItemWithinDrive:true,canDownload:true},appProperties:{...plan.previousProperties,claraOsOperation:plan.marker},md5Checksum:createHash('md5').update(content).digest('hex'),content});
   }
-  this.onMutation?.();if(this.outcome==='lost-ack')throw Error('Synthetic acknowledgement lost after effect');
+  this.onMutation?.();await this.afterMutation?.();if(this.outcome==='lost-ack')throw Error('Synthetic acknowledgement lost after effect');
  }
 }
