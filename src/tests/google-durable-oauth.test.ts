@@ -115,7 +115,7 @@ test("GoogleAuth persists refreshed credentials without losing refresh_token", a
     new MemoryConnections(connection),
     store,
     () => fake as unknown as OAuth2Client,
-  ).createClient();
+  ).createClient(connection.id);
   fake.emit("tokens", { access_token: "new", expiry_date: 123 });
   await new Promise((resolve) => setImmediate(resolve));
   assert.deepEqual(await store.get(connection.id), {
@@ -140,7 +140,7 @@ test("invalid_grant marks the connection for reconnect and raises a stable error
     connections,
     store,
     () => new InvalidGrantClient() as unknown as OAuth2Client,
-  ).createClient();
+  ).createClient(connection.id);
   await assert.rejects(
     () => client.request({ url: "https://example.invalid" }),
     (error) => error instanceof GoogleReauthRequiredError &&

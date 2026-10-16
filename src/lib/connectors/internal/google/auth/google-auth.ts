@@ -1,3 +1,6 @@
+import {nativeContext} from "@/lib/native/scoped-context";
+import {googleAuthority,scopedGoogleCredentialStore,scopedGoogleRepository} from "@/lib/native/google-authority";
+import {RegistryError} from "@/lib/canonical/registry";
 import type { Credentials, OAuth2Client } from "google-auth-library";
 import {
   ConnectionStatus,
@@ -7,7 +10,6 @@ import {
   type ConnectionRepository,
 } from "@/lib/connections/connection-repository";
 import { CredentialStore } from "@/lib/connections/credential-store";
-import { CURRENT_WORKSPACE_ID } from "@/lib/connections/current-workspace";
 import {
   GoogleReauthRequiredError,
   isGoogleInvalidGrant,
@@ -28,12 +30,24 @@ export class GoogleAuth {
   ) {}
 
   async createClient(connectionId?: string): Promise<OAuth2Client> {
-    const connection = connectionId
-      ? await this.connections.findById(connectionId)
-      : await this.connections.findByWorkspaceAndProvider(
-          CURRENT_WORKSPACE_ID,
-          "google",
-        );
+    if(nativeContext()) {
+      if(!connectionId)throw new RegistryError(403,"NATIVE_GOOGLE_EXPLICIT_CONNECTION_REQUIRED");
+      const proof=await googleAuthority(connectionId);
+      const auth=new GoogleAuth(scopedGoogleRepository(connectionId),scopedGoogleCredentialStore(connectionId,proof),this.clientFactory);
+      return auth.createScopedClient(connectionId,proof.subject);
+    }
+    return this.createUnscopedClient(connectionId);
+  }
+
+  private async createScopedClient(connectionId:string,subject:string):Promise<OAuth2Client>{
+    const client=await this.createUnscopedClient(connectionId);
+    const response=await client.request<{sub?:string}>({url:"https://openidconnect.googleapis.com/v1/userinfo",timeout:15_000});
+    if(response.data.sub!==subject)throw new RegistryError(403,"NATIVE_GOOGLE_PRINCIPAL_CHANGED");
+    return client;
+  }
+  private async createUnscopedClient(connectionId?:string):Promise<OAuth2Client>{
+    if(!connectionId)throw new RegistryError(403,"NATIVE_GOOGLE_EXPLICIT_CONNECTION_REQUIRED");
+    const connection=await this.connections.findById(connectionId);
     if (!connection || connection.status !== ConnectionStatus.ACTIVE) {
       throw new GoogleReauthRequiredError();
     }

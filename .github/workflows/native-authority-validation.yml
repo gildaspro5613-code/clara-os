@@ -1,0 +1,154 @@
+name: Native resource authority validation
+on:
+  pull_request:
+    branches: [main, consolidation/clara-os-clean-base]
+    paths:
+      - 'src/lib/native/**'
+      - 'src/lib/external-capabilities/product-callback.ts'
+      - 'src/lib/external-capabilities/event-jobs.ts'
+      - 'src/tests/live-callback-transport.test.ts'
+      - 'instrumentation.ts'
+      - 'src/app/api/clara/**'
+      - 'src/app/api/missions/**'
+      - 'src/app/api/documents/**'
+      - 'src/app/api/contacts/**'
+      - 'src/app/api/calendar/**'
+      - 'src/app/api/workspace/install/**'
+      - 'src/app/api/openai/test/**'
+      - 'src/app/api/internal/prospect-e2e-trace/**'
+      - 'src/app/**/*.tsx'
+      - 'src/tests/native-authority*'
+      - 'src/tests/native-runtime*'
+      - 'src/tests/helpers/native-runtime*'
+      - 'src/tests/helpers/native-browser-diagnostics.mjs'
+      - 'src/components/native/**'
+      - 'src/app/api/native/**'
+      - 'src/app/api/connections/google/**'
+      - 'src/app/api/connections/brevo/**'
+      - 'src/app/api/connections/make/**'
+      - 'src/tests/operational-reception*'
+      - 'db/migrations/012_native_resource_authority.sql'
+      - 'db/migrations/013_native_scoped_runtime.sql'
+      - 'db/migrations/014_native_commercial_continuity.sql'
+      - 'db/migrations/015_native_google_document_authority.sql'
+      - 'db/migrations/016_native_ionos_mail.sql'
+      - 'db/migrations/017_native_conversation_continuity.sql'
+      - 'db/migrations/018_native_mail_pagination.sql'
+      - 'db/migrations/019_native_contact_editing.sql'
+      - 'db/migrations/020_native_google_workspace.sql'
+      - 'src/components/contacts/**'
+      - 'src/tests/native-functional-closure*'
+      - 'src/tests/native-conversation*'
+      - 'src/tests/cockpit-availability*'
+      - 'src/tests/helpers/native-conversation*'
+      - 'src/lib/connectors/ionos/**'
+      - 'src/tests/native-mail*'
+      - 'src/tests/ionos-transport.test.ts'
+      - 'src/tests/helpers/native-mail*'
+      - 'src/types/project-intake.ts'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'src/lib/connections/**'
+      - 'src/lib/connectors/**/google/**'
+      - 'src/lib/auth/oauth/**'
+      - 'src/lib/auth/google-sign-in.ts'
+      - 'src/tests/native-documents*'
+      - 'src/tests/native-google*'
+      - 'src/tests/helpers/native-google*'
+      - 'src/lib/acquisition/**'
+      - 'src/lib/intake/**'
+      - 'src/lib/core/**'
+      - 'src/lib/brain/**'
+      - 'src/modules/missions/**'
+      - 'src/components/cockpit/**'
+      - 'src/tests/native-commercial*'
+      - 'src/tests/helpers/native-commercial*'
+      - 'AGENTS.md'
+      - 'docs/reception-175/non-regression-policy.md'
+      - '.github/workflows/native-authority-validation.yml'
+permissions:
+  contents: read
+jobs:
+  native-authority:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CANONICAL_TEST_CONTAINER: clara-canonical-test-postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Isolated PostgreSQL fixture only
+        run: |
+          docker run --detach --name "$CANONICAL_TEST_CONTAINER" -e POSTGRES_PASSWORD=synthetic-test-only postgres:17-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24
+          for attempt in $(seq 1 30); do
+            if docker exec "$CANONICAL_TEST_CONTAINER" pg_isready -U postgres --quiet; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+      - name: Actual handlers and database isolation, revocation, snapshot and history
+        run: node --import tsx --test src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts src/tests/native-commercial-postgres.test.ts src/tests/native-documents-postgres.test.ts src/tests/native-google-oauth.test.ts src/tests/native-mail-postgres.test.ts src/tests/ionos-transport.test.ts src/tests/native-conversation-postgres.test.ts src/tests/native-functional-closure.test.ts src/tests/native-google-work-postgres.test.ts
+      - name: Existing Live callback bounded transport and authentication
+        run: node --import tsx --test src/tests/live-callback-transport.test.ts src/tests/clara-live-product-auth.test.ts src/tests/external-event-message-contract.test.ts
+      - run: npx eslint src/lib/external-capabilities/product-callback.ts src/tests/live-callback-transport.test.ts
+      - run: npx tsc --noEmit --pretty false
+      - run: npx eslint src/lib/native src/app/api/clara/session src/app/api/native src/components/native src/tests/native-runtime-browser.e2e.mjs src/tests/helpers/native-runtime* src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts
+      - run: npx eslint src/app/api/contacts src/app/api/clara/acquisition/commercial-draft src/lib/acquisition/acquisition-store.ts src/lib/intake/md-project-intake-inbox.ts src/tests/native-commercial* src/tests/helpers/native-commercial* src/tests/native-documents* src/tests/native-google-oauth.test.ts
+      - run: npx eslint src/lib/connectors/ionos src/lib/acquisition/mailbox-communication-draft.ts src/tests/native-mail* src/tests/native-functional-closure* src/components/contacts/ContactsDirectory.tsx src/tests/ionos-transport.test.ts src/tests/helpers/native-mail*
+      - run: npx eslint src/tests/helpers/native-browser-diagnostics.mjs src/tests/native-conversation* src/tests/cockpit-availability* src/tests/helpers/native-conversation* src/lib/native/chat.ts src/components/cockpit/widgets/clara/ClaraChatWidget.tsx src/lib/external-capabilities/event-jobs.ts src/components/layout/Header.tsx src/components/cockpit/Stage.tsx src/components/cockpit/hero/Hero.tsx src/components/cockpit/Cockpit.tsx src/components/cockpit/widgets/CockpitWidgets.tsx src/app/page.tsx
+      - run: npx eslint src/tests/native-google-work* src/tests/helpers/native-google-work*
+      - name: Optimized local app build in GitHub only
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+      - run: npx playwright install --with-deps chromium
+      - name: HTTPS isolated native UI and actual authority, no real providers
+        run: |
+          export NATIVE_TEST_DATABASE="native_browser_$(node -e 'process.stdout.write(require("crypto").randomUUID().replaceAll("-",""))')"
+          node --import tsx src/tests/helpers/native-runtime-browser-fixture.mts "$NATIVE_TEST_DATABASE"
+          openssl req -x509 -newkey rsa:2048 -nodes -keyout /tmp/native-runtime-key.pem -out /tmp/native-runtime-cert.pem -subj /CN=localhost -addext 'subjectAltName=DNS:localhost,IP:127.0.0.1' -days 1 > /tmp/native-tls-generation.log 2>&1
+          start_native_app() {
+            DATABASE_URL=postgresql://synthetic:synthetic@documents-e2e.invalid/synthetic OPENAI_API_KEY=synthetic-test-only CLARA_AUTH_APP_ORIGIN=https://127.0.0.1:3060 GOOGLE_CLIENT_ID=synthetic-google-client GOOGLE_CLIENT_SECRET=synthetic-google-secret GOOGLE_REDIRECT_URI=https://127.0.0.1:3060/api/connections/google/callback CLARA_CREDENTIALS_ENCRYPTION_KEY=CQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQk= NODE_OPTIONS="--import=$PWD/src/tests/helpers/native-runtime-browser-preload.mjs" node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3058 > /tmp/native-app.log 2>&1 &
+            native_app_pid=$!
+          }
+          start_native_app
+          node src/tests/helpers/native-runtime-tls-proxy.mjs > /tmp/native-tls-proxy.log 2>&1 &
+          native_tls_pid=$!
+          trap 'kill "$native_app_pid" "$native_tls_pid" 2>/dev/null || true' EXIT
+          ready=false
+          for attempt in $(seq 1 60); do
+            if curl --cacert /tmp/native-runtime-cert.pem --fail --silent https://127.0.0.1:3060/clara > /dev/null; then ready=true; break; fi
+            sleep 1
+          done
+          if [ "$ready" != true ]; then
+            python - <<'PYDIAG'
+          from pathlib import Path
+          import re
+          for name in ('native-app.log', 'native-tls-proxy.log'):
+              value=Path('/tmp/'+name).read_text()[-2500:]
+              value=re.sub(r'https?://[^\s]+', '[local URL]', value)
+              value=value.replace('%','%25').replace('\r','%0D').replace('\n','%0A')
+              print('::error file=.github/workflows/native-authority-validation.yml,title=Isolated startup '+name+'::'+value)
+          PYDIAG
+            exit 1
+          fi
+          NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node src/tests/helpers/native-browser-diagnostics.mjs core --import tsx --test --test-concurrency=1 src/tests/native-runtime-browser.e2e.mjs src/tests/native-commercial-browser.e2e.mjs src/tests/native-documents-browser.e2e.mjs src/tests/native-mail-browser.e2e.mjs src/tests/native-conversation-browser.e2e.mjs
+          NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node src/tests/helpers/native-browser-diagnostics.mjs core --import tsx --test src/tests/native-functional-closure-browser.e2e.mjs
+          NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node src/tests/helpers/native-browser-diagnostics.mjs core --import tsx --test src/tests/native-google-work-browser.e2e.mjs
+          kill "$native_app_pid"
+          wait "$native_app_pid" || true
+          start_native_app
+          ready=false
+          for attempt in $(seq 1 60); do
+            if curl --cacert /tmp/native-runtime-cert.pem --fail --silent https://127.0.0.1:3060/clara > /dev/null; then ready=true; break; fi
+            sleep 1
+          done
+          test "$ready" = true
+          NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node src/tests/helpers/native-browser-diagnostics.mjs core --import tsx --test src/tests/native-google-work-restart-browser.e2e.mjs
+          NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node src/tests/helpers/native-browser-diagnostics.mjs cockpit --import tsx --test src/tests/cockpit-availability-browser.e2e.mjs
+      - name: Stop isolated fixture
+        if: always()
+        run: docker rm -f "$CANONICAL_TEST_CONTAINER" || true

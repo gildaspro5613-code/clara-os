@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ArrowLeft, Brain, Download, ExternalLink, FileText, Folder, FolderPlus, Search, Upload } from "lucide-react";
 
+import NativeMailPanel from "@/components/native/NativeMailPanel";
+import NativeDocumentsPanel from "@/components/native/NativeDocumentsPanel";
+import {useLocale} from "next-intl";
 import CanonicalArchivesPanel from "@/components/documents/CanonicalArchivesPanel";
 
 import MainLayout from "@/components/layout/MainLayout";
@@ -18,6 +21,7 @@ interface DocumentFile {
 }
 
 interface DocumentsResponse {
+  readOnly?:boolean;
   success: boolean;
   files?: DocumentFile[];
   nextPageToken?: string | null;
@@ -30,6 +34,7 @@ interface DocumentsResponse {
 
 export default function DocumentsPage() {
   const ui = useTranslations("ui");
+  const locale=useLocale();
 
   const router = useRouter();
   const t = useTranslations("documents");
@@ -38,6 +43,7 @@ export default function DocumentsPage() {
   const listGeneration = useRef(0);
   const destinationGeneration = useRef(0);
 
+  const [readOnly,setReadOnly]=useState(true);
   const [query, setQuery] = useState("");
   const [folderTrail, setFolderTrail] = useState<{ id: string; name: string }[]>([]);
   const [selected, setSelected] = useState<{ name: string; content: string; recommendation?: string | null } | null>(null);
@@ -72,6 +78,7 @@ export default function DocumentsPage() {
       const data = (await response.json()) as DocumentsResponse;
       if (generation !== listGeneration.current) return;
       if (!response.ok || !data.success) throw new Error(t("loadError"));
+      setReadOnly(data.readOnly===true);
       setFiles(data.files ?? []);
       setActiveSearch(search);
       setActiveFolderId(search ? "" : folderId);
@@ -93,7 +100,8 @@ export default function DocumentsPage() {
         const data = await response.json() as DocumentsResponse;
         if (!response.ok || !data.success) throw new Error(ui("unableToViewGoogleDrive"));
         if (generation !== listing.current) return;
-        setFiles(data.files ?? []);
+        setReadOnly(data.readOnly===true);
+      setFiles(data.files ?? []);
         setNextPageToken(data.nextPageToken ?? null);
       }).catch(() => {
         if (generation === listing.current && !controller.signal.aborted) setError(ui("unableToViewGoogleDrive"));
@@ -231,9 +239,7 @@ export default function DocumentsPage() {
       setWorking(`read:${file.id}`);
       setStatus(null);
       setError(null);
-      const params = new URLSearchParams({ action: "read", fileId: file.id, fileName: file.name });
-      if (file.mimeType) params.set("mimeType", file.mimeType);
-      const response = await fetch(`/api/documents?${params.toString()}`, { cache: "no-store" });
+      const response = await fetch("/api/documents", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"read",fileId:file.id,locale})});
       const data = (await response.json()) as DocumentsResponse;
       if (generation !== listGeneration.current) return;
       if (!response.ok || !data.success) {
@@ -274,20 +280,21 @@ export default function DocumentsPage() {
             </div>
             <div>
               <input ref={fileInput} type="file" className="hidden" onChange={(event) => void handleUpload(event.target.files?.[0])} />
-              <button type="button" disabled={working !== null} onClick={() => fileInput.current?.click()} className="inline-flex items-center gap-2 rounded-xl border border-cyan-300/20 bg-cyan-300/[0.08] px-4 py-2.5 text-sm text-cyan-50 transition hover:bg-cyan-300/[0.12] disabled:opacity-50">
+              <button type="button" disabled={working !== null} onClick={() => readOnly?(document.getElementById("native-drive-writes")??document.getElementById("native-google-document-authority"))?.scrollIntoView({behavior:"smooth"}):fileInput.current?.click()} className="inline-flex items-center gap-2 rounded-xl border border-cyan-300/20 bg-cyan-300/[0.08] px-4 py-2.5 text-sm text-cyan-50 transition hover:bg-cyan-300/[0.12] disabled:opacity-50">
                 <Upload size={15} />{working === "upload" ? ui("uploading") : ui("uploadADocument")}
               </button>
             </div>
           </div>
 
+          {readOnly&&<p role="status" className="mb-4 text-amber-200">{ui("driveReadOnlyAuthority")}</p>}
           <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
-            <button type="button" disabled={working !== null} onClick={() => navigateTo(-1)} className="text-cyan-300">{ui("myDrive")}</button>
+            <button type="button" disabled={working !== null} onClick={() => navigateTo(-1)} className="text-cyan-300">{readOnly?ui("nativeDocuments"):ui("myDrive")}</button>
             {folderTrail.map((folder, index) => <span key={folder.id} className="flex items-center gap-2"><span className="text-white/30">/</span><button type="button" disabled={working !== null} onClick={() => navigateTo(index)} className="text-cyan-300">{folder.name}</button></span>)}
-            <button type="button" onClick={() => void createFolder()} disabled={working !== null} className="ml-auto flex items-center gap-2 rounded-lg border border-white/15 px-3 py-2"><FolderPlus size={15}/>{ui("newFolder")}</button>
+            <button type="button" onClick={() => void createFolder()} disabled={working !== null||readOnly} className="ml-auto flex items-center gap-2 rounded-lg border border-white/15 px-3 py-2"><FolderPlus size={15}/>{ui("newFolder")}</button>
           </div>
           {moveTarget && <section role="dialog" aria-label={ui("chooseTheDestinationFolder")} className="mb-6 rounded-xl border border-cyan-300/25 bg-[#101827] p-5">
             <div className="flex items-center justify-between gap-4"><h2 className="font-semibold">{ui("move")}{" "}{moveTarget.name} »</h2><button type="button" disabled={working !== null} onClick={() => { destinationGeneration.current++; setMoveTarget(null); }}>{ui("cancel")}</button></div>
-            <div className="mt-3 flex flex-wrap gap-2 text-sm"><button type="button" disabled={working !== null} onClick={() => { setDestinationTrail([]); void browseDestination(); }} className="text-cyan-300">{ui("myDrive")}</button>
+            <div className="mt-3 flex flex-wrap gap-2 text-sm"><button type="button" disabled={working !== null} onClick={() => { setDestinationTrail([]); void browseDestination(); }} className="text-cyan-300">{readOnly?ui("nativeDocuments"):ui("myDrive")}</button>
               {destinationTrail.map((folder, index) => <button type="button" disabled={working !== null} key={folder.id} className="text-cyan-300" onClick={() => { const next = destinationTrail.slice(0, index + 1); setDestinationTrail(next); void browseDestination(folder.id); }}>/ {folder.name}</button>)}
             </div>
             {destinationLoading ? <p className="mt-3 text-sm text-white/60">{ui("loadingFolders")}</p> : <div className="mt-3 grid gap-2 sm:grid-cols-2">{destinations.map(folder => <button type="button" disabled={working !== null} key={folder.id} onClick={() => { setDestinationTrail(prev => [...prev, { id: folder.id, name: folder.name }]); void browseDestination(folder.id); }} className="flex items-center gap-2 rounded-lg border border-white/10 p-3 text-left text-sm"><Folder size={16} className="text-cyan-300"/>{folder.name}</button>)}</div>}
@@ -295,6 +302,8 @@ export default function DocumentsPage() {
             <button type="button" disabled={destinationLoading || (destinationTrail.at(-1)?.id ?? "root") === moveTarget.parentId || working !== null} onClick={() => void confirmMove()} className="mt-4 rounded-lg bg-cyan-800 px-4 py-2 text-sm disabled:opacity-40">{ui("confirmMoveToThisFolder")}</button>
           </section>}
           {selected && <section className="mb-6 rounded-xl border border-cyan-300/20 p-5"><div className="flex justify-between gap-4"><h2 className="font-semibold">{selected.name}</h2><button type="button" onClick={() => setSelected(null)}>{ui("close")}</button></div>{selected.recommendation && <p className="mt-3 text-cyan-200">{selected.recommendation}</p>}<pre className="mt-4 max-h-80 overflow-auto whitespace-pre-wrap text-sm text-white/70">{selected.content}</pre></section>}
+          <NativeMailPanel />
+          <NativeDocumentsPanel />
           <CanonicalArchivesPanel />
           {activeSearch && <p className="mb-3 text-sm text-white/60">{ui("googleDriveSearchResults")}{" "}{activeSearch}</p>}
           <form onSubmit={handleSubmit} className="mb-6 flex max-w-2xl gap-2">
@@ -330,7 +339,7 @@ export default function DocumentsPage() {
                     </button>
                     <a href={downloadHref(file)} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-xs text-white/60 transition hover:bg-white/[0.06] hover:text-white">{ui("download")}<Download size={14} /></a>
                     {file.url && <a href={file.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-xs text-white/60 transition hover:bg-white/[0.06] hover:text-white">{t("open")}<ExternalLink size={14} /></a>}
-                    </>}<button type="button" disabled={working !== null} onClick={() => startMove(file)} className="rounded-xl border border-white/10 px-4 py-2.5 text-left text-xs text-white/60">{ui("moveToAFolder")}</button>
+                    </>}<button type="button" disabled={working !== null||readOnly} onClick={() => startMove(file)} className="rounded-xl border border-white/10 px-4 py-2.5 text-left text-xs text-white/60">{ui("moveToAFolder")}</button>
                   </div>
                 </article>
               ))}

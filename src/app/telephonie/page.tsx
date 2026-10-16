@@ -18,6 +18,7 @@ interface TelephonyResponse {
 export default function TelephoniePage() {
   const router = useRouter();
   const t = useTranslations("telephony");
+  const ui=useTranslations("ui");
   const tp = useTranslations("pages");
 
   const [number, setNumber] = useState("");
@@ -93,6 +94,7 @@ export default function TelephoniePage() {
             </p>
           </div>
 
+          <p role="status" className="mb-4 text-amber-200">{ui("capabilityNotCertified")}</p>
           <div className="grid gap-5 lg:grid-cols-[1.5fr_1fr]">
             <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#0F1522] p-6">
               <span className="absolute inset-y-0 left-0 w-[2px] bg-cyan-400/70" />
@@ -114,7 +116,7 @@ export default function TelephoniePage() {
                   <div className="mt-1 flex items-center gap-2">
                     <span className="h-2 w-2 rounded-full bg-slate-500" />
                     <span className="text-xs text-white/40">
-                      {t("unknown")}
+                      {ui("unavailable")}
                     </span>
                   </div>
                 </div>
@@ -160,7 +162,7 @@ export default function TelephoniePage() {
                   <button
                     type="button"
                     onClick={() => void startCall()}
-                    disabled={calling || !number.trim()}
+                    disabled title={ui("capabilityNotCertified")}
                     className="
                       inline-flex
                       items-center

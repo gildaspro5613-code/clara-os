@@ -48,8 +48,8 @@ export default function ConversationsPanel({
                 </span>
               </div>
 
-              <p className="mt-1 line-clamp-2 text-sm text-white/65">
-                {message.content}
+              <p className="mt-1 text-sm text-white/65">
+                {t("openConversationHistory")}
               </p>
             </div>
           ))

@@ -150,7 +150,15 @@
     "nextAction": "Prossima azione",
     "noMission": "Nessuna missione attiva",
     "noObjective": "Nessun obiettivo attivo",
-    "noNextAction": "Nessuna prossima azione definita"
+    "noNextAction": "Nessuna prossima azione definita",
+    "conversations": "Conversazioni",
+    "states": {
+      "STOPPED": "Arrestata",
+      "STARTING": "Avvio",
+      "WORKING": "In attività",
+      "STOPPING": "Arresto in corso",
+      "UNKNOWN": "Stato non verificato"
+    }
   },
   "documents": {
     "subtitle": "Accesso ai documenti del tuo spazio Google Drive.",
@@ -340,5 +348,17 @@
     "identified": "Clara ha individuato {count, plural, one {# evento} other {# eventi}} nella tua agenda.",
     "noneRecorded": "Nessun appuntamento registrato oggi.",
     "claraHelp": "L’agenda consente a Clara di considerare la tua giornata nelle sue azioni e raccomandazioni."
+  },
+  "voiceApi": {
+    "operatorRequired": "È richiesta una sessione operatore autorizzata.",
+    "notConfigured": "Il servizio vocale non è configurato.",
+    "sessionUnavailable": "Sessione vocale non disponibile.",
+    "synthesisFailed": "La sintesi vocale non è riuscita.",
+    "transcriptionFailed": "La trascrizione vocale non è riuscita.",
+    "textRequired": "È richiesto un testo.",
+    "textTooLong": "Testo troppo lungo per la sintesi vocale (massimo 5.000 caratteri).",
+    "audioRequired": "È richiesta una registrazione audio.",
+    "audioTooLarge": "Registrazione audio troppo grande (massimo 15 MB).",
+    "noSpeech": "Nessuna voce rilevata."
   }
 }

@@ -1,0 +1,366 @@
+{
+  "generatedAt": "2026-10-15T11:56:43.110787+02:00",
+  "referenceCommit": "6cb51f87a85013231cabfc4bf227ec07b7175207",
+  "applicationCommit": "add5224490bb065ec998a185a86eff6bb2d291db",
+  "testedApplicationTree": "b33eaed9dc59e36981d2161815ab70c518cbb87b",
+  "branch": "fix/os-operational-reception-175",
+  "pr": 176,
+  "draft": true,
+  "decision": "GO_ISOLATED_ONLY",
+  "production": "NO_GO",
+  "ionosRealProviderCertified": false,
+  "modifiedFiles": [
+    ".github/workflows/native-authority-validation.yml",
+    "db/migrations/016_native_ionos_mail.sql",
+    "docs/reception-175/README.md",
+    "docs/reception-175/lot-2-bis-evidence.json",
+    "docs/reception-175/lot-2-bis-ionos.md",
+    "package-lock.json",
+    "package.json",
+    "src/app/api/native/mail/route.ts",
+    "src/app/clara/page.tsx",
+    "src/components/cockpit/Cockpit.tsx",
+    "src/components/native/NativeMailPanel.tsx",
+    "src/i18n/messages/de/consolidated-ui.json",
+    "src/i18n/messages/en/consolidated-ui.json",
+    "src/i18n/messages/es/consolidated-ui.json",
+    "src/i18n/messages/fr/consolidated-ui.json",
+    "src/i18n/messages/it/consolidated-ui.json",
+    "src/lib/acquisition/mailbox-communication-draft.ts",
+    "src/lib/connectors/ionos/transport.ts",
+    "src/lib/native/mail-authority.ts",
+    "src/lib/native/mail.ts",
+    "src/lib/native/scoped-context.ts",
+    "src/modules/missions/types/Mission.ts",
+    "src/tests/helpers/native-mail-fixture.ts",
+    "src/tests/helpers/native-mail-route-fixture.ts",
+    "src/tests/helpers/native-runtime-browser-fixture.mts",
+    "src/tests/ionos-transport.test.ts",
+    "src/tests/native-mail-browser.e2e.mjs",
+    "src/tests/native-mail-postgres.test.ts",
+    "src/types/project-intake.ts"
+  ],
+  "tests": [
+    {
+      "group": "ionos-security",
+      "tests": 10,
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "scope": "Real isolated PostgreSQL; provider doubles",
+      "artifact": "/tmp/lot2bis-security-complete.log",
+      "sha256": "c05cd98713e7e182c8162b676fc43a521446e084dc7488e52e3e946f6cdc6dc9",
+      "command": "CANONICAL_TEST_CONTAINER=clara-canonical-test-postgres node --import tsx --test src/tests/native-mail-postgres.test.ts src/tests/ionos-transport.test.ts"
+    },
+    {
+      "group": "browser-lots-1-2-ionos-runtime",
+      "tests": 4,
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "scope": "Chromium/Next/SQL real; actual mail handlers injected at provider boundary",
+      "artifact": "/tmp/lot2bis-browser-certified.log",
+      "sha256": "d662f1b1ea9e97d74625e1780e7a2a170b64ba55717cd5083da35aa5beb1306e",
+      "command": "node --import tsx --test --test-concurrency=1 --test-reporter=tap src/tests/native-commercial-browser.e2e.mjs src/tests/native-documents-browser.e2e.mjs src/tests/native-mail-browser.e2e.mjs src/tests/native-runtime-browser.e2e.mjs (local isolated HTTPS fixture)"
+    },
+    {
+      "group": "native-non-regression",
+      "tests": 15,
+      "passed": 15,
+      "failed": 0,
+      "skipped": 0,
+      "scope": "Real isolated PostgreSQL/Core/PDF; Google/OpenAI doubles",
+      "artifact": "/tmp/lot2bis-nonreg-native.log",
+      "sha256": "b6ea177ff75cbc5432b73cce085fb9161a62f15e35b0f209c388ca7b2eaed850",
+      "command": "CANONICAL_TEST_CONTAINER=clara-canonical-test-postgres node --import tsx --test src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts src/tests/native-commercial-postgres.test.ts src/tests/native-documents-postgres.test.ts src/tests/native-google-oauth.test.ts"
+    },
+    {
+      "group": "contracts-locales",
+      "tests": 60,
+      "passed": 60,
+      "failed": 0,
+      "skipped": 0,
+      "scope": "Controlled providers",
+      "artifact": "/tmp/lot2bis-contracts-lockfixed.log",
+      "sha256": "b1eea59679be0fd67a77e760a9a423e20655ea14e9d90d33e69218e561dc97d0",
+      "command": "node --import tsx --test src/tests/i18n-consolidation.test.ts src/tests/operational-reception.test.tsx src/tests/voice-route-security.test.ts src/tests/commercial-operational-continuity.test.ts src/tests/google-durable-oauth.test.ts src/tests/brevo-connector.test.ts src/tests/make-connector.test.ts src/tests/microsoft-authenticated-routes.test.ts src/tests/universal-oauth.test.ts"
+    },
+    {
+      "group": "os-live-continuity",
+      "tests": 4,
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "scope": "Real isolated PostgreSQL/MongoDB; existing Live fixture",
+      "artifact": "/tmp/lot2bis-live-continuity.log",
+      "sha256": "220e27c825c701f7b45f2176ce6564debd771b9fa93f5a3012024b2f1a05cd8e",
+      "command": "CANONICAL_TEST_CONTAINER=clara-canonical-test-postgres CLARA_LIVE_PYTHON=/workspace/.venvs/clara-live/bin/python node --import tsx --test src/tests/canonical-registry-postgres.test.ts src/tests/canonical-archive-service.test.ts src/tests/canonical-archive-concurrency.test.ts"
+    }
+  ],
+  "browserDatabase": "native_browser_ca7b255883f442868fe75ea87ca62dcc",
+  "dataset": {
+    "canonicalUsers": 2,
+    "clients": 2,
+    "projects": 3,
+    "additionalAuthorizedWorkspaceNegativeTest": true,
+    "mailboxes": [
+      "clara@melodie.digital",
+      "gildas@melodie.digital"
+    ]
+  },
+  "migrations": {
+    "new": [
+      "016_native_ionos_mail.sql"
+    ],
+    "012Through015Unchanged": true,
+    "reapplied": true,
+    "backupRestoreRealIsolatedPostgreSQL": true,
+    "selectOnlyRoleDenied": true,
+    "securityInvoker": true,
+    "productionApplied": false
+  },
+  "network": {
+    "realIonos": false,
+    "realSMTP": false,
+    "realOpenAI": false,
+    "productionFlagDefault": "disabled",
+    "testProviderFactoryInjection": true,
+    "noCredentialsInPrompts": true
+  },
+  "approvals": {
+    "existingStore": "clara_tool_approvals",
+    "ownerRequiredForBothMailboxes": true,
+    "draftStoredEncryptedOnExistingMission": true,
+    "concurrentDeliverySingleUse": true,
+    "uncertaintyBlocksNewRevisionSubmission": true,
+    "postgresSMTPAtomicityClaimed": false
+  },
+  "nonRegressionBaselines": [
+    {
+      "file": "src/app/api/external/project-intake/route.test.ts",
+      "unchangedFrom6cb51f8": true,
+      "sha256": "0885ebae5f0dea63ee04db770fa0c4bfff46259a7b8a93c72ee0c713d6c8026f"
+    },
+    {
+      "file": "src/app/api/weather/route.ts",
+      "unchangedFrom6cb51f8": true,
+      "sha256": "ba7e56ec4548b994987512e4d8fd30027637c646742330f7c44118f67139aee8"
+    },
+    {
+      "file": "src/components/automatisations/MakeConnectionStatus.tsx",
+      "unchangedFrom6cb51f8": true,
+      "sha256": "0c7a7be1be085aa48e07262833715ae202cc0bef0cf74a012218f1444c7d4935"
+    },
+    {
+      "file": "src/components/clara/ClaraRecommendation.tsx",
+      "unchangedFrom6cb51f8": true,
+      "sha256": "2dafb15ade49612fd63a22c66b97690369a13f0ffab98b4e35c88dac6dc7344d"
+    },
+    {
+      "file": "src/components/cockpit/panels/AgendaPanel.tsx",
+      "unchangedFrom6cb51f8": true,
+      "sha256": "147a090ee30df9bfc2406a44e377f8dd09dd9ab24f092078bba597aacd448ec8"
+    },
+    {
+      "file": "src/components/cockpit/panels/TodayPanel.tsx",
+      "unchangedFrom6cb51f8": true,
+      "sha256": "323dbed2ad771ede6f38c8db9541f06eccb3115188a28e5cbc4310b01fbf60da"
+    },
+    {
+      "file": "src/components/cockpit/widgets/agenda/AgendaWidget.tsx",
+      "unchangedFrom6cb51f8": true,
+      "sha256": "185d226d3aef913cb80d049c4d426fbf17391d93d60beecb97ced711c2eb83b6"
+    },
+    {
+      "file": "src/components/cockpit/widgets/weather/WeatherWidget.tsx",
+      "unchangedFrom6cb51f8": true,
+      "sha256": "0eb28f269aa018bb4fc395497b5f7026467a735366e0c56aa77bb219a2864975"
+    },
+    {
+      "file": "src/components/contacts/ContactsDirectory.tsx",
+      "unchangedFrom6cb51f8": true,
+      "sha256": "10843ce03b5c03e6c97bfce839226b3c89e880d41c9afb06058b79230caa1d8a"
+    },
+    {
+      "file": "src/components/layout/Sidebar.tsx",
+      "unchangedFrom6cb51f8": true,
+      "sha256": "7d3027b91cf46c2750cf20dea3a134baa1264b446d8dad266a9d1c3b84708c23"
+    },
+    {
+      "file": "src/lib/acquisition/acquisition-store.test.ts",
+      "unchangedFrom6cb51f8": true,
+      "sha256": "655f2837f95de21792bc476509d0b1f225a9d92533eb58736636086a58729353"
+    },
+    {
+      "file": "src/lib/acquisition/decision-brief.test.ts",
+      "unchangedFrom6cb51f8": true,
+      "sha256": "29dc50edd4a1b04ea5b8f5154f297bd2a44c0dc2c9e16db2275a1355660e767a"
+    },
+    {
+      "file": "src/lib/capabilities/magicq-lighting/executor.ts",
+      "unchangedFrom6cb51f8": true,
+      "sha256": "0127e05277f1f02f95b7d45ca3c811c6cd9d3d121289ce5295c2002ab870dc74"
+    },
+    {
+      "file": "src/lib/capabilities/workspace-install/workflow.ts",
+      "unchangedFrom6cb51f8": true,
+      "sha256": "cbf53428a5383b15fac1d41645ece5504b5adb1c4758a0c89c5cf7213c9bdb93"
+    },
+    {
+      "file": "src/lib/connectors/internal/google/gmail/google-gmail-engine.ts",
+      "unchangedFrom6cb51f8": true,
+      "sha256": "8f62293a4c50ceae0ec42c22c63490fce7662dea754f423a83183ac102c2f2e8"
+    },
+    {
+      "file": "src/lib/connectors/internal/google/sheets/google-sheets-engine.ts",
+      "unchangedFrom6cb51f8": true,
+      "sha256": "01e135c86f99b1982d043ec2c71ccc0fe7768eb83f91f51dc6d1f5252c571feb"
+    },
+    {
+      "file": "src/lib/core/store/database.ts",
+      "unchangedFrom6cb51f8": true,
+      "sha256": "e22f07c4fe61a68dc1fb749cdbfb66a976d3330d98f25f49ed922a825f04bdf6"
+    },
+    {
+      "file": "src/modules/agenda/AgendaStage.tsx",
+      "unchangedFrom6cb51f8": true,
+      "sha256": "7fcdb83382532a04fb8c14b6b56851215e6a497bb72f892df5a1cefffced4f33"
+    },
+    {
+      "file": "src/tests/integration/lighting-console-connections-v1.test.ts",
+      "unchangedFrom6cb51f8": true,
+      "sha256": "ad3361fc3d496240a12f09dc7389308cbf70bb34714d6c559c681dc1cd1d83c1"
+    },
+    {
+      "file": "src/tests/integration/lighting-self-service-onboarding-v1.test.ts",
+      "unchangedFrom6cb51f8": true,
+      "sha256": "59616335f1351af32af668e571ddacab90ac892d344a4a0f195f3425b9eb2cef"
+    },
+    {
+      "file": "src/tests/integration/magicq-hardware-test-readiness.test.ts",
+      "unchangedFrom6cb51f8": true,
+      "sha256": "068dd6e317150e25f6169921435f1b23fc5bc2fa4546cfad2b7c840f8a8bccfb"
+    }
+  ],
+  "globalLint": {
+    "errors": 10,
+    "warnings": 13,
+    "preexisting": true
+  },
+  "legacyVitest": {
+    "passed": 20,
+    "failedTests": 2,
+    "failedInitializationSuites": 1,
+    "preexisting": true
+  },
+  "dependencyAudit": {
+    "existingVersionsChanged": [],
+    "existingVulnerablePackages": [
+      "axios",
+      "brace-expansion",
+      "next",
+      "qs",
+      "sharp"
+    ],
+    "productionUnresolved": true
+  },
+  "build": {
+    "command": "NEXT_TELEMETRY_DISABLED=1 NEXT_FONT_GOOGLE_MOCKED_RESPONSES=/tmp/lot1-font-responses.cjs npm run build -- --webpack",
+    "result": "PASS",
+    "localOnly": true
+  },
+  "npmCi": "PASS",
+  "artifacts": {
+    "/tmp/lot2bis-npm-ci.log": {
+      "sha256": "a75fe40f13353af4c69aaf63629b59b947e4d180395254aea4c060ea8c06d708",
+      "bytes": 3020
+    },
+    "/tmp/lot2bis-build-final-validated.log": {
+      "sha256": "69284b9faae2f63d113ba3b56d6eb3c0d9da3c55f3b5163ab0736d2f739adf39",
+      "bytes": 3308
+    },
+    "/tmp/lot2bis-lint-global.log": {
+      "sha256": "964e4b33eec3ffcb7752810a2203488c43be028ef4fae3d9f3aea321e0a9c320",
+      "bytes": 7758
+    },
+    "/tmp/lot2bis-vitest.log": {
+      "sha256": "7193bfb4f9dce785c92052bbad258ce45240deb921672d6ccf8a4bc3a36856f0",
+      "bytes": 3125
+    },
+    "/tmp/lot2bis-audit.json": {
+      "sha256": "d6a6404acb5c90f551329e34d50d1ee668dc3e5e8343f27e596b51dbd3015867",
+      "bytes": 16504
+    },
+    "/tmp/lot2bis-baseline-proof.json": {
+      "sha256": "167e99470668b17d5dd7eaaba4574aec4ad101003f2c8df3204da792d9045ea7",
+      "bytes": 3959
+    },
+    "/tmp/lot2bis-final-typecheck.log": {
+      "sha256": "76162e465989f3f070a9de8db711fbf358e53b74d09ce1bbdb57c727e4c4a16d",
+      "bytes": 208
+    },
+    "/tmp/lot2bis-final-lint.log": {
+      "sha256": "76162e465989f3f070a9de8db711fbf358e53b74d09ce1bbdb57c727e4c4a16d",
+      "bytes": 208
+    },
+    "/tmp/lot2bis-npm10-ci.log": {
+      "sha256": "5ba488e756777331511385311c3d5d74b11642e6e47f41953c1c4f825c7d78d2",
+      "bytes": 3753
+    },
+    "/tmp/lot2bis-npm10-ci-fixed.log": {
+      "sha256": "a2466075628f9ef61c12dc6a7ffed35cfc774c8baf79e19bb21653ce603f8f9e",
+      "bytes": 3020
+    },
+    "/tmp/lot2bis-npm11-ci-fixed.log": {
+      "sha256": "f3afde0c7be9b265e96aabaf10e5f8b789da9c31c5014250fd0e1abe2f500111",
+      "bytes": 3020
+    },
+    "/tmp/lot2bis-contracts-lockfixed.log": {
+      "sha256": "b1eea59679be0fd67a77e760a9a423e20655ea14e9d90d33e69218e561dc97d0",
+      "bytes": 5755
+    }
+  },
+  "live": {
+    "modified": false,
+    "commit": "48a2f94910d4a6111250e15046e0f471ddd6ac9b"
+  },
+  "governance": {
+    "newPullRequest": false,
+    "merge": false,
+    "deployment": false,
+    "productionMigration": false,
+    "productionSecretsRead": false,
+    "providerMessagesSent": false
+  },
+  "github": {
+    "publication": "PUBLISHED_DRAFT",
+    "pullRequest": "https://github.com/gildaspro5613-code/clara-os/pull/176",
+    "initialNode24WorkflowsPassed": [
+      "i18n",
+      "documents",
+      "native-authority"
+    ],
+    "initialNode22InstallFailures": true,
+    "finalChecks": "Inspect PR #176 checks at published SHA; final outcome reported in reception delivery",
+    "vercelObservedAtInitialPublication": "Canceled by Ignored Build Step",
+    "githubDeploymentsAtInitialPublication": 0
+  },
+  "typescript": {
+    "command": "npx tsc --noEmit --pretty false",
+    "result": "PASS"
+  },
+  "targetedLint": {
+    "result": "PASS",
+    "artifact": "/tmp/lot2bis-final-lint.log"
+  },
+  "lockfileCompatibilityCommit": "3c735a117235c0d2c9cb667bd4ed7827e1125506",
+  "lockfileCompatibility": {
+    "initialPublishedCommit": "f2c9ae3d5cb62785650b173897c956f1476c069f",
+    "initialFailure": "npm 10 EUSAGE: Missing @swc/helpers@0.5.23 from lock file",
+    "fixedBy": "one optional nested peer entry; no existing versions changed",
+    "npm10RealCi": "PASS (Node24 local; Node22 checked by CI)",
+    "npm11RealCi": "PASS",
+    "ignoreScriptsUsedForFinalCi": false,
+    "legacyPeerDeps": false
+  }
+}

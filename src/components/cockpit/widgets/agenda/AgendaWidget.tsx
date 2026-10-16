@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import {todayCalendarUrl} from "@/modules/agenda/calendar-window";
 import { useEffect, useState } from "react";
 import { CalendarDays, ChevronRight, Clock } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -52,7 +53,7 @@ export default function AgendaWidget() {
 
     async function loadAgenda() {
       try {
-        const response = await fetch("/api/calendar", {
+        const response = await fetch(todayCalendarUrl(), {
           cache: "no-store",
         });
 
@@ -63,7 +64,7 @@ export default function AgendaWidget() {
         }
 
         if (!cancelled) {
-          setEvents(data.events ?? []);
+          setEvents(data.events ?? []);setError(false);
         }
       } catch {
         if (!cancelled) {
@@ -76,12 +77,13 @@ export default function AgendaWidget() {
       }
     }
 
-    loadAgenda();
+    void loadAgenda();
+    const changed=()=>{void loadAgenda();};window.addEventListener("clara:google-work-updated",changed);
 
     return () => {
-      cancelled = true;
+      cancelled = true;window.removeEventListener("clara:google-work-updated",changed);
     };
-  }, []);
+  }, [t]);
 
   return (
     <article

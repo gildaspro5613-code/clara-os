@@ -74,6 +74,14 @@ export class CredentialStore {
   async get<T extends object>(connectionId: string): Promise<T | null> {
     const payload = await this.persistence.load(connectionId);
     if (!payload) return null;
+    return decryptCredentialPayload<T>(payload,this.key);
+  }
+
+  async set<T extends object>(connectionId: string, credentials: T): Promise<void> {
+    await this.persistence.save(connectionId,encryptCredentialPayload(credentials,this.key));
+  }
+}
+export function decryptCredentialPayload<T extends object>(payload:string,key:Buffer=encryptionKey()):T {
     const envelope = JSON.parse(payload) as {
       iv: string;
       tag: string;
@@ -81,7 +89,7 @@ export class CredentialStore {
     };
     const decipher = createDecipheriv(
       "aes-256-gcm",
-      this.key,
+      key,
       Buffer.from(envelope.iv, "base64"),
     );
     decipher.setAuthTag(Buffer.from(envelope.tag, "base64"));
@@ -90,19 +98,10 @@ export class CredentialStore {
       decipher.final(),
     ]);
     return JSON.parse(cleartext.toString("utf8")) as T;
-  }
+}
 
-  async set<T extends object>(connectionId: string, credentials: T): Promise<void> {
-    const iv = randomBytes(12);
-    const cipher = createCipheriv("aes-256-gcm", this.key, iv);
-    const ciphertext = Buffer.concat([
-      cipher.update(JSON.stringify(credentials), "utf8"),
-      cipher.final(),
-    ]);
-    await this.persistence.save(connectionId, JSON.stringify({
-      iv: iv.toString("base64"),
-      tag: cipher.getAuthTag().toString("base64"),
-      ciphertext: ciphertext.toString("base64"),
-    }));
-  }
+export function encryptCredentialPayload(credentials:object,key:Buffer=encryptionKey()):string {
+ const iv=randomBytes(12),cipher=createCipheriv('aes-256-gcm',key,iv);
+ const ciphertext=Buffer.concat([cipher.update(JSON.stringify(credentials),'utf8'),cipher.final()]);
+ return JSON.stringify({iv:iv.toString('base64'),tag:cipher.getAuthTag().toString('base64'),ciphertext:ciphertext.toString('base64')});
 }

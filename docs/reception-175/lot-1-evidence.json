@@ -1,0 +1,117 @@
+{
+  "checkedAt": "2026-10-14T17:54:39.697019+00:00",
+  "baseCommit": "80f6e1ff7baa91186ac0662e7b32d17b5b54f978",
+  "testedSourceCommit": "5f03d349aa83787970d4ef4bd26640cf2dfc5264",
+  "decision": "GO_ISOLATED_LOT_1",
+  "productionDecision": "NO-GO",
+  "providersSimulated": [
+    "OpenAI"
+  ],
+  "realProviderRequests": 0,
+  "productionMigrations": 0,
+  "commercialSends": 0,
+  "historicalAutomaticAttribution": false,
+  "liveCommitUnchanged": "48a2f94910d4a6111250e15046e0f471ddd6ac9b",
+  "migration": {
+    "path": "db/migrations/014_native_commercial_continuity.sql",
+    "sha256": "db4af2406f401fc7c0c16358791010d52c4ab7d24d827892ea949ec1630265c1",
+    "productionApplied": false
+  },
+  "fixtures": {
+    "users": 2,
+    "clients": 2,
+    "projects": 3,
+    "unboundRecordPreserved": true,
+    "realBusinessPersistence": "isolated PostgreSQL",
+    "oidcLoginExercised": false,
+    "logoutActuallyRevokesBearer": true,
+    "reconnection": "distinct canonical fixture bearer for same verified identity"
+  },
+  "checks": [
+    {
+      "name": "latest-native-schema",
+      "passed": 13,
+      "failed": 0,
+      "skipped": 0,
+      "log": "/tmp/lot1-latest-schema.log"
+    },
+    {
+      "name": "business-browser",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "log": "/tmp/lot1-browser-go.log"
+    },
+    {
+      "name": "os-live",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "log": "/tmp/lot1-live-final.log"
+    },
+    {
+      "name": "production-p0",
+      "passed": 36,
+      "failed": 0,
+      "skipped": 0,
+      "log": "/tmp/lot1-p0-final.log"
+    },
+    {
+      "name": "documents",
+      "passed": 29,
+      "failed": 0,
+      "skipped": 0,
+      "log": "/tmp/lot1-documents.log"
+    },
+    {
+      "name": "i18n-contracts",
+      "passed": 29,
+      "failed": 0,
+      "skipped": 0,
+      "log": "/tmp/lot1-i18n-final.log"
+    },
+    {
+      "name": "connector-doubles",
+      "passed": 39,
+      "failed": 0,
+      "skipped": 0,
+      "log": "/tmp/lot1-connectors.log"
+    },
+    {
+      "name": "browser-regression",
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "log": "/tmp/lot1-ui-regression.log"
+    }
+  ],
+  "typeScript": "PASS",
+  "targetedLint": "PASS",
+  "build": "PASS_LOCAL_WEBPACK_FONT_FIXTURE",
+  "baseline": {
+    "commit": "80f6e1f",
+    "globalLint": {
+      "errors": 10,
+      "warnings": 13,
+      "sameNormalizedDiagnostics": true
+    },
+    "vitest": {
+      "pass": 20,
+      "failedTests": 2,
+      "failedInitializationSuites": 1,
+      "sameFailedFiles": [
+        "src/lib/acquisition/acquisition-store.test.ts",
+        "src/lib/acquisition/decision-brief.test.ts",
+        "src/app/api/external/project-intake/route.test.ts"
+      ]
+    }
+  },
+  "atomicDraftCompetition": {
+    "separateThreads": true,
+    "overlappingRequests": true,
+    "committed": 1,
+    "refused": 1,
+    "refusalStatus": 409
+  },
+  "workflow": "native-authority-validation.yml extended; no added workflow"
+}

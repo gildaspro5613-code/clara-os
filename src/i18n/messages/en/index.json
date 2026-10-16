@@ -150,7 +150,15 @@
     "nextAction": "Next action",
     "noMission": "No active mission",
     "noObjective": "No active objective",
-    "noNextAction": "No next action defined"
+    "noNextAction": "No next action defined",
+    "conversations": "Conversations",
+    "states": {
+      "STOPPED": "Stopped",
+      "STARTING": "Starting",
+      "WORKING": "Working",
+      "STOPPING": "Stopping",
+      "UNKNOWN": "State not verified"
+    }
   },
   "documents": {
     "subtitle": "Access documents in your Google Drive workspace.",
@@ -340,5 +348,17 @@
     "identified": "Clara found {count, plural, one {# event} other {# events}} in your calendar.",
     "noneRecorded": "No appointments recorded today.",
     "claraHelp": "The calendar lets Clara account for your day in her actions and recommendations."
+  },
+  "voiceApi": {
+    "operatorRequired": "An authorized operator session is required.",
+    "notConfigured": "Voice service is not configured.",
+    "sessionUnavailable": "Voice session unavailable.",
+    "synthesisFailed": "Voice synthesis failed.",
+    "transcriptionFailed": "Voice transcription failed.",
+    "textRequired": "Text is required.",
+    "textTooLong": "Text too long for voice synthesis (5,000 characters maximum).",
+    "audioRequired": "An audio recording is required.",
+    "audioTooLarge": "Audio recording too large (15 MB maximum).",
+    "noSpeech": "No speech detected."
   }
 }

@@ -50,8 +50,8 @@ test("browser: folder navigation, breadcrumb and pagination", async () => {
   } finally { await h.close(); }
 });
 test("browser: search and document reading display text and Brain recommendation", async () => {
-  const h = await fixture(async url => {
-    if (url.searchParams.get("action") === "read") return { json: { success: true, textContent: "Texte PDF extrait", brain: { recommendation: "Recommandation documentaire" } } };
+  const h = await fixture(async (url,request) => {
+    if (request.method()==="POST" && request.postDataJSON()?.action === "read") return { json: { success: true, textContent: "Texte PDF extrait", brain: { recommendation: "Recommandation documentaire" } } };
     if (url.searchParams.get("query")) return { json: { success: true, files: [pdf] } };
   });
   try {
@@ -65,7 +65,7 @@ test("browser: search and document reading display text and Brain recommendation
 });
 test("browser: non-extractible, invalid and oversized PDF errors remain explicit and ignore provider secrets", async () => {
   let code = "PDF_NO_TEXT";
-  const h = await fixture(async url => url.searchParams.get("action") === "read" ? { status: 422, json: { success: false, code, message: "PRIVATE_PROVIDER_SECRET" } } : undefined);
+  const h = await fixture(async (url,request) => request.method()==="POST" && request.postDataJSON()?.action === "read" ? { status: 422, json: { success: false, code, message: "PRIVATE_PROVIDER_SECRET" } } : undefined);
   try {
     for (const [next, expected] of [["PDF_NO_TEXT", "PDF sans texte extractible. Aucun OCR n’est effectué."], ["PDF_INVALID", "PDF invalide ou corrompu."], ["PDF_TOO_LARGE", "PDF trop volumineux (10 Mo maximum)."], ["PDF_ENCRYPTED", "PDF protégé par un mot de passe."]]) {
       code = next;

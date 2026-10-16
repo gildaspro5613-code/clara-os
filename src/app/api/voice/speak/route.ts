@@ -1,3 +1,5 @@
+import { getTranslations } from "next-intl/server";
+import { authorizeVoiceRequest } from "@/lib/auth/voice-request-authorization";
 import { NextResponse } from "next/server";
 
 import { elevenLabsConfig } from "@/lib/config/elevenlabs";
@@ -12,12 +14,14 @@ interface SpeakRequest {
 }
 
 export async function POST(request: Request) {
+  const t = await getTranslations("voiceApi");
   try {
+    if (!await authorizeVoiceRequest(request)) return NextResponse.json({success:false,message:t("operatorRequired")}, {status:403});
     const voiceId = elevenLabsConfig.voiceId;
 
     if (!voiceId) {
       return NextResponse.json(
-        { success: false, message: "Clara voice is not configured." },
+        { success: false, message: t("notConfigured") },
         { status: 503 },
       );
     }
@@ -27,14 +31,14 @@ export async function POST(request: Request) {
 
     if (!text) {
       return NextResponse.json(
-        { success: false, message: "Text is required." },
+        { success: false, message: t("textRequired") },
         { status: 400 },
       );
     }
 
     if (text.length > MAX_TTS_CHARACTERS) {
       return NextResponse.json(
-        { success: false, message: "Text is too long for voice synthesis." },
+        { success: false, message: t("textTooLong") },
         { status: 413 },
       );
     }
@@ -50,7 +54,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: result.error ?? "Voice synthesis failed.",
+          message: t("synthesisFailed"),
         },
         { status: 502 },
       );
@@ -62,14 +66,12 @@ export async function POST(request: Request) {
         "Cache-Control": "no-store, max-age=0",
       },
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       {
         success: false,
         message:
-          error instanceof Error
-            ? error.message
-            : "Voice synthesis failed.",
+          t("synthesisFailed"),
       },
       { status: 500 },
     );

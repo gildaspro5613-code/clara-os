@@ -1,0 +1,118 @@
+page,instance,titre,texte_observe,statut,preuve
+/,0,Bonjour.,"Bonjour.
+
+MISSION ACTUELLE
+
+FINAL_UI_DIALOGUE
+
+0 / 1 actions terminées · 0 %
+
+Données source · langue d’origine conservée
+
+Fil courant ; le registre Missions peut contenir d’autres missions. Leur appartenance au projet n’est pas certifiée ici.
+
+Voir les missions →
+Clara →
+Dernières conversations →
+Dossier commercial ↓",FONCTIONNEL,"Rendu navigateur après sélection et mission réelle isolée ; présentation seulement, aucune exécution déduite."
+/,1,(sans titre),Ce service externe reste indisponible dans le contexte natif tant que ses autorisations ne sont pas certifiées.,NON CERTIFIÉ,"Rendu navigateur après sélection et mission réelle isolée ; présentation seulement, aucune exécution déduite."
+/,2,(sans titre),Ce service externe reste indisponible dans le contexte natif tant que ses autorisations ne sont pas certifiées.,NON CERTIFIÉ,"Rendu navigateur après sélection et mission réelle isolée ; présentation seulement, aucune exécution déduite."
+/,3,(sans titre),"FINAL_UI_DIALOGUE
+
+Synthèse d’interface · sans modification des données source
+
+Progression
+0 %
+
+ÉTAPE SUIVANTE
+
+Consulter la prochaine action dans le détail de la mission",FONCTIONNEL,"Rendu navigateur après sélection et mission réelle isolée ; présentation seulement, aucune exécution déduite."
+/,4,Résumé du jour,"RÉSUMÉ DU JOUR
+Tâches terminées
+0
+Tours utilisateur
+1
+Progression
+0%
+
+FINAL_UI_DIALOGUE
+
+2 messages conservés dans le fil courant",FONCTIONNEL,"Rendu navigateur après sélection et mission réelle isolée ; présentation seulement, aucune exécution déduite."
+/,5,Attention,"ATTENTION
+
+Structurer la réponse opérationnelle à partir du contexte disponible.
+
+FINAL_UI_DIALOGUE
+
+Priorité
+Normale",FONCTIONNEL,"Rendu navigateur après sélection et mission réelle isolée ; présentation seulement, aucune exécution déduite."
+/,6,Raccourcis rapides,"RACCOURCIS RAPIDES
+Nouvelle mission
+Agenda
+Appeler
+Notes
+Brain
+Automatisations",FONCTIONNEL,"Rendu navigateur après sélection et mission réelle isolée ; présentation seulement, aucune exécution déduite."
+/,7,Qualification commerciale,"QUALIFICATION COMMERCIALE
+En qualification
+Production
+· sound
+
+PRIVATE_QUALIFICATION_prospect-a
+
+Synthèse d’interface · sans modification des données source
+
+Consulter les données source →
+
+CALENDRIER
+
+À confirmer
+
+LIEU
+
+À compléter
+
+INFORMATIONS À COMPLÉTER
+
+Lieu
+Calendrier
+
+PROCHAINE ACTION CLARA
+
+Consulter et modifier le brouillon avec Clara
+
+Brouillon commercial · résumé, aucun envoi
+
+De : Clara — Mélodie Digital <clara@melodie.digital>
+
+À : PRIVATE_prospect-a <prospect-a@example.invalid>
+
+Objet : Votre projet Production — précisions complémentaires
+
+Priorité source: Priorité non renseignée · Données source · langue d’origine conservée
+
+Consulter et modifier le brouillon avec Clara →",FONCTIONNEL,"Rendu navigateur après sélection et mission réelle isolée ; présentation seulement, aucune exécution déduite."
+/,8,Dernières conversations,"DERNIÈRES CONVERSATIONS
+
+Clara
+
+FINAL_UI_DIALOGUE
+
+Ouvrir l’historique →
+
+Utilisateur
+
+FINAL_UI_DIALOGUE
+
+Ouvrir l’historique →
+
+Ouvrir l’historique →",FONCTIONNEL,"Rendu navigateur après sélection et mission réelle isolée ; présentation seulement, aucune exécution déduite."
+/,9,Mission courante,"MISSION COURANTE
+FINAL_UI_DIALOGUE
+
+Consulter la prochaine action dans le détail de la mission
+
+0 %
+Projet privé sélectionné : 1 mission active
+· Active
+Voir toutes les missions →",FONCTIONNEL,"Rendu navigateur après sélection et mission réelle isolée ; présentation seulement, aucune exécution déduite."
