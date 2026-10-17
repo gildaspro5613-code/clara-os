@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: Enforce approved source and invocation
         env:
-          APPROVED_SHA: ef4a2215d5a9470ea32561374c47b818e2cf69d3
+          APPROVED_SHA: 5a97bdb60dc9284c4e11d18f3ec5103901c6778b
           EVENT: ${{ github.event_name }}
         run: |
           test "$EVENT" = "workflow_dispatch"
@@ -24,10 +24,10 @@ jobs:
       - name: Checkout approved commit, never dispatch ref
         uses: actions/checkout@v4
         with:
-          ref: ef4a2215d5a9470ea32561374c47b818e2cf69d3
+          ref: 5a97bdb60dc9284c4e11d18f3ec5103901c6778b
           persist-credentials: false
       - name: Verify exact SHA
-        run: test "$(git rev-parse HEAD)" = "ef4a2215d5a9470ea32561374c47b818e2cf69d3"
+        run: test "$(git rev-parse HEAD)" = "5a97bdb60dc9284c4e11d18f3ec5103901c6778b"
       - name: Validate cloud deployment credentials
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -51,7 +51,7 @@ jobs:
           {
             echo "### Clara OS — recette isolated"
             echo "- Target: `clara-os-recette`"
-            echo "- Approved source: `ef4a2215d5a9470ea32561374c47b818e2cf69d3`"
+            echo "- Approved source: `5a97bdb60dc9284c4e11d18f3ec5103901c6778b`"
             echo "- Deployment URL: $URL"
             echo "- Runtime and Neon connection are **not certified** by this deployment step."
           } >> "$GITHUB_STEP_SUMMARY"
