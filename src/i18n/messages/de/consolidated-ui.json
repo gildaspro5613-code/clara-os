@@ -314,5 +314,10 @@
   "googleKind_drive_update": "Textdateiinhalt ändern",
   "googleKind_drive_move": "Datei verschieben und einordnen",
   "googleExistingUncertain": "Ein vorheriger Vorgang hat ein ungewisses Ergebnis. Öffnen und prüfen Sie ihn, ohne die Änderung zu wiederholen.",
-  "googleCalendarReadOnly": "Dieser Kalender ist schreibgeschützt. Änderungen sind nicht verfügbar."
+  "googleCalendarReadOnly": "Dieser Kalender ist schreibgeschützt. Änderungen sind nicht verfügbar.",
+  "nativeWorkspace_loading": "Berechtigte Arbeitsbereiche werden geladen…",
+  "nativeWorkspace_unauthenticated": "Anmeldung bei Clara OS erforderlich.",
+  "nativeWorkspace_empty": "Keine berechtigten Arbeitsbereiche für diese Sitzung. Die Sitzung kann abgelaufen oder der Zugriff widerrufen sein.",
+  "nativeWorkspace_error": "Berechtigte Arbeitsbereiche konnten nicht geladen werden. Dienst prüfen und erneut versuchen.",
+  "nativeWorkspaceSignIn": "Testanmeldung"
 }

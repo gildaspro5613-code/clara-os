@@ -2,14 +2,22 @@
 import {useEffect,useRef,useState} from 'react';
 import {useTranslations} from 'next-intl';
 type Item={id:string;displayName:string};
-export default function NativeScopeSelector(){
+type WorkspaceState='loading'|'ready'|'unauthenticated'|'empty'|'error';
+export default function NativeScopeSelector({recette=false}:{recette?:boolean}={}){
  const t=useTranslations('ui'),generation=useRef(0);
+ const [workspaceState,setWorkspaceState]=useState<WorkspaceState>('loading');
  const [workspaces,setWorkspaces]=useState<string[]>([]),[clients,setClients]=useState<Item[]>([]),[projects,setProjects]=useState<Item[]>([]),[sessions,setSessions]=useState<{sessionId:string;updatedAt:string}[]>([]),[currentScope,setCurrentScope]=useState(''),[activeSessionId,setActiveSessionId]=useState('');
  const [workspaceId,setWorkspace]=useState(''),[clientId,setClient]=useState(''),[projectId,setProject]=useState(''),[sessionId,setSession]=useState('');
  const [missions,setMissions]=useState<{id:string;title:string}[]>([]),[missionId,setMission]=useState('');
  const [contacts,setContacts]=useState<{id:string;name:string}[]>([]),[contactId,setContactId]=useState(''),[selectedContact,setSelectedContact]=useState('');
  const [message,setMessage]=useState(''),[busy,setBusy]=useState(false),[selected,setSelected]=useState(false),[canWrite,setCanWrite]=useState(false),[title,setTitle]=useState(''),[objective,setObjective]=useState('');
- useEffect(()=>{let live=true;void fetch('/api/contacts').then(r=>r.json()).then(b=>{if(live&&b.connected){setContacts(b.contacts);setSelectedContact(b.selectedSubmissionId??'');setContactId(b.selectedSubmissionId??'');}}).catch(()=>{});void fetch('/api/canonical/registry').then(r=>r.json()).then(b=>{if(live&&b.success)setWorkspaces(b.data.map((row:{workspace_id:string})=>row.workspace_id));}).catch(()=>{});void fetch('/api/native/runtime').then(r=>r.json()).then(b=>{if(live&&b.success){setSelected(true);setMissions(b.missions??[]);setMission(b.session?.mission?.id??'');setCanWrite(b.permissions?.write===true);setSession(b.data.sessionId);setActiveSessionId(b.data.sessionId);setCurrentScope([b.data.workspaceId,b.data.clientId,b.data.projectId].join(" / "));}}).catch(()=>{});return()=>{live=false;};},[]);
+ useEffect(()=>{let live=true;void fetch('/api/contacts').then(r=>r.json()).then(b=>{if(live&&b.connected){setContacts(b.contacts);setSelectedContact(b.selectedSubmissionId??'');setContactId(b.selectedSubmissionId??'');}}).catch(()=>{});void fetch('/api/canonical/registry',{cache:'no-store'}).then(async r=>{
+ if(!live)return;
+ if(r.status===401){setWorkspaceState('unauthenticated');return;}
+ const b=await r.json();
+ if(!r.ok||!b.success||!Array.isArray(b.data)||!b.data.every((row:unknown)=>row&&typeof row==='object'&&'workspace_id' in row&&typeof row.workspace_id==='string'))throw Error();
+ if(live){setWorkspaces(b.data.map((row:{workspace_id:string})=>row.workspace_id));setWorkspaceState(b.data.length?'ready':'empty');}
+ }).catch(()=>{if(live)setWorkspaceState('error');});void fetch('/api/native/runtime').then(r=>r.json()).then(b=>{if(live&&b.success){setSelected(true);setMissions(b.missions??[]);setMission(b.session?.mission?.id??'');setCanWrite(b.permissions?.write===true);setSession(b.data.sessionId);setActiveSessionId(b.data.sessionId);setCurrentScope([b.data.workspaceId,b.data.clientId,b.data.projectId].join(" / "));}}).catch(()=>{});return()=>{live=false;};},[]);
  async function registry(action:string,scope:Record<string,string>){const r=await fetch('/api/canonical/registry',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...scope})});const b=await r.json();if(!r.ok||!b.success)throw Error();return b.data as Item[];}
  async function chooseWorkspace(value:string){const version=++generation.current;setWorkspace(value);setClient('');setProject('');setSession('');setSelected(false);setCanWrite(false);setClients([]);setProjects([]);setMessage('');if(!value)return;try{const data=await registry('list',{workspaceId:value});if(version===generation.current)setClients(data);}catch{if(version===generation.current)setMessage(t('nativeSelectionError'));}}
  async function chooseClient(value:string){const version=++generation.current;setClient(value);setProject('');setSession('');setSelected(false);setCanWrite(false);setProjects([]);setMessage('');if(!value)return;try{const data=await registry('listProjects',{workspaceId,clientId:value});if(version===generation.current)setProjects(data);}catch{if(version===generation.current)setMessage(t('nativeSelectionError'));}}
@@ -18,8 +26,9 @@ export default function NativeScopeSelector(){
  return <section aria-label={t('nativeContextLabel')} className="border-b border-white/10 p-4 text-sm text-white">
  <p>{t('nativeContextLabel')}{currentScope?' · '+currentScope+' · '+activeSessionId:''}</p>
  {!selected&&projectId&&<p>{t("nativePendingSelection")}</p>}
+ {workspaceState!=='ready'&&<p role={workspaceState==='error'||workspaceState==='unauthenticated'?'alert':'status'}>{t('nativeWorkspace_'+workspaceState)} {workspaceState==='unauthenticated'&&recette&&<a href='/recette' className='underline'>{t('nativeWorkspaceSignIn')}</a>}</p>}
  <div className="mt-2 flex flex-wrap gap-3">
- <label>{t('workspace')} <select className="bg-slate-900" disabled={busy} value={workspaceId} onChange={e=>void chooseWorkspace(e.target.value)}><option value="">{t('choose')}</option>{workspaces.map(w=><option key={w}>{w}</option>)}</select></label>
+ <label>{t('workspace')} <select className="bg-slate-900" disabled={busy||workspaceState!=='ready'} value={workspaceId} onChange={e=>void chooseWorkspace(e.target.value)}><option value="">{t('choose')}</option>{workspaces.map(w=><option key={w}>{w}</option>)}</select></label>
  <label>{t('client')} <select className="bg-slate-900" disabled={busy||!workspaceId} value={clientId} onChange={e=>void chooseClient(e.target.value)}><option value="">{t('chooseAClient')}</option>{clients.map(c=><option key={c.id} value={c.id}>{c.displayName}</option>)}</select></label>
  <label>{t('project')} <select className="bg-slate-900" disabled={busy||!clientId} value={projectId} onChange={e=>void chooseProject(e.target.value)}><option value="">{t('chooseAProject')}</option>{projects.map(p=><option key={p.id} value={p.id}>{p.displayName}</option>)}</select></label>
  <button disabled={busy||!projectId||!canWrite} onClick={()=>void command({action:'createSession',workspaceId,clientId,projectId})}>{t('nativeNewSession')}</button>
