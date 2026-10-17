@@ -7,6 +7,8 @@ import { execFileSync } from 'node:child_process';
 import { neonConfig } from '@neondatabase/serverless';
 import { configureRecetteOrigin, recetteDatabase, recetteRequested } from '../lib/recette/policy';
 import { installRecetteTransport } from '../lib/recette/transport';
+import { recetteNeonEndpoint, reportRecetteStartupFailure } from '../lib/recette/diagnostics';
+import { register } from '../../instrumentation';
 import { GET as worker } from '../app/api/internal/event-jobs-run/route';
 import { GET as intake } from '../app/api/internal/project-intake-worker/route';
 import { GET as purge } from '../app/api/internal/document-operations-purge/route';
@@ -30,6 +32,89 @@ const keys=[...Object.keys(valid),'POSTGRES_URL'];
 const initial=Object.fromEntries(keys.map(k=>[k,process.env[k]]));
 function setEnv(env:NodeJS.ProcessEnv){for(const k of keys)delete process.env[k];Object.assign(process.env,env);}
 function rows(name:string,values:string[]){return Response.json({fields:[{name,dataTypeID:25}],rows:values.map(v=>[v]),rowCount:values.length,command:'SELECT',rowAsArray:true});}
+
+const dbCases: [string, NodeJS.ProcessEnv][] = [
+ ['HOST_MISSING',{CLARA_RECETTE_NEON_HOST:undefined}],
+ ['HOST_INVALID',{CLARA_RECETTE_NEON_HOST:'https://host.invalid/secret'}],
+ ['BRANCH_MISMATCH',{CLARA_RECETTE_NEON_BRANCH_ID:'foreign-branch'}],
+ ['POSTGRES_URL_PRESENT',{POSTGRES_URL:'synthetic-private-postgres-url'}],
+ ['DATABASE_URL_MISSING',{DATABASE_URL:undefined}],
+ ['DATABASE_URL_INVALID',{DATABASE_URL:'synthetic-private-invalid-url'}],
+ ['PROTOCOL_INVALID',{DATABASE_URL:valid.DATABASE_URL!.replace('postgresql:','https:')}],
+ ['HOST_MISMATCH',{DATABASE_URL:valid.DATABASE_URL!.replace('ep-isolated-test','ep-foreign-test')}],
+ ['ROLE_MISMATCH',{DATABASE_URL:valid.DATABASE_URL!.replace('clara_os_recette_limited','neondb_owner')}],
+ ['NAME_MISMATCH',{DATABASE_URL:valid.DATABASE_URL!.replace('/neondb','/foreign')}],
+ ['PASSWORD_MISSING',{DATABASE_URL:valid.DATABASE_URL!.replace(':synthetic@','@')}],
+ ['FRAGMENT_FORBIDDEN',{DATABASE_URL:valid.DATABASE_URL+'#synthetic-secret'}],
+ ['SSL_MODE_COUNT_INVALID',{DATABASE_URL:valid.DATABASE_URL!.replace('?sslmode=require','')}],
+ ['SSL_MODE_INVALID',{DATABASE_URL:valid.DATABASE_URL!.replace('sslmode=require','sslmode=disable')}],
+ ['PORT_INVALID',{DATABASE_URL:valid.DATABASE_URL!.replace('/neondb',':5433/neondb')}],
+ ['QUERY_KEY_FORBIDDEN',{DATABASE_URL:valid.DATABASE_URL+'&options=synthetic-secret'}],
+ ['CHANNEL_BINDING_COUNT_INVALID',{DATABASE_URL:valid.DATABASE_URL+'&channel_binding=require&channel_binding=require'}],
+ ['CHANNEL_BINDING_INVALID',{DATABASE_URL:valid.DATABASE_URL+'&channel_binding=disable'}],
+];
+for (const [code,patch] of dbCases) test('safe startup diagnostic: '+code,t=>{
+ const logs:unknown[][]=[];t.mock.method(console,'error',(...args:unknown[])=>logs.push(args));
+ let caught:unknown;try{recetteDatabase({...valid,...patch});}catch(error){caught=error;}
+ assert.ok(caught instanceof Error);assert.equal(caught.message,'RECETTE_DATABASE_REFUSED');
+ reportRecetteStartupFailure(caught,valid);
+ assert.deepEqual(logs,[['[CLARA_RECETTE_STARTUP]','RECETTE_DB_'+code]]);
+ assert.equal(JSON.stringify(caught),'{}');
+ const rendered=JSON.stringify(logs)+String(caught)+(caught as Error).stack;
+ for(const forbidden of ['synthetic','ep-isolated-test','foreign-branch','neondb_owner','postgresql://'])
+  assert.ok(!rendered.includes(forbidden));
+ reportRecetteStartupFailure(caught,{...valid,VERCEL_ENV:'production'});
+ reportRecetteStartupFailure(caught,{...valid,VERCEL_TARGET_ENV:'preview'});
+ reportRecetteStartupFailure(new Error('synthetic-private-error'),valid);
+ assert.equal(logs.length,1);
+});
+for(const [code,value] of [
+ ['NEON_ENDPOINT_INVALID','not-an-url'],
+ ['NEON_ENDPOINT_PROTOCOL_INVALID','http://api.example.neon.tech/sql'],
+ ['NEON_ENDPOINT_HOST_INVALID','https://synthetic-secret.invalid/sql'],
+ ['NEON_ENDPOINT_PATH_INVALID','https://api.example.neon.tech/foreign'],
+])test('safe transport diagnostic: '+code,t=>{
+ const logs:unknown[][]=[];t.mock.method(console,'error',(...args:unknown[])=>logs.push(args));
+ assert.throws(()=>recetteNeonEndpoint(()=>value),error=>{
+  reportRecetteStartupFailure(error,valid);
+  assert.equal((error as Error).message,'RECETTE_DATABASE_REFUSED');
+  assert.equal(JSON.stringify(error),'{}');return true;
+ });
+ assert.deepEqual(logs,[['[CLARA_RECETTE_STARTUP]','RECETTE_DB_'+code]]);
+ assert.ok(!JSON.stringify(logs).includes(value));
+});
+
+test('actual startup hook logs one safe label; HTTP adapter stays generic; preview is accepted with custom target',async t=>{
+ const logs:unknown[][]=[];t.mock.method(console,'error',(...args:unknown[])=>logs.push(args));
+ const runtime=process.env.NEXT_RUNTIME;process.env.NEXT_RUNTIME='nodejs';
+ const endpoint=neonConfig.fetchEndpoint;
+ t.after(()=>{neonConfig.fetchEndpoint=endpoint;if(runtime===undefined)delete process.env.NEXT_RUNTIME;else process.env.NEXT_RUNTIME=runtime;setEnv(initial);});
+ setEnv({...valid,POSTGRES_URL:'synthetic-secret'});
+ await assert.rejects(register(),{message:'RECETTE_DATABASE_REFUSED'});
+ assert.deepEqual(logs,[['[CLARA_RECETTE_STARTUP]','RECETTE_DB_POSTGRES_URL_PRESENT']]);
+ const response=await session(new Request('https://recette-test.vercel.app/api/auth/recette/session',{method:'POST'}));
+ assert.equal(response.status,503);assert.deepEqual(await response.json(),{success:false,code:'RECETTE_SESSION_UNAVAILABLE'});
+ assert.equal(logs.length,1);
+ setEnv(valid);neonConfig.fetchEndpoint=()=> 'https://synthetic-secret.invalid/sql';
+ await assert.rejects(register(),{message:'RECETTE_DATABASE_REFUSED'});
+ assert.deepEqual(logs[1],['[CLARA_RECETTE_STARTUP]','RECETTE_DB_NEON_ENDPOINT_HOST_INVALID']);
+ assert.ok(!JSON.stringify(logs).includes('synthetic'));
+ assert.equal(recetteDatabase({...valid,POSTGRES_URL:''}).username,'clara_os_recette_limited');
+ assert.equal(recetteDatabase({...valid,DATABASE_URL:valid.DATABASE_URL+'&channel_binding=require'}).pathname,'/neondb');
+});
+
+test('ordinary Production startup leaves fetch and sockets unchanged and emits no database diagnostic',async t=>{
+ const runtime=process.env.NEXT_RUNTIME;
+ const fetcher=globalThis.fetch, connect=net.Socket.prototype.connect;
+ const logs:unknown[][]=[];t.mock.method(console,'error',(...args:unknown[])=>logs.push(args));
+ t.mock.method(console,'info',()=>{});
+ t.after(()=>{if(runtime===undefined)delete process.env.NEXT_RUNTIME;else process.env.NEXT_RUNTIME=runtime;setEnv(initial);});
+ process.env.NEXT_RUNTIME='nodejs';
+ setEnv({VERCEL:'1',VERCEL_ENV:'production',VERCEL_TARGET_ENV:'production'});
+ await register();
+ assert.equal(globalThis.fetch,fetcher);assert.equal(net.Socket.prototype.connect,connect);
+ assert.deepEqual(logs,[]);
+});
 
 test('policy: exact custom target only; missing, contradictory and production configs fail closed',()=>{
  assert.equal(recetteRequested({}),false);
