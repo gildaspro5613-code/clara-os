@@ -33,6 +33,9 @@ function rows(name:string,values:string[]){return Response.json({fields:[{name,d
 
 test('policy: exact custom target only; missing, contradictory and production configs fail closed',()=>{
  assert.equal(recetteRequested({}),false);
+ assert.equal(recetteRequested({VERCEL:'1',VERCEL_ENV:'preview'}),true);
+ assert.throws(()=>recetteDatabase({VERCEL:'1',VERCEL_ENV:'preview'}),/RECETTE_CONFIGURATION_REFUSED/);
+ assert.equal(recetteRequested({VERCEL:'1',VERCEL_ENV:'production'}),false);
  assert.equal(recetteDatabase(valid).username,'clara_os_recette_limited');
  for(const patch of [{VERCEL_ENV:'production'},{VERCEL_TARGET_ENV:'production'},{CLARA_RECETTE_MODE:undefined},
   {CLARA_RECETTE_NEON_HOST:undefined},{CLARA_RECETTE_NEON_BRANCH_ID:'main'},

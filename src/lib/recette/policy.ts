@@ -1,6 +1,9 @@
 /** Server-only policy. Custom targets are not VERCEL_ENV=production. */
 export function recetteRequested(env: NodeJS.ProcessEnv = process.env): boolean {
-  return env.VERCEL_TARGET_ENV === 'clara-os-recette' || env.CLARA_RECETTE_MODE !== undefined;
+  return env.VERCEL_TARGET_ENV === 'clara-os-recette' || env.CLARA_RECETTE_MODE !== undefined ||
+    // A Vercel non-production process without custom-target metadata must not
+    // silently inherit live transports when the recette flag was omitted.
+    (env.VERCEL === '1' && env.VERCEL_ENV !== 'production');
 }
 export function recetteDatabase(env: NodeJS.ProcessEnv = process.env): URL {
   if (env.VERCEL_ENV === 'production' || env.VERCEL_TARGET_ENV !== 'clara-os-recette' ||
