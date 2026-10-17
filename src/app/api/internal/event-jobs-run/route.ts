@@ -1,3 +1,4 @@
+import { recetteRequested } from '@/lib/recette/policy';
 import { timingSafeEqual } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { eventJobs } from '@/lib/external-capabilities/event-jobs';
@@ -6,6 +7,7 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const maxDuration = 300;
 export async function GET(request: Request) {
+  if (recetteRequested()) return NextResponse.json({success:false,code:'RECETTE_WORKER_BLOCKED'},{status:403});
   const secret = process.env.CRON_SECRET?.trim();
   const actual = Buffer.from(request.headers.get('authorization') ?? '');
   const expected = Buffer.from(secret ? `Bearer ${secret}` : '');

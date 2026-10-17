@@ -1,3 +1,4 @@
+import { recetteRequested } from '@/lib/recette/policy';
 import {withNativeScope} from '@/lib/native/scoped-context';
 import {nativeFailure} from '@/lib/native/authority';
 import {fields} from '@/lib/canonical/http';
@@ -20,6 +21,7 @@ export async function GET(request:Request){try{return await withNativeScope(requ
  throw new RegistryError(400,'GOOGLE_WORK_INVALID');
 });}catch(error){return failure(error);}}
 export async function POST(request:Request){try{
+ if(recetteRequested())return Response.json({success:false,code:'RECETTE_EXTERNAL_OPERATION_BLOCKED'},{status:403});
  // Authority precedes bounded parsing, including multipart-sized JSON uploads.
  const body=await withNativeScope(request,true,async()=>{
   if(request.headers.get('content-type')?.split(';')[0]!=='application/json')throw new RegistryError(415,'JSON_REQUIRED');

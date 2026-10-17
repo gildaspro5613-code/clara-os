@@ -1,4 +1,5 @@
 import type { ExternalProductConfig } from "./config";
+import { refuseRecetteExternal } from '@/lib/recette/policy';
 
 export interface ExternalProductExecutionRequest {
   capability: string;
@@ -12,6 +13,7 @@ export async function executeExternalProductCapability(
   product: ExternalProductConfig,
   request: ExternalProductExecutionRequest,
 ): Promise<{ success: boolean; message: string; content?: string }> {
+  refuseRecetteExternal();
   if (!product.callbackBaseUrl) {
     return { success: false, message: `No callback is configured for external product ${product.productId}.` };
   }

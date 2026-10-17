@@ -1,0 +1,58 @@
+name: Clara OS isolated recette deployment
+run-name: "Recette #177 — ${{ github.actor }}"
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: clara-os-recette-177
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: clara-os-recette
+    timeout-minutes: 20
+    steps:
+      - name: Enforce approved source and invocation
+        env:
+          APPROVED_SHA: ef4a2215d5a9470ea32561374c47b818e2cf69d3
+          EVENT: ${{ github.event_name }}
+        run: |
+          test "$EVENT" = "workflow_dispatch"
+          test "${{ github.repository }}" = "gildaspro5613-code/clara-os"
+          test "${{ github.workflow_ref }}" != ""
+      - name: Checkout approved commit, never dispatch ref
+        uses: actions/checkout@v4
+        with:
+          ref: ef4a2215d5a9470ea32561374c47b818e2cf69d3
+          persist-credentials: false
+      - name: Verify exact SHA
+        run: test "$(git rev-parse HEAD)" = "ef4a2215d5a9470ea32561374c47b818e2cf69d3"
+      - name: Validate cloud deployment credentials
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          test -n "$VERCEL_TOKEN" || { echo "::error::VERCEL_TOKEN secret missing"; exit 1; }
+      - name: Install Vercel CLI in GitHub runner only
+        run: npm install --global vercel@latest
+      - name: Link existing Vercel project (no project creation)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          vercel link --yes --project clara-os --scope melodie-digital --token "$VERCEL_TOKEN"
+          node -e 'const p=require("./.vercel/project.json"); if(p.projectId!=="prj_jLIZqU5V98I4yl8RCbAaoqgM4KNJ"||p.orgId!=="team_0BeqOAO8t5oDEBdzHHdekcxv") process.exit(1)'
+      - name: Deploy only custom recette environment
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          vercel deploy --yes --target=clara-os-recette --scope melodie-digital --token "$VERCEL_TOKEN" > "$RUNNER_TEMP/recette-url.txt"
+          URL="$(tail -n 1 "$RUNNER_TEMP/recette-url.txt")"
+          case "$URL" in https://*.vercel.app) ;; *) echo "::error::Unexpected deployment URL"; exit 1;; esac
+          echo "Recette URL: $URL"
+          {
+            echo "### Clara OS — recette isolated"
+            echo "- Target: `clara-os-recette`"
+            echo "- Approved source: `ef4a2215d5a9470ea32561374c47b818e2cf69d3`"
+            echo "- Deployment URL: $URL"
+            echo "- Runtime and Neon connection are **not certified** by this deployment step."
+          } >> "$GITHUB_STEP_SUMMARY"
