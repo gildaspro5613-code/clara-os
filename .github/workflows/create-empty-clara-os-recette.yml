@@ -1,0 +1,37 @@
+name: Create empty Clara OS recette Vercel project
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: create-empty-clara-os-recette-project
+  cancel-in-progress: false
+jobs:
+  create:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Validate approved invocation and token
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          test "${{ github.event_name }}" = "workflow_dispatch"
+          test "${{ github.repository }}" = "gildaspro5613-code/clara-os"
+          test -n "$VERCEL_TOKEN" || { echo "::error::VERCEL_TOKEN missing"; exit 1; }
+      - name: Install Vercel CLI in GitHub runner
+        run: npm install --global vercel@latest
+      - name: Create project only, no Git link or deployment
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          set -euo pipefail
+          vercel project add clara-os-recette --scope melodie-digital --token "$VERCEL_TOKEN"
+          {
+            echo "### Clara OS recette — empty project"
+            echo "- Project: clara-os-recette"
+            echo "- Team: melodie-digital"
+            echo "- No Git repository linked"
+            echo "- No Neon integration configured by this workflow"
+            echo "- No deployment executed"
+            echo "- No environment variables created"
+          } >> "$GITHUB_STEP_SUMMARY"
