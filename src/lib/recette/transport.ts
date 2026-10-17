@@ -5,6 +5,7 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 import { syncBuiltinESMExports } from 'node:module';
 import { neonConfig } from '@neondatabase/serverless';
 import { configureRecetteOrigin, recetteDatabase, recetteRequested } from './policy';
+import { recetteNeonEndpoint } from './diagnostics';
 
 let installed = false;
 /** Install BEFORE loading request modules. No real provider receives a fake receipt.
@@ -15,10 +16,8 @@ export function installRecetteTransport(): void {
   const database = recetteDatabase();
   configureRecetteOrigin();
   const connectionString = process.env.DATABASE_URL;
-  const endpoint = new URL(typeof neonConfig.fetchEndpoint === 'function'
+  const endpoint = recetteNeonEndpoint(() => typeof neonConfig.fetchEndpoint === 'function'
     ? neonConfig.fetchEndpoint(database.hostname, 5432) : neonConfig.fetchEndpoint);
-  if (endpoint.protocol !== 'https:' || !endpoint.hostname.endsWith('.neon.tech') || endpoint.pathname !== '/sql')
-    throw Error('RECETTE_DATABASE_REFUSED');
   const permitted = new AsyncLocalStorage<boolean>();
   const originalFetch = globalThis.fetch;
   const deny = () => { throw Error('RECETTE_EXTERNAL_OPERATION_BLOCKED'); };
