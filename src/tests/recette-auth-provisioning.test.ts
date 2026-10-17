@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {execFileSync} from 'node:child_process';
+import {execFile,execFileSync} from 'node:child_process';
 import {createHash,randomUUID} from 'node:crypto';
 import {neon,neonConfig} from '@neondatabase/serverless';
 import {fixture,preflightRecetteFixture,seedRecetteFixture,newRecetteFixtureToken} from '../lib/recette/fixture-provisioning';
@@ -32,7 +32,10 @@ test('offline fictional provisioning and real canonical auth handlers on disposa
  CREATE TABLE clara_workspace_memberships(user_id text REFERENCES clara_auth_users,workspace_id text REFERENCES clara_auth_workspaces,role text,revoked_at timestamptz,PRIMARY KEY(user_id,workspace_id));
  CREATE TABLE clara_auth_sessions(token_hash text PRIMARY KEY,user_id text REFERENCES clara_auth_users,created_at timestamptz DEFAULT now(),expires_at timestamptz CHECK(expires_at>created_at),revoked_at timestamptz);
  GRANT USAGE ON SCHEMA public TO clara_os_recette_limited;
- GRANT SELECT,INSERT ON clara_auth_users,clara_auth_workspaces,clara_auth_identities,clara_workspace_memberships,clara_auth_sessions TO clara_os_recette_limited;`);
+ GRANT SELECT(id),INSERT(id) ON clara_auth_users,clara_auth_workspaces TO clara_os_recette_limited;
+ GRANT SELECT(issuer,subject,user_id),INSERT(issuer,subject,user_id) ON clara_auth_identities TO clara_os_recette_limited;
+ GRANT SELECT(user_id,workspace_id,role,revoked_at),INSERT(user_id,workspace_id,role) ON clara_workspace_memberships TO clara_os_recette_limited;
+ GRANT SELECT(token_hash,user_id,expires_at,revoked_at),INSERT(token_hash,user_id,expires_at) ON clara_auth_sessions TO clara_os_recette_limited;`);
  let sqlCalls=0,writeBatches=0;
  neonConfig.fetchFunction=async (_input,init)=>{
   sqlCalls++;const body=JSON.parse(String(init?.body));
@@ -44,7 +47,11 @@ test('offline fictional provisioning and real canonical auth handlers on disposa
    else script+=q+`;SELECT '{"rows":[]}'::json;\n`;
   }
   if(body.queries){writeBatches++;script+='COMMIT;';}
-  const results=pg(script,'clara_os_recette_limited').trim().split('\n').filter(Boolean).map(line=>{
+  const output=await new Promise<string>((resolve,reject)=>{
+   const child=execFile('docker',['exec','-i',container,'psql','-X','-qAt','-U','clara_os_recette_limited','-d','neondb','-v','ON_ERROR_STOP=1'],{encoding:'utf8'},(error,stdout)=>error?reject(Error('TEST_SQL_FAILED')):resolve(stdout));
+   child.stdin!.end(script);
+  });
+  const results=output.trim().split('\n').filter(Boolean).map(line=>{
    const rows=JSON.parse(line).rows as Record<string,unknown>[];const names=Object.keys(rows[0]??{});
    return {fields:names.map(name=>({name,dataTypeID:3802})),rows:rows.map(row=>names.map(name=>JSON.stringify(row[name]))),rowCount:rows.length,command:'SELECT',rowAsArray:true};
   });
@@ -65,10 +72,51 @@ test('offline fictional provisioning and real canonical auth handlers on disposa
   assert.equal(sqlCalls,before);assert.equal(writeBatches,0);
  });
  await t.test('real limited role preflight; absent INSERT privilege stops before writes',async()=>{
-  pg('REVOKE INSERT ON clara_auth_identities FROM clara_os_recette_limited');
+  pg('REVOKE INSERT(issuer,subject,user_id) ON clara_auth_identities FROM clara_os_recette_limited');
   await assert.rejects(preflightRecetteFixture(env,query,metadata),/RECETTE_PROVISIONING_PRIVILEGES_REQUIRED/);assert.equal(writeBatches,0);
-  pg('GRANT INSERT ON clara_auth_identities TO clara_os_recette_limited');
+  pg('GRANT INSERT(issuer,subject,user_id) ON clara_auth_identities TO clara_os_recette_limited');
   await preflightRecetteFixture(env,query,metadata);
+ });
+ await t.test('missing function EXECUTE is refused before any fixture writes',async()=>{
+  pg('REVOKE EXECUTE ON FUNCTION pg_catalog.set_config(text,text,boolean) FROM PUBLIC');
+  await assert.rejects(preflightRecetteFixture(env,query,metadata),/RECETTE_PROVISIONING_CAPABILITIES_REQUIRED/);
+  assert.equal(writeBatches,0);
+  pg('GRANT EXECUTE ON FUNCTION pg_catalog.set_config(text,text,boolean) TO PUBLIC');
+ });
+ await t.test('table ownership and occupied fictional identity are refused without reassignment',async()=>{
+  pg('ALTER TABLE clara_auth_users OWNER TO clara_os_recette_limited');
+  await assert.rejects(preflightRecetteFixture(env,query,metadata),/RECETTE_PROVISIONING_CAPABILITIES_REQUIRED/);
+  // PostgreSQL rewrites owner ACL entries; restore the disposable column grants.
+  pg('ALTER TABLE clara_auth_users OWNER TO postgres;GRANT SELECT(id),INSERT(id) ON clara_auth_users TO clara_os_recette_limited');
+  await preflightRecetteFixture(env,query,metadata);
+  pg(`INSERT INTO clara_auth_users VALUES('collision');INSERT INTO clara_auth_identities VALUES(${quote(fixture.issuer)},${quote(fixture.subject)},'collision')`);
+  await assert.rejects(seedRecetteFixture(query,token));
+  assert.equal(pg(`SELECT count(*) FROM clara_auth_users WHERE id=${quote(fixture.user)}`).trim(),'0');
+  assert.equal(pg('SELECT user_id FROM clara_auth_identities').trim(),'collision');
+  pg("DELETE FROM clara_auth_identities;DELETE FROM clara_auth_users WHERE id='collision'");
+ });
+ await t.test('late failure rolls back all preceding fixture inserts',async()=>{
+  pg('ALTER TABLE clara_auth_sessions ADD CONSTRAINT test_failure CHECK(false)');
+  await assert.rejects(seedRecetteFixture(query,token));
+  assert.equal(pg('SELECT count(*) FROM clara_auth_users').trim(),'0');
+  assert.equal(pg('SELECT count(*) FROM clara_auth_workspaces').trim(),'0');
+  pg('ALTER TABLE clara_auth_sessions DROP CONSTRAINT test_failure');
+ });
+ await t.test('real concurrent database transactions create only one live token; lost acknowledgement replays safely',async()=>{
+  const outcomes=await Promise.allSettled([seedRecetteFixture(query,token),seedRecetteFixture(query,newRecetteFixtureToken())]);
+  assert.equal(outcomes.filter(r=>r.status==='fulfilled').length,1);
+  assert.equal(pg('SELECT count(*) FROM clara_auth_sessions').trim(),'1');
+  // Whichever competing token won: remove only these disposable test rows, then
+  // exercise a committed request whose HTTP acknowledgement was lost.
+  pg('DELETE FROM clara_auth_sessions');
+  const transport=neonConfig.fetchFunction;
+  neonConfig.fetchFunction=async(...args)=>{await transport!(...args);throw Error('SIMULATED_LOST_ACK');};
+  await assert.rejects(seedRecetteFixture(query,token));
+  neonConfig.fetchFunction=transport;
+  const expires=pg('SELECT expires_at FROM clara_auth_sessions');
+  await seedRecetteFixture(neon(url),token); // fresh SDK instance, no process-local receipt
+  assert.equal(pg('SELECT count(*) FROM clara_auth_sessions').trim(),'1');
+  assert.equal(pg('SELECT expires_at FROM clara_auth_sessions'),expires);
  });
  await t.test('idempotent seed retains one user/workspace/session and expiry; canonical login and refresh work',async()=>{
   await seedRecetteFixture(query,token);
