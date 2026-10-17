@@ -35,11 +35,10 @@ jobs:
           test -n "$VERCEL_TOKEN" || { echo "::error::VERCEL_TOKEN secret missing"; exit 1; }
       - name: Install Vercel CLI in GitHub runner only
         run: npm install --global vercel@latest
-      - name: Link existing Vercel project (no project creation)
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      - name: Pin existing Vercel project without account lookup or project creation
         run: |
-          vercel link --yes --project clara-os --scope melodie-digital --token "$VERCEL_TOKEN"
+          mkdir -p .vercel
+          printf '{"projectId":"prj_jLIZqU5V98I4yl8RCbAaoqgM4KNJ","orgId":"team_0BeqOAO8t5oDEBdzHHdekcxv"}\n' > .vercel/project.json
           node -e 'const p=require("./.vercel/project.json"); if(p.projectId!=="prj_jLIZqU5V98I4yl8RCbAaoqgM4KNJ"||p.orgId!=="team_0BeqOAO8t5oDEBdzHHdekcxv") process.exit(1)'
       - name: Deploy only custom recette environment
         env:
