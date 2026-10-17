@@ -314,5 +314,10 @@
   "googleKind_drive_update": "Update text file content",
   "googleKind_drive_move": "Move and organize a file",
   "googleExistingUncertain": "An earlier operation has an uncertain outcome. Retrieve it and check its result without repeating the write.",
-  "googleCalendarReadOnly": "This calendar is read-only. Writes are unavailable."
+  "googleCalendarReadOnly": "This calendar is read-only. Writes are unavailable.",
+  "nativeWorkspace_loading": "Loading authorized workspaces…",
+  "nativeWorkspace_unauthenticated": "Clara OS sign-in required.",
+  "nativeWorkspace_empty": "No authorized workspace for this session. An expired session or revoked access may also explain this result.",
+  "nativeWorkspace_error": "Unable to load authorized workspaces. Retry after checking the service.",
+  "nativeWorkspaceSignIn": "Recette sign-in"
 }

@@ -314,5 +314,10 @@
   "googleKind_drive_update": "Modifica contenuto file di testo",
   "googleKind_drive_move": "Sposta e organizza file",
   "googleExistingUncertain": "Un’operazione precedente ha un esito incerto. Recuperala e verifica il risultato senza ripetere la scrittura.",
-  "googleCalendarReadOnly": "Questo calendario è di sola lettura. Le scritture non sono disponibili."
+  "googleCalendarReadOnly": "Questo calendario è di sola lettura. Le scritture non sono disponibili.",
+  "nativeWorkspace_loading": "Caricamento degli spazi autorizzati…",
+  "nativeWorkspace_unauthenticated": "È necessario accedere a Clara OS.",
+  "nativeWorkspace_empty": "Nessuno spazio autorizzato per questa sessione. La sessione potrebbe essere scaduta o i permessi revocati.",
+  "nativeWorkspace_error": "Impossibile caricare gli spazi autorizzati. Verificare il servizio e riprovare.",
+  "nativeWorkspaceSignIn": "Accesso di collaudo"
 }
