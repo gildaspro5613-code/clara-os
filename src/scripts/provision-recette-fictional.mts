@@ -11,7 +11,12 @@ async function main(){
   console.info('PLAN ONLY. Requires separate authorization: endpoint metadata read, limited-role fixture writes, private local file or protected Cloud session secret. No database or provider called.');return;
  }
  const checkOnly=process.argv[2]==='--check-cloud';
- const cloud=checkOnly||process.argv[2]==='--apply-cloud';
+ if(checkOnly){
+  const {runCloudPreflight}=await import('../lib/recette/cloud-preflight');
+  const report=await runCloudPreflight(process.env,process.argv.slice(2));
+  console.info(JSON.stringify(report));if(report.status!=='PRECHECK_PASSED')process.exitCode=1;return;
+ }
+ const cloud=process.argv[2]==='--apply-cloud';
  if(process.argv.length!==(cloud?4:5)||(!cloud&&process.argv[2]!=='--apply')||process.argv[3]!==`--confirm=${fixture.branch}`)
   throw Error('RECETTE_EXPLICIT_AUTHORIZATION_REQUIRED');
  const cloudToken=cloud?cloudRecetteFixtureToken(process.env):undefined;
@@ -20,7 +25,6 @@ async function main(){
  const query=neon(process.env.DATABASE_URL!);
  // Explicitly verify endpoint/branch and SQL role/grants BEFORE local or SQL writes.
  await preflightRecetteFixture(process.env,query,fetch);
- if(checkOnly){console.info('Read-only preflight passed. Neon HTTP provisioning remains unverified; no fixture was written.');return;}
  if(cloudToken){
   await seedRecetteFixture(query,cloudToken);
   console.info('Fictional Cloud fixture ready. Use the protected session secret with /recette. Expiry and revocations were not extended.');return;
