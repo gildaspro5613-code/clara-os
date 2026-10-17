@@ -1,3 +1,4 @@
+import { recetteRequested } from '@/lib/recette/policy';
 import { randomUUID, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { purgeDocumentOperations } from "@/lib/maintenance/document-operations-purge";
@@ -6,6 +7,7 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export async function GET(request: Request) {
+  if (recetteRequested()) return NextResponse.json({success:false,code:'RECETTE_WORKER_BLOCKED'},{status:403});
   // Same private maintenance credential as existing internal OS routes. Cookies,
   // external product credentials, query parameters and User-Agent grant nothing.
   const secret = process.env.CRON_SECRET?.trim();

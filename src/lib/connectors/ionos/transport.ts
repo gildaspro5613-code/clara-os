@@ -1,3 +1,4 @@
+import { refuseRecetteExternal } from '@/lib/recette/policy';
 import {ImapFlow} from 'imapflow';
 import nodemailer from 'nodemailer';
 import {simpleParser} from 'mailparser';
@@ -38,12 +39,13 @@ export function validateMailConfig(c:MailCredentials){
 /** Network activation is deliberately OFF unless separately configured after
  * provider certification. Tests inject a transport and never set this flag. */
 export function createIonosTransport(credentials:MailCredentials):MailTransport{
+ refuseRecetteExternal();
  if(process.env.CLARA_IONOS_NETWORK_ENABLED!=='true')throw Error('MAIL_PROVIDER_DISABLED');
  validateMailConfig(credentials);return new IonosTransport(credentials);
 }
 export class IonosTransport implements MailTransport {
  constructor(private readonly credentials:MailCredentials){validateMailConfig(credentials);}
- private client(){const c=this.credentials;return new ImapFlow({host:c.imapHost,port:c.imapPort,secure:true,auth:{user:c.address,pass:c.password},tls:{rejectUnauthorized:true,minVersion:'TLSv1.2'},logger:false,disableAutoIdle:true,connectionTimeout:10000,greetingTimeout:10000,socketTimeout:15000});}
+ private client(){refuseRecetteExternal();const c=this.credentials;return new ImapFlow({host:c.imapHost,port:c.imapPort,secure:true,auth:{user:c.address,pass:c.password},tls:{rejectUnauthorized:true,minVersion:'TLSv1.2'},logger:false,disableAutoIdle:true,connectionTimeout:10000,greetingTimeout:10000,socketTimeout:15000});}
  private async imap<T>(work:(client:ImapFlow)=>Promise<T>){const client=this.client();let timer:ReturnType<typeof setTimeout>|undefined;try{return await Promise.race([(async()=>{await client.connect();return work(client);})(),new Promise<never>((_,reject)=>{timer=setTimeout(()=>{client.close();reject(Error('MAIL_IMAP_TIMEOUT'));},30000);})]);}finally{clearTimeout(timer);client.close();}}
  async folders(){return this.imap(async client=>(await client.list()).map(f=>f.path).filter(f=>this.credentials.folders.includes(f)));}
  async exists(folder:string,validity:string,uid:number){if(!this.credentials.folders.includes(folder))throw Error('MAIL_FOLDER_DENIED');return this.imap(async client=>{const lock=await client.getMailboxLock(folder,{readOnly:true});try{if(!client.mailbox||String(client.mailbox.uidValidity)!==validity)return false;const found=await client.fetchOne(String(uid),{uid:true},{uid:true});return !!found&&found.uid===uid;}finally{lock.release();}});}
@@ -59,6 +61,7 @@ export class IonosTransport implements MailTransport {
   }finally{lock.release();}});
  }
  async send(envelope:MailEnvelope):Promise<'sent'|'failed'|'uncertain'>{
+  refuseRecetteExternal();
   const c=this.credentials;if(envelope.from!==c.address)throw Error('MAIL_SENDER_DENIED');
   const transport=nodemailer.createTransport({host:c.smtpHost,port:c.smtpPort,secure:c.smtpPort===465,requireTLS:true,auth:{user:c.address,pass:c.password},tls:{rejectUnauthorized:true,minVersion:'TLSv1.2'},connectionTimeout:10000,greetingTimeout:10000,socketTimeout:15000,logger:false,debug:false,disableFileAccess:true,disableUrlAccess:true});
   try{const info=await transport.sendMail({from:mailAddress(envelope.from),to:envelope.to.map(mailAddress),subject:envelope.subject,text:envelope.text,messageId:envelope.messageId,inReplyTo:envelope.inReplyTo,attachments:envelope.attachments.map(a=>({filename:a.name,content:Buffer.from(a.content,'base64'),contentType:a.type})),disableFileAccess:true,disableUrlAccess:true});return info.accepted.length===envelope.to.length?'sent':'uncertain';}

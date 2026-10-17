@@ -1,3 +1,4 @@
+import { recetteRequested } from '@/lib/recette/policy';
 import { NextResponse } from "next/server";
 import { beginSignInTransaction } from "@/lib/auth/sign-in-transaction";
 import { googleSignInAuthorizationUrl } from "@/lib/auth/google-sign-in";
@@ -6,6 +7,7 @@ const NONCE_COOKIE = "clara_auth_google_nonce";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  if (recetteRequested()) return NextResponse.json({success:false,code:'RECETTE_EXTERNAL_AUTH_BLOCKED'},{status:403});
   try {
     const transaction = await beginSignInTransaction("google");
     const response = NextResponse.redirect(googleSignInAuthorizationUrl(transaction.state, transaction.nonce));

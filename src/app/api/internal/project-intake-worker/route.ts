@@ -1,3 +1,4 @@
+import { recetteRequested } from '@/lib/recette/policy';
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 
@@ -18,6 +19,7 @@ function authorized(request: Request): boolean {
 }
 
 export async function GET(request: Request) {
+  if (recetteRequested()) return NextResponse.json({success:false,code:'RECETTE_WORKER_BLOCKED'},{status:403});
   if (!authorized(request)) {
     return NextResponse.json(
       { success: false, status: "unauthorized" },

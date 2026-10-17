@@ -10,6 +10,7 @@
  */
 
 import OpenAI from "openai";
+import { recetteDatabase, recetteRequested } from '@/lib/recette/policy';
 
 import { OpenAIResponsesContext } from "./openai-responses-context";
 import { OpenAIResponsesResult } from "./openai-responses-result";
@@ -28,6 +29,13 @@ export class OpenAIResponsesEngine {
   public async generate(
     context: OpenAIResponsesContext,
   ): Promise<OpenAIResponsesResult> {
+
+    if (recetteRequested()) {
+      recetteDatabase();
+      return { success:true, responseStatus:'completed',
+        content:'[RECETTE — simulation locale] Message reçu dans la mission sélectionnée. Aucun fournisseur appelé, aucune action externe exécutée.',
+        model:'recette-local', finishReason:'completed', message:'RECETTE_SIMULATED_RESPONSE', completedAt:new Date() };
+    }
 
     try {
 
