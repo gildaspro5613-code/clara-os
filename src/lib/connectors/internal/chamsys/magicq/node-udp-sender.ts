@@ -1,3 +1,4 @@
+import { refuseRecetteExternal } from '@/lib/recette/policy';
 import type { UdpDatagram, UdpDatagramSender } from "./transport";
 
 function validateDatagram(datagram: UdpDatagram): void {
@@ -22,6 +23,7 @@ function validateDatagram(datagram: UdpDatagram): void {
  */
 export class NodeMagicQUdpDatagramSender implements UdpDatagramSender {
   async send(datagram: UdpDatagram): Promise<void> {
+    refuseRecetteExternal();
     validateDatagram(datagram);
 
     const { createSocket } = await import("node:dgram");

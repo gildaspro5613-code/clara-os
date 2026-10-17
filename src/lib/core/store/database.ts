@@ -10,8 +10,10 @@
  */
 
 import { neon } from "@neondatabase/serverless";
+import { recetteDatabase, recetteRequested } from "@/lib/recette/policy";
 
 function getDatabase() {
+  if (recetteRequested()) recetteDatabase();
   const databaseUrl =
     process.env.DATABASE_URL ??
     process.env.POSTGRES_URL;
@@ -33,5 +35,7 @@ export const sql = (
   strings: TemplateStringsArray,
   ...values: unknown[]
 ) => {
+  // Preserve the existing adapter's polymorphic row contract; callers validate domain rows.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (getDatabase() as any)(strings, ...values);
 };
