@@ -1,0 +1,88 @@
+name: Clara OS Recette - Neon read-only preflight
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: clara-os-recette-neon-preflight
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    if: github.repository == 'gildaspro5613-code/clara-os' && github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # REQUIRED before activation: required reviewers, prevent self-review,
+    # no administrator bypass, and selected deployment branch only. YAML cannot
+    # configure these settings. No secrets until the final read-only step.
+    environment: clara-os-recette-neon-preflight
+    steps:
+      - name: Validate approved manual context and environment attestations
+        shell: bash
+        env:
+          REVIEWED_TOOLING_SHA: ${{ vars.RECETTE_PREFLIGHT_TOOLING_SHA_APPROVED }}
+          ENVIRONMENT_REVIEW: ${{ vars.RECETTE_PREFLIGHT_ENVIRONMENT_REVIEW }}
+          KEY_PERMISSION_REVIEW: ${{ vars.NEON_API_KEY_PERMISSION_REVIEW }}
+          KEY_REVIEW_PROJECT: ${{ vars.NEON_API_KEY_REVIEW_PROJECT }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = 'gildaspro5613-code/clara-os'
+          test "$GITHUB_EVENT_NAME" = 'workflow_dispatch'
+          test "$GITHUB_REF" = 'refs/heads/fix/recette-neon-readonly-preflight'
+          test "$REVIEWED_TOOLING_SHA" = 'e176cf5baa8cbf41f7cc1444b7fc4debdc6f87a8'
+          test "$ENVIRONMENT_REVIEW" = 'required-reviewers-no-self-review-no-bypass-v1'
+          test "$KEY_PERMISSION_REVIEW" = 'project-read-only-confirmed'
+          test "$KEY_REVIEW_PROJECT" = 'fragrant-dream-31652403'
+
+      - name: Checkout approved study reference
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: b6cdfe3574c5e413e03d6cef09d3ce7d67b89f78
+          path: reference
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Checkout isolated read-only correction
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: e176cf5baa8cbf41f7cc1444b7fc4debdc6f87a8
+          path: preflight-tool
+          persist-credentials: false
+          fetch-depth: 2
+
+      - name: Verify immutable sources and unchanged dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C reference rev-parse HEAD)" = 'b6cdfe3574c5e413e03d6cef09d3ce7d67b89f78'
+          test "$(git -C preflight-tool rev-parse HEAD)" = 'e176cf5baa8cbf41f7cc1444b7fc4debdc6f87a8'
+          test "$(git -C preflight-tool rev-parse HEAD^)" = 'b6cdfe3574c5e413e03d6cef09d3ce7d67b89f78'
+          cmp reference/package.json preflight-tool/package.json
+          cmp reference/package-lock.json preflight-tool/package-lock.json
+
+      - name: Set up Node without provider credentials
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+
+      - name: Install locked tools without lifecycle scripts
+        working-directory: preflight-tool
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Read-only Neon preflight - sanitized JSON report only
+        working-directory: preflight-tool
+        env:
+          VERCEL: '1'
+          VERCEL_ENV: preview
+          VERCEL_TARGET_ENV: clara-os-recette
+          CLARA_RECETTE_MODE: isolated-v1
+          CLARA_RECETTE_NEON_BRANCH_ID: br-crimson-feather-b2zr00sf
+          CLARA_RECETTE_NEON_HOST: ${{ vars.CLARA_RECETTE_NEON_HOST }}
+          NEON_API_KEY_PERMISSION_REVIEW: ${{ vars.NEON_API_KEY_PERMISSION_REVIEW }}
+          NEON_API_KEY_REVIEW_PROJECT: ${{ vars.NEON_API_KEY_REVIEW_PROJECT }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+        run: node --import tsx src/scripts/check-recette-neon-cloud.mts --check-cloud --confirm=br-crimson-feather-b2zr00sf
