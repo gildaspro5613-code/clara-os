@@ -74,7 +74,9 @@ test("Recette denies ElevenLabs API before API key access and network", async ()
   process.env.CLARA_OS_RUNTIME_MODE = "recette";
   try {
     const { ElevenLabsEngine } = await import("../lib/connectors/internal/elevenlabs/elevenlabs-engine");
-    await assert.rejects(() => new ElevenLabsEngine().getModels(), /RECETTE_EXTERNAL_EXECUTION_DENIED/);
+    const result = await new ElevenLabsEngine().getModels();
+    assert.equal(result.success, false);
+    assert.match(result.error ?? "", /RECETTE_EXTERNAL_EXECUTION_DENIED/);
   } finally {
     if (originalMode === undefined) delete process.env.CLARA_OS_RUNTIME_MODE;
     else process.env.CLARA_OS_RUNTIME_MODE = originalMode;
