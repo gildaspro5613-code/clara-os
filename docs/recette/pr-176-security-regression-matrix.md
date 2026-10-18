@@ -69,3 +69,13 @@ Contrôle GitHub Actions sur commit `5d3ca8a8` : sécurité Recette #39139547974
 - Le code de résolution de session exige `expires_at > NOW()` et `revoked_at IS NULL`, puis une appartenance non révoquée. Les agrégats confirment la situation du jeu fictif, **pas** une preuve E2E de refus par l'API ni un test de révocation.
 - Ne pas renouveler la session par écriture SQL ; utiliser le workflow manuel de fixture dédié, avec contrôle de branche et sans divulguer de jeton.
 - Les scénarios de révocation et de retrait d'appartenance restent **NON TESTÉS en base** ; aucune suppression ni modification de données n'a été réalisée.
+
+## Audit de dépendances confirmé par CI — 18/10/2026
+
+Workflow `Clara OS Recette - offline security regression` #36 (run 39149063970) : succès des tests et de l'inventaire, **pas** de correction ni de validation de sécurité des dépendances. `npm audit --omit=dev --json` signale cinq paquets de production : `next` (critique, direct, plage vulnérable `16.0.0 - 16.3.7`), `axios` (élevée, transitif, `1.0.0 - 1.19.0`), `brace-expansion` (élevée, transitif, `2.0.0 - 2.1.6`), `sharp` (élevée, transitif, `<=0.35.5-rc.1`) et `qs` (modérée, transitif, `2.2.5 - 6.15.3`). `fixAvailable=true` pour chacun selon npm. Ne pas confondre avec les 13 alertes de `npm ci`, qui incluent les dépendances de développement.
+
+**Gate dépendances : NO-GO** tant qu'une branche isolée n'a pas prouvé les versions résolues non vulnérables, le build, les tests ciblés, les migrations et les E2E. Aucune mise à jour forcée ni modification de production autorisée.
+
+**Gate réseau : ouvert.** Les protections connues (IONOS, Brevo, Google, Make, ElevenLabs TTS/STT/session, téléphonie, Clara Live) ont été vérifiées par tests ciblés ; pas de preuve exhaustive des autres appels HTTP/SDK, webhooks, OAuth ou stockage. Une analyse systématique de toutes les routes et transports reste nécessaire.
+
+**Gate API runtime : ouvert.** La session fictive valide et l'appartenance active sont attestées par SQL en lecture seule. Les tests SQL injectés couvrent la logique de révocation, pas le refus HTTP en runtime isolé. Avant une recette fonctionnelle, tester sans jetons dans les logs : 401 cookie absent/malformé, 403 workspace/session étrangère, rôle insuffisant, puis scénarios de révocation via fixture autorisée et auditée. Ne pas révoquer la seule session active par écriture SQL ad hoc.
