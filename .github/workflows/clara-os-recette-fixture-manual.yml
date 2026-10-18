@@ -25,12 +25,12 @@ jobs:
       - name: Checkout immutable reviewed fixture implementation
         uses: actions/checkout@v4
         with:
-          ref: 3947560fbac9af1c90f5dd0e293eb9017b295d1c
+          ref: 044ac71ce3a339f0e8f2ab729f65d1117ad94924
           persist-credentials: false
       - name: Verify immutable source
         shell: bash
         run: |
-          test "$(git rev-parse HEAD)" = "3947560fbac9af1c90f5dd0e293eb9017b295d1c"
+          test "$(git rev-parse HEAD)" = "044ac71ce3a339f0e8f2ab729f65d1117ad94924"
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
