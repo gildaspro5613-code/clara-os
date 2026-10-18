@@ -7,8 +7,8 @@ import {fixture,preflightRecetteFixture,seedRecetteFixture,newRecetteFixtureToke
 import {GET as registry} from '../app/api/canonical/registry/route';
 import {POST as redeem} from '../app/api/auth/recette/session/route';
 
-const url='postgresql://clara_os_recette_limited:synthetic@ep-recette-test.eu-central-1.aws.neon.tech/neondb?sslmode=require';
-const env={VERCEL:'1',VERCEL_ENV:'preview',VERCEL_TARGET_ENV:'clara-os-recette',CLARA_RECETTE_MODE:'isolated-v1',CLARA_RECETTE_NEON_HOST:'ep-recette-test.eu-central-1.aws.neon.tech',CLARA_RECETTE_NEON_BRANCH_ID:fixture.branch,DATABASE_URL:url,NEON_API_KEY:'synthetic-metadata-token'};
+const url='postgresql://clara_os_recette_limited:synthetic@ep-aged-forest-b2wayach.c-6.eu-central-1.aws.neon.tech/neondb?sslmode=require';
+const env={VERCEL:'1',VERCEL_ENV:'preview',VERCEL_TARGET_ENV:'clara-os-recette',CLARA_RECETTE_MODE:'isolated-v1',CLARA_RECETTE_NEON_HOST:'ep-aged-forest-b2wayach.c-6.eu-central-1.aws.neon.tech',CLARA_RECETTE_NEON_BRANCH_ID:fixture.branch,DATABASE_URL:url};
 const hash=(token:string)=>createHash('sha256').update(token).digest('hex');
 const quote=(v:unknown)=>v===null?'NULL':"'"+String(v).replaceAll("'","''")+"'";
 
@@ -63,12 +63,12 @@ test('offline fictional provisioning and real canonical auth handlers on disposa
  const token=newRecetteFixtureToken();assert.notEqual(token,newRecetteFixtureToken());
  const get=(value?:string)=>registry(new Request('https://recette.invalid/api/canonical/registry',{headers:value?{cookie:'clara_auth_session='+value}:{}}));
  const login=(value:string)=>redeem(new Request('https://recette.invalid/api/auth/recette/session',{method:'POST',headers:{origin:'https://recette.invalid','content-type':'application/x-www-form-urlencoded'},body:new URLSearchParams({workspaceId:fixture.workspace,token:value})}));
- await t.test('missing session is 401; false branch, target and metadata are refused before SQL or writes',async()=>{
+ await t.test('missing session is 401; false branch, target and unverified endpoint are refused before SQL or writes',async()=>{
   assert.equal((await get()).status,401);
   const before=sqlCalls;
   await assert.rejects(preflightRecetteFixture({...env,CLARA_RECETTE_NEON_BRANCH_ID:'main'},query,metadata),/RECETTE_DATABASE_REFUSED/);
   await assert.rejects(preflightRecetteFixture({...env,VERCEL_ENV:'production'},query,metadata),/RECETTE_CONFIGURATION_REFUSED/);
-  await assert.rejects(preflightRecetteFixture(env,query,async()=>Response.json({endpoints:[{host:env.CLARA_RECETTE_NEON_HOST,branch_id:'other'}]})),/RECETTE_ENDPOINT_BRANCH_UNPROVEN/);
+  await assert.rejects(preflightRecetteFixture({...env,CLARA_RECETTE_NEON_HOST:'ep-other-host.c-6.eu-central-1.aws.neon.tech',DATABASE_URL:'postgresql://clara_os_recette_limited:synthetic@ep-other-host.c-6.eu-central-1.aws.neon.tech/neondb?sslmode=require'},query,metadata),/RECETTE_ENDPOINT_BRANCH_UNPROVEN/);
   assert.equal(sqlCalls,before);assert.equal(writeBatches,0);
  });
  await t.test('real limited role preflight; absent INSERT privilege stops before writes',async()=>{
