@@ -1,6 +1,9 @@
 name: Clara OS Recette — manual fictional session
 
 on:
+  pull_request:
+    paths:
+      - '.github/workflows/clara-os-recette-fixture-manual.yml'
   workflow_dispatch:
     inputs:
       confirm_branch:
@@ -16,8 +19,29 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  offline-security-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout immutable reviewed fixture implementation
+        uses: actions/checkout@v4
+        with:
+          ref: 044ac71ce3a339f0e8f2ab729f65d1117ad94924
+          persist-credentials: false
+      - name: Verify immutable source
+        run: test "$(git rev-parse HEAD)" = "044ac71ce3a339f0e8f2ab729f65d1117ad94924"
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts
+      - name: Run isolated provisioning tests
+        run: node --import tsx --test src/tests/recette-provisioning-http-contract.test.ts src/tests/recette-auth-provisioning.test.ts
   provision:
-    if: ${{ inputs.confirm_branch == 'br-crimson-feather-b2zr00sf' }}
+    needs: offline-security-tests
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.confirm_branch == 'br-crimson-feather-b2zr00sf' }}
     runs-on: ubuntu-latest
     environment: clara-os-recette-fixture
     timeout-minutes: 10
