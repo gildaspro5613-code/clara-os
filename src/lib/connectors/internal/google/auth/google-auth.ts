@@ -26,9 +26,11 @@ export class GoogleAuth {
   constructor(
     private readonly connections: ConnectionRepository =
       new DatabaseConnectionRepository(),
-    private readonly credentials = new CredentialStore(),
+    private readonly credentials?: CredentialStore,
     private readonly clientFactory: () => OAuth2Client = createGoogleOAuthClient,
   ) {}
+
+  private get credentialStore(): CredentialStore { return this.credentials ?? new CredentialStore(); }
 
   async createClient(connectionId?: string): Promise<OAuth2Client> {
     assertRecetteExternalExecutionBlocked("google.oauth-client");
@@ -53,7 +55,7 @@ export class GoogleAuth {
     if (!connection || connection.status !== ConnectionStatus.ACTIVE) {
       throw new GoogleReauthRequiredError();
     }
-    const stored = await this.credentials.get<OAuthTokenSet & Credentials>(connection.id);
+    const stored = await this.credentialStore.get<OAuthTokenSet & Credentials>(connection.id);
     const usesLegacyShape = !stored?.accessToken;
     const normalized: OAuthTokenSet = !usesLegacyShape ? stored : {
       accessToken: stored?.access_token ?? "",
@@ -97,7 +99,7 @@ export class GoogleAuth {
     update: Credentials,
     usesLegacyShape: boolean,
   ): Promise<void> {
-    const current = await this.credentials.get<OAuthTokenSet>(connectionId);
+    const current = await this.credentialStore.get<OAuthTokenSet>(connectionId);
     const merged = mergeOAuthTokens(current?.accessToken ? current : previous, {
       accessToken: update.access_token ?? current?.accessToken ?? previous.accessToken,
       refreshToken: update.refresh_token ?? undefined,
@@ -105,6 +107,6 @@ export class GoogleAuth {
       expiresAt: update.expiry_date ?? undefined,
       scope: update.scope?.split(" ").filter(Boolean),
     });
-    await this.credentials.set(connectionId, usesLegacyShape ? toGoogleCredentials(merged) : merged);
+    await this.credentialStore.set(connectionId, usesLegacyShape ? toGoogleCredentials(merged) : merged);
   }
 }
