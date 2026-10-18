@@ -34,3 +34,14 @@ Statut : **audit uniquement — NO-GO Production**.
 Parcours fictif dans **l'interface cible** : ouverture cockpit → création/sélection mission → conversation Clara simulée → document fictif → journal durable → retour cockpit. Aucune action fournisseur réelle, aucune contamination inter-espace, aucun accès Production/Live.
 
 **Aucun GO déploiement, aucune validation fonctionnelle complète tant que les points ci-dessus ne sont pas prouvés.**
+
+## Attestation structurelle Neon — 18/10/2026
+
+Branche inspectée en lecture seule : `br-crimson-feather-b2zr00sf` du projet Recette isolé.
+
+- Confirmé par l'inventaire du schéma : `clara_auth_sessions`, `clara_auth_identities`, `clara_native_conversation_messages`, `clara_native_journal_scope`, `clara_native_resource_authority`, `clara_registry_clients`, `clara_registry_client_access`.
+- Confirmé par l'inventaire ou la liste des routines : `clara_native_read_session`, `clara_native_runtime_command`, `clara_native_chat_command`, `clara_native_history`, `clara_registry_command`, `clara_registry_pending`.
+- Une session fictive active a été observée au moment du contrôle, expirant à `2026-10-18T12:00:43Z`. Ce constat ne vaut pas garantie de validité lors du déploiement futur.
+- Les lectures complémentaires des appartenances et identités ont été refusées par les contrôles de sécurité de l'outil ; aucune tentative de contournement n'a été faite.
+
+**Conclusion :** compatibilité de présence, pas attestation des données, des permissions ni de la conformité de migration. Aucun GO déploiement.
