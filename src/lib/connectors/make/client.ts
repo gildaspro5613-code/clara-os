@@ -1,3 +1,4 @@
+import { assertRecetteExternalExecutionBlocked } from "@/lib/recette/external-execution-guard";
 import type {
   MakeScenarioConfiguration,
   MakeScenarioExecutionResult,
@@ -87,6 +88,7 @@ export class MakeWebhookClient {
   constructor(private readonly fetcher: MakeFetch = fetch) {}
 
   async execute(configuration: MakeScenarioConfiguration, invocation: MakeScenarioInvocation): Promise<MakeScenarioExecutionResult> {
+    assertRecetteExternalExecutionBlocked('make.webhook');
     const url = assertWebhookUrl(configuration.url);
     const headers = assertHeaders(configuration.headers);
     const controller = new AbortController();
