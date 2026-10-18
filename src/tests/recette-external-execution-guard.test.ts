@@ -102,3 +102,26 @@ test("Recette denies telephony outbound call without provider credentials", asyn
     assert.match(result.error ?? "", /RECETTE_EXTERNAL_EXECUTION_DENIED/);
   } finally { if (originalMode === undefined) delete process.env.CLARA_OS_RUNTIME_MODE; else process.env.CLARA_OS_RUNTIME_MODE = originalMode; }
 });
+
+test("Recette project identity denies external execution even with missing or incorrect runtime mode", () => {
+  const priorMode = process.env.CLARA_OS_RUNTIME_MODE;
+  const priorProject = process.env.VERCEL_PROJECT_ID;
+  try {
+    process.env.VERCEL_PROJECT_ID = "prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz";
+    for (const mode of [undefined, "production", "typo"]) {
+      if (mode === undefined) delete process.env.CLARA_OS_RUNTIME_MODE;
+      else process.env.CLARA_OS_RUNTIME_MODE = mode;
+      assert.throws(() => assertRecetteExternalExecutionBlocked("make.webhook"), /RECETTE_EXTERNAL_EXECUTION_DENIED/);
+      const decision = authorizeCapability("make.scenario.execute", {actorId:"fictional", workspaceId:"fictional", plan:"premium", approvedCapabilityIds:["make.scenario.execute"]});
+      assert.equal(decision.allowed, false);
+    }
+    process.env.VERCEL_PROJECT_ID = "prj_unrelated";
+    delete process.env.CLARA_OS_RUNTIME_MODE;
+    assert.doesNotThrow(() => assertRecetteExternalExecutionBlocked("make.webhook"));
+  } finally {
+    if (priorMode === undefined) delete process.env.CLARA_OS_RUNTIME_MODE;
+    else process.env.CLARA_OS_RUNTIME_MODE = priorMode;
+    if (priorProject === undefined) delete process.env.VERCEL_PROJECT_ID;
+    else process.env.VERCEL_PROJECT_ID = priorProject;
+  }
+});
