@@ -75,7 +75,7 @@ export interface CommercialApprovalResult {
   success: boolean;
   message: string;
   approvalRequest?: ToolApprovalRequest;
-  code?: "PLAN_REQUIRED" | "APPROVAL_REQUIRED";
+  code?: "PLAN_REQUIRED" | "APPROVAL_REQUIRED" | "RECETTE_EXTERNAL_EXECUTION_DENIED";
 }
 
 export interface CommercialApprovalBridge {
