@@ -49,13 +49,16 @@ export async function preflightRecetteFixture(env:NodeJS.ProcessEnv,query:NeonQu
    ('clara_workspace_memberships','user_id',true),('clara_workspace_memberships','workspace_id',true),('clara_workspace_memberships','role',true),('clara_workspace_memberships','revoked_at',false),
    ('clara_auth_sessions','token_hash',true),('clara_auth_sessions','user_id',true),('clara_auth_sessions','expires_at',true),('clara_auth_sessions','revoked_at',false)) AS required(name,col,writes)
   GROUP BY name`;
+ const renewalGrant=await query`SELECT has_column_privilege(current_user,'public.clara_auth_sessions','expires_at','UPDATE') AS allowed`;
+ if(renewalGrant[0]?.allowed!==true)throw Error('RECETTE_PROVISIONING_RENEWAL_PRIVILEGE_REQUIRED');
  if(permissions.length!==5||permissions.some(p=>p.can_read!==true||p.can_insert!==true))
   throw Error('RECETTE_PROVISIONING_PRIVILEGES_REQUIRED');
 }
 
 /** Transactional, fixed namespace only. No reassignment, resurrection or schema DDL.
  * The advisory lock serializes this fixture's initializers. Revoked/expired tokens
- * are never renewed, and a second secret file cannot create a parallel live token. */
+ * are renewed only for the same protected token when expired but not revoked;
+ * a second secret file cannot create a parallel live token. */
 export function seedRecetteFixture(query:NeonQueryFunction<false,false>,token:string){
  const hash=sessionTokenDigest(token);if(!hash)throw Error('RECETTE_FIXTURE_TOKEN_INVALID');
  return query.transaction([
@@ -81,11 +84,14 @@ export function seedRecetteFixture(query:NeonQueryFunction<false,false>,token:st
   query`SELECT set_config('clara.recette.fixture_hash',${hash},true)`,
   query`DO $$ BEGIN
    IF EXISTS(SELECT 1 FROM public.clara_auth_sessions WHERE token_hash=current_setting('clara.recette.fixture_hash') AND
-     (user_id<>'recette-176-fictional-user-v1' OR revoked_at IS NOT NULL OR expires_at<=NOW()))
+     (user_id<>'recette-176-fictional-user-v1' OR revoked_at IS NOT NULL))
     THEN RAISE EXCEPTION 'RECETTE_FIXTURE_SESSION_UNUSABLE'; END IF;
    IF EXISTS(SELECT 1 FROM public.clara_auth_sessions WHERE user_id='recette-176-fictional-user-v1' AND token_hash<>current_setting('clara.recette.fixture_hash') AND revoked_at IS NULL AND expires_at>NOW())
     THEN RAISE EXCEPTION 'RECETTE_FIXTURE_SESSION_ALREADY_ACTIVE'; END IF;
   END $$`,
+  query`UPDATE public.clara_auth_sessions SET expires_at=NOW()+INTERVAL '1 hour'
+   WHERE token_hash=${hash} AND user_id='recette-176-fictional-user-v1'
+   AND revoked_at IS NULL AND expires_at<=NOW()`,
   query`INSERT INTO public.clara_auth_sessions(token_hash,user_id,expires_at)
    VALUES(${hash},'recette-176-fictional-user-v1',NOW()+INTERVAL '1 hour') ON CONFLICT DO NOTHING`,
  ],{isolationLevel:'Serializable'});
