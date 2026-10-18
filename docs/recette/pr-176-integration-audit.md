@@ -53,3 +53,11 @@ Branche inspectée en lecture seule : `br-crimson-feather-b2zr00sf` du projet Re
 - La suite `src/tests/recette-auth-isolation.test.ts` utilise un accès SQL injecté et fictif pour contrôler les refus de session expirée/révoquée, appartenance révoquée/absente, rôles insuffisants, cookies et sélecteurs invalides. **Elle n'écrit pas dans Neon.**
 - Lecture seule Neon Recette antérieure : 1 session expirée non révoquée, 0 session active non révoquée. Aucun test de révocation en base réelle n'a été exécuté.
 - **Porte offline : GO pour poursuivre les vérifications préparatoires. Porte fonctionnelle et déploiement Recette : NO-GO.** Pré-requis restants : session fictive valide renouvelée via workflow manuel, contrôles de sécurité exécutés contre runtime isolé, compatibilité migrations et audit dépendances, protections réseau exhaustives, parcours E2E de l'interface de la PR #176.
+
+## Renouvellement de la session fictive — 18/10/2026
+
+- Workflow manuel `Clara OS Recette — manual fictional session` #17 : `offline-security-tests` et `provision` terminés avec succès, déclenché depuis `main`, ciblant la branche Neon isolée `br-crimson-feather-b2zr00sf`.
+- Vérification indépendante Neon en lecture seule sous `clara_os_recette_limited` : **1 session valide non révoquée**, **1 appartenance active non révoquée** au moment du contrôle. Aucun jeton ni identifiant personnel consulté.
+- Quatre workflows GitHub Actions réussis sur le correctif `f1af4967` : sécurité Recette #39144968226, Microsoft #39144968164, Production P0 #39144968089, authenticated workspace #39144968305.
+- Le correctif de la route STT ElevenLabs bloque les appels sortants en mode Recette avant lecture de la clé ; cela ne remplace pas l'audit réseau exhaustif.
+- **Porte fixture : GO (présence en base)**. **Porte runtime/API, dépendances, réseau exhaustif et E2E : NO-GO**. Aucune autorisation de déploiement.
