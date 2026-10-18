@@ -45,3 +45,11 @@ Branche inspectée en lecture seule : `br-crimson-feather-b2zr00sf` du projet Re
 - Les lectures complémentaires des appartenances et identités ont été refusées par les contrôles de sécurité de l'outil ; aucune tentative de contournement n'a été faite.
 
 **Conclusion :** compatibilité de présence, pas attestation des données, des permissions ni de la conformité de migration. Aucun GO déploiement.
+
+## Porte authentification et isolation — 18/10/2026
+
+- Commit testé : `f143a6de95b6b3d262ace3324385dfbdd3964314`.
+- Workflows GitHub Actions **SUCCESS** : sécurité Recette #39142428046, Authenticated workspace #39142428163, Production P0 #39142428126, Microsoft connector #39142428056.
+- La suite `src/tests/recette-auth-isolation.test.ts` utilise un accès SQL injecté et fictif pour contrôler les refus de session expirée/révoquée, appartenance révoquée/absente, rôles insuffisants, cookies et sélecteurs invalides. **Elle n'écrit pas dans Neon.**
+- Lecture seule Neon Recette antérieure : 1 session expirée non révoquée, 0 session active non révoquée. Aucun test de révocation en base réelle n'a été exécuté.
+- **Porte offline : GO pour poursuivre les vérifications préparatoires. Porte fonctionnelle et déploiement Recette : NO-GO.** Pré-requis restants : session fictive valide renouvelée via workflow manuel, contrôles de sécurité exécutés contre runtime isolé, compatibilité migrations et audit dépendances, protections réseau exhaustives, parcours E2E de l'interface de la PR #176.
