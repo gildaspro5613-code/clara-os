@@ -1,7 +1,7 @@
 name: Native resource authority validation
 on:
   pull_request:
-    branches: [main, consolidation/clara-os-clean-base, fix/os-operational-reception-175]
+    branches: [main, consolidation/clara-os-clean-base, fix/os-operational-reception-175, chore/recette-session-diagnostic-base-20261018]
     paths:
       - 'src/lib/native/**'
       - 'src/lib/external-capabilities/product-callback.ts'
@@ -89,7 +89,7 @@ jobs:
       - run: npx eslint src/lib/recette src/app/recette src/app/api/auth/recette src/tests/recette-isolation.test.ts
   native-authority:
     # The stacked recette PR runs its targeted gate; original reception gate is unchanged.
-    if: github.base_ref != 'fix/os-operational-reception-175'
+    if: github.base_ref != 'fix/os-operational-reception-175' && github.base_ref != 'chore/recette-session-diagnostic-base-20261018'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
