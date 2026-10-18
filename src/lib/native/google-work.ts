@@ -176,6 +176,7 @@ export class NativeGoogleWork {
 }
 /** Durable claim/approval BEFORE HTTP; finish+receipt+Mission+Journal in one PG commit. */
 export async function executeGoogleWork(request:Request,connectionId:string,operationId:string,reviewHash:string,confirm:boolean,clients?:GoogleClientFactory,query?:RegistryQuery,reconcile=false):Promise<Record<string,unknown>>{
+ assertRecetteExternalExecutionBlocked('google.native-work.execute');
  let plan!:GooglePlan,job!:Job,work!:NativeGoogleWork;const ownerToken=randomUUID();
  const committedReview=()=>withNativeScope(request,false,async()=>{const saved=await(await new NativeGoogleWork(connectionId,clients).initialize(false)).review(operationId);return {...saved,success:saved.status==='completed'};},query);
  const readTerminal=async()=>{try{const saved=await committedReview();if(saved.status==='completed'||saved.status==='failed')return saved;}catch{/* Current access and availability still govern receipt consultation. */}return undefined;};
