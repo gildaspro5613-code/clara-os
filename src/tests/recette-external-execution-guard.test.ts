@@ -3,6 +3,7 @@ import test from "node:test";
 import { authorizeCapability } from "../lib/capabilities/capability-policy";
 import { authorizePhysicalExecution } from "../lib/connectors/clara-live/execution-authority";
 import { assertRecetteExternalExecutionBlocked } from "../lib/recette/external-execution-guard";
+import { BrevoClient } from "../lib/connectors/brevo/client";
 
 const originalMode = process.env.CLARA_OS_RUNTIME_MODE;
 const originalUrl = process.env.CLARA_LIVE_BASE_URL;
@@ -42,5 +43,18 @@ test("Recette denies physical execution before credentials and transport", async
     else process.env.CLARA_LIVE_BASE_URL = originalUrl;
     if (originalToken === undefined) delete process.env.CLARA_OS_PRODUCT_TOKEN;
     else process.env.CLARA_OS_PRODUCT_TOKEN = originalToken;
+  }
+});
+
+test("Recette denies direct Brevo client transport", async () => {
+  process.env.CLARA_OS_RUNTIME_MODE = "recette";
+  let calls = 0;
+  try {
+    const client = new BrevoClient({accessToken:"fictional",fetch:async()=>{calls++;throw new Error("NETWORK_CALLED");}});
+    await assert.rejects(() => client.searchContacts({identifier:"fictional@example.invalid"}), /RECETTE_EXTERNAL_EXECUTION_DENIED/);
+    assert.equal(calls,0);
+  } finally {
+    if (originalMode === undefined) delete process.env.CLARA_OS_RUNTIME_MODE;
+    else process.env.CLARA_OS_RUNTIME_MODE = originalMode;
   }
 });
