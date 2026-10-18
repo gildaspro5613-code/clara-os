@@ -35,7 +35,7 @@ test('offline fictional provisioning and real canonical auth handlers on disposa
  GRANT SELECT(id),INSERT(id) ON clara_auth_users,clara_auth_workspaces TO clara_os_recette_limited;
  GRANT SELECT(issuer,subject,user_id),INSERT(issuer,subject,user_id) ON clara_auth_identities TO clara_os_recette_limited;
  GRANT SELECT(user_id,workspace_id,role,revoked_at),INSERT(user_id,workspace_id,role) ON clara_workspace_memberships TO clara_os_recette_limited;
- GRANT SELECT(token_hash,user_id,expires_at,revoked_at),INSERT(token_hash,user_id,expires_at) ON clara_auth_sessions TO clara_os_recette_limited;`);
+ GRANT SELECT(token_hash,user_id,expires_at,revoked_at),INSERT(token_hash,user_id,expires_at),UPDATE(expires_at) ON clara_auth_sessions TO clara_os_recette_limited;`);
  let sqlCalls=0,writeBatches=0;
  neonConfig.fetchFunction=async (_input,init)=>{
   sqlCalls++;const body=JSON.parse(String(init?.body));
@@ -142,10 +142,15 @@ test('offline fictional provisioning and real canonical auth handlers on disposa
   await assert.rejects(seedRecetteFixture(query,token));
   pg(`INSERT INTO clara_workspace_memberships VALUES(${quote(fixture.user)},${quote(fixture.workspace)},'owner',NULL)`);
  });
- await t.test('expired and revoked sessions are refused and never renewed by replay',async()=>{
+ await t.test('revoked sessions are refused; expired non-revoked same-token session renews once',async()=>{
   pg(`UPDATE clara_auth_sessions SET revoked_at=now() WHERE token_hash=${quote(hash(token))}`);
   assert.equal((await login(token)).status,403);assert.deepEqual((await (await get(token)).json()).data,[]);await assert.rejects(seedRecetteFixture(query,token));
   pg(`UPDATE clara_auth_sessions SET revoked_at=NULL,created_at=now()-interval '2 hours',expires_at=now()-interval '1 minute' WHERE token_hash=${quote(hash(token))}`);
-  assert.equal((await login(token)).status,403);assert.deepEqual((await (await get(token)).json()).data,[]);await assert.rejects(seedRecetteFixture(query,token));
+  assert.equal((await login(token)).status,403);assert.deepEqual((await (await get(token)).json()).data,[]);await seedRecetteFixture(query,token);
+  assert.equal(pg(`SELECT count(*) FROM clara_auth_sessions WHERE token_hash=${quote(hash(token))} AND revoked_at IS NULL AND expires_at>now()`).trim(),'1');
+  const renewedExpiry=pg(`SELECT expires_at FROM clara_auth_sessions WHERE token_hash=${quote(hash(token))}`);
+  await seedRecetteFixture(query,token);
+  assert.equal(pg(`SELECT expires_at FROM clara_auth_sessions WHERE token_hash=${quote(hash(token))}`),renewedExpiry);
+  assert.equal((await login(token)).status,303);
  });
 });
