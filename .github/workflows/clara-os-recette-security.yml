@@ -46,6 +46,7 @@ jobs:
               console.log("RECETTE_PRODUCTION_DEPENDENCY_VULNERABILITIES",JSON.stringify(counts));
               const critical=Object.entries(report.vulnerabilities??{}).filter(([,v])=>v.severity==="critical").map(([name])=>name);
               console.log("RECETTE_CRITICAL_PACKAGE_NAMES",JSON.stringify(critical));
+              console.log("RECETTE_AFFECTED_PACKAGES",JSON.stringify(Object.entries(report.vulnerabilities??{}).map(([name,v])=>({name,severity:v.severity,isDirect:v.isDirect,range:v.range,fixAvailable:v.fixAvailable}))));
               console.log("RECETTE_DEPENDENCY_GATE_PENDING_REVIEW");
             }
           '
