@@ -1,0 +1,27 @@
+name: Recette fictional session renewal validation
+on:
+  pull_request:
+    branches: [chore/recette-renewal-review-base-20261018]
+    paths:
+      - 'src/lib/recette/fixture-provisioning.ts'
+      - 'src/tests/recette-auth-provisioning.test.ts'
+      - '.github/workflows/recette-renewal-validation.yml'
+permissions:
+  contents: read
+jobs:
+  isolated-renewal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Disposable PostgreSQL auth, renewal, revocation and idempotence
+        run: node --import tsx --test src/tests/recette-auth-provisioning.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit --pretty false
+      - name: Targeted ESLint
+        run: npx eslint src/lib/recette/fixture-provisioning.ts src/tests/recette-auth-provisioning.test.ts
