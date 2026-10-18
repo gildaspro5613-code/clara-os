@@ -73,18 +73,15 @@ jobs:
       - name: Targeted offline security and provisioning tests (disposable PostgreSQL only)
         run: |
           node --import tsx --test src/tests/recette-provisioning-http-contract.test.ts src/tests/recette-auth-provisioning.test.ts
-      - name: Read-only preflight with sanitized failure category
+      - name: Read-only preflight with staged sanitized failure codes
         shell: bash
         env:
           DATABASE_URL: ${{ secrets.RECETTE_LIMITED_DATABASE_URL }}
-          RECETTE_FIXTURE_SESSION_TOKEN: ${{ secrets.RECETTE_FIXTURE_SESSION_TOKEN }}
           VERCEL: '1'
           VERCEL_TARGET_ENV: clara-os-recette
           CLARA_RECETTE_MODE: isolated-v1
           CLARA_RECETTE_NEON_BRANCH_ID: br-crimson-feather-b2zr00sf
           CLARA_RECETTE_NEON_HOST: ep-aged-forest-b2wayach.c-6.eu-central-1.aws.neon.tech
-          GITHUB_ACTIONS: 'true'
-          GITHUB_EVENT_NAME: workflow_dispatch
         run: |
           node --import tsx --input-type=module -e '
             let stage = "MODULE_IMPORT";
@@ -95,19 +92,50 @@ jobs:
               "RECETTE_PROVISIONING_CAPABILITIES_REQUIRED",
               "RECETTE_PROVISIONING_PRIVILEGES_REQUIRED"
             ]);
+            const sqlStates = {
+              "28P01": "DB_PASSWORD_AUTH_REJECTED",
+              "28000": "DB_AUTHORIZATION_REJECTED",
+              "42501": "DB_SQL_PERMISSION_DENIED",
+              "42P01": "DB_REQUIRED_TABLE_MISSING",
+              "42703": "DB_REQUIRED_COLUMN_MISSING",
+              "3D000": "DB_DATABASE_MISSING",
+              "53300": "DB_CONNECTIONS_EXHAUSTED",
+              "57P03": "DB_COMPUTE_UNAVAILABLE",
+              "08001": "DB_CONNECTION_FAILED",
+              "08006": "DB_CONNECTION_LOST"
+            };
             try {
               const { neon } = await import("@neondatabase/serverless");
               const { preflightRecetteFixture } = await import("./src/lib/recette/fixture-provisioning.ts");
+              const { recetteDatabase } = await import("./src/lib/recette/policy.ts");
+              stage = "CONFIGURATION";
+              recetteDatabase(process.env);
+              const query = neon(process.env.DATABASE_URL);
+              stage = "CONNECT_SELECT_1";
+              await query`SELECT 1 AS ok`;
+              let next = 0;
+              const stages = ["ROLE", "CAPABILITIES", "COLUMN_GRANTS"];
+              const stagedQuery = (strings, ...values) => {
+                stage = stages[next++] ?? "UNEXPECTED_QUERY";
+                return query(strings, ...values);
+              };
               stage = "PREFLIGHT";
-              await preflightRecetteFixture(process.env, neon(process.env.DATABASE_URL ?? ""), fetch);
+              await preflightRecetteFixture(process.env, stagedQuery, fetch);
               console.log("RECETTE_READ_ONLY_PREFLIGHT_OK");
             } catch (error) {
               const raw = error instanceof Error ? error.message : "";
+              const sqlState = typeof error?.code === "string" ? error.code : "";
+              const httpStatus = Number(error?.status);
+              const statusClass = httpStatus === 401 ? "HTTP_AUTH_REJECTED" :
+                httpStatus === 403 ? "HTTP_PERMISSION_REJECTED" :
+                httpStatus === 429 ? "HTTP_RATE_LIMITED" :
+                [502,503,504].includes(httpStatus) ? "HTTP_BACKEND_UNAVAILABLE" : "";
               const code = [...allowed].find(item => raw === item) ??
                 (raw.startsWith("RECETTE_DATABASE_REFUSED") ? "RECETTE_DATABASE_REFUSED" :
-                stage === "MODULE_IMPORT" ? "RECETTE_MODULE_IMPORT_FAILED" :
-                error instanceof TypeError ? "RECETTE_PREFLIGHT_TYPE_OR_TRANSPORT_FAILED" :
-                "RECETTE_PREFLIGHT_SQL_OR_TRANSPORT_FAILED");
+                (sqlStates[sqlState] ?? statusClass) ||
+                (stage === "MODULE_IMPORT" ? "MODULE_IMPORT_FAILED" :
+                error instanceof TypeError ? "TYPE_OR_TRANSPORT_FAILED" : "UNCLASSIFIED_SQL_OR_TRANSPORT"));
+              console.error("RECETTE_PREFLIGHT_STAGE=" + stage);
               console.error("RECETTE_PREFLIGHT_CATEGORY=" + code);
               process.exitCode = 1;
             }
