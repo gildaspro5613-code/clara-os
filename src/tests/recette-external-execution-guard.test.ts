@@ -82,3 +82,23 @@ test("Recette denies ElevenLabs API before API key access and network", async ()
     else process.env.CLARA_OS_RUNTIME_MODE = originalMode;
   }
 });
+
+test("Recette denies Make webhook without invoking injected fetch", async () => {
+  process.env.CLARA_OS_RUNTIME_MODE = "recette";
+  try {
+    const { MakeWebhookClient } = await import("../lib/connectors/make/client");
+    let called = false;
+    const client = new MakeWebhookClient(async () => { called = true; throw Error("NETWORK_CALLED"); });
+    await assert.rejects(() => client.execute({url:"https://hook.make.com/fictional"}, {scenarioKey:"fictional"} as never), /RECETTE_EXTERNAL_EXECUTION_DENIED/);
+    assert.equal(called, false);
+  } finally { if (originalMode === undefined) delete process.env.CLARA_OS_RUNTIME_MODE; else process.env.CLARA_OS_RUNTIME_MODE = originalMode; }
+});
+test("Recette denies telephony outbound call without provider credentials", async () => {
+  process.env.CLARA_OS_RUNTIME_MODE = "recette";
+  try {
+    const { TelephonyEngine } = await import("../lib/connectors/internal/telephony/telephony-engine");
+    const result = await new TelephonyEngine().outboundCall({operation:"outbound-call",toNumber:"+33123456789"});
+    assert.equal(result.success, false);
+    assert.match(result.error ?? "", /RECETTE_EXTERNAL_EXECUTION_DENIED/);
+  } finally { if (originalMode === undefined) delete process.env.CLARA_OS_RUNTIME_MODE; else process.env.CLARA_OS_RUNTIME_MODE = originalMode; }
+});
