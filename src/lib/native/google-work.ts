@@ -1,3 +1,4 @@
+import { assertRecetteExternalExecutionBlocked } from "@/lib/recette/external-execution-guard";
 import {createHash,randomUUID,randomBytes} from 'node:crypto';
 import type {drive_v3,calendar_v3} from 'googleapis';
 import type {OAuth2Client} from 'google-auth-library';
@@ -157,7 +158,8 @@ export class NativeGoogleWork {
   }
   const authorization=await auth.getRequestHeaders(url);authorization.forEach((v,k)=>headers.set(k,v));if(plan.etag)headers.set('If-Match',plan.etag);
   // Exactly one handoff. No SDK retry, redirect, automatic replay or implicit primary/root.
-  const response=await fetch(url,{method,headers,body,redirect:'error',signal:AbortSignal.timeout(20_000)});if(!response.ok){await response.body?.cancel().catch(()=>{});if([400,401,403,404,412,413].includes(response.status))throw new GoogleWorkRefused(response.status);throw new RegistryError(503,'GOOGLE_WRITE_NOT_CONFIRMED');}
+  assertRecetteExternalExecutionBlocked('google.native-work.mutate');
+   const response=await fetch(url,{method,headers,body,redirect:'error',signal:AbortSignal.timeout(20_000)});if(!response.ok){await response.body?.cancel().catch(()=>{});if([400,401,403,404,412,413].includes(response.status))throw new GoogleWorkRefused(response.status);throw new RegistryError(503,'GOOGLE_WRITE_NOT_CONFIRMED');}
   await response.body?.cancel();
  }
  async verify(plan:GooglePlan):Promise<Receipt>{
