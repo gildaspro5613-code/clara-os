@@ -1,3 +1,4 @@
+import { assertRecetteExternalExecutionBlocked } from "@/lib/recette/external-execution-guard";
 /**
  * ============================================
  * CLARA OS
@@ -69,6 +70,7 @@ export class TelephonyEngine {
     }
 
     try {
+      assertRecetteExternalExecutionBlocked('telephony.outbound-call');
       const response = await fetch(
         `${ELEVENLABS_API_BASE}/convai/twilio/outbound-call`,
         {
