@@ -1,3 +1,4 @@
+import { assertRecetteExternalExecutionBlocked } from "@/lib/recette/external-execution-guard";
 import {nativeContext} from "@/lib/native/scoped-context";
 import {googleAuthority,scopedGoogleCredentialStore,scopedGoogleRepository} from "@/lib/native/google-authority";
 import {RegistryError} from "@/lib/canonical/registry";
@@ -30,6 +31,7 @@ export class GoogleAuth {
   ) {}
 
   async createClient(connectionId?: string): Promise<OAuth2Client> {
+    assertRecetteExternalExecutionBlocked("google.oauth-client");
     if(nativeContext()) {
       if(!connectionId)throw new RegistryError(403,"NATIVE_GOOGLE_EXPLICIT_CONNECTION_REQUIRED");
       const proof=await googleAuthority(connectionId);
