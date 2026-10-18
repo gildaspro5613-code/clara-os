@@ -38,6 +38,9 @@ jobs:
           cache: npm
       - name: Install pinned dependencies
         run: npm ci --ignore-scripts
+      - name: Targeted offline security and provisioning tests (disposable PostgreSQL only)
+        run: |
+          node --import tsx --test src/tests/recette-provisioning-http-contract.test.ts src/tests/recette-auth-provisioning.test.ts
       - name: Provision fictional session on isolated branch
         shell: bash
         env:
@@ -56,4 +59,5 @@ jobs:
           test -n "$DATABASE_URL"
           test -n "$RECETTE_FIXTURE_SESSION_TOKEN"
           test -n "$CLARA_RECETTE_NEON_HOST"
+          node --import tsx src/scripts/provision-recette-fictional.mts --check-cloud --confirm=br-crimson-feather-b2zr00sf
           node --import tsx src/scripts/provision-recette-fictional.mts --apply-cloud --confirm=br-crimson-feather-b2zr00sf
