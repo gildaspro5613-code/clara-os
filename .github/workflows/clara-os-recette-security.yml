@@ -8,6 +8,7 @@ on:
       - 'src/lib/connectors/clara-live/execution-authority.ts'
       - 'src/lib/connectors/brevo/client.ts'
       - 'src/tests/recette-external-execution-guard.test.ts'
+      - 'src/tests/recette-auth-isolation.test.ts'
       - '.github/workflows/clara-os-recette-security.yml'
 permissions:
   contents: read
@@ -26,5 +27,7 @@ jobs:
       - run: npm ci --ignore-scripts
       - name: Recette offline denial contracts
         run: node --import tsx --test src/tests/recette-external-execution-guard.test.ts
+      - name: Recette authentication and isolation contracts
+        run: node --import tsx --test src/tests/recette-auth-isolation.test.ts
       - name: Existing capability policy regression (non-Recette)
         run: node --import tsx --test src/tests/capability-policy.test.ts
