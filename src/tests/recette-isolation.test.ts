@@ -175,6 +175,7 @@ test('installed boundary: real session/internal handlers use only Neon; all othe
   networkCalls++;
   const query=JSON.parse(String(init?.body)).query as string;queries.push(query);
   if(query.includes('SELECT user_id FROM clara_auth_sessions'))return rows('user_id',sessionAllowed?['user-a']:[]);
+  if(query.includes('AS active_fixture'))return Response.json({fields:[{name:'active_fixture',dataTypeID:16},{name:'fixture_membership',dataTypeID:16}],rows:[[false,false]],rowCount:1,command:'SELECT',rowAsArray:true});
   if(query.includes('SELECT workspace_id, role'))return Response.json({fields:[{name:'workspace_id',dataTypeID:25},{name:'role',dataTypeID:25}],rows:[['workspace-a','member']],rowCount:1,command:'SELECT',rowAsArray:true});
   if(query.includes('clara_native_read_session'))return Response.json({fields:[{name:'data',dataTypeID:3802}],rows:[[JSON.stringify({state:'ACTIVE',nativeMissionId:'mission-a',mission:{id:'mission-a',objective:'Recette'}})]],rowCount:1,command:'SELECT',rowAsArray:true});
   throw Error('Unexpected SQL; test must not create identities, sessions or receipts');
