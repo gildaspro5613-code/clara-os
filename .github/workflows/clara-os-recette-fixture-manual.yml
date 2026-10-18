@@ -25,12 +25,12 @@ jobs:
       - name: Checkout immutable reviewed fixture implementation
         uses: actions/checkout@v4
         with:
-          ref: b6cdfe3574c5e413e03d6cef09d3ce7d67b89f78
+          ref: 3947560fbac9af1c90f5dd0e293eb9017b295d1c
           persist-credentials: false
       - name: Verify immutable source
         shell: bash
         run: |
-          test "$(git rev-parse HEAD)" = "b6cdfe3574c5e413e03d6cef09d3ce7d67b89f78"
+          test "$(git rev-parse HEAD)" = "3947560fbac9af1c90f5dd0e293eb9017b295d1c"
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -42,7 +42,6 @@ jobs:
         shell: bash
         env:
           DATABASE_URL: ${{ secrets.RECETTE_LIMITED_DATABASE_URL }}
-          NEON_API_KEY: ${{ secrets.RECETTE_NEON_METADATA_API_KEY }}
           RECETTE_FIXTURE_SESSION_TOKEN: ${{ secrets.RECETTE_FIXTURE_SESSION_TOKEN }}
           # The existing recetteDatabase guard requires these explicit isolation flags.
           # They do not grant Vercel credentials or deploy anything.
@@ -50,12 +49,11 @@ jobs:
           VERCEL_TARGET_ENV: clara-os-recette
           CLARA_RECETTE_MODE: isolated-v1
           CLARA_RECETTE_NEON_BRANCH_ID: br-crimson-feather-b2zr00sf
-          CLARA_RECETTE_NEON_HOST: ${{ vars.RECETTE_NEON_HOST }}
+          CLARA_RECETTE_NEON_HOST: ep-aged-forest-b2wayach.c-6.eu-central-1.aws.neon.tech
           GITHUB_ACTIONS: 'true'
           GITHUB_EVENT_NAME: workflow_dispatch
         run: |
           test -n "$DATABASE_URL"
-          test -n "$NEON_API_KEY"
           test -n "$RECETTE_FIXTURE_SESSION_TOKEN"
           test -n "$CLARA_RECETTE_NEON_HOST"
           node --import tsx src/scripts/provision-recette-fictional.mts --apply-cloud --confirm=br-crimson-feather-b2zr00sf
