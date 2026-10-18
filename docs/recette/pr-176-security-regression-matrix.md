@@ -60,3 +60,12 @@ Contrôle GitHub Actions sur commit `5d3ca8a8` : sécurité Recette #39139547974
 4. Tester cockpit, mission, conversation fictive, document, journal durable, retour cockpit, navigation et refresh avec preuve de persistance et de séparation des scopes.
 5. Conserver le refus réseau des fournisseurs réels pendant toute cette recette. L'activation Twilio/ElevenLabs relève d'une phase distincte et explicitement autorisée.
 6. N'envisager un déploiement **sur le seul projet `clara-os-recette`** qu'après résolution de ces prérequis et décision de GO isolé explicite.
+
+## Contrôle Neon isolé en lecture seule — 18/10/2026
+
+- Branche : `br-crimson-feather-b2zr00sf`, rôle `clara_os_recette_limited`, base `neondb`.
+- Schéma inspecté : `clara_auth_sessions` exige `expires_at > created_at`, référence un utilisateur et expose `revoked_at` ; `clara_workspace_memberships` a une clé composite utilisateur/espace, un rôle contrôlé et `revoked_at`.
+- Requêtes d'agrégats sans identifiants ni jetons : **1 session expirée non révoquée**, **0 session active non révoquée** au moment du contrôle.
+- Le code de résolution de session exige `expires_at > NOW()` et `revoked_at IS NULL`, puis une appartenance non révoquée. Les agrégats confirment la situation du jeu fictif, **pas** une preuve E2E de refus par l'API ni un test de révocation.
+- Ne pas renouveler la session par écriture SQL ; utiliser le workflow manuel de fixture dédié, avec contrôle de branche et sans divulguer de jeton.
+- Les scénarios de révocation et de retrait d'appartenance restent **NON TESTÉS en base** ; aucune suppression ni modification de données n'a été réalisée.
