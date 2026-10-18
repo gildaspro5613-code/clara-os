@@ -143,3 +143,22 @@ test("Recette dedicated deployment marker denies external execution without runt
     if (marker === undefined) delete process.env.CLARA_RECETTE_MODE; else process.env.CLARA_RECETTE_MODE = marker;
   }
 });
+
+test("Recette IONOS IMAP and SMTP are denied before network", async () => {
+  const previousMode = process.env.CLARA_OS_RUNTIME_MODE;
+  process.env.CLARA_OS_RUNTIME_MODE = "recette";
+  try {
+    const { IonosTransport } = await import("../lib/connectors/ionos/transport");
+    const transport = new IonosTransport({
+      address:"clara@melodie.digital", password:"fictional",
+      imapHost:"imap.ionos.fr", imapPort:993,
+      smtpHost:"smtp.ionos.fr", smtpPort:465,
+      folders:["INBOX"], configurationReviewed:true,
+    });
+    await assert.rejects(() => transport.folders(), /RECETTE_EXTERNAL_EXECUTION_DENIED:ionos.imap/);
+    await assert.rejects(() => transport.send({from:"clara@melodie.digital",to:["fictional@example.invalid"],subject:"fictional",text:"fictional",messageId:"fictional",attachments:[]}), /RECETTE_EXTERNAL_EXECUTION_DENIED:ionos.smtp/);
+  } finally {
+    if (previousMode === undefined) delete process.env.CLARA_OS_RUNTIME_MODE;
+    else process.env.CLARA_OS_RUNTIME_MODE = previousMode;
+  }
+});
