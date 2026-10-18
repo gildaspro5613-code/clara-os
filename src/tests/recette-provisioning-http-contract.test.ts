@@ -25,11 +25,13 @@ test('installed Neon SDK sends one Serializable HTTP batch, parses DO/INSERT res
   const headers=new Headers(init?.headers);
   assert.equal(headers.get('Neon-Batch-Isolation-Level'),'Serializable');
   const body=JSON.parse(String(init?.body));
-  assert.equal(body.queries.length,5);
+  assert.equal(body.queries.length,6);
   assert.match(body.queries[0].query,/pg_advisory_xact_lock/);
   assert.match(body.queries[1].query,/DO \$\$/);
   assert.match(body.queries[2].query,/set_config/);
   assert.match(body.queries[3].query,/current_setting/);
+  assert.match(body.queries[4].query,/UPDATE public.clara_auth_sessions/);
+  assert.match(body.queries[5].query,/INSERT INTO public.clara_auth_sessions/);
   assert.ok(!String(init?.body).includes(env.RECETTE_FIXTURE_SESSION_TOKEN));
   if(fail)return Response.json({message:'synthetic serialization failure',code:'40001'},{status:400});
   return Response.json({results:[
@@ -37,12 +39,13 @@ test('installed Neon SDK sends one Serializable HTTP batch, parses DO/INSERT res
    {command:'DO',fields:[],rows:[],rowCount:null},
    {command:'SELECT',fields:[{name:'set_config',dataTypeID:25}],rows:[['synthetic-digest']],rowCount:1},
    {command:'DO',fields:[],rows:[],rowCount:null},
+   {command:'UPDATE',fields:[],rows:[],rowCount:0},
    {command:'INSERT',fields:[],rows:[],rowCount:1},
   ]});
  };
  const sql=neon(env.DATABASE_URL);
  const results=await seedRecetteFixture(sql,env.RECETTE_FIXTURE_SESSION_TOKEN);
- assert.equal(calls,1);assert.deepEqual(results[1],[]);assert.deepEqual(results[4],[]);
+ assert.equal(calls,1);assert.deepEqual(results[1],[]);assert.deepEqual(results[4],[]);assert.deepEqual(results[5],[]);
  fail=true;
  await assert.rejects(seedRecetteFixture(sql,env.RECETTE_FIXTURE_SESSION_TOKEN),{code:'40001'});
  assert.equal(calls,2); // no automatic retry or false successful receipt
