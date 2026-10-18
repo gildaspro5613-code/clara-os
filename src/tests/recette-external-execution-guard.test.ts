@@ -59,3 +59,13 @@ test("Recette denies direct Brevo client transport", async () => {
   }
 });
 test("Recette denies Google OAuth client before repository and provider access", async () => {  process.env.CLARA_OS_RUNTIME_MODE = "recette";  try {    const { GoogleAuth } = await import("../lib/connectors/internal/google/auth/google-auth");    await assert.rejects(() => new GoogleAuth().createClient("fictional"), /RECETTE_EXTERNAL_EXECUTION_DENIED/);  } finally {    if (originalMode === undefined) delete process.env.CLARA_OS_RUNTIME_MODE;    else process.env.CLARA_OS_RUNTIME_MODE = originalMode;  }});
+test("Recette denies native Google work before DB claim or HTTP", async () => {
+  process.env.CLARA_OS_RUNTIME_MODE = "recette";
+  try {
+    const { executeGoogleWork } = await import("../lib/native/google-work");
+    await assert.rejects(() => executeGoogleWork(new Request("https://recette.invalid"), "fictional", "fictional", "fictional", true), /RECETTE_EXTERNAL_EXECUTION_DENIED/);
+  } finally {
+    if (originalMode === undefined) delete process.env.CLARA_OS_RUNTIME_MODE;
+    else process.env.CLARA_OS_RUNTIME_MODE = originalMode;
+  }
+});
