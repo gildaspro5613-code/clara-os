@@ -6,6 +6,14 @@ on:
       - '.github/workflows/clara-os-recette-fixture-manual.yml'
   workflow_dispatch:
     inputs:
+      operation:
+        description: 'Choose read-only diagnosis or explicitly authorize fictional provisioning'
+        required: true
+        type: choice
+        default: diagnose
+        options:
+          - diagnose
+          - provision
       confirm_branch:
         description: 'Type the exact isolated Neon branch ID'
         required: true
@@ -79,8 +87,7 @@ jobs:
           GITHUB_EVENT_NAME: workflow_dispatch
         run: |
           node --import tsx --input-type=module -e '
-            import { neon } from "@neondatabase/serverless";
-            import { preflightRecetteFixture } from "./src/lib/recette/fixture-provisioning.ts";
+            let stage = "MODULE_IMPORT";
             const allowed = new Set([
               "RECETTE_CONFIGURATION_REFUSED",
               "RECETTE_ENDPOINT_BRANCH_UNPROVEN",
@@ -89,17 +96,24 @@ jobs:
               "RECETTE_PROVISIONING_PRIVILEGES_REQUIRED"
             ]);
             try {
+              const { neon } = await import("@neondatabase/serverless");
+              const { preflightRecetteFixture } = await import("./src/lib/recette/fixture-provisioning.ts");
+              stage = "PREFLIGHT";
               await preflightRecetteFixture(process.env, neon(process.env.DATABASE_URL ?? ""), fetch);
               console.log("RECETTE_READ_ONLY_PREFLIGHT_OK");
             } catch (error) {
               const raw = error instanceof Error ? error.message : "";
               const code = [...allowed].find(item => raw === item) ??
-                (raw.startsWith("RECETTE_DATABASE_REFUSED") ? "RECETTE_DATABASE_REFUSED" : "RECETTE_PREFLIGHT_SQL_OR_TRANSPORT_FAILED");
+                (raw.startsWith("RECETTE_DATABASE_REFUSED") ? "RECETTE_DATABASE_REFUSED" :
+                stage === "MODULE_IMPORT" ? "RECETTE_MODULE_IMPORT_FAILED" :
+                error instanceof TypeError ? "RECETTE_PREFLIGHT_TYPE_OR_TRANSPORT_FAILED" :
+                "RECETTE_PREFLIGHT_SQL_OR_TRANSPORT_FAILED");
               console.error("RECETTE_PREFLIGHT_CATEGORY=" + code);
               process.exitCode = 1;
             }
           '
       - name: Provision fictional session on isolated branch
+        if: ${{ inputs.operation == 'provision' }}
         shell: bash
         env:
           DATABASE_URL: ${{ secrets.RECETTE_LIMITED_DATABASE_URL }}
