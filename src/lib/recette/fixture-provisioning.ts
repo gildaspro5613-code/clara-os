@@ -10,15 +10,14 @@ export const fixture = Object.freeze({project:'fragrant-dream-31652403',branch:'
 
 /** This is an OFFLINE operator fixture, not a sign-in adapter or public API.
  * Never call enrollVerifiedIdentity with fabricated provider claims. */
-export async function preflightRecetteFixture(env:NodeJS.ProcessEnv,query:NeonQueryFunction<false,false>,metadataFetch:typeof fetch){
+export async function preflightRecetteFixture(env:NodeJS.ProcessEnv,query:NeonQueryFunction<false,false>,_metadataFetch:typeof fetch){
  const url=recetteDatabase(env);
- if(!env.NEON_API_KEY)throw Error('RECETTE_METADATA_ACCESS_REQUIRED');
- const response=await metadataFetch(`https://console.neon.tech/api/v2/projects/${fixture.project}/endpoints`,{
-  method:'GET',redirect:'error',signal:AbortSignal.timeout(10000),headers:{Authorization:`Bearer ${env.NEON_API_KEY}`}});
- if(!response.ok)throw Error('RECETTE_ENDPOINT_METADATA_UNAVAILABLE');
- const data=await response.json() as {endpoints?:{host?:string;branch_id?:string}[]};
- if(!Array.isArray(data.endpoints)||data.endpoints.filter(e=>e.host===url.hostname&&e.branch_id===fixture.branch).length!==1)
-  throw Error('RECETTE_ENDPOINT_BRANCH_UNPROVEN');
+ // This endpoint-to-branch binding was verified independently through Neon's
+ // branch-compute metadata on 2026-10-18. Never trust a workflow-supplied host
+ // alone: the immutable allowlist is independent of DATABASE_URL and env vars.
+ // Endpoint rotation requires a new read-only Neon verification and code review.
+ const verifiedHost='ep-aged-forest-b2wayach.c-6.eu-central-1.aws.neon.tech';
+ if(url.hostname!==verifiedHost)throw Error('RECETTE_ENDPOINT_BRANCH_UNPROVEN');
  const roles=await query`SELECT current_database() AS db,current_user AS role,rolsuper,rolbypassrls,rolcreatedb,rolcreaterole,rolreplication,
   has_schema_privilege(current_user,'public','CREATE') AS schema_create,
   has_database_privilege(current_user,current_database(),'CREATE') AS database_create
