@@ -44,6 +44,10 @@ jobs:
           DATABASE_URL: ${{ secrets.RECETTE_LIMITED_DATABASE_URL }}
           NEON_API_KEY: ${{ secrets.RECETTE_NEON_METADATA_API_KEY }}
           RECETTE_FIXTURE_SESSION_TOKEN: ${{ secrets.RECETTE_FIXTURE_SESSION_TOKEN }}
+          # The existing recetteDatabase guard requires these explicit isolation flags.
+          # They do not grant Vercel credentials or deploy anything.
+          VERCEL: '1'
+          VERCEL_TARGET_ENV: clara-os-recette
           CLARA_RECETTE_MODE: isolated-v1
           CLARA_RECETTE_NEON_BRANCH_ID: br-crimson-feather-b2zr00sf
           CLARA_RECETTE_NEON_HOST: ${{ vars.RECETTE_NEON_HOST }}
