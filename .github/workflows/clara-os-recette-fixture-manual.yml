@@ -34,10 +34,10 @@ jobs:
       - name: Checkout immutable reviewed fixture implementation
         uses: actions/checkout@v4
         with:
-          ref: 044ac71ce3a339f0e8f2ab729f65d1117ad94924
+          ref: d5eddebe564418d76d71ca78d0c66301518775ba
           persist-credentials: false
       - name: Verify immutable source
-        run: test "$(git rev-parse HEAD)" = "044ac71ce3a339f0e8f2ab729f65d1117ad94924"
+        run: test "$(git rev-parse HEAD)" = "d5eddebe564418d76d71ca78d0c66301518775ba"
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -85,12 +85,12 @@ jobs:
       - name: Checkout immutable reviewed fixture implementation
         uses: actions/checkout@v4
         with:
-          ref: 044ac71ce3a339f0e8f2ab729f65d1117ad94924
+          ref: d5eddebe564418d76d71ca78d0c66301518775ba
           persist-credentials: false
       - name: Verify immutable source
         shell: bash
         run: |
-          test "$(git rev-parse HEAD)" = "044ac71ce3a339f0e8f2ab729f65d1117ad94924"
+          test "$(git rev-parse HEAD)" = "d5eddebe564418d76d71ca78d0c66301518775ba"
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -119,7 +119,8 @@ jobs:
               "RECETTE_ENDPOINT_BRANCH_UNPROVEN",
               "RECETTE_PROVISIONING_ROLE_REFUSED",
               "RECETTE_PROVISIONING_CAPABILITIES_REQUIRED",
-              "RECETTE_PROVISIONING_PRIVILEGES_REQUIRED"
+              "RECETTE_PROVISIONING_PRIVILEGES_REQUIRED",
+              "RECETTE_PROVISIONING_RENEWAL_PRIVILEGE_REQUIRED"
             ]);
             const sqlStates = {
               "28P01": "DB_PASSWORD_AUTH_REJECTED",
@@ -145,7 +146,7 @@ jobs:
               stage = "CONNECT_SELECT_1";
               await query`SELECT 1 AS ok`;
               let next = 0;
-              const stages = ["ROLE", "CAPABILITIES", "COLUMN_GRANTS"];
+              const stages = ["ROLE", "CAPABILITIES", "COLUMN_GRANTS", "RENEWAL_GRANT"];
               const stagedQuery = (strings, ...values) => {
                 stage = stages[next++] ?? "UNEXPECTED_QUERY";
                 return query(strings, ...values);
