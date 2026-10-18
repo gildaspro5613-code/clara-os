@@ -25,6 +25,7 @@ export async function POST(request: Request) {
       // No session hashes, credentials, user data or database addresses are returned.
       // Never expose fixture state to unauthenticated callers.
       // Log only an allowlisted category, never submitted values.
+      try {
       const fixture = await sql`
         SELECT
           EXISTS (
@@ -43,6 +44,10 @@ export async function POST(request: Request) {
         ? (fixture[0]?.fixture_membership === true ? 'TOKEN_OR_WORKSPACE_MISMATCH' : 'FIXTURE_MEMBERSHIP_MISSING')
         : 'FIXTURE_SESSION_NOT_IN_DEPLOYMENT_DATABASE';
       console.warn('RECETTE_SESSION_DIAGNOSTIC', diagnostic);
+      } catch {
+        // Diagnostics must never change authentication failure semantics.
+        console.warn('RECETTE_SESSION_DIAGNOSTIC', 'UNAVAILABLE');
+      }
       return Response.json(
         { success: false, code: 'RECETTE_SESSION_DENIED' },
         { status: 403, headers: { 'Cache-Control': 'no-store' } },
