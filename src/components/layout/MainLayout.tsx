@@ -1,4 +1,5 @@
 import NativeScopeSelector from "@/components/native/NativeScopeSelector";
+import { recetteRequested } from '@/lib/recette/policy';
 /**
  * ============================================
  * CLARA OS
@@ -36,7 +37,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
         {/* Workspace */}
         <main className="clara-workspace-scroll relative flex min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
-          <div className="w-full"><NativeScopeSelector />{children}</div>
+          <div className="w-full"><NativeScopeSelector recette={recetteRequested()} />{children}</div>
         </main>
       </div>
     </div>

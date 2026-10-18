@@ -314,5 +314,10 @@
   "googleKind_drive_update": "Modifier le contenu d’un fichier texte",
   "googleKind_drive_move": "Déplacer et classer un fichier",
   "googleExistingUncertain": "Une opération précédente a une issue incertaine. Retrouvez-la et vérifiez son résultat sans renvoyer l’écriture.",
-  "googleCalendarReadOnly": "Ce calendrier est accessible en lecture seule. Les écritures sont indisponibles."
+  "googleCalendarReadOnly": "Ce calendrier est accessible en lecture seule. Les écritures sont indisponibles.",
+  "nativeWorkspace_loading": "Chargement des espaces autorisés…",
+  "nativeWorkspace_unauthenticated": "Connexion Clara OS nécessaire.",
+  "nativeWorkspace_empty": "Aucun espace autorisé pour cette session. Une session expirée ou des droits révoqués peuvent aussi expliquer cette absence.",
+  "nativeWorkspace_error": "Impossible de charger les espaces autorisés. Réessayez après vérification du service.",
+  "nativeWorkspaceSignIn": "Connexion de recette"
 }
