@@ -3,6 +3,7 @@ import { authorizeVoiceRequest } from "@/lib/auth/voice-request-authorization";
 import { NextResponse } from "next/server";
 
 import { elevenLabsConfig } from "@/lib/config/elevenlabs";
+import { assertRecetteExternalExecutionBlocked } from "@/lib/recette/external-execution-guard";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,7 @@ export async function POST(request: Request) {
   const t = await getTranslations("voiceApi");
   try {
     if (!await authorizeVoiceRequest(request)) return NextResponse.json({success:false,message:t("operatorRequired")}, {status:403});
+    assertRecetteExternalExecutionBlocked("elevenlabs.speech-to-text");
     const apiKey = elevenLabsConfig.apiKey;
 
     if (!apiKey) {
