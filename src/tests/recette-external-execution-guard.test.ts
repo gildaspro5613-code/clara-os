@@ -125,3 +125,21 @@ test("Recette project identity denies external execution even with missing or in
     else process.env.VERCEL_PROJECT_ID = priorProject;
   }
 });
+
+test("Recette dedicated deployment marker denies external execution without runtime mode or project id", () => {
+  const mode = process.env.CLARA_OS_RUNTIME_MODE;
+  const project = process.env.VERCEL_PROJECT_ID;
+  const marker = process.env.CLARA_RECETTE_MODE;
+  try {
+    delete process.env.CLARA_OS_RUNTIME_MODE;
+    delete process.env.VERCEL_PROJECT_ID;
+    process.env.CLARA_RECETTE_MODE = "enabled";
+    assert.throws(() => assertRecetteExternalExecutionBlocked("ionos.smtp"), /RECETTE_EXTERNAL_EXECUTION_DENIED/);
+    process.env.CLARA_RECETTE_MODE = "incorrect";
+    assert.throws(() => assertRecetteExternalExecutionBlocked("make.webhook"), /RECETTE_EXTERNAL_EXECUTION_DENIED/);
+  } finally {
+    if (mode === undefined) delete process.env.CLARA_OS_RUNTIME_MODE; else process.env.CLARA_OS_RUNTIME_MODE = mode;
+    if (project === undefined) delete process.env.VERCEL_PROJECT_ID; else process.env.VERCEL_PROJECT_ID = project;
+    if (marker === undefined) delete process.env.CLARA_RECETTE_MODE; else process.env.CLARA_RECETTE_MODE = marker;
+  }
+});
