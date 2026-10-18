@@ -15,8 +15,6 @@ jobs:
   offline-security:
     runs-on: ubuntu-latest
     timeout-minutes: 12
-    env:
-      CLARA_OS_RUNTIME_MODE: recette
     steps:
       - uses: actions/checkout@v4
         with:
@@ -27,4 +25,6 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts
       - name: Recette offline denial contracts
-        run: node --import tsx --test src/tests/recette-external-execution-guard.test.ts src/tests/capability-policy.test.ts
+        run: node --import tsx --test src/tests/recette-external-execution-guard.test.ts
+      - name: Existing capability policy regression (non-Recette)
+        run: node --import tsx --test src/tests/capability-policy.test.ts
