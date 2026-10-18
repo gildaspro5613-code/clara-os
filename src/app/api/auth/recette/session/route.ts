@@ -23,9 +23,8 @@ export async function POST(request: Request) {
     if (!await resolveAuthenticatedWorkspace(token,workspaceId,'connections:read')) {
       // A bounded, read-only diagnostic for this isolated fictional fixture.
       // No session hashes, credentials, user data or database addresses are returned.
-      // The public response intentionally retains the same generic denial.
-      // Server-side structured codes are intentionally omitted because runtime
-      // logging is not guaranteed to be accessible in this environment.
+      // Never expose fixture state to unauthenticated callers.
+      // Log only an allowlisted category, never submitted values.
       const fixture = await sql`
         SELECT
           EXISTS (
@@ -43,8 +42,9 @@ export async function POST(request: Request) {
       const diagnostic = fixture[0]?.active_fixture === true
         ? (fixture[0]?.fixture_membership === true ? 'TOKEN_OR_WORKSPACE_MISMATCH' : 'FIXTURE_MEMBERSHIP_MISSING')
         : 'FIXTURE_SESSION_NOT_IN_DEPLOYMENT_DATABASE';
+      console.warn('RECETTE_SESSION_DIAGNOSTIC', diagnostic);
       return Response.json(
-        { success: false, code: 'RECETTE_SESSION_DENIED', diagnostic },
+        { success: false, code: 'RECETTE_SESSION_DENIED' },
         { status: 403, headers: { 'Cache-Control': 'no-store' } },
       );
     }
