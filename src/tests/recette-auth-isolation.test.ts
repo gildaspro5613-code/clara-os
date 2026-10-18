@@ -3,7 +3,8 @@ import test from "node:test";
 import { readAuthCookie } from "../lib/auth/canonical-request-authorization";
 import { sessionTokenDigest } from "../lib/auth/authenticated-workspace-session";
 import { authorizeWorkspace, WorkspaceAuthorizationError } from "../lib/auth/workspace-authorization";
-import { createNativeAuthority, nativeSelectors, RegistryError } from "../lib/native/authority";
+import { createNativeAuthority, nativeSelectors } from "../lib/native/authority";
+import { RegistryError } from "../lib/canonical/registry";
 
 const TOKEN = "a".repeat(43);
 const COOKIE = `clara_auth_session=${TOKEN}`;
