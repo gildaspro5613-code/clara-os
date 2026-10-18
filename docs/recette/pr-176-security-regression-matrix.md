@@ -1,6 +1,6 @@
-# PR #176 — plan de tests de sécurité Recette (non exécutés)
+# PR #176 — matrice de tests de sécurité Recette (suivi partiel)
 
-**État : spécification uniquement. NO-GO déploiement / NO-GO Production.**
+**État : contrôles fournisseurs partiellement exécutés en CI ; scénarios d'autorité et E2E non certifiés. NO-GO déploiement / NO-GO Production.**
 
 ## Observations de code
 
@@ -42,3 +42,21 @@
 4. Ne pas recopier de secrets Production ; aucun jeton, URL de fournisseur réel ou credential de Clara Live dans le jeu de tests.
 5. Exécuter les tests existants de non-régression et documenter les échecs préexistants distinctement.
 6. **Aucun GO déploiement tant que le verrou global Recette et ses tests ne sont pas démontrés.**
+
+## État actualisé — 18/10/2026
+
+Contrôle GitHub Actions sur commit `5d3ca8a8` : sécurité Recette #39139547974 **SUCCESS** ; Production P0 #39139547872 **SUCCESS**. Ce sont des validations de tests ciblés, **pas** la réception de l'interface réelle de la PR #176.
+
+- **Couverts partiellement par `src/tests/recette-external-execution-guard.test.ts`** : CAP-02 (politique Make/Brevo), MAIL-01 (transport IONOS IMAP/SMTP), GOOGLE-01 (client OAuth et travail natif), VOICE-01 (moteur ElevenLabs et téléphonie), LIVE-01 (autorité physique). Les espions réseau attestent certains transports seulement ; ne pas conclure à une absence globale d'appels sortants.
+- **Non encore attestés par la suite Recette** : AUTH-01 à AUTH-04, SCOPE-01 à SCOPE-04, NATIVE-01, CAP-01 (scénario négatif sans approbation), LIVE-02, REG-01, REG-02. Des tests préexistants peuvent couvrir des fragments, mais aucun GO global n'en découle.
+- **Protection d'environnement** : le garde reconnaît `CLARA_OS_RUNTIME_MODE=recette`, l'identifiant Vercel du projet Recette ou la présence de `CLARA_RECETTE_MODE`. La configuration Vercel du projet isolé contient ce dernier marqueur. La propagation effective au runtime du code de la PR #176 reste à démontrer ; ne pas confondre déclaration de variable et attestation d'exécution.
+- **Séparation des produits** : ni Clara Live ni Clara OS Production ne sont des cibles de déploiement ou d'essai dans ce chantier.
+
+## Séquence d'acceptation de l'interface réelle
+
+1. Attester l'identité de la source déployable : commit de la branche d'audit issu de la PR #176, migrations compatibles, dépendances et vulnérabilités évaluées.
+2. Vérifier la session fictive **à la date effective du test** ; la session précédemment attestée expirait le 18/10/2026 à 12:00:43 UTC. Tout renouvellement doit utiliser le workflow manuel dédié, sans exposition de jeton.
+3. Tester les refus de cookie invalide/expiré, membership révoqué, workspace étranger et sélecteurs incomplets sur le runtime isolé.
+4. Tester cockpit, mission, conversation fictive, document, journal durable, retour cockpit, navigation et refresh avec preuve de persistance et de séparation des scopes.
+5. Conserver le refus réseau des fournisseurs réels pendant toute cette recette. L'activation Twilio/ElevenLabs relève d'une phase distincte et explicitement autorisée.
+6. N'envisager un déploiement **sur le seul projet `clara-os-recette`** qu'après résolution de ces prérequis et décision de GO isolé explicite.
