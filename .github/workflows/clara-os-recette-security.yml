@@ -73,6 +73,6 @@ jobs:
         run: |
           set -euo pipefail
           echo "RECETTE_NETWORK_CALL_SITES_BEGIN"
-          rg -l --glob '*.{ts,tsx,js,mjs}' '(fetch\s*\(|axios\.|https?\.request\s*\(|\.sendMail\s*\(|\.connect\s*\(|new WebSocket\s*\(|new EventSource\s*\()' src/app/api src/lib | sort || true
+          grep -rEl --include='*.ts' --include='*.tsx' --include='*.js' --include='*.mjs' '(fetch[[:space:]]*\(|axios\.|https?\.request[[:space:]]*\(|\.sendMail[[:space:]]*\(|\.connect[[:space:]]*\(|new WebSocket[[:space:]]*\(|new EventSource[[:space:]]*\()' src/app/api src/lib | sort
           echo "RECETTE_NETWORK_CALL_SITES_END"
           echo "RECETTE_NETWORK_INVENTORY_REQUIRES_MANUAL_TRIAGE"
