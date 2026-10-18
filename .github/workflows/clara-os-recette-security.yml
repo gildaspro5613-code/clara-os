@@ -71,6 +71,20 @@ jobs:
             console.log("RECETTE_CANDIDATE_AFFECTED",JSON.stringify(Object.entries(report.vulnerabilities??{}).map(([name,v])=>({name,severity:v.severity,fixAvailable:v.fixAvailable}))));
           '
           echo "RECETTE_CANDIDATE_ONLY_NO_REPOSITORY_CHANGE"
+      - name: Compile patched candidate in disposable workspace
+        shell: bash
+        run: |
+          set -euo pipefail
+          workdir="$(mktemp -d)"
+          trap 'rm -rf "$workdir"' EXIT
+          tar --exclude=.git --exclude=node_modules -cf - . | (cd "$workdir" && tar -xf -)
+          cd "$workdir"
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund 'next@^16.4.2' 'eslint-config-next@^16.4.2'
+          npm ci --ignore-scripts --no-audit --no-fund
+          npx tsc --noEmit
+          npm run build
+          node --import tsx --test src/tests/recette-network-provider-denials.test.ts src/tests/recette-auth-isolation.test.ts src/tests/recette-external-execution-guard.test.ts src/tests/capability-policy.test.ts
+          echo "RECETTE_CANDIDATE_BUILD_AND_REGRESSION_PASSED"
       - name: Inventory outbound call sites for manual Recette review
         shell: bash
         run: |
