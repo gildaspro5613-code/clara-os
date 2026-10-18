@@ -47,6 +47,34 @@ jobs:
         run: npm ci --ignore-scripts
       - name: Run isolated provisioning tests
         run: node --import tsx --test src/tests/recette-provisioning-http-contract.test.ts src/tests/recette-auth-provisioning.test.ts
+      - name: Verify fixed database refusal labels never expose connection details
+        shell: bash
+        run: |
+          node --import tsx --input-type=module -e '
+            import assert from "node:assert/strict";
+            import { recetteDatabase } from "./src/lib/recette/policy.ts";
+            import { reportRecetteStartupFailure } from "./src/lib/recette/diagnostics.ts";
+            const env = {
+              VERCEL: "1", VERCEL_TARGET_ENV: "clara-os-recette",
+              CLARA_RECETTE_MODE: "isolated-v1",
+              CLARA_RECETTE_NEON_BRANCH_ID: "br-crimson-feather-b2zr00sf",
+              CLARA_RECETTE_NEON_HOST: "ep-aged-forest-b2wayach.c-6.eu-central-1.aws.neon.tech",
+              DATABASE_URL: "postgresql://clara_os_recette_limited:synthetic-secret@ep-aged-forest-b2wayach.c-6.eu-central-1.aws.neon.tech/neondb?sslmode=require&forbidden=synthetic-secret"
+            };
+            let refusal;
+            try { recetteDatabase(env); } catch (error) { refusal = error; }
+            assert.equal(refusal?.message, "RECETTE_DATABASE_REFUSED");
+            const original = console.error;
+            const labels = [];
+            console.error = (...parts) => labels.push(parts.join(" "));
+            try {
+              reportRecetteStartupFailure(refusal, env);
+              reportRecetteStartupFailure(refusal, {...env, VERCEL_ENV: "production"});
+              reportRecetteStartupFailure(new Error("synthetic-secret"), env);
+            } finally { console.error = original; }
+            assert.deepEqual(labels, ["[CLARA_RECETTE_STARTUP] RECETTE_DB_QUERY_KEY_FORBIDDEN"]);
+            assert.ok(!labels.join("").includes("synthetic-secret"));
+          '
   provision:
     needs: offline-security-tests
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.confirm_branch == 'br-crimson-feather-b2zr00sf' }}
@@ -85,6 +113,7 @@ jobs:
         run: |
           node --import tsx --input-type=module -e '
             let stage = "MODULE_IMPORT";
+            let reportSanitizedRefusal;
             const allowed = new Set([
               "RECETTE_CONFIGURATION_REFUSED",
               "RECETTE_ENDPOINT_BRANCH_UNPROVEN",
@@ -108,6 +137,8 @@ jobs:
               const { neon } = await import("@neondatabase/serverless");
               const { preflightRecetteFixture } = await import("./src/lib/recette/fixture-provisioning.ts");
               const { recetteDatabase } = await import("./src/lib/recette/policy.ts");
+              const { reportRecetteStartupFailure } = await import("./src/lib/recette/diagnostics.ts");
+              reportSanitizedRefusal = reportRecetteStartupFailure;
               stage = "CONFIGURATION";
               recetteDatabase(process.env);
               const query = neon(process.env.DATABASE_URL);
@@ -124,6 +155,8 @@ jobs:
               console.log("RECETTE_READ_ONLY_PREFLIGHT_OK");
             } catch (error) {
               const raw = error instanceof Error ? error.message : "";
+              // Existing policy logs only allowlisted fixed codes, never URL or error details.
+              if (raw === "RECETTE_DATABASE_REFUSED") reportSanitizedRefusal?.(error, process.env);
               const sqlState = typeof error?.code === "string" ? error.code : "";
               const httpStatus = Number(error?.status);
               const statusClass = httpStatus === 401 ? "HTTP_AUTH_REJECTED" :
