@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readAuthCookie } from "../lib/auth/canonical-request-authorization";
-import { sessionTokenDigest } from "../lib/auth/authenticated-workspace-session";
+import { createAuthenticatedWorkspaceResolver, sessionTokenDigest } from "../lib/auth/authenticated-workspace-session";
 import { authorizeWorkspace, WorkspaceAuthorizationError } from "../lib/auth/workspace-authorization";
 import { createNativeAuthority, nativeSelectors } from "../lib/native/authority";
 import { RegistryError } from "../lib/canonical/registry";
@@ -55,7 +55,48 @@ test("SCOPE-01/04: SQL native authority denies foreign or unrelated sessions, ne
   assert.equal(sqlCalls,1);
 });
 
-test("AUTH-03: expiration and revocation must be enforced by database, not inferred from token format", () => {
-  assert.equal(typeof sessionTokenDigest(TOKEN), "string");
-  // Actual expired/revoked session checks require the isolated database fixture and remain NO-GO.
+test("AUTH-03/04: expired or revoked session and revoked membership are denied", async () => {
+  type Fixture = {session: "active"|"expired"|"revoked"; membership: "active"|"revoked"|"missing"};
+  for (const fixture of [
+    {session:"expired",membership:"active"},
+    {session:"revoked",membership:"active"},
+    {session:"active",membership:"revoked"},
+    {session:"active",membership:"missing"},
+  ] as Fixture[]) {
+    let calls = 0;
+    const query = (async (strings: TemplateStringsArray, ...values: unknown[]) => {
+      calls++;
+      const statement = strings.join(" ");
+      if (statement.includes("FROM clara_auth_sessions")) {
+        assert.match(statement,/revoked_at IS NULL/);
+        assert.match(statement,/expires_at > NOW\(\)/);
+        assert.equal(values[0],sessionTokenDigest(TOKEN));
+        return fixture.session === "active" ? [{user_id:"fictional-user"}] : [];
+      }
+      assert.match(statement,/FROM clara_workspace_memberships/);
+      assert.match(statement,/revoked_at IS NULL/);
+      assert.equal(values[0],"fictional-user");
+      assert.equal(values[1],"workspace-fictional");
+      return fixture.membership === "active" ? [{workspace_id:"workspace-fictional",role:"member"}] : [];
+    }) as Parameters<typeof createAuthenticatedWorkspaceResolver>[0];
+    const resolve = createAuthenticatedWorkspaceResolver(query);
+    assert.equal(await resolve(TOKEN,"workspace-fictional","connections:read"),null);
+    assert.equal(calls,fixture.session === "active" ? 2 : 1);
+  }
+});
+
+test("AUTH-04: active membership respects role; foreign workspace and invalid token never authorize", async () => {
+  let calls = 0;
+  const query = (async (strings: TemplateStringsArray) => {
+    calls++;
+    return strings.join(" ").includes("FROM clara_auth_sessions")
+      ? [{user_id:"fictional-user"}]
+      : [{workspace_id:"workspace-fictional",role:"viewer"}];
+  }) as Parameters<typeof createAuthenticatedWorkspaceResolver>[0];
+  const resolve = createAuthenticatedWorkspaceResolver(query);
+  assert.deepEqual(await resolve(TOKEN,"workspace-fictional","connections:read"),{userId:"fictional-user",workspaceId:"workspace-fictional"});
+  assert.equal(await resolve(TOKEN,"workspace-fictional","connections:manage"),null);
+  assert.equal(await resolve("invalid","workspace-fictional","connections:read"),null);
+  assert.equal(await resolve(TOKEN,"default","connections:read"),null);
+  assert.equal(calls,4);
 });
