@@ -6,8 +6,8 @@ import {cloudRecetteFixtureToken,fixture,newRecetteFixtureToken,seedRecetteFixtu
 
 // Protocol simulation using the installed, unmodified SDK. Not a Neon service test.
 const env={VERCEL:'1',VERCEL_ENV:'preview',VERCEL_TARGET_ENV:'clara-os-recette',CLARA_RECETTE_MODE:'isolated-v1',
- CLARA_RECETTE_NEON_HOST:'ep-recette-test.eu-central-1.aws.neon.tech',CLARA_RECETTE_NEON_BRANCH_ID:fixture.branch,
- DATABASE_URL:'postgresql://clara_os_recette_limited:synthetic@ep-recette-test.eu-central-1.aws.neon.tech/neondb?sslmode=require',
+ CLARA_RECETTE_NEON_HOST:'ep-aged-forest-b2wayach.c-6.eu-central-1.aws.neon.tech',CLARA_RECETTE_NEON_BRANCH_ID:fixture.branch,
+ DATABASE_URL:'postgresql://clara_os_recette_limited:synthetic@ep-aged-forest-b2wayach.c-6.eu-central-1.aws.neon.tech/neondb?sslmode=require',
  GITHUB_ACTIONS:'true',GITHUB_EVENT_NAME:'workflow_dispatch',RECETTE_FIXTURE_SESSION_TOKEN:newRecetteFixtureToken()};
 
 test('Cloud input is explicit, canonical and unavailable in Production or unattended runs',()=>{
@@ -49,7 +49,7 @@ test('installed Neon SDK sends one Serializable HTTP batch, parses DO/INSERT res
 });
 
 test('real Cloud CLI stops before transport without authorized configuration; logs contain no input secrets',()=>{
- for(const override of [{VERCEL_ENV:'production'},{GITHUB_EVENT_NAME:'push'},{NEON_API_KEY:''}]){
+ for(const override of [{VERCEL_ENV:'production'},{GITHUB_EVENT_NAME:'push'},{CLARA_RECETTE_NEON_HOST:'ep-wrong-host.c-6.eu-central-1.aws.neon.tech'}]){
   const result=spawnSync(process.execPath,['--import','tsx','src/scripts/provision-recette-fictional.mts',
    '--apply-cloud',`--confirm=${fixture.branch}`],{env:{...env,...override},encoding:'utf8'});
   assert.equal(result.status,1);
