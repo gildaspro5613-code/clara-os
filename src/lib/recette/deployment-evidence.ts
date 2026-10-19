@@ -44,7 +44,9 @@ export async function collectRecetteDeploymentEvidence(
     if (binding === 'NON ATTESTÉ') return unavailable();
     checks.push('ISOLATION_CONFIGURATION');
     // Endpoint-to-branch provenance must be independently verified outside the app.
-    const sql = neon(env.DATABASE_URL, {fetchOptions:{redirect:'error',signal:AbortSignal.timeout(15000)}});
+    const databaseUrl = env.DATABASE_URL;
+    if (!databaseUrl) return unavailable();
+    const sql = neon(databaseUrl, {fetchOptions:{redirect:'error',signal:AbortSignal.timeout(15000)}});
     const [rows] = await sql.transaction([sql`SELECT current_database() AS db,current_user AS role,
       rolsuper,rolbypassrls,rolcreatedb,rolcreaterole,rolreplication,
       has_schema_privilege(current_user,'public','CREATE') AS schema_create,
