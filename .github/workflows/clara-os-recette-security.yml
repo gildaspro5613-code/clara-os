@@ -10,6 +10,7 @@ on:
       - 'src/tests/recette-external-execution-guard.test.ts'
       - 'src/tests/recette-auth-isolation.test.ts'
       - 'src/tests/recette-network-provider-denials.test.ts'
+      - 'src/tests/recette-attestation-authorization.test.ts'
       - '.github/workflows/clara-os-recette-security.yml'
 permissions:
   contents: read
@@ -30,6 +31,8 @@ jobs:
         run: node --import tsx --test src/tests/recette-external-execution-guard.test.ts
       - name: Recette authentication and isolation contracts
         run: node --import tsx --test src/tests/recette-auth-isolation.test.ts
+      - name: Recette attestation owner/admin authorization tests
+        run: node --import tsx --test src/tests/recette-attestation-authorization.test.ts
       - name: Recette provider network denial regressions
         run: node --import tsx --test src/tests/recette-network-provider-denials.test.ts
       - name: Existing capability policy regression (non-Recette)
@@ -83,7 +86,7 @@ jobs:
           npm ci --ignore-scripts --no-audit --no-fund
           npx tsc --noEmit
           npm run build
-          node --import tsx --test src/tests/recette-network-provider-denials.test.ts src/tests/recette-auth-isolation.test.ts src/tests/recette-external-execution-guard.test.ts src/tests/capability-policy.test.ts
+          node --import tsx --test src/tests/recette-network-provider-denials.test.ts src/tests/recette-auth-isolation.test.ts src/tests/recette-external-execution-guard.test.ts src/tests/capability-policy.test.ts src/tests/recette-attestation-authorization.test.ts
           echo "RECETTE_CANDIDATE_BUILD_AND_REGRESSION_PASSED"
       - name: Inventory outbound call sites for manual Recette review
         shell: bash
