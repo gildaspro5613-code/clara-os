@@ -12,7 +12,7 @@ Correction : dispatch explicite de require, faux Client seulement pour `openai`,
 
 ## Réseau : clôture refusée sur preuves exécutables
 
-Les quatre points suivants ont été invoqués sous `CLARA_OS_RUNTIME_MODE=recette`, credentials exclusivement synthétiques, fetch injecté/global intercepté qui lève immédiatement une exception sans I/O. Chacun atteint **une fois** le transport simulé ; zéro appel réel. Le contrôle se fait dans le même processus avec restauration des variables/fetch. Ne pas interpréter ces constats comme des tests de sécurité réussis.
+Les cinq points suivants ont été invoqués sous `CLARA_OS_RUNTIME_MODE=recette`, credentials exclusivement synthétiques, fetch injecté/global intercepté qui lève immédiatement une exception sans I/O. Les quatre premiers atteignent chacun **une fois** le transport simulé ; le cinquième atteint une fois le point SDK substitué ; zéro appel réel. Le contrôle se fait dans le même processus avec restauration des variables/fetch. Ne pas interpréter ces constats comme des tests de sécurité réussis.
 
 | Point réellement appelable | Appel/chemin | Preuve et impact |
 |---|---|---|
@@ -21,7 +21,9 @@ Les quatre points suivants ont été invoqués sous `CLARA_OS_RUNTIME_MODE=recet
 | OAuth Brevo | `createBrevoOAuthProvider().exchangeCode()` / `refresh()` → `token()` ; provider enregistré dans `oauthProviders`, utilisé par `OAuthCallbackService` | 1 fetch injecté. Le garde du client API Brevo ne protège pas le fournisseur OAuth distinct ; les contrôles de nonce/connexion ne prouvent pas l'isolation Recette |
 | Pont canonique Live | `createLiveCanonicalTransport()` ; `confirmLink` dans POST `/api/canonical/registry`, service d'archive canonique | 1 fetch injecté. L'autorité métier et la capability `canonical-links:v1` autorisent le transport, mais il manque un refus Recette avant POST ; le garde du callback de capabilities est une autre frontière |
 
-Action minimale pour une intervention de sécurité ultérieure autorisée : appliquer le garde Recette existant à ces frontières avant toute credential/transport et ajouter des tests négatifs conservant les parcours non-Recette. Cette mission ne refactorise pas ces connecteurs ; **gate réseau NON FERMÉ**. Le fournisseur Google Workspace OAuth (`google-oauth.ts`, factory autonome utilisant googleapis) doit aussi être inclus dans cette vérification : il ne passe pas par `GoogleAuth.createClient()`, son garde ne couvre donc pas automatiquement l'échange/refresh du provider. Aucun appel SDK réel exécuté pour le certifier.
+| OAuth Google Workspace | `googleOAuthProvider.refresh()` → factory autonome → `refreshAccessToken()` ; provider enregistré dans `oauthProviders` | 1 appel SDK substitué sous marqueur Recette. Le chemin ne passe pas par `GoogleAuth.createClient()` ; aucune I/O réelle ni credential réel. Le callback natif réutilise aussi ce provider pour son échange |
+
+Action minimale pour une intervention de sécurité ultérieure autorisée : appliquer le garde Recette existant à ces frontières avant toute credential/transport et ajouter des tests négatifs conservant les parcours non-Recette. Cette mission ne refactorise pas ces connecteurs ; **gate réseau NON FERMÉ**.
 
 Chemins connus protégés : moteurs Weather/OpenAI/ElevenLabs/téléphonie, routes ElevenLabs session/STT, clients GitHub/Stripe/Brevo API/Make/Microsoft Graph/OAuth, transports IONOS, `GoogleAuth.createClient()`, exécution Google native, callback capabilities et autorité physique Live. Les tests existants couvrent des frontières, pas une sandbox réseau globale : instrumentation ne fait qu'annoncer le démarrage.
 
@@ -52,3 +54,11 @@ La session fictive active précédemment attestée n'est pas requalifiée active
 Les liens et résultats individuels du SHA final figurent dans le rapport de remise. Au départ : P0 FAILURE ; Authenticated workspace, Microsoft et sécurité offline SUCCESS. Les tests de candidate Next corrigée du workflow offline se déroulent dans un espace jetable : ils ne changent pas le lockfile ni les dépendances livrées. Le dossier signale une dépendance Next critique dans le lockfile livré ; un build candidat vert ne suffit pas à lever ce risque.
 
 **NO-GO pour un déploiement même strictement isolé** tant que le gate réseau, l'attestation effective, la décision sur les dépendances livrées et les prérequis HTTP ne sont pas levés. CI verte ≠ autorisation de déployer. Aucune nouvelle PR, merge, intervention Live/Production, migration réelle, écriture Neon ou déploiement.
+
+## Vérifications locales finales
+
+- Suite exacte P0 du workflow, fixture PostgreSQL 17 jetable : **36/36**, 0 ignoré. Une première tentative locale avait été refusée par la liste blanche de noms de conteneurs du harnais (nom opérateur incorrect) ; elle a été rejouée avec un nom conforme, sans modifier le harnais ni désactiver de test.
+- Suites authentification/Microsoft/sécurité Recette/capability policy : **48/48**, 0 ignoré.
+- Attestation préparée : **6/6** tests SDK et métadonnées simulés, 0 ignoré.
+- TypeScript et ESLint ciblé réussis ; aucun changement de dépendances/lockfile, aucun build ou déploiement Vercel déclenché. Les builds GitHub CI restent des vérifications hors Vercel.
+- PR #176 relue : HEAD `ac835b6c4ebf770ce6decf953df51d82392ea1c8`, Draft, ancêtre vérifié de cette branche ; aucune modification de #176. Les deux fichiers locaux non suivis préexistants ont été préservés hors commit.
