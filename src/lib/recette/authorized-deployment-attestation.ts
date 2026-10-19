@@ -1,6 +1,6 @@
 import 'server-only';
 import { resolveAuthenticatedWorkspace } from '@/lib/auth/authenticated-workspace-session';
-import { collectRecetteDeploymentEvidence } from './deployment-evidence';
+import { collectRecetteDeploymentEvidence, validateRecetteDatabaseBinding } from './deployment-evidence';
 
 /**
  * Internal-only entry point. The caller must obtain the opaque session token
@@ -15,11 +15,7 @@ export async function attestAuthorizedRecetteDeployment(input: {
   try {
     // Never resolve a session against an unknown or production database.
     // The shared workspace resolver uses the app's default SQL binding.
-    if (process.env.VERCEL_ENV === 'production' ||
-        process.env.VERCEL_PROJECT_ID !== 'prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz' ||
-        process.env.CLARA_RECETTE_MODE !== 'isolated-v1' ||
-        process.env.CLARA_RECETTE_NEON_BRANCH_ID !== 'br-crimson-feather-b2zr00sf' ||
-        !process.env.DATABASE_URL || process.env.POSTGRES_URL !== undefined) return denied;
+    if (validateRecetteDatabaseBinding(process.env) !== 'OK') return denied;
     // Fail closed: membership must be active and have owner/admin permission.
     const principal = await resolveAuthenticatedWorkspace(
       input.sessionToken,
