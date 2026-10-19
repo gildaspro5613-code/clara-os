@@ -62,3 +62,35 @@ Les liens et résultats individuels du SHA final figurent dans le rapport de rem
 - Attestation préparée : **6/6** tests SDK et métadonnées simulés, 0 ignoré.
 - TypeScript et ESLint ciblé réussis ; aucun changement de dépendances/lockfile, aucun build ou déploiement Vercel déclenché. Les builds GitHub CI restent des vérifications hors Vercel.
 - PR #176 relue : HEAD `ac835b6c4ebf770ce6decf953df51d82392ea1c8`, Draft, ancêtre vérifié de cette branche ; aucune modification de #176. Les deux fichiers locaux non suivis préexistants ont été préservés hors commit.
+
+## Dernier lot de sécurité — suite directe de `bc21b4f`
+
+État précédent ci-dessus conservé comme historique ; il ne décrit plus l'état des cinq frontières après cette correction. Référence distante #196/Draft et branche vérifiées avant intervention, HEAD distant `bc21b4f33f1bd1675288d80b869110205e94571e`.
+
+| Frontière | Cause exacte | Correction minimale | Preuve après correction |
+|---|---|---|---|
+| Connexion Google | Garde JWKS trop tardif, après POST token | Garde existant en tête du `exchangeCode()` privé, avant configuration/HTTP | Refus avant fetch sous chacun des 3 marqueurs ; hors Recette l'échange simulé reste atteint |
+| Connexion Microsoft | Même ordre d'exécution | Même garde au début de `exchangeCode()` | Même preuve ; aucun changement de validation des claims/state/enrollment |
+| OAuth Brevo | Le client API protégé ne couvre pas le provider OAuth | Garde dans la fonction commune `token()`, couvrant code et refresh | 0 fetch pour échange et refresh ; normalisation des résultats hors Recette conservée |
+| OAuth Google Workspace | Factory autonome hors `GoogleAuth.createClient()` | Garde en première instruction de `createGoogleOAuthClient()`, avant configuration et constructeur SDK | 0 constructeur/échange/refresh SDK ; résultats normaux simulés préservés hors Recette |
+| Pont canonique OS→Live | Callback de capabilities protégé distinct du transport canonique | Garde au début de `call()`, avant configuration produit et POST | 0 HTTP en Recette ; hors Recette path/payload/headers/proof conservés |
+
+Le garde commun `external-execution-guard.ts` est inchangé. Chaque correction s'active via `CLARA_OS_RUNTIME_MODE`, l'identité Vercel du projet isolé ou `CLARA_RECETTE_MODE`. Aucun nouveau moteur/système d'identité, aucun élargissement d'ACL, aucune modification des contrats ou de l'autorité canonique. Les révisions, consentements, révocations et validations OS restent en place. Pas de substitution permanente par des faux fournisseurs : seuls les tests substituent les transports.
+
+Tests exécutés : `recette-network-provider-denials.test.ts` **8/8**, dont 3 modes de détection et contrat hors Recette pour les cinq frontières. Campagne authentification/sécurité/attestation **59/59**, 0 ignoré ; contrats `canonical-archive-service`, `live-archive-authorization`, `native-google-oauth`, `google-durable-oauth`, `universal-oauth` **22/22**, 0 ignoré. TypeScript et ESLint ciblé réussis. Aucune correction générale d'autres connecteurs ou dépendances.
+
+### Attestation réelle exploitée : NON ATTESTÉ
+
+Le script existant a été exécuté avec l'environnement réellement disponible, sans bindings artificiels : `node --import tsx src/scripts/attest-recette-runtime.mts --source-sha=bc21b4f33f1bd1675288d80b869110205e94571e`.
+
+Résultat exact : `{"status":"NON ATTESTÉ","checks":[],"writesRequested":false}`, exit 1. Les noms requis ont été contrôlés uniquement pour leur présence : identité projet/déploiement/cible, mode, branche/hôte, DATABASE_URL, VERCEL_TOKEN et NEON_API_KEY absents. Aucun accès de métadonnées Vercel/Neon n'est fourni par les outils disponibles. Aucun secret lu, créé, renouvelé ou remplacé. L'absence de bindings arrête le script avant tout HTTP/SQL : tous les contrôles réels restent inaccessibles, pas FAIL et pas PASS.
+
+**Action unique nécessaire :** faire exécuter ce même script par l'administrateur, dans un contexte de confiance déjà autorisé à lire les métadonnées et disposant des bindings effectifs de la cible et des clés de lecture existantes, avec le SHA complet de la cible approuvée. Ne pas fabriquer des variables attendues, ne pas copier des secrets Production, ne pas ajouter les clés de contrôle à l'application, ne pas créer de route publique d'attestation. Le contexte doit lire uniquement la cible Recette. PASS exige toutes les vérifications de métadonnées et le SELECT READ ONLY ; divergence prouvée = FAIL ; accès/binding/preuve manquants = NON ATTESTÉ. La source finale de cette PR n'étant pas déployée, son association à un déploiement ne peut pas être déclarée PASS avant une autorisation distincte de déploiement ; une cible existante doit être contrôlée avec son vrai SHA, sans la présenter comme réception de ce commit.
+
+### Réception et risques résiduels
+
+Les cinq blocages réseau identifiés sont fermés par tests hors ligne ; aucune nouvelle investigation générale n'est ouverte. Le protocole HTTP ci-joint propose des commandes de lecture sans sortie de secret et des critères PASS/FAIL ; aucune réception HTTP réelle n'est exécutée et aucun déploiement n'est demandé implicitement.
+
+Le lockfile réellement livré résout toujours **Next 16.3.0**. Le constat de vulnérabilité critique du dossier précédent n'est pas effacé par la compilation du candidat corrigé en workspace CI jetable. Action minimale : faire approuver et livrer la remédiation ciblée déjà étudiée, puis valider les dépendances effectivement livrées ; aucune mise à jour de paquet n'est incluse dans ce lot.
+
+Décision maintenue : **NO-GO déploiement**, pour attestation effective manquante et gate des dépendances livrées non levée. La campagne HTTP reste une réception post-déploiement autorisée distinctement, nécessitant une session fictive valide et deux périmètres préparés ; son absence n'est pas présentée comme un défaut réseau supplémentaire. Aucun merge, déploiement Vercel, fournisseur réel, secret modifié, écriture Neon ou intervention Live/Production.

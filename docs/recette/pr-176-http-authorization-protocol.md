@@ -51,3 +51,84 @@ La branche réelle #176/#196 ne contient ni `/recette` ni `/api/auth/recette/ses
 Bloquants réseau reproduits hors ligne dans la revue de clôture : échanges de connexion Google/Microsoft, OAuth Brevo, OAuth Google Workspace et pont canonique OS→Live peuvent atteindre le transport avant un refus Recette. La campagne de refus réelle ne doit pas les appeler tant que ces frontières ne sont pas sécurisées ; l'absence supposée de clés n'est pas une preuve. Aucune campagne HTTP réelle ni retour fournisseur réel ne sont certifiés ici.
 
 Preuves futures : statut/code et assertions booléennes uniquement, SHA public de source, scénario et résultat. Pas de corps métier, screenshots contenant du contenu privé, trace réseau, storageState, URL SQL, jeton, condensat ou en-tête Authorization dans les logs/artéfacts. Conserver la distinction préparation, tests simulés, HTTP réel et effets externes.
+
+## Dernier lot #196 : commandes et critères de lancement
+
+Les cinq frontières listées comme bloquantes dans l'historique ci-dessus sont désormais gardées et testées avant HTTP/SDK. Elles restent à recevoir sur la véritable application déployée ; aucun appel réel fournisseur n'est autorisé pour en vérifier le refus. Les simulations ne certifient pas une ancienne URL.
+
+**Avant toute réception réelle :** attester la même cible et son vrai SHA avec le script existant dans le contexte opérateur autorisé :
+
+```sh
+node --import tsx src/scripts/attest-recette-runtime.mts --source-sha=<SHA_COMPLET_APPROUVÉ_DE_LA_CIBLE>
+```
+
+Exiger PASS avant la suite. FAIL ou NON ATTESTÉ = arrêt. Pour recevoir le futur commit de ce lot, une autorisation distincte de déploiement puis une attestation de ce commit seront nécessaires ; ne pas utiliser le SHA futur pour faire passer artificiellement l'attestation d'une ancienne cible.
+
+### Smoke HTTP de lecture — préparé seulement
+
+Préconditions : `RECETTE_HTTP_ORIGIN` doit être l'URL de déploiement exacte validée par métadonnées ; `RECETTE_HTTP_SCOPE_JSON` contient les quatre sélecteurs d'une session native fictive préexistante et autorisée ; `RECETTE_HTTP_ALLOWED_WORKSPACES_JSON` contient uniquement les identifiants fictifs autorisés attendus ; `RECETTE_HTTP_SESSION_TOKEN` est injecté temporairement depuis le coffre existant. Rien de tout cela n'est demandé dans le chat ni défini ici. L'outil ne crée/renouvelle pas de session. Ne pas activer le tracing shell, le debug réseau ou enregistrer un storageState/trace.
+
+Commande à examiner puis exécuter uniquement après autorisation HTTP sur la cible attestée :
+
+```sh
+python3 - <<'PY'
+import json, os, re, sys, urllib.request, urllib.error, urllib.parse
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, *args, **kwargs): return None
+opener=urllib.request.build_opener(NoRedirect())
+try:
+    origin=os.environ['RECETTE_HTTP_ORIGIN']
+    if not re.fullmatch(r'https://clara-os-recette-[a-z0-9]+-melodie-digital\.vercel\.app',origin): raise ValueError()
+    token=os.environ['RECETTE_HTTP_SESSION_TOKEN']
+    if not re.fullmatch(r'[A-Za-z0-9_-]{43,128}',token): raise ValueError()
+    scope=json.loads(os.environ['RECETTE_HTTP_SCOPE_JSON'])
+    allowed=set(json.loads(os.environ['RECETTE_HTTP_ALLOWED_WORKSPACES_JSON']))
+    if set(scope)!={'workspaceId','clientId','projectId','sessionId'} or not allowed: raise ValueError()
+    if scope['workspaceId'] not in allowed: raise ValueError()
+except Exception:
+    print('HTTP_INPUTS_NON_ATTESTÉS'); sys.exit(1)
+def check(label,path,cookie,predicate):
+    try:
+        headers={'Accept':'application/json'}
+        if cookie: headers['Cookie']=cookie
+        request=urllib.request.Request(origin+path,headers=headers,method='GET')
+        try: response=opener.open(request,timeout=15)
+        except urllib.error.HTTPError as error: response=error
+        try:
+            status=response.status
+            raw=response.read(65537)
+            if len(raw)>65536: raise ValueError()
+            body=json.loads(raw)
+        finally: response.close()
+        passed=isinstance(body,dict) and predicate(status,body)
+    except Exception: passed=False
+    print(label+(': PASS' if passed else ': FAIL'))
+    return passed
+private='clara_auth_session='+token
+results=[
+ check('NO_COOKIE_REGISTRY','/api/canonical/registry',None,lambda s,b:s==401 and not b.get('data')),
+ check('NO_COOKIE_SESSION','/api/clara/session',None,lambda s,b:s==401 and not b.get('mission')),
+ check('MALFORMED_COOKIE','/api/canonical/registry','clara_auth_session=invalid',lambda s,b:s==401 and not b.get('data')),
+ check('AUTHORIZED_WORKSPACES','/api/canonical/registry',private,lambda s,b:s==200 and isinstance(b.get('data'),list) and bool(b['data']) and {r['workspace_id'] for r in b['data']}<=allowed and scope['workspaceId'] in {r['workspace_id'] for r in b['data']}),
+ check('MISSING_SELECTORS','/api/clara/session',private,lambda s,b:s==400 and b.get('code')=='EXPLICIT_NATIVE_SCOPE_REQUIRED'),
+ check('AUTHORIZED_SESSION','/api/clara/session?'+urllib.parse.urlencode(scope),private,lambda s,b:s==200 and 'state' in b and 'historyOnly' in b),
+]
+sys.exit(0 if all(results) else 1)
+PY
+```
+
+Ce smoke ne constitue **pas** la campagne complète. Un FAIL n'affiche ni corps, URL, cookie, token, identifiant de scope ou erreur serveur. Le check `MISSING_SELECTORS` suppose un contexte sans cookie de sélection ; le script n'en transmet pas. Une session autorisée doit être connue par la fixture ; un 200 historique/read-only ne valide pas une mission active. Le plafond du corps peut volontairement produire FAIL sur une session volumineuse : utiliser une fixture bornée, ne pas étendre silencieusement la limite.
+
+### Complément obligatoire de la campagne, après autorisations distinctes
+
+| Scénario | Préparation/commande ciblée | PASS / FAIL |
+|---|---|---|
+| Cookie dupliqué | GET registre avec deux occurrences du cookie via harnais, valeurs coffre jamais imprimées | Refus sans données ; aucune priorité implicite du dernier cookie |
+| Expiré/révoqué | Rejouer les mêmes GET avec une fixture dédiée expirée/révoquée déjà autorisée | Registre sans workspace accessible et session native refusée ; un résultat positif constitue FAIL. Ne pas changer la seule session active |
+| Rôles | POST runtime/createSession ou mutation métier via UI sur un compte viewer puis owner fictifs | Viewer refusé, owner autorisé dans son scope ; vérifier le stockage fictif après l'opération autorisée. Un simple 200 ne certifie pas l'autorité |
+| Workspaces/projets | GET session avec l'autre workspace/projet **existant et certifié**, puis une autre session/utilisateur autorisés | 403/404 sans corps privé pour le premier ; données propres au second, aucun mélange |
+| Mission/conversation/reprise | Parcours UI prévu, reload/reconnexion, POST chat avec même operationId/contenu, puis contenu différent | Mission/contexte conservés ; un seul tour/reçu ; conflit pour contenu modifié ; aucun effet fournisseur rejoué |
+| Refus externe | Chemins réels OAuth Google/Microsoft, Brevo code/refresh, Google Workspace code/refresh, confirmLink/archives canoniques et autres frontières déjà reçues | Refus Recette avant SDK/HTTP, compteurs de transport indépendants à zéro ; un 500 générique ou un 404 de route absente ne suffit pas |
+| Journal/Documents | Document fictif et rattachement autorisés dans la mission puis Journal/Cockpit | État durable cohérent après reprise, aucun contenu d'un autre utilisateur/workspace |
+
+Ces commandes avec mutation et scénarios d'expiration/révocation ne sont pas exécutés par ce lot. Le harnais réel doit charger ses fixtures du coffre sans logs/artefacts de secrets et conserver uniquement les assertions booléennes et statuts/codes autorisés. Les mêmes fixtures couvrent propriétaire fictif, rôles, deux workspaces et plusieurs projets ; leur existence actuelle reste à confirmer sous autorisation de lecture. Ne pas remplacer une fixture manquante par un faux identifiant puis présenter son 403 comme un test d'isolation réussi.

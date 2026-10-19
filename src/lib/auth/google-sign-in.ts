@@ -93,6 +93,7 @@ function googleExchangeFailureCategory(description?: string): string {
 }
 
 async function exchangeCode(code: string): Promise<string> {
+  assertRecetteExternalExecutionBlocked("auth.provider-sign-in");
   const { clientId, clientSecret, redirectUri } = configuredSignIn();
   const response = await fetch(GOOGLE_TOKEN_ENDPOINT, {
     method: "POST",

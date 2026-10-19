@@ -66,6 +66,7 @@ export function microsoftSignInAuthorizationUrl(state: string, nonce: string): s
 }
 
 async function exchangeCode(code: string): Promise<string> {
+  assertRecetteExternalExecutionBlocked("auth.provider-sign-in");
   const { tenantId, clientId, clientSecret, redirectUri } = configuredSignIn();
   const response = await fetch(`${MICROSOFT_HOST}/${encodeURIComponent(tenantId)}/oauth2/v2.0/token`, {
     method: "POST",
