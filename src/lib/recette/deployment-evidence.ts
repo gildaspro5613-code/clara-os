@@ -23,11 +23,17 @@ export async function collectRecetteDeploymentEvidence(
     try { url = new URL(env.DATABASE_URL); } catch { return refused(); }
     if (!['postgres:','postgresql:'].includes(url.protocol) ||
         url.hostname !== env.CLARA_RECETTE_NEON_HOST ||
-        !/^ep-[a-z0-9-]+\\.c-6\\.eu-central-1\\.aws\\.neon\\.tech$/.test(url.hostname) ||
+        !['ep-aged-forest-b2wayach.c-6.eu-central-1.aws.neon.tech',
+          'ep-aged-forest-b2wayach-pooler.c-6.eu-central-1.aws.neon.tech'].includes(url.hostname) ||
         url.username !== 'clara_os_recette_limited' ||
         url.pathname !== '/neondb' ||
         !url.password ||
-        url.searchParams.get('sslmode') !== 'require') return refused();
+        url.searchParams.getAll('sslmode').length !== 1 ||
+        url.searchParams.get('sslmode') !== 'require' ||
+        [...url.searchParams.keys()].some(k => !['sslmode', 'channel_binding'].includes(k)) ||
+        (url.searchParams.has('channel_binding') &&
+         (url.searchParams.getAll('channel_binding').length !== 1 ||
+          url.searchParams.get('channel_binding') !== 'require'))) return refused();
     checks.push('ISOLATION_CONFIGURATION');
     // Endpoint-to-branch provenance must be independently verified outside the app.
     const sql = neon(env.DATABASE_URL, {fetchOptions:{redirect:'error',signal:AbortSignal.timeout(15000)}});
