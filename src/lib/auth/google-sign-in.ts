@@ -1,3 +1,4 @@
+import { assertRecetteExternalExecutionBlocked } from "@/lib/recette/external-execution-guard";
 import { createPublicKey, verify } from "node:crypto";
 import { sql } from "@/lib/core/store/database";
 import { completeVerifiedSignIn } from "./verified-sign-in";
@@ -54,6 +55,7 @@ function decodePart<T>(part: string): T {
 }
 
 async function signingKey(kid: string): Promise<GoogleJwk> {
+  assertRecetteExternalExecutionBlocked('auth.provider-sign-in');
   const response = await fetch(GOOGLE_JWKS_ENDPOINT, { cache: "no-store",signal:AbortSignal.timeout(15_000) });
   if (!response.ok) throw new Error("GOOGLE_JWKS_UNAVAILABLE");
   const body = await response.json() as { keys?: GoogleJwk[] };
@@ -91,6 +93,7 @@ function googleExchangeFailureCategory(description?: string): string {
 }
 
 async function exchangeCode(code: string): Promise<string> {
+  assertRecetteExternalExecutionBlocked("auth.provider-sign-in");
   const { clientId, clientSecret, redirectUri } = configuredSignIn();
   const response = await fetch(GOOGLE_TOKEN_ENDPOINT, {
     method: "POST",

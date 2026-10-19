@@ -99,7 +99,7 @@ test("P0-C: provider adapter enforces conversational ceiling and timeout without
   constructor(options:Record<string,unknown>){settings.push(options);}
   responses={create:async(input:Record<string,unknown>)=>{calls.push(input);return {output:[],output_text:"Partial",status:"incomplete",incomplete_details:{reason:"max_output_tokens"},usage:{output_tokens:input.max_output_tokens}};}};
  }
- const {OpenAIResponsesEngine:Engine}=moduleFrom("src/lib/connectors/internal/openai/responses/openai-responses-engine.ts",{openai:{default:Client}}) as {OpenAIResponsesEngine:typeof OpenAIResponsesEngine};
+ const {OpenAIResponsesEngine:Engine}=moduleFrom("src/lib/connectors/internal/openai/responses/openai-responses-engine.ts",{openai:{default:Client},"@/lib/recette/external-execution-guard":{assertRecetteExternalExecutionBlocked:()=>{}}}) as {OpenAIResponsesEngine:typeof OpenAIResponsesEngine};
  const engine=new Engine();const response=await engine.generate({prompt:"Synthetic",maxTokens:100000,outputProfile:"conversation"});
  assert.equal(calls[0].max_output_tokens,3200);assert.equal(settings[0].timeout,60000);assert.equal(settings[0].maxRetries,0);assert.equal(response.finishReason,"incomplete");
  await engine.generate({prompt:"Synthetic",maxTokens:100000});assert.equal(calls[1].max_output_tokens,2000);assert.equal(settings[1].timeout,undefined);

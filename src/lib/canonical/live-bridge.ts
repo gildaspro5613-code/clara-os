@@ -1,9 +1,11 @@
+import { assertRecetteExternalExecutionBlocked } from "@/lib/recette/external-execution-guard";
 import { loadExternalProducts } from "@/lib/external-capabilities/config";
 import { RegistryError, type LinkCandidate, type LiveLinkProof } from "./registry";
 
 /** Keep the existing product configuration/credential; never redirect it. */
 export function createLiveCanonicalTransport(fetcher: typeof fetch = fetch) {
   return async function call(path: string, payload: unknown): Promise<unknown> {
+    assertRecetteExternalExecutionBlocked("canonical.live");
     const product = loadExternalProducts().get("clara-live");
     if (!product?.callbackBaseUrl || !product.capabilities.includes("canonical-links:v1"))
       throw new RegistryError(503, "LIVE_CANONICAL_BRIDGE_UNAVAILABLE");

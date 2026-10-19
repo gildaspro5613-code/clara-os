@@ -1,3 +1,4 @@
+import { assertRecetteExternalExecutionBlocked } from "@/lib/recette/external-execution-guard";
 /**
  * ============================================
  * CLARA OS
@@ -28,6 +29,7 @@ export class OpenAIResponsesEngine {
   public async generate(
     context: OpenAIResponsesContext,
   ): Promise<OpenAIResponsesResult> {
+    assertRecetteExternalExecutionBlocked("openai.responses");
 
     try {
 

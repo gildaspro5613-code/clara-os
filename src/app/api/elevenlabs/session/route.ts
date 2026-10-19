@@ -1,3 +1,4 @@
+import { assertRecetteExternalExecutionBlocked } from "@/lib/recette/external-execution-guard";
 /**
  * ============================================
  * CLARA OS
@@ -19,6 +20,7 @@ export async function GET(request: Request) {
   const t = await getTranslations("voiceApi");
   try {
   if (!await authorizeVoiceRequest(request)) return NextResponse.json({success:false,error:t("operatorRequired")}, {status:403});
+  assertRecetteExternalExecutionBlocked('elevenlabs.signed-session');
   const { apiKey, agentId } = elevenLabsConfig;
 
   if (!apiKey) {
