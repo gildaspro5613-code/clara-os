@@ -3,6 +3,7 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
+import * as recetteGuard from "../lib/recette/external-execution-guard";
 import { routeHarness } from "./helpers/external-event-route-harness";
 
 const fixture = JSON.parse(readFileSync(new URL("./live-document-operation.fixture.json", import.meta.url), "utf8"));
@@ -31,7 +32,11 @@ test("document output budget is honored while other callers retain their ceiling
   const source = readFileSync(new URL("../lib/connectors/internal/openai/responses/openai-responses-engine.ts", import.meta.url), "utf8");
   const exports: Record<string, unknown> = {};
   vm.runInNewContext(ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText,
-    { exports, require: () => ({ default: Client }), process: { env: {} }, Date });
+    { exports, require: (name: string) => {
+      if (name === "openai") return { default: Client };
+      if (name === "@/lib/recette/external-execution-guard") return recetteGuard;
+      throw new Error(`UNEXPECTED_TEST_IMPORT:${name}`);
+    }, process: { env: {} }, Date });
   const Engine = exports.OpenAIResponsesEngine as new () => { generate(context: Record<string, unknown>): Promise<Record<string, unknown>> };
   const engine = new Engine();
   const incomplete = await engine.generate({ prompt: "synthetic", maxTokens: 6000, outputProfile: "document_analysis" });
@@ -56,6 +61,19 @@ test("document output budget is honored while other callers retain their ceiling
     assert.equal(failed.success, false);
     assert.equal(failed.failureCategory, expected);
     assert.ok(!String(failed.failureCategory).includes("private"));
+  }
+  // Keep the real safety boundary: even the simulated provider must never be
+  // invoked in Recette, including before error handling inside generate().
+  const previousMode = process.env.CLARA_OS_RUNTIME_MODE;
+  const before = requests.length;
+  try {
+    process.env.CLARA_OS_RUNTIME_MODE = "recette";
+    await assert.rejects(() => engine.generate({ prompt: "synthetic", outputProfile: "document_analysis" }),
+      /RECETTE_EXTERNAL_EXECUTION_DENIED:openai.responses/);
+    assert.equal(requests.length, before);
+  } finally {
+    if (previousMode === undefined) delete process.env.CLARA_OS_RUNTIME_MODE;
+    else process.env.CLARA_OS_RUNTIME_MODE = previousMode;
   }
 });
 
