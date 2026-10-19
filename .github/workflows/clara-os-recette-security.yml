@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'src/lib/recette/**'
+      - 'src/app/actions/recette-attestation.ts'
       - 'src/lib/capabilities/capability-policy.ts'
       - 'src/lib/connectors/clara-live/execution-authority.ts'
       - 'src/lib/connectors/brevo/client.ts'
