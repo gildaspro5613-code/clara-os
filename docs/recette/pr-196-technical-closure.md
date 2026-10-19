@@ -94,3 +94,60 @@ Les cinq blocages réseau identifiés sont fermés par tests hors ligne ; aucune
 Le lockfile réellement livré résout toujours **Next 16.3.0**. Le constat de vulnérabilité critique du dossier précédent n'est pas effacé par la compilation du candidat corrigé en workspace CI jetable. Action minimale : faire approuver et livrer la remédiation ciblée déjà étudiée, puis valider les dépendances effectivement livrées ; aucune mise à jour de paquet n'est incluse dans ce lot.
 
 Décision maintenue : **NO-GO déploiement**, pour attestation effective manquante et gate des dépendances livrées non levée. La campagne HTTP reste une réception post-déploiement autorisée distinctement, nécessitant une session fictive valide et deux périmètres préparés ; son absence n'est pas présentée comme un défaut réseau supplémentaire. Aucun merge, déploiement Vercel, fournisseur réel, secret modifié, écriture Neon ou intervention Live/Production.
+
+## Clôture ciblée dépendances et attestation — suite de `1910829`
+
+Références distantes vérifiées avant modification : #196 toujours Draft, branche attendue, HEAD `19108292413e268ef03f19e077ac3137d03aa7a9`. Les cinq frontières et leurs contrats ne sont pas modifiés par ce lot.
+
+### Dépendances réellement livrées
+
+Avis consultés par API GitHub publique (advisories revus et avis du mainteneur), ainsi que la release officielle :
+
+- [GHSA-p293-qw3h-jr36](https://github.com/advisories/GHSA-p293-qw3h-jr36) : RCE sur serveurs Windows, Next `>=16.0.0 <16.3.3`, correctif 16.3.3. Son contexte Windows ne suffit pas à caractériser l'exposition Vercel Linux ; le paquet est toutefois signalé dans l'audit.
+- [GHSA-2xp9-vwfh-vxw4](https://github.com/advisories/GHSA-2xp9-vwfh-vxw4) : RCE Image Optimization avec AVIF, Next `<16.3.3` dans la série 16.
+- [Avis mainteneur GHSA-vcvr-r3jv-pc5j](https://github.com/vercel/next.js/security/advisories/GHSA-vcvr-r3jv-pc5j) : RCE `next/og ImageResponse`, Next `>=16.2.0 <16.3.6`, correctif 16.3.6.
+- [GHSA-cjq9-62q9-8jv4](https://github.com/advisories/GHSA-cjq9-62q9-8jv4) et autres corrections de cache/divulgation : paquet vulnérable jusqu'à 16.3.7 selon l'avis revu. La [release officielle v16.3.8](https://github.com/vercel/next.js/releases/tag/v16.3.8) annonce explicitement ces correctifs. Le champ de version de l'avis mainteneur SSRF conserve un placeholder `16.3.?` ; la release et l'avis revu précisent 16.3.8. Aucun contournement de fonctionnalité n'est utilisé.
+
+Remédiation minimale : patch **16.3.8**, même majeure et même mineure que 16.3.0, plutôt que le candidat 16.4.2 précédemment essayé en CI. `next` et `eslint-config-next` épinglés exactement à 16.3.8. Engines publiés Next : Node >=20.9 ; React/ReactDOM 19.2.4 existants compatibles avec les peers ^19. ESLint >=9 et TypeScript >=3.3.1 compatibles avec l'outillage existant. Pas de migration de code ni remplacement de bibliothèque.
+
+| Paquet / chemin | Lockfile avant | Lockfile après | Justification |
+|---|---|---|---|
+| next, eslint-config-next | 16.3.0 | 16.3.8 | Avis Next ci-dessus, alignement de l'outillage |
+| axios | 1.19.0 | 1.20.0 | Avis multiples dont [SSRF/redirections](https://github.com/advisories/GHSA-r4gj-5m52-g5wh), correctifs <1.20.0 |
+| sharp | 0.35.3 | 0.35.5 | [libheif](https://github.com/advisories/GHSA-rgj7-g3m4-5g8c), [librsvg](https://github.com/advisories/GHSA-wq5f-xc86-pv6w) |
+| qs | 6.15.3 | 6.16.1 | [DoS isBuffer](https://github.com/advisories/GHSA-4mjr-xmp4-gh2g), correction >=6.16.0 |
+| glob/node_modules/brace-expansion | 2.1.4 | 2.1.7 | [DoS](https://github.com/advisories/GHSA-q2hr-2g5m-vwhr) et récursions, dernière correction >=2.1.7 |
+| brace-expansion racine / copie tooling | 1.1.17 / 5.0.8 | 1.1.21 / 5.0.12 | Résolution patch de toutes les copies du paquet ciblé |
+
+Les paquets platformes SWC/env/eslint suivent le patch Next ; Sharp/libvips suivent le patch Sharp (libvips 1.3.2→1.3.4). Deux transitives liées à ces résolutions suivent également : @swc/helpers 0.5.15→0.5.23 et fastq 1.20.1→1.20.3. Aucun nouveau paquet direct, override, force, legacy-peer-deps ou exclusion d'avis.
+
+Commandes réellement utilisées :
+
+```sh
+npm install --package-lock-only --ignore-scripts --no-audit --no-fund --save-exact next@16.3.8
+npm install --package-lock-only --ignore-scripts --no-audit --no-fund --save-dev --save-exact eslint-config-next@16.3.8
+npm update axios brace-expansion sharp qs --package-lock-only --ignore-scripts --no-audit --no-fund
+npm ci --ignore-scripts --no-audit --no-fund
+npm audit --omit=dev --json
+npm audit --json
+```
+
+Un cache npm temporaire sous /tmp a été spécifié à chaque commande, sans modifier de configuration globale. Le cache utilisateur initial était inaccessible ; aucun contrôle TLS/intégrité n'a été désactivé. `npm ci` a terminé avec succès et les manifests des paquets **installés** correspondent au lockfile pour Next, eslint-config-next, Axios, Sharp et qs. Les workflows existants vérifient aussi l'installation normale et le build du commit livré. Les avertissements de peers optionnels WASM et de dépréciation restent documentaires, sans erreur d'installation ni suppression de validation.
+
+Audits :
+
+- Production avant : **5** (1 critique, 3 élevées, 1 modérée). Après : **0**, toutes sévérités, exit 0.
+- Complet avant : **13** (1 critique, 9 élevées, 3 modérées). Après : **8** (0 critique, 6 élevées, 2 modérées), exit 1 : ne pas présenter l'audit complet comme vert.
+- Les huit noms restants existaient déjà avant : @next/eslint-plugin-next, eslint-config-next, braces, fast-glob, micromatch, js-yaml (élevées), @vitest/mocker et vitest (modérées), exclusivement hors graphe de production selon npm. npm propose notamment une rétrogradation majeure d'eslint-config-next pour une chaîne tooling sans correctif compatible recensé ; elle n'est pas appliquée. Aucun audit n'est masqué ou filtré pour faire disparaître ces alertes. Elles restent un risque de l'outillage de développement/build, distinct du paquet livré au runtime ; pas de correction générale de l'outillage dans cette mission.
+
+Tests locaux après `npm ci` : **53/53** ciblés (sécurité Recette, cinq frontières, authentification isolée, attestation, contrats OAuth et archivage), zéro ignoré. TypeScript et ESLint ciblé réussis. Les résultats des quatre CI sur le SHA final sont remis avec leurs liens, sans compter un lancement comme un succès.
+
+### Attestation : environnement exact, pas simple homonymie
+
+Correction strictement nécessaire dans le contrôle existant : exiger désormais l'identifiant réel **env_T6nc8Pd4KLG9qTbvTM9ZsOn4T4YM** dans les métadonnées du déploiement. Un slug `clara-os-recette` sans ID ne prouve plus la cible. ID étranger ou contradictoire = FAIL ; ID absent = NON ATTESTÉ. Projet Vercel, source, mode, hostname/branche Neon et SQL READ ONLY restent contrôlés avant tout PASS. Le test positif fournit l'ID attendu et le test négatif couvre un environnement homonyme d'ID différent avant toute connexion SQL.
+
+Exécution réelle du script dans le contexte disponible : `NON ATTESTÉ`, checks vides, writesRequested=false, exit 1. Les neuf bindings nécessaires sont absents (présence seule contrôlée, pas leurs valeurs) ; aucun accès Vercel/Neon utilisable n'est exposé. Aucun HTTP/SQL réel lancé, aucune clé créée/renouvelée ou valeur copiée dans GitHub/ChatGPT.
+
+**L'unique intervention administrateur encore nécessaire** est décrite dans `pr-196-admin-attestation.md` : exécuter ce même contrôle dans un contexte déjà autorisé qui dispose des bindings effectifs et des accès de lecture existants. L'existence indépendante du projet/environnement/branche et la présence des quatre variables sont conservées comme attestations de métadonnées du propriétaire, pas converties en preuve des valeurs.
+
+**Décision : NO-GO tant que cette attestation effective n'est pas PASS.** Le blocage critique de dépendances de production est levé par le patch réellement verrouillé/installé et l'audit production ; les alertes tooling restent explicitement visibles. Réception HTTP préparée dans le protocole existant, non exécutée. Aucun déploiement, merge, écriture Neon, changement de secrets ou intervention Production/Live.

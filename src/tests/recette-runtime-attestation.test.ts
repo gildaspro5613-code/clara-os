@@ -18,7 +18,7 @@ test('attestation: real SDK, simulated control planes and READ ONLY SQL; no secr
  const http:typeof fetch=async(url,init)=>{
   httpCalls++;assert.equal(init?.method,'GET');assert.equal(init?.redirect,'error');
   if(mode==='unavailable')throw Error(env.DATABASE_URL+env.VERCEL_TOKEN);
-  if(String(url).includes('/deployments/'))return Response.json({projectId:env.VERCEL_PROJECT_ID,target:'preview',customEnvironment:mode==='target'?undefined:{slug:'clara-os-recette'},gitSource:{sha:mode==='sha'?'b'.repeat(40):sha}});
+  if(String(url).includes('/deployments/'))return Response.json({projectId:env.VERCEL_PROJECT_ID,target:'preview',customEnvironment:['target','id-only'].includes(mode)?undefined:{id:mode==='wrong-environment'?'env_foreign':'env_T6nc8Pd4KLG9qTbvTM9ZsOn4T4YM',slug:'clara-os-recette'},customEnvironmentId:mode==='id-only'?'env_T6nc8Pd4KLG9qTbvTM9ZsOn4T4YM':mode==='ambiguous'?'env_foreign':undefined,gitSource:{sha:mode==='sha'?'b'.repeat(40):sha}});
   if(String(url).includes('/projects/prj_'))return Response.json({id:env.VERCEL_PROJECT_ID,name:'clara-os-recette'});
   assert.equal(String(url),'https://console.neon.tech/api/v2/projects/fragrant-dream-31652403/endpoints');
   return Response.json({endpoints:[{host:env.CLARA_RECETTE_NEON_HOST,branch_id:mode==='branch'?'main':env.CLARA_RECETTE_NEON_BRANCH_ID}]});
@@ -32,10 +32,11 @@ test('attestation: real SDK, simulated control planes and READ ONLY SQL; no secr
   assert.equal(httpCalls+sqlCalls,0);
  });
  await t.test('unproven source/target and foreign branch never connect to SQL',async()=>{
-  for(mode of ['sha','target','branch'])assert.notEqual((await attestRecetteRuntime(env,sha,http)).status,'PASS');assert.equal(sqlCalls,0);
+  for(const [scenario,expected] of [['sha','FAIL'],['target','NON ATTESTÉ'],['wrong-environment','FAIL'],['ambiguous','FAIL'],['branch','FAIL']]){mode=scenario;assert.equal((await attestRecetteRuntime(env,sha,http)).status,expected);}assert.equal(sqlCalls,0);
  });
  await t.test('positive attestation requires actual readonly SQL role result; owner is refused',async()=>{
   mode='ok';assert.equal((await attestRecetteRuntime(env,sha,http)).status,'PASS');assert.equal(sqlCalls,1);
+  mode='id-only';assert.equal((await attestRecetteRuntime(env,sha,http)).status,'PASS');
   mode='sql';assert.equal((await attestRecetteRuntime(env,sha,http)).status,'FAIL');
  });
  await t.test('unavailable permissions/transport never pass or expose exception values',async()=>{

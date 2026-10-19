@@ -1,6 +1,7 @@
 import {neon} from '@neondatabase/serverless';
 
 const projectId='prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz';
+const customEnvironmentId='env_T6nc8Pd4KLG9qTbvTM9ZsOn4T4YM';
 const branchId='br-crimson-feather-b2zr00sf';
 const neonProject='fragrant-dream-31652403';
 class Refused extends Error {}
@@ -36,9 +37,10 @@ export async function attestRecetteRuntime(env:NodeJS.ProcessEnv,approvedSha:str
   const project=await read(`https://api.vercel.com/v9/projects/${projectId}`,env.VERCEL_TOKEN!);
   if(project.id!==projectId||project.name!=='clara-os-recette'||deployment.projectId!==projectId||deployment.target==='production')throw new Refused();
   const custom=deployment.customEnvironment;
-  const matching=Array.isArray(project.customEnvironments)?project.customEnvironments.filter((e:{slug?:string})=>e.slug==='clara-os-recette'):[];
-  const targetProven=custom?.slug==='clara-os-recette'||(matching.length===1&&matching[0].id===(custom?.id??deployment.customEnvironmentId));
-  if(!targetProven)throw new Unavailable(); // no inference from a generic Preview target
+  const environmentId=custom?.id??deployment.customEnvironmentId;
+  if(!environmentId)throw new Unavailable(); // a matching slug or Preview is not an ID proof
+  if(environmentId!==customEnvironmentId||(custom?.slug&&custom.slug!=='clara-os-recette')||
+   (custom?.id&&deployment.customEnvironmentId&&custom.id!==deployment.customEnvironmentId))throw new Refused();
   const sha=deployment.gitSource?.sha??deployment.meta?.githubCommitSha;
   if(!sha)throw new Unavailable();if(sha!==approvedSha)throw new Refused();
   checks.push('VERCEL_PROJECT_ENVIRONMENT_SOURCE');
