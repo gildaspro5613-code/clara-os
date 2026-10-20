@@ -174,3 +174,43 @@ Aucun projet n'est connecté par cette correction. Aucun upload, création de d�
 Les étapes suivantes « Strictly verify custom recette Environment » et « Deploy only custom recette environment through official REST API » ont été **SKIPPED**. Aucun POST Vercel, upload, déploiement ou modification de configuration n'a été exécuté. Le custom Environment n'a pas été réattesté par ce run arrêté ; son dernier contrôle réel réussi reste celui du run #39403224033.
 
 **Décision finale de cette passe : NO-GO pour déployer, unique obstacle observé restant = liaison GitHub absente.** Le SHA sans crons et ses contrôles sont prêts. L'intervention minimale du propriétaire est la connexion du dépôt exact au projet indépendant, après validation des effets automatiques et autorisation distincte couvrant cette connexion. Tant que l'absence de création automatique lors de la connexion, des pushes et des PR n'est pas garantie, ne pas exécuter la connexion. Après cette opération seulement : relancer `verify_only=true` ; aucune tentative de déploiement n'est incluse dans la présente autorisation. Les avertissements runners Ubuntu/Node de ce run ne sont pas la cause de l'échec, et ne justifient pas un chantier supplémentaire ici.
+
+## Évaluation REST autonome avec `files` intégrés — arrêt sans correctif de déploiement
+
+Source réellement mesurée : **`6cfed8f80f9b8451d5698ca1040bcf42d513c4f2`**. Lecture exclusive des blobs Git de ce commit (`git ls-tree -r -z` puis `git cat-file blob`), sans lire de secrets locaux, installer de dépendances ni appeler Vercel. Tous les fichiers suivis ont été inclus ; aucun filtrage de documentation, test ou asset destiné à faire artificiellement tenir la requête.
+
+| Mesure réelle | Résultat |
+| --- | --- |
+| Fichiers suivis | 1 084 |
+| Taille brute cumulée | 13 199 227 octets (12,588 MiB) |
+| Fichiers texte UTF-8 sans perte | 1 078 |
+| Fichiers binaires encodés en base64 | 6 |
+| Corps JSON compact complet, UTF-8 + base64 | **16 403 838 octets (15,644 MiB)** |
+| Variante tous fichiers en base64 | 17 691 529 octets (16,872 MiB) |
+| Fichiers omis ou tronqués | 0 |
+| Reconstruction des données après encodage | 1 084 / 1 084 identiques octet pour octet |
+| Plus gros fichier | `assets/master/Clara_Master.png`, 2 367 416 octets |
+
+Le JSON mesuré comprend `name`, projet exact, custom Environment exact, chaque chemin + `data` + `encoding`, et les deux champs metadata portant le SHA complet. Aucun `gitSource`, URL de connexion, secret ni champ `env`. La mesure n'inclut pas les en-têtes HTTP/TLS : c'est la taille exacte du corps non compressé proposé. Aucune compression non documentée ni segmentation en plusieurs créations n'est supposée.
+
+### Contrat officiel et limites non attestées
+
+Le [modèle officiel InlinedFile](https://github.com/vercel/sdk/blob/7930cccab102f0a29dfe0bdd66897edf6a8b006f/src/models/createdeploymentgitsource1.ts) comporte `file`, `data` et `encoding` (`utf-8` ou `base64`). Le corps accepte ces fichiers dans `files`, mutuellement exclusif avec `gitSource`. Le [SDK officiel de création](https://github.com/vercel/sdk/blob/7930cccab102f0a29dfe0bdd66897edf6a8b006f/src/funcs/deploymentsCreateDeployment.ts) envoie le JSON sur POST `/v13/deployments` ; sa documentation mentionne l'inline de « small files ».
+
+**Aucun plafond chiffré propre à ce corps de requête, à chaque fichier intégré ou au nombre de fichiers n'a pu être attesté dans les contrats et sources officiels accessibles.** Les chaînes `data` du schéma ne portent pas de borne maximale publiée. Cela ne prouve pas l'absence de limites côté serveur. Le site documentaire Vercel et les accès administratifs/support ne sont pas disponibles dans cet environnement. Les plafonds des Vercel Functions, des Server Actions Next.js et des uploads de sources séparés ne sont pas transposés à cet endpoint.
+
+Il serait donc incorrect d'affirmer que 16 403 838 octets sont acceptés, ou à l'inverse qu'ils dépassent nécessairement une limite connue. Aucune requête POST, pas même pour sonder une limite, n'a été effectuée. La permission réelle de création avec ce jeton reste également distincte de la conformité du format.
+
+### Next.js et intégralité
+
+Le manifeste comprend `package.json`, `package-lock.json`, `next.config.ts`, les sources, ressources publiques et fichiers nécessaires au tracing PDF/SQL. Le commit déclare Next.js 16.3.8, `next build`, le plugin next-intl et des modules serveur externes. `node_modules` et `.next` ne sont pas suivis : il s'agit d'un déploiement de sources nécessitant installation et build distants, **pas** d'un export statique ou d'un artefact Next.js déjà construit. Aucun symlink/submodule ni fichier exécutable particulier n'a été rencontré dans le manifeste mesuré. Le `vercel.json` Recette reste sans déclaration de cron.
+
+L'encodage et la complétude des sources sont prouvés hors ligne. Ils ne prouvent pas l'acceptation de la requête, la configuration effective du builder Next.js, les bindings Neon ni le fonctionnement de l'interface après un build. Aucun nouveau build ou campagne métier générale n'a été lancé pour remplacer ces preuves manquantes.
+
+### Verdict et une seule alternative
+
+**NO-GO technique pour préparer/activer ce mécanisme en l'état : capacité réelle du POST à accepter le corps complet NON ATTESTÉE. Ce n'est pas une preuve d'incompatibilité définitive.** Aucun remplacement du workflow ni nouveau driver inline n'est implémenté. Le workflow reste `verify_only=true` par défaut, le SHA Recette, les contrôles et le secret dédié sont inchangés.
+
+**Alternative unique : reprendre le protocole officiel de sources avec upload séparé `/v2/files`, puis une seule création `/v13/deployments` référencée par digest**, déjà préparé antérieurement dans #198. La [documentation Vercel Deployments](https://github.com/vercel/sdk/blob/7930cccab102f0a29dfe0bdd66897edf6a8b006f/docs/sdks/deployments/README.md) et le [client officiel d'upload](https://github.com/vercel/vercel/blob/c628be7835e03a965b93e9cf9e2bd5ac2acbf5eb/packages/client/src/upload.ts) décrivent cette séparation. Elle évite la liaison GitHub et le gros corps inline, ne requiert ni service ni abonnement nouveau, et réutilise le mécanisme existant. Elle nécessite toutefois une autorisation distincte pour déroger à l'objectif « sans `/v2/files` » et la confirmation de compatibilité du jeton restreint avec cet endpoint lié à l'équipe. Aucun élargissement de jeton, test d'upload ou déploiement n'est proposé automatiquement ; l'alternative n'est pas déclarée prête.
+
+Mesure reproductible exécutée hors ligne : `node /workspace/clara-os-recette-inline-evaluation.mjs` depuis le dépôt ; résultats `/workspace/clara-os-recette-inline-measurements.json`. Ces fichiers de livraison hors dépôt ne contiennent aucun contenu source ou secret dans leur sortie, seulement les mesures et quelques chemins d'assets. Seul le présent rapport est modifié dans la PR pour cette évaluation. Aucun merge, lien GitHub, changement de configuration/secrets, Neon, Production ou Clara Live.
