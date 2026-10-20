@@ -24,4 +24,3 @@ export function validateRecetteDatabaseBinding(env: NodeJS.ProcessEnv): 'FAIL' |
         url.searchParams.get('channel_binding') !== 'require'))) return 'FAIL';
   return 'OK';
 }
-
