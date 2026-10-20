@@ -47,10 +47,10 @@ jobs:
         run: npm install --global vercel@latest
       - name: Resolve and strictly verify independent project
         env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_RECETTE_TOKEN }}
         run: |
           set -euo pipefail
-          test -n "$VERCEL_TOKEN"
+          test -n "$VERCEL_TOKEN" || { echo "::error::Dedicated VERCEL_RECETTE_TOKEN is missing; no fallback allowed"; exit 1; }
           status=$(curl --silent --show-error \
             --header "Authorization: Bearer $VERCEL_TOKEN" \
             "https://api.vercel.com/v9/projects/clara-os-recette?teamId=team_0BeqOAO8t5oDEBdzHHdekcxv" \
@@ -110,7 +110,7 @@ jobs:
       - name: Deploy only custom recette environment (never --prod)
         if: ${{ inputs.verify_only == false }}
         env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_RECETTE_TOKEN }}
         run: |
           set -euo pipefail
           vercel deploy --yes --target=clara-os-recette \
