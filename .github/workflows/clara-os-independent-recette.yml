@@ -66,14 +66,33 @@ jobs:
             // credential, header, URL with credentials, or reflected token.
             const codes = new Set(['forbidden','unauthorized','not_found','invalid_token',
               'token_expired','missing_authentication_token','bad_request']);
-            const messages = new Set(['Forbidden','Unauthorized','Not authorized',
-              'Invalid token','Invalid authentication token','Token expired',
-              'Project not found','The project could not be found',
-              'The request is missing an authentication token']);
             const code = codes.has(p.error?.code) ? p.error.code : 'UNCLASSIFIED';
-            const message = messages.has(p.error?.message) ? p.error.message : 'PROVIDER_MESSAGE_WITHHELD';
-            const result = `VERCEL_PROJECT_CHECK_REFUSED HTTP=${status} code=${code} message=${message}`;
-            console.log('::error title=Recette project metadata::' + result);
+            const raw = typeof p.error?.message === 'string' ? p.error.message : '';
+            const token = process.env.VERCEL_TOKEN;
+            let message = raw;
+            // Exact-secret removal precedes bounded generic redaction. Only the
+            // error message is considered; never log the response body or headers.
+            if (token) for (const value of [token, encodeURIComponent(token)]) {
+              message = message.split(value).join('[REDACTED]');
+            }
+            message = message.replace(/https?:\/\/[^\s]+/g, '[URL REDACTED]')
+              .replace(/[A-Za-z0-9_.~+\/-]{20,}/g, '[OPAQUE REDACTED]')
+              .replace(/[\x00-\x1f\x7f]/g, ' ').slice(0, 400) || 'PROVIDER_MESSAGE_ABSENT';
+            const probe = path => {
+              try {
+                const value = require('node:child_process').execFileSync('curl', [
+                  '--silent', '--show-error', '--max-time', '15', '--output', '/dev/null',
+                  '--write-out', '%{http_code}', '--header', 'Authorization: Bearer ' + token,
+                  'https://api.vercel.com' + path,
+                ], {encoding:'utf8',stdio:['ignore','pipe','pipe']});
+                return /^[0-9]{3}$/.test(value) ? value : '000';
+              } catch { return '000'; }
+            };
+            const userStatus = probe('/v2/user');
+            const teamStatus = probe('/v2/teams/team_0BeqOAO8t5oDEBdzHHdekcxv');
+            const result = `VERCEL_PROJECT_CHECK_REFUSED HTTP=${status} code=${code} message=${message} accountHTTP=${userStatus} teamHTTP=${teamStatus}`;
+            console.log('::error title=Recette project metadata::' + result.replaceAll('%','%25'));
+
             fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, result + '\n');
             process.exit(1);
           }
