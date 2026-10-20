@@ -1,7 +1,7 @@
 name: Native resource authority validation
 on:
   pull_request:
-    branches: [main, consolidation/clara-os-clean-base]
+    branches: [main, consolidation/clara-os-clean-base, chore/recette-effective-binding-attestation]
     paths:
       - 'src/lib/native/**'
       - 'src/lib/external-capabilities/product-callback.ts'
@@ -51,7 +51,8 @@ on:
       - 'src/lib/connections/**'
       - 'src/lib/connectors/**/google/**'
       - 'src/lib/auth/oauth/**'
-      - 'src/lib/auth/google-sign-in.ts'
+      - 'src/lib/auth/google-sign-in*'
+      - 'src/tests/google-sign-in-postgres.test.ts'
       - 'src/tests/native-documents*'
       - 'src/tests/native-google*'
       - 'src/tests/helpers/native-google*'
@@ -90,12 +91,12 @@ jobs:
           done
           exit 1
       - name: Actual handlers and database isolation, revocation, snapshot and history
-        run: node --import tsx --test src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts src/tests/native-commercial-postgres.test.ts src/tests/native-documents-postgres.test.ts src/tests/native-google-oauth.test.ts src/tests/native-mail-postgres.test.ts src/tests/ionos-transport.test.ts src/tests/native-conversation-postgres.test.ts src/tests/native-functional-closure.test.ts src/tests/native-google-work-postgres.test.ts
+        run: node --import tsx --test src/tests/google-sign-in-postgres.test.ts src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts src/tests/native-commercial-postgres.test.ts src/tests/native-documents-postgres.test.ts src/tests/native-google-oauth.test.ts src/tests/native-mail-postgres.test.ts src/tests/ionos-transport.test.ts src/tests/native-conversation-postgres.test.ts src/tests/native-functional-closure.test.ts src/tests/native-google-work-postgres.test.ts
       - name: Existing Live callback bounded transport and authentication
         run: node --import tsx --test src/tests/live-callback-transport.test.ts src/tests/clara-live-product-auth.test.ts src/tests/external-event-message-contract.test.ts
       - run: npx eslint src/lib/external-capabilities/product-callback.ts src/tests/live-callback-transport.test.ts
       - run: npx tsc --noEmit --pretty false
-      - run: npx eslint src/lib/native src/app/api/clara/session src/app/api/native src/components/native src/tests/native-runtime-browser.e2e.mjs src/tests/helpers/native-runtime* src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts
+      - run: npx eslint src/lib/native src/app/api/clara/session src/app/api/native src/components/native src/tests/native-runtime-browser.e2e.mjs src/tests/helpers/native-runtime* src/tests/google-sign-in-postgres.test.ts src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts
       - run: npx eslint src/app/api/contacts src/app/api/clara/acquisition/commercial-draft src/lib/acquisition/acquisition-store.ts src/lib/intake/md-project-intake-inbox.ts src/tests/native-commercial* src/tests/helpers/native-commercial* src/tests/native-documents* src/tests/native-google-oauth.test.ts
       - run: npx eslint src/lib/connectors/ionos src/lib/acquisition/mailbox-communication-draft.ts src/tests/native-mail* src/tests/native-functional-closure* src/components/contacts/ContactsDirectory.tsx src/tests/ionos-transport.test.ts src/tests/helpers/native-mail*
       - run: npx eslint src/tests/helpers/native-browser-diagnostics.mjs src/tests/native-conversation* src/tests/cockpit-availability* src/tests/helpers/native-conversation* src/lib/native/chat.ts src/components/cockpit/widgets/clara/ClaraChatWidget.tsx src/lib/external-capabilities/event-jobs.ts src/components/layout/Header.tsx src/components/cockpit/Stage.tsx src/components/cockpit/hero/Hero.tsx src/components/cockpit/Cockpit.tsx src/components/cockpit/widgets/CockpitWidgets.tsx src/app/page.tsx
