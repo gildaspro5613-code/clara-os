@@ -15,12 +15,13 @@ const {deployRecette,approvedGitSource,expected}=await import(pathToFileURL(join
 test.after(()=>rmSync(temporary,{recursive:true,force:true}));
 const link={type:'github',repoId:1316164838,org:'gildaspro5613-code',repo:'clara-os'};
 const gitSource={type:'github',repoId:expected.repositoryId,ref:expected.sha,sha:expected.sha};
-// Empty schedules are synthetic ONLY. The actual approved SHA is tested as refused below.
+// Transport is simulated; source provenance and Production preservation are tested against Git below.
 function fakeGit(args) {
- if(args[0]==='rev-parse') return Buffer.from(expected.sha+'\n');
+ if(args[0]==='rev-parse') return Buffer.from((args[1]==='HEAD'?expected.sha:expected.baseSha)+'\n');
  if(args[0]==='remote') return Buffer.from('https://github.com/gildaspro5613-code/clara-os\n');
  if(args[0]==='cat-file') return Buffer.from('commit\n');
- if(args[0]==='show') return Buffer.from('{"crons":[]}');
+ if(args[0]==='show') return Buffer.from(args[1]===expected.baseSha+':vercel.json'?'{"crons":[{},{}]}':'{}');
+ if(args[0]==='diff') return Buffer.from('vercel.json\n');
  throw Error('UNEXPECTED_GIT_OPERATION');
 }
 function harness({project,environment,create,poll,failPath,failStatus=403,timeout=false,git=fakeGit}={}) {
@@ -63,15 +64,15 @@ test('source includes immutable SHA twice and repository ID, not a moving branch
  }
 });
 test('actual b2a51dd schedules are present and cause refusal before all HTTP, without changing source',async()=>{
- const original=execFileSync('git',['show',expected.sha+':vercel.json']);
+ const original=execFileSync('git',['show',expected.baseSha+':vercel.json']);
  assert.equal(JSON.parse(original).crons.length,2);
  const h=harness({git:args=>args[0]==='show'?original:fakeGit(args)});
  await assert.rejects(h.run(),/GIT_SOURCE_CRONS_PRESENT_NO_DEPLOYMENT/);assert.equal(h.calls.length,0);
- assert.deepEqual(execFileSync('git',['show',expected.sha+':vercel.json']),original);
+ assert.deepEqual(execFileSync('git',['show',expected.baseSha+':vercel.json']),original);
 });
 test('missing configuration, malformed or nonempty crons cannot use an undocumented override',()=>{
- for(const data of ['bad JSON','{"crons":null}','{"crons":{}}','{"crons":[{"path":"/run"}]}']) assert.throws(()=>approvedGitSource(args=>args[0]==='show'?Buffer.from(data):fakeGit(args)));
- assert.deepEqual(approvedGitSource(args=>args[0]==='show'?Buffer.from('{}'):fakeGit(args)),gitSource);
+ for(const data of ['bad JSON','{"crons":null}','{"crons":{}}','{"crons":[{"path":"/run"}]}']) assert.throws(()=>approvedGitSource(args=>args[0]==='show'&&args[1]===expected.sha+':vercel.json'?Buffer.from(data):fakeGit(args)));
+ assert.deepEqual(approvedGitSource(args=>args[0]==='show'&&args[1]===expected.sha+':vercel.json'?Buffer.from('{}'):fakeGit(args)),gitSource);
 });
 test('synthetic cron-free Git deployment: no upload, exactly one creation, exact custom target and source',async()=>{
  const h=harness();assert.equal((await h.run()).event,'READY');
@@ -176,4 +177,38 @@ test('preflight 401/403 stops immediately without retry or fallback and never re
   assert.equal(h.calls.length,2);
  }
  let calls=0;await assert.rejects(verifyCustomEnvironment({token:'',http:()=>{calls++;}}),/DEDICATED_RECETTE_TOKEN_REQUIRED/);assert.equal(calls,0);
+});
+
+
+test('real Recette Git descendant changes only vercel.json; PR promotion retains both Production schedules',()=>{
+ const git=args=>execFileSync('git',args);
+ assert.equal(String(git(['rev-parse',expected.sha+'^'])).trim(),expected.baseSha);
+ assert.equal(String(git(['diff','--name-only',expected.baseSha,expected.sha])).trim(),'vercel.json');
+ const base=JSON.parse(git(['show',expected.baseSha+':vercel.json']));
+ const recette=JSON.parse(git(['show',expected.sha+':vercel.json']));
+ assert.equal(base.crons.length,2);assert.equal(recette.crons,undefined);
+ delete base.crons;assert.deepEqual(recette,base);
+ const localHead=String(git(['rev-parse','HEAD'])).trim();
+ assert.notEqual(localHead,expected.sha);
+ assert.deepEqual(git(['show',localHead+':vercel.json']),git(['show',expected.baseSha+':vercel.json']));
+ assert.throws(()=>git(['merge-base','--is-ancestor',expected.sha,localHead]));
+ assert.deepEqual(approvedGitSource(args=>args[0]==='remote'?fakeGit(args):args[0]==='rev-parse'&&args[1]==='HEAD'?Buffer.from(expected.sha):git(args)),gitSource);
+});
+test('wrong parent, unrelated business diff or additional configuration changes are refused',()=>{
+ assert.throws(()=>approvedGitSource(args=>args[0]==='rev-parse'&&args[1]!=='HEAD'?Buffer.from('foreign'):fakeGit(args)),/SOURCE_PARENT_REFUSED/);
+ assert.throws(()=>approvedGitSource(args=>args[0]==='diff'?Buffer.from('vercel.json\nsrc/business.ts'):fakeGit(args)),/SOURCE_BUSINESS_DIFF_REFUSED/);
+ assert.throws(()=>approvedGitSource(args=>args[0]==='show'&&args[1]===expected.sha+':vercel.json'?Buffer.from('{"buildCommand":"changed"}'):fakeGit(args)),/SOURCE_CONFIGURATION_DIFF_REFUSED/);
+});
+test('actual project check distinguishes missing and mismatched GitHub links without exposing provider values',()=>{
+ const step=yaml.load(workflow).jobs.deploy.steps.find(s=>s.name==='Resolve and strictly verify independent project');
+ assert(!step.run.includes('/v2/user'));assert(!step.run.includes('/v2/teams'));assert(!step.run.includes('const probe'));
+ const script=step.run.split("<<'NODE'\n")[1].split('\nNODE')[0];
+ assert.ok(script);
+ for(const [projectLink,expectedCode] of [[null,'RECETTE_GITHUB_LINK_ABSENT'],[{...link,repoId:'foreign'},'RECETTE_GITHUB_LINK_MISMATCH']]) {
+  const input=join(temporary,'project.json');writeFileSync(input,JSON.stringify({id:expected.project,name:expected.slug,accountId:expected.team,link:projectLink}));
+  let output='';
+  try {execFileSync(process.execPath,['-',input,'200'],{input:script,encoding:'utf8',cwd:temporary});assert.fail('MUST_REFUSE');}
+  catch(error){assert.equal(error.status,1);output=String(error.stdout);}
+  assert.match(output,new RegExp(expectedCode));assert(!output.includes('foreign'));
+ }
 });

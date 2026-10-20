@@ -138,3 +138,31 @@ Cette proposition n'ajoute aucun service ni abonnement. Un futur déploiement Gi
 15 tests hors ligne, 15 réussis, 0 échec, 0 ignoré ; YAML chargé et `git diff --check` réussis. Les assertions devenues propres à l'ancien upload ont été remplacées par celles de l'absence d'upload et du contrat Git, sans suppression des exigences de sécurité : projet/équipe/source/custom Environment, 401/403, faux reçus, ID/URL ambigus, acquittement perdu, 408/5xx, contrôle de source après polling, refus sans second POST. Le précontrôle GET reste accessible avec `verify_only=true` par défaut, mais ne constitue pas un GO de déploiement et n'est pas relancé ici.
 
 Le driver vérifie aussi `gitSource` réel renvoyé par Vercel avant tout état READY ; un reçu dépourvu de repo ID, SHA ou référence conforme reste incertain, sans deuxième création. Secret dédié inchangé, une seule création possible, aucun retry POST, aucun repli Production. Aucun workflow, upload, déploiement, merge, migration Neon ou intervention Production/Clara Live exécuté dans cette passe.
+
+## Source Recette sans crons — clôture ciblée
+
+La source autorisée est désormais **`6cfed8f80f9b8451d5698ca1040bcf42d513c4f2`**, parent unique **`b2a51dd59381daa1e5d3278f3d7104b986015170`**. Son seul fichier modifié est `vercel.json` : suppression du tableau `crons`, conservation de `$schema`. Aucun fichier métier, migration, dépendance ou contrat n'a changé. Le diff et le parent ont été vérifiés localement puis par l'API GitHub du commit.
+
+Référence de conservation : tag `recette-pr198-source-no-crons-v1`, publié sans branche supplémentaire, sans nouvelle PR et sans merge. Le workflow utilise le SHA complet, jamais le tag comme référence mobile. La référence sert exclusivement à rendre la source disponible au clone Git Vercel ; elle n'autorise aucun déploiement. Les workflows automatiques recensés sont limités à des branches/PR ou à un déclenchement manuel, pas à ce tag.
+
+### Protection de la promotion Production
+
+Le commit Recette est une divergence de b2a51dd, **pas un ancêtre de la branche de la PR #198**. Il n'est ni fusionné ni cherry-pické dans cette branche. Le `vercel.json` de la branche #198 reste identique octet pour octet à celui de b2a51dd, avec ses deux crons. Le fichier `vercel.json` ne fait donc pas partie du diff de cette correction dans la PR. Les tests imposent cette conservation et l'absence du commit Recette dans l'ascendance de la PR.
+
+Lors d'une promotion ultérieure, utiliser le code métier de la lignée PR/Production, **jamais le tag ni le SHA Recette**. Vérification préalable obligatoire : `git diff --exit-code b2a51dd59381daa1e5d3278f3d7104b986015170 <SHA_PROMOTION> -- vercel.json`, puis contrôle des deux schedules. Si le fichier évolue légitimement, cette différence exige une revue explicite ; elle ne doit jamais être ignorée. Cette séparation garantit que fusionner les changements ordinaires de #198 ne propage pas la suppression des crons. Elle ne constitue pas une autorisation de promouvoir le commit Recette.
+
+### Garde de provenance et tests
+
+Le workflow a été épinglé au nouveau SHA après les vérifications de contenu. Checkout `fetch-depth: 2`, parent immédiat b2a51dd et diff limité à `vercel.json` vérifiés également au précontrôle. Le driver confirme en plus que le JSON est exactement celui du parent moins `crons`. Parent incorrect, autre fichier modifié, changement supplémentaire de configuration ou réapparition d'un cron sont refusés avant toute requête du driver. Secret dédié, projet/équipe/custom Environment, référence GitHub, absence de POST retry et `verify_only=true` par défaut sont conservés. Le premier précontrôle metadata s'arrête désormais aussi sans sondes supplémentaires après un échec HTTP.
+
+**18 tests ciblés réussis, 0 échec, 0 ignoré** (`node --test .github/scripts/recette-deployment-api.test.mjs`), YAML et diff validés. Les tests utilisent les vrais objets Git pour vérifier la source et la préservation Production, et un transport simulé pour les appels REST. Ils ne certifient aucun POST réel.
+
+### Liaison GitHub : contrôle et intervention éventuelle
+
+Seul `verify_only=true` peut être lancé dans cette intervention. Il lit GET `/v9/projects/clara-os-recette?teamId=team_0BeqOAO8t5oDEBdzHHdekcxv`, vérifie l'identité exacte, puis exige `link.type=github`, `link.repoId=1316164838`, `link.org=gildaspro5613-code`, `link.repo=clara-os`. Une liaison absente produit `RECETTE_GITHUB_LINK_ABSENT`, une liaison différente `RECETTE_GITHUB_LINK_MISMATCH`. Le résultat réel et son lien d'exécution sont consignés dans la PR et le rapport de livraison ; l'ancien PASS d'un projet non lié ne vaut pas validation de cette condition.
+
+Si liaison absente : **NO-GO** jusqu'à une autorisation distincte de connexion. Intervention propriétaire : Vercel → équipe Mélodie Digital → projet `clara-os-recette` (ID exact `prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz`) → Settings → Git → Connect Git Repository → dépôt exact `gildaspro5613-code/clara-os` (ID `1316164838`). Ne pas utiliser le projet Clara OS Production. L'intégration GitHub Vercel doit autoriser la lecture de ce dépôt ; aucune valeur de jeton n'est à transmettre.
+
+**Effet de sécurité à traiter avant connexion :** le lien Git peut rendre les pushes/PR éligibles à des déploiements automatiques Production ou Preview, et la connexion peut proposer un premier déploiement. Il faut convenir et vérifier les règles d'absence de déploiements automatiques (y compris custom Environment), la branche Production du projet indépendant, les Branch Tracking, les règles de build et l'accès de l'app GitHub avant cette opération ; l'ancien Ignored Build Step ne suffit pas à garantir à lui seul l'absence de déploiement créé. Ne pas accepter de premier déploiement, ne pas connecter sans accord, ne pas modifier les règles Production de l'autre projet. Une fois la connexion autorisée et sécurisée, relancer uniquement le précontrôle manuel ; aucune création REST tant que ce contrôle n'est pas réussi.
+
+Aucun projet n'est connecté par cette correction. Aucun upload, création de déploiement, migration, merge ou intervention Production/Clara Live autorisé dans cette passe.
