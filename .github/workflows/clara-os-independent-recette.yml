@@ -2,6 +2,12 @@ name: Clara OS independent project recette deployment
 run-name: "Isolated recette project — ${{ github.actor }}"
 on:
   workflow_dispatch:
+    inputs:
+      verify_only:
+        description: Verify project access only; do not deploy
+        type: boolean
+        default: true
+        required: true
 permissions:
   contents: read
 concurrency:
@@ -37,6 +43,7 @@ jobs:
           fs.writeFileSync(path, JSON.stringify(config, null, 2) + '\n');
           NODE
       - name: Install Vercel CLI on runner
+        if: ${{ inputs.verify_only == false }}
         run: npm install --global vercel@latest
       - name: Resolve and strictly verify independent project
         env:
@@ -44,13 +51,32 @@ jobs:
         run: |
           set -euo pipefail
           test -n "$VERCEL_TOKEN"
-          curl --fail --silent --show-error \
+          status=$(curl --silent --show-error \
             --header "Authorization: Bearer $VERCEL_TOKEN" \
             "https://api.vercel.com/v9/projects/clara-os-recette?teamId=team_0BeqOAO8t5oDEBdzHHdekcxv" \
-            > "$RUNNER_TEMP/recette-project.json"
-          node - "$RUNNER_TEMP/recette-project.json" <<'NODE'
+            --output "$RUNNER_TEMP/recette-project.json" --write-out '%{http_code}')
+          node - "$RUNNER_TEMP/recette-project.json" "$status" <<'NODE'
           const fs = require('fs');
-          const p = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+          const status = /^[0-9]{3}$/.test(process.argv[3]) ? process.argv[3] : '000';
+          let p;
+          try { p = JSON.parse(fs.readFileSync(process.argv[2], 'utf8')); }
+          catch { p = {}; }
+          if (status !== '200') {
+            // Publish only allowlisted provider literals. Never publish a raw body,
+            // credential, header, URL with credentials, or reflected token.
+            const codes = new Set(['forbidden','unauthorized','not_found','invalid_token',
+              'token_expired','missing_authentication_token','bad_request']);
+            const messages = new Set(['Forbidden','Unauthorized','Not authorized',
+              'Invalid token','Invalid authentication token','Token expired',
+              'Project not found','The project could not be found',
+              'The request is missing an authentication token']);
+            const code = codes.has(p.error?.code) ? p.error.code : 'UNCLASSIFIED';
+            const message = messages.has(p.error?.message) ? p.error.message : 'PROVIDER_MESSAGE_WITHHELD';
+            const result = `VERCEL_PROJECT_CHECK_REFUSED HTTP=${status} code=${code} message=${message}`;
+            console.log('::error title=Recette project metadata::' + result);
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, result + '\n');
+            process.exit(1);
+          }
           if (p.name !== 'clara-os-recette' || p.id !== 'prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz' ||
               p.id === 'prj_jLIZqU5V98I4yl8RCbAaoqgM4KNJ' ||
               p.link || p.gitRepository) {
@@ -63,6 +89,7 @@ jobs:
           console.log('Independent project identity verified; production project excluded');
           NODE
       - name: Deploy only custom recette environment (never --prod)
+        if: ${{ inputs.verify_only == false }}
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
