@@ -96,7 +96,8 @@ jobs:
             fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, result + '\n');
             process.exit(1);
           }
-          if (p.name !== 'clara-os-recette' || p.id !== 'prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz' ||
+          if (p.accountId !== 'team_0BeqOAO8t5oDEBdzHHdekcxv' ||
+              p.name !== 'clara-os-recette' || p.id !== 'prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz' ||
               p.id === 'prj_jLIZqU5V98I4yl8RCbAaoqgM4KNJ' ||
               p.link || p.gitRepository) {
             throw new Error('Independent unlinked project verification failed');
