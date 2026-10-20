@@ -88,3 +88,53 @@ Action minimale restante : obtenir de Vercel une confirmation explicite que le p
 `node --test .github/scripts/recette-deployment-api.test.mjs` : **14 tests réussis, 0 échec, 0 ignoré**. Les trois nouveaux tests couvrent le vrai code précontrôle extrait du YAML, son exécution inconditionnelle en mode vérification, les identités et environnements divergents/dupliqués, les HTTP 401/403 sans retry, les erreurs réseau/JSON et l'absence totale de POST. Les 11 tests REST antérieurs restent verts. YAML chargé par `js-yaml` et `git diff --check` réussis. Ces tests utilisent un transport simulé et ne certifient aucune permission Vercel réelle.
 
 Fichiers concernés uniquement : workflow existant, tests REST existants, présent rapport. La preuve du précontrôle réel et son SHA contrôleur sont fournis par le run manuel GitHub Actions associé ; elle ne vaut jamais attestation Neon, permission d'upload/création ou réception métier.
+
+## Proposition gitSource — remplace l'upload, mais SHA actuel NON DÉPLOYABLE par ce garde
+
+Cette section remplace la proposition d'upload décrite plus haut. Le workflow n'appelle plus `/v2/files` et ne transmet plus `files`. Il prépare exclusivement POST `/v13/deployments` avec :
+
+```json
+{
+  "project": "prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz",
+  "name": "clara-os-recette",
+  "customEnvironmentSlugOrId": "env_T6nc8Pd4KLG9qTbvTM9ZsOn4T4YM",
+  "gitSource": {
+    "type": "github",
+    "repoId": "1316164838",
+    "ref": "b2a51dd59381daa1e5d3278f3d7104b986015170",
+    "sha": "b2a51dd59381daa1e5d3278f3d7104b986015170"
+  }
+}
+```
+
+Le repo ID `1316164838` a été confirmé par GET GitHub du dépôt `gildaspro5613-code/clara-os`. Le checkout et le driver vérifient le SHA, le type commit et le remote GitHub exact. Le projet Vercel doit désormais présenter un lien GitHub existant avec ce repo ID, `org=gildaspro5613-code`, `repo=clara-os`, `type=github`. Un projet non lié est refusé ; aucun lien n'est créé ou modifié automatiquement. Le dernier précontrôle réel du contrôleur précédent exigeait au contraire l'absence de lien : **il ne prouve pas cette nouvelle précondition**. L'état actuel du lien reste NON VÉRIFIÉ, aucun nouveau contrôle Vercel n'ayant été lancé dans cette passe.
+
+Référence officielle : [GitSource2 dans le SDK Vercel](https://github.com/vercel/sdk/blob/7930cccab102f0a29dfe0bdd66897edf6a8b006f/src/models/createdeploymentgitsource1.ts), champs `type=github`, `repoId`, `ref`, `sha`. Le même contrat précise que `files` et `gitSource` sont mutuellement exclusifs et que `customEnvironmentSlugOrId` remplace la cible déduite. Aucun `gitAccessToken`, réglage projet, `withLatestCommit` ou branche mobile n'est envoyé. La déclaration utilisateur rapportant les droits projet de Vercel est conservée comme provenance administrative ; elle ne devient pas un test réel du POST.
+
+### Blocage démontré : deux schedules dans le SHA approuvé
+
+Le véritable `git show b2a51dd59381daa1e5d3278f3d7104b986015170:vercel.json` contient :
+
+| Route | Schedule |
+| --- | --- |
+| `/api/internal/document-operations-purge` | `0 3 * * *` |
+| `/api/internal/event-jobs-run` | `* * * * *` |
+
+Le mécanisme précédent supprimait ces deux entrées dans les fichiers uploadés. Avec `gitSource`, Vercel récupère le fichier Git original ; modifier localement ce fichier serait sans effet. Le contrat de création consulté ne fournit pas d'override `crons` permettant de reproduire cette suppression. La présence de ces déclarations ne prouve pas leur activation sur un custom Environment ; leur inactivité n'est toutefois pas attestée ici. Ni l'absence supposée de `CRON_SECRET`, ni les refus des transports métier ne prouvent l'absence de lancement d'un worker.
+
+Le garde choisi refuse donc les schedules non vides avant tout HTTP du driver, avec **`GIT_SOURCE_CRONS_PRESENT_NO_DEPLOYMENT`**. Un test utilise les vrais octets Git du SHA approuvé et reproduit ce refus, sans altération du fichier. Les tests de création réussie utilisent explicitement une configuration synthétique sans cron ; **ils ne valident pas le déploiement réel de b2a51dd**.
+
+### Décision et action minimale
+
+**NO-GO pour déployer le SHA actuel par ce mécanisme.** Deux préconditions restent :
+
+1. Confirmer un lien GitHub exact du projet Recette. Le projet était non lié au dernier précontrôle. Toute connexion éventuelle doit faire l'objet d'une autorisation distincte et préserver l'interdiction des déploiements automatiques/Preview ; aucune modification de Vercel n'a été effectuée.
+2. Résoudre les schedules : soit obtenir une preuve officielle et vérifiable de leur inactivité sur le custom Environment, puis autoriser une adaptation ciblée du garde ; soit autoriser un nouveau SHA de recette retirant uniquement les schedules. La seconde option change le SHA et n'est donc pas appliquée sous l'exigence actuelle d'épinglage strict à b2a51dd. Aucune désactivation projet, configuration globale ou nouvelle infrastructure n'est proposée automatiquement.
+
+Cette proposition n'ajoute aucun service ni abonnement. Un futur déploiement Git exécuterait un build Vercel selon la facturation existante ; aucun build n'a été lancé. Le retrait de `/v2/files` élimine l'incertitude spécifique aux permissions d'upload, sans certifier la permission réelle de création ou la liaison GitHub.
+
+### Tests et sécurité
+
+15 tests hors ligne, 15 réussis, 0 échec, 0 ignoré ; YAML chargé et `git diff --check` réussis. Les assertions devenues propres à l'ancien upload ont été remplacées par celles de l'absence d'upload et du contrat Git, sans suppression des exigences de sécurité : projet/équipe/source/custom Environment, 401/403, faux reçus, ID/URL ambigus, acquittement perdu, 408/5xx, contrôle de source après polling, refus sans second POST. Le précontrôle GET reste accessible avec `verify_only=true` par défaut, mais ne constitue pas un GO de déploiement et n'est pas relancé ici.
+
+Le driver vérifie aussi `gitSource` réel renvoyé par Vercel avant tout état READY ; un reçu dépourvu de repo ID, SHA ou référence conforme reste incertain, sans deuxième création. Secret dédié inchangé, une seule création possible, aucun retry POST, aucun repli Production. Aucun workflow, upload, déploiement, merge, migration Neon ou intervention Production/Clara Live exécuté dans cette passe.
