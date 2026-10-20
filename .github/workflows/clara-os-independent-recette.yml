@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       verify_only:
-        description: Verify project access only; do not deploy
+        description: Verify source, project and custom Environment only; do not deploy
         type: boolean
         default: true
         required: true
@@ -110,6 +110,53 @@ jobs:
           }));
           console.log('Independent project identity verified; production project excluded');
           NODE
+      - name: Strictly verify custom recette Environment (read-only)
+        env:
+          VERCEL_RECETTE_TOKEN: ${{ secrets.VERCEL_RECETTE_TOKEN }}
+        run: |
+          set -euo pipefail
+          node --input-type=module - <<'NODE_PREFLIGHT'
+          import {appendFileSync} from 'node:fs';
+          export async function verifyCustomEnvironment({token,http = fetch}) {
+            if (!token) throw new Error('DEDICATED_RECETTE_TOKEN_REQUIRED');
+            const projectId = 'prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz';
+            const teamId = 'team_0BeqOAO8t5oDEBdzHHdekcxv';
+            const environmentId = 'env_T6nc8Pd4KLG9qTbvTM9ZsOn4T4YM';
+            const slug = 'clara-os-recette';
+            async function read(path) {
+              const url = new URL(path,'https://api.vercel.com');
+              url.searchParams.set('teamId',teamId);
+              let response;
+              try {
+                response = await http(url,{method:'GET',redirect:'error',signal:AbortSignal.timeout(30000),headers:{Authorization:'Bearer ' + token}});
+              } catch { throw new Error('PREFLIGHT_TRANSPORT_REFUSED'); }
+              if (!response.ok) throw new Error('PREFLIGHT_HTTP_' + response.status);
+              try { return await response.json(); }
+              catch { throw new Error('PREFLIGHT_RESPONSE_REFUSED'); }
+            }
+            const project = await read('/v9/projects/' + projectId);
+            if (project.id !== projectId || project.accountId !== teamId || project.name !== slug || project.link || project.gitRepository) throw new Error('PREFLIGHT_PROJECT_REFUSED');
+            // Project ID is part of the endpoint, not inferred from an Environment name.
+            const data = await read('/projects/' + projectId + '/custom-environments');
+            if (!Array.isArray(data.environments)) throw new Error('PREFLIGHT_ENVIRONMENT_REFUSED');
+            const matches = data.environments.filter(e => e?.id === environmentId || e?.slug === slug);
+            if (matches.length !== 1 || matches[0].id !== environmentId || matches[0].slug !== slug) throw new Error('PREFLIGHT_ENVIRONMENT_REFUSED');
+            if (matches[0].projectId !== undefined && matches[0].projectId !== projectId) throw new Error('PREFLIGHT_ENVIRONMENT_REFUSED');
+            return {projectId,teamId,environmentId,slug};
+          }
+          if (process.argv[1] === '-') {
+            try {
+              const result = await verifyCustomEnvironment({token:process.env.VERCEL_RECETTE_TOKEN});
+              const message = 'READ_ONLY_BINDINGS_PASS ' + JSON.stringify(result) + ' WRITE_PERMISSIONS_NON_ATTESTED';
+              console.log('::notice title=Recette read-only Environment::' + message);
+              appendFileSync(process.env.GITHUB_STEP_SUMMARY,message + '\n');
+            } catch (error) {
+              const code = /^(DEDICATED_RECETTE_TOKEN_REQUIRED|PREFLIGHT_(HTTP_[0-9]{3}|TRANSPORT_REFUSED|RESPONSE_REFUSED|PROJECT_REFUSED|ENVIRONMENT_REFUSED))$/.test(error?.message) ? error.message : 'PREFLIGHT_REFUSED';
+              console.log('::error title=Recette read-only Environment::' + code);
+              process.exitCode = 1;
+            }
+          }
+          NODE_PREFLIGHT
       - name: Deploy only custom recette environment through official REST API
         if: ${{ inputs.verify_only == false }}
         env:

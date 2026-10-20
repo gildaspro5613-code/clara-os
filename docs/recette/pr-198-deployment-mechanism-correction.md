@@ -63,3 +63,28 @@ Aucun nouveau test métier général, TypeScript/build applicatif ou campagne Po
 Fichiers modifiés : ce document ; `.github/workflows/clara-os-independent-recette.yml` ; `.github/scripts/recette-deployment-api.test.mjs`.
 
 **Statut : correctif proposé et testé hors ligne ; NO-GO pour relancer maintenant.** Aucun workflow lancé, aucun upload/création Vercel, aucun changement de secret/permission, aucun déploiement, merge, migration ou changement Production/Clara Live. Toute nouvelle tentative nécessite une autorisation explicite distincte. Un éventuel `READY` ultérieur resterait une validation technique, pas une réception métier ou une attestation des bindings Neon.
+
+## Précontrôle étendu — 20 octobre 2026
+
+Le mode `verify_only=true` exécute désormais une étape inconditionnelle supplémentaire : GET du projet par son ID exact, puis GET `/projects/prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz/custom-environments?teamId=team_0BeqOAO8t5oDEBdzHHdekcxv`. Elle exige l'équipe et le projet attendus, une seule correspondance ID/slug `env_T6nc8Pd4KLG9qTbvTM9ZsOn4T4YM` / `clara-os-recette`, et refuse un éventuel `projectId` contradictoire. Le rattachement est établi par l'endpoint projet exact, sans inférence depuis le seul nom. Le secret reste exclusivement `VERCEL_RECETTE_TOKEN` de l'Environment GitHub Recette. Le SHA applicatif épinglé reste `b2a51dd59381daa1e5d3278f3d7104b986015170` ; aucun code applicatif modifié.
+
+Cette étape ne possède que deux chemins GET, sans upload, création, renouvellement, repli ni retry. Au premier HTTP non réussi, y compris 401/403, elle échoue sans requête supplémentaire. La sortie publique est limitée aux identifiants attendus et au statut `READ_ONLY_BINDINGS_PASS ... WRITE_PERMISSIONS_NON_ATTESTED`, ou à un code d'erreur fixe. Aucun contenu brut du fournisseur, secret ou en-tête n'est journalisé. Les contrôles de déploiement restent également présents ; aucune permission d'écriture n'est déduite d'un GET réussi.
+
+### Documentation officielle consultée
+
+Sources Vercel officielles figées au commit SDK `7930cccab102f0a29dfe0bdd66897edf6a8b006f` :
+
+- [Documentation Deployments](https://github.com/vercel/sdk/blob/7930cccab102f0a29dfe0bdd66897edf6a8b006f/docs/sdks/deployments/README.md) : authentification Bearer, upload préalable, création par fichiers ou petits fichiers inline.
+- [UploadFileRequest](https://github.com/vercel/sdk/blob/7930cccab102f0a29dfe0bdd66897edf6a8b006f/docs/models/uploadfilerequest.md) et [implémentation officielle](https://github.com/vercel/sdk/blob/7930cccab102f0a29dfe0bdd66897edf6a8b006f/src/funcs/deploymentsUploadFile.ts) : POST `/v2/files`, sélecteurs `teamId`/`slug`, aucun sélecteur de projet.
+- [CreateDeploymentRequest](https://github.com/vercel/sdk/blob/7930cccab102f0a29dfe0bdd66897edf6a8b006f/docs/models/createdeploymentrequest.md) et [implémentation officielle](https://github.com/vercel/sdk/blob/7930cccab102f0a29dfe0bdd66897edf6a8b006f/src/funcs/deploymentsCreateDeployment.ts) : POST `/v13/deployments`, projet et custom Environment dans le corps, authentification Bearer.
+- [Scopes du modèle AuthToken](https://github.com/vercel/sdk/blob/7930cccab102f0a29dfe0bdd66897edf6a8b006f/docs/models/scopes.md) : variantes user/team ; ce modèle n'atteste pas les capacités du jeton Recette réel.
+
+Le site documentaire `vercel.com` n'est pas accessible depuis cet exécuteur ; les sources officielles GitHub ci-dessus sont accessibles. **Compatibilité du jeton limité au projet pour chacun des deux POST : NON ATTESTÉE.** Aucun de ces contrats ne fournit une garantie suffisante pour le principal restreint réel. Cela ne démontre pas non plus une incompatibilité. Aucun POST de découverte, changement de jeton ou élargissement n'est autorisé par cette passe.
+
+Action minimale restante : obtenir de Vercel une confirmation explicite que le principal du jeton dédié peut utiliser ces deux endpoints dans le périmètre du seul projet Recette, sans transmettre sa valeur. En cas d'incompatibilité officielle, arrêter le mécanisme actuel et soumettre une alternative avant intervention ; aucune alternative ni coût supplémentaire n'est engagé ici. L'inline officiellement documenté ne suffit pas à prouver les permissions de création et ne résout donc pas à lui seul cette incertitude.
+
+### Validation hors ligne
+
+`node --test .github/scripts/recette-deployment-api.test.mjs` : **14 tests réussis, 0 échec, 0 ignoré**. Les trois nouveaux tests couvrent le vrai code précontrôle extrait du YAML, son exécution inconditionnelle en mode vérification, les identités et environnements divergents/dupliqués, les HTTP 401/403 sans retry, les erreurs réseau/JSON et l'absence totale de POST. Les 11 tests REST antérieurs restent verts. YAML chargé par `js-yaml` et `git diff --check` réussis. Ces tests utilisent un transport simulé et ne certifient aucune permission Vercel réelle.
+
+Fichiers concernés uniquement : workflow existant, tests REST existants, présent rapport. La preuve du précontrôle réel et son SHA contrôleur sont fournis par le run manuel GitHub Actions associé ; elle ne vaut jamais attestation Neon, permission d'upload/création ou réception métier.

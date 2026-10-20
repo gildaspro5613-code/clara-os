@@ -139,3 +139,61 @@ test('server-side creation error remains uncertain and is never retried; missing
   assert.equal(h.calls.filter(c=>c.path === '/v13/deployments').length,1);assert.equal(h.events.length,0);
  }
 });
+
+const preflightMarker = "node --input-type=module - <<'NODE_PREFLIGHT'\n";
+assert.equal(workflow.split(preflightMarker).length,2);
+const preflightCode = workflow.split(preflightMarker)[1].split('\n          NODE_PREFLIGHT')[0].split('\n').map(line => line.slice(10)).join('\n');
+writeFileSync(join(temporary,'preflight.mjs'),preflightCode);
+const {verifyCustomEnvironment} = await import(pathToFileURL(join(temporary,'preflight.mjs')).href);
+function preflightHarness({project,environment,status=200,failAt=2,malformed=false,network=false}={}) {
+ const calls=[];
+ const http=async(url,init)=>{
+  calls.push({url,init});
+  assert.equal(url.origin,'https://api.vercel.com');assert.equal(url.searchParams.get('teamId'),expected.team);
+  assert.equal(init.method,'GET');assert.equal(init.body,undefined);assert.equal(init.redirect,'error');assert.ok(init.signal);
+  assert.equal(init.headers.Authorization,'Bearer synthetic-restricted');
+  if (calls.length===failAt) {
+   if(network) throw Error('synthetic-restricted sensitive provider detail');
+   if(status!==200) return new Response('sensitive provider detail',{status});
+   if(malformed) return new Response('not JSON');
+  }
+  if(url.pathname==='/v9/projects/'+expected.project) return Response.json(project??{id:expected.project,name:expected.slug,accountId:expected.team});
+  assert.equal(url.pathname,'/projects/'+expected.project+'/custom-environments');
+  return Response.json({environments:environment??[{id:expected.environment,slug:expected.slug}]});
+ };
+ return {calls,run:()=>verifyCustomEnvironment({token:'synthetic-restricted',http})};
+}
+test('verify_only runs custom Environment preflight unconditionally and reports only read-only bindings',async()=>{
+ const yaml=(await import('js-yaml')).default.load(workflow);
+ const steps=yaml.jobs.deploy.steps;
+ const step=steps.find(s=>s.name==='Strictly verify custom recette Environment (read-only)');
+ assert.ok(step);assert.equal(step.if,undefined);
+ assert.equal(step.env.VERCEL_RECETTE_TOKEN,'${{ secrets.VERCEL_RECETTE_TOKEN }}');
+ assert(steps.indexOf(step)<steps.findIndex(s=>s.name.startsWith('Deploy only custom')));
+ assert.match(step.run,/WRITE_PERMISSIONS_NON_ATTESTED/);
+ const h=preflightHarness();const result=await h.run();
+ assert.deepEqual(result,{projectId:expected.project,teamId:expected.team,environmentId:expected.environment,slug:expected.slug});
+ assert.equal(h.calls.length,2);assert(!JSON.stringify(result).includes('synthetic-restricted'));
+});
+test('read-only preflight refuses foreign identities, absent or conflicting Environments without any POST',async()=>{
+ for(const options of [
+  {project:{id:'foreign',name:expected.slug,accountId:expected.team}},
+  {project:{id:expected.project,name:expected.slug,accountId:'foreign'}},
+  {project:{id:expected.project,name:expected.slug,accountId:expected.team,link:{}}},
+  {environment:[]}, {environment:[{id:'foreign',slug:expected.slug}]},
+  {environment:[{id:expected.environment,slug:'production'}]},
+  {environment:[{id:expected.environment,slug:expected.slug,projectId:'foreign'}]},
+  {environment:[{id:expected.environment,slug:expected.slug},{id:'other',slug:expected.slug}]},
+ ]) {const h=preflightHarness(options);await assert.rejects(h.run(),/PREFLIGHT_(PROJECT|ENVIRONMENT)_REFUSED/);assert(h.calls.every(c=>c.init.method==='GET'));}
+});
+test('preflight 401/403 stops immediately without retry or fallback and never reflects sensitive errors',async()=>{
+ for(const status of [401,403]) for(const failAt of [1,2]) {
+  const h=preflightHarness({status,failAt});await assert.rejects(h.run(),new RegExp('^Error: PREFLIGHT_HTTP_'+status+'$'));
+  assert.equal(h.calls.length,failAt);
+ }
+ for(const options of [{network:true},{malformed:true}]) {
+  const h=preflightHarness(options);await assert.rejects(h.run(),/^Error: PREFLIGHT_(TRANSPORT|RESPONSE)_REFUSED$/);
+  assert.equal(h.calls.length,2);
+ }
+ let calls=0;await assert.rejects(verifyCustomEnvironment({token:'',http:()=>{calls++;}}),/DEDICATED_RECETTE_TOKEN_REQUIRED/);assert.equal(calls,0);
+});
