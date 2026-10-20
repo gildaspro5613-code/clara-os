@@ -4,6 +4,10 @@ on:
   pull_request:
     paths:
       - 'src/lib/recette/**'
+      - 'src/lib/auth/google-sign-in*'
+      - 'src/app/api/auth/google/**'
+      - 'src/lib/core/store/database.ts'
+      - 'src/tests/recette-google-sign-in.test.ts'
       - 'src/app/actions/recette-attestation.ts'
       - 'src/lib/capabilities/capability-policy.ts'
       - 'src/lib/connectors/clara-live/execution-authority.ts'
@@ -32,6 +36,8 @@ jobs:
         run: node --import tsx --test src/tests/recette-external-execution-guard.test.ts
       - name: Recette authentication and isolation contracts
         run: node --import tsx --test src/tests/recette-auth-isolation.test.ts
+      - name: Google authentication-only exception and database isolation
+        run: node --import tsx --test src/tests/recette-google-sign-in.test.ts
       - name: Recette attestation owner/admin authorization tests
         run: node --import tsx --test src/tests/recette-attestation-authorization.test.ts
       - name: Recette provider network denial regressions

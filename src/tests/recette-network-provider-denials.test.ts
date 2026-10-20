@@ -65,7 +65,7 @@ test('five corrected boundaries deny before HTTP/SDK in every Recette detection 
   const settings={GOOGLE_CLIENT_ID:'synthetic',GOOGLE_CLIENT_SECRET:'synthetic',CLARA_AUTH_GOOGLE_REDIRECT_URI:'https://recette.example.test/callback',
     CLARA_AUTH_MICROSOFT_TENANT_ID:'synthetic',CLARA_AUTH_MICROSOFT_CLIENT_ID:'synthetic',CLARA_AUTH_MICROSOFT_CLIENT_SECRET:'synthetic',CLARA_AUTH_MICROSOFT_REDIRECT_URI:'https://recette.example.test/callback',
     CLARA_LIVE_PRODUCT_TOKEN:'synthetic',CLARA_LIVE_WORKSPACE_ID:'synthetic',CLARA_LIVE_CAPABILITIES:'["canonical-links:v1"]',CLARA_LIVE_CALLBACK_BASE_URL:'https://synthetic.example.com'};
-  const markers=['CLARA_OS_RUNTIME_MODE','VERCEL_PROJECT_ID','CLARA_RECETTE_MODE'];
+  const markers=['CLARA_OS_RUNTIME_MODE','VERCEL_PROJECT_ID','CLARA_RECETTE_MODE','VERCEL_TARGET_ENV'];
   const keys=[...Object.keys(settings),...markers];
   const saved=new Map(keys.map(k=>[k,process.env[k]]));const initialFetch=globalThis.fetch;
   t.after(()=>{globalThis.fetch=initialFetch;for(const [k,v] of saved){if(v===undefined)delete process.env[k];else process.env[k]=v;}});
@@ -86,7 +86,7 @@ test('five corrected boundaries deny before HTTP/SDK in every Recette detection 
     '@/lib/config/google':{googleConfig:{clientId:'synthetic',clientSecret:'synthetic',redirectUri:'https://recette.example.test/callback'}},
     googleapis:{google:{auth:{OAuth2:Client}}},
   }) as {googleOAuthProvider:{exchangeCode(input:{code:string;redirectUri:string}):Promise<{accessToken:string}>;refresh(input:{refreshToken:string}):Promise<{accessToken:string}>}};
-  for(const marker of [{CLARA_OS_RUNTIME_MODE:'recette'},{VERCEL_PROJECT_ID:'prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz'},{CLARA_RECETTE_MODE:'isolated-v1'}]){
+  for(const marker of [{CLARA_OS_RUNTIME_MODE:'recette'},{VERCEL_PROJECT_ID:'prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz'},{CLARA_RECETTE_MODE:'isolated-v1'},{VERCEL_TARGET_ENV:'clara-os-recette'}]){
     await t.test(`zero HTTP/SDK calls for ${Object.keys(marker)[0]}`,async()=>{
       for(const k of markers)delete process.env[k];Object.assign(process.env,marker);
       const before=[httpCalls,constructors,sdkCalls];

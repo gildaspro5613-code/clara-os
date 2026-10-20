@@ -9,6 +9,7 @@ test('native browser: explicit selection, positive persisted mission/chat and cr
  const pin=createHash('sha256').update(new X509Certificate(readFileSync('/tmp/native-runtime-cert.pem')).publicKey.export({type:'spki',format:'der'})).digest('base64');
  const browser=await chromium.launch({executablePath:process.env.DOCUMENTS_E2E_CHROMIUM,headless:true,args:['--no-sandbox','--ignore-certificate-errors-spki-list='+pin]});
  try{
+ const anonymous=await browser.newContext();await anonymous.addCookies([{name:'NEXT_LOCALE',value:'fr',url:origin}]);const anonymousPage=await anonymous.newPage();await anonymousPage.goto(origin+'/missions');await anonymousPage.getByRole('link',{name:'Connectez-vous pour consulter les projets autorisés.',exact:true}).waitFor();assert.equal(await anonymousPage.locator('a[href="/api/auth/google/start"]').count(),1);assert.equal(await anonymousPage.locator('[data-native-authority="locked"]').count(),1);await anonymous.close();
  const context=await browser.newContext();await context.addCookies([{name:'clara_auth_session',value:'A'.repeat(43),url:origin},{name:'NEXT_LOCALE',value:'fr',url:origin}]);
  await context.route('**/*',route=>new URL(route.request().url()).origin===new URL(origin).origin?route.continue():route.abort());
  const page=await context.newPage();await page.goto(origin+'/clara');

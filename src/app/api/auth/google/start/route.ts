@@ -2,11 +2,14 @@ import { NextResponse } from "next/server";
 import { beginSignInTransaction } from "@/lib/auth/sign-in-transaction";
 import { googleSignInAuthorizationUrl } from "@/lib/auth/google-sign-in";
 
+import { assertGoogleSignInAllowed } from "@/lib/auth/google-sign-in-policy";
+
 const NONCE_COOKIE = "clara_auth_google_nonce";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
+    assertGoogleSignInAllowed();
     const transaction = await beginSignInTransaction("google");
     const response = NextResponse.redirect(googleSignInAuthorizationUrl(transaction.state, transaction.nonce));
     response.cookies.set(NONCE_COOKIE, transaction.nonce, {

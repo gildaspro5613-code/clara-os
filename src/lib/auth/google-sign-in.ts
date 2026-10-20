@@ -1,4 +1,5 @@
-import { assertRecetteExternalExecutionBlocked } from "@/lib/recette/external-execution-guard";
+import { isRecetteRuntime } from "@/lib/recette/external-execution-guard";
+import { assertGoogleSignInAllowed } from "./google-sign-in-policy";
 import { createPublicKey, verify } from "node:crypto";
 import { sql } from "@/lib/core/store/database";
 import { completeVerifiedSignIn } from "./verified-sign-in";
@@ -55,8 +56,8 @@ function decodePart<T>(part: string): T {
 }
 
 async function signingKey(kid: string): Promise<GoogleJwk> {
-  assertRecetteExternalExecutionBlocked('auth.provider-sign-in');
-  const response = await fetch(GOOGLE_JWKS_ENDPOINT, { cache: "no-store",signal:AbortSignal.timeout(15_000) });
+  assertGoogleSignInAllowed();
+  const response = await fetch(GOOGLE_JWKS_ENDPOINT, { redirect: "error", cache: "no-store",signal:AbortSignal.timeout(15_000) });
   if (!response.ok) throw new Error("GOOGLE_JWKS_UNAVAILABLE");
   const body = await response.json() as { keys?: GoogleJwk[] };
   const key = body.keys?.find((candidate) => candidate.kid === kid && candidate.use !== "enc");
@@ -65,6 +66,7 @@ async function signingKey(kid: string): Promise<GoogleJwk> {
 }
 
 export function googleSignInAuthorizationUrl(state: string, nonce: string): string {
+  assertGoogleSignInAllowed();
   const { clientId, redirectUri } = configuredSignIn();
   const url = new URL(GOOGLE_AUTHORIZATION_ENDPOINT);
   url.searchParams.set("client_id", clientId);
@@ -93,10 +95,12 @@ function googleExchangeFailureCategory(description?: string): string {
 }
 
 async function exchangeCode(code: string): Promise<string> {
-  assertRecetteExternalExecutionBlocked("auth.provider-sign-in");
+  assertGoogleSignInAllowed();
   const { clientId, clientSecret, redirectUri } = configuredSignIn();
   const response = await fetch(GOOGLE_TOKEN_ENDPOINT, {
     method: "POST",
+    redirect: "error",
+    signal: AbortSignal.timeout(15_000),
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
       client_id: clientId,
@@ -150,6 +154,8 @@ export async function verifyGoogleIdToken(idToken: string, expectedNonce: string
 
 async function bootstrapIfAuthorized(identity: VerifiedIdentity, claims: JwtClaims): Promise<void> {
   if (await findVerifiedUser(identity)) return;
+  // Recette never enrolls an identity or grants owner through an email/bootstrap fallback.
+  if (isRecetteRuntime()) throw new Error("IDENTITY_NOT_ENROLLED");
   const expectedEmail = process.env.CLARA_AUTH_BOOTSTRAP_EMAIL?.trim().toLowerCase();
   const workspaceId =
     process.env.CLARA_MD_WORKSPACE_ID?.trim() ||
