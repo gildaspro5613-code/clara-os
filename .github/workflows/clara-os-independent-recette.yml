@@ -1,0 +1,84 @@
+name: Clara OS independent project recette deployment
+run-name: "Isolated recette project — ${{ github.actor }}"
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: clara-os-independent-recette
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: clara-os-recette
+    timeout-minutes: 20
+    steps:
+      - name: Enforce manual invocation
+        run: |
+          test "${{ github.event_name }}" = workflow_dispatch
+          test "${{ github.repository }}" = gildaspro5613-code/clara-os
+      - name: Checkout approved source (never main)
+        uses: actions/checkout@v4
+        with:
+          ref: b2a51dd59381daa1e5d3278f3d7104b986015170
+          persist-credentials: false
+      - name: Verify pinned source and remove scheduled jobs from recette artifact
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "b2a51dd59381daa1e5d3278f3d7104b986015170"
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = 'vercel.json';
+          const config = JSON.parse(fs.readFileSync(path, 'utf8'));
+          if (!Array.isArray(config.crons) || config.crons.length !== 2) {
+            throw new Error('Unexpected cron configuration; refuse deployment');
+          }
+          config.crons = [];
+          fs.writeFileSync(path, JSON.stringify(config, null, 2) + '\n');
+          NODE
+      - name: Install Vercel CLI on runner
+        run: npm install --global vercel@latest
+      - name: Resolve and strictly verify independent project
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$VERCEL_TOKEN"
+          curl --fail --silent --show-error \
+            --header "Authorization: Bearer $VERCEL_TOKEN" \
+            "https://api.vercel.com/v9/projects/clara-os-recette?teamId=team_0BeqOAO8t5oDEBdzHHdekcxv" \
+            > "$RUNNER_TEMP/recette-project.json"
+          node - "$RUNNER_TEMP/recette-project.json" <<'NODE'
+          const fs = require('fs');
+          const p = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+          if (p.name !== 'clara-os-recette' || p.id !== 'prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz' ||
+              p.id === 'prj_jLIZqU5V98I4yl8RCbAaoqgM4KNJ' ||
+              p.link || p.gitRepository) {
+            throw new Error('Independent unlinked project verification failed');
+          }
+          fs.mkdirSync('.vercel', {recursive:true});
+          fs.writeFileSync('.vercel/project.json', JSON.stringify({
+            projectId:p.id,orgId:'team_0BeqOAO8t5oDEBdzHHdekcxv'
+          }));
+          console.log('Independent project identity verified; production project excluded');
+          NODE
+      - name: Deploy only custom recette environment (never --prod)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          set -euo pipefail
+          vercel deploy --yes --target=clara-os-recette \
+            --scope melodie-digital --token "$VERCEL_TOKEN" \
+            > "$RUNNER_TEMP/recette-url.txt"
+          URL="$(tail -n 1 "$RUNNER_TEMP/recette-url.txt")"
+          case "$URL" in https://*.vercel.app) ;; *) echo "::error::Unexpected deployment URL"; exit 1;; esac
+          echo "Recette deployment: $URL"
+          {
+            echo "### Independent Clara OS recette"
+            echo "- Pinned source: b2a51dd59381daa1e5d3278f3d7104b986015170"
+            echo "- Vercel project: clara-os-recette (not clara-os)"
+            echo "- Target: custom environment clara-os-recette (not Production)"
+            echo "- Cron schedules removed from deployed artifact"
+            echo "- Runtime safety still requires validation; build success is not runtime success"
+            echo "- URL: $URL"
+          } >> "$GITHUB_STEP_SUMMARY"
