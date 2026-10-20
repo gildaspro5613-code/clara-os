@@ -42,9 +42,11 @@ jobs:
           config.crons = [];
           fs.writeFileSync(path, JSON.stringify(config, null, 2) + '\n');
           NODE
-      - name: Install Vercel CLI on runner
+      - name: Set up deployment controller Node.js
         if: ${{ inputs.verify_only == false }}
-        run: npm install --global vercel@latest
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
       - name: Resolve and strictly verify independent project
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_RECETTE_TOKEN }}
@@ -108,24 +110,138 @@ jobs:
           }));
           console.log('Independent project identity verified; production project excluded');
           NODE
-      - name: Deploy only custom recette environment (never --prod)
+      - name: Deploy only custom recette environment through official REST API
         if: ${{ inputs.verify_only == false }}
         env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_RECETTE_TOKEN }}
+          VERCEL_RECETTE_TOKEN: ${{ secrets.VERCEL_RECETTE_TOKEN }}
         run: |
           set -euo pipefail
-          vercel deploy --yes --target=clara-os-recette \
-            --scope melodie-digital --token "$VERCEL_TOKEN" \
-            > "$RUNNER_TEMP/recette-url.txt"
-          URL="$(tail -n 1 "$RUNNER_TEMP/recette-url.txt")"
-          case "$URL" in https://*.vercel.app) ;; *) echo "::error::Unexpected deployment URL"; exit 1;; esac
-          echo "Recette deployment: $URL"
-          {
-            echo "### Independent Clara OS recette"
-            echo "- Pinned source: b2a51dd59381daa1e5d3278f3d7104b986015170"
-            echo "- Vercel project: clara-os-recette (not clara-os)"
-            echo "- Target: custom environment clara-os-recette (not Production)"
-            echo "- Cron schedules removed from deployed artifact"
-            echo "- Runtime safety still requires validation; build success is not runtime success"
-            echo "- URL: $URL"
-          } >> "$GITHUB_STEP_SUMMARY"
+          test "${{ github.run_attempt }}" = "1" || { echo "::error::Deployment rerun refused; inspect previous outcome and obtain new authorization"; exit 1; }
+          node --input-type=module - <<'NODE_API'
+          import {execFileSync} from 'node:child_process';
+          import {createHash} from 'node:crypto';
+          import {appendFileSync} from 'node:fs';
+
+          export const expected = Object.freeze({
+            sha: 'b2a51dd59381daa1e5d3278f3d7104b986015170',
+            project: 'prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz',
+            team: 'team_0BeqOAO8t5oDEBdzHHdekcxv',
+            environment: 'env_T6nc8Pd4KLG9qTbvTM9ZsOn4T4YM',
+            slug: 'clara-os-recette',
+          });
+          class Refused extends Error {}
+          const refuse = code => { throw new Refused(code); };
+          const gitRead = args => execFileSync('git', args, {maxBuffer:32 * 1024 * 1024,stdio:['ignore','pipe','pipe']});
+
+          /** Files come from the approved Git object database, never from local secret files.
+           * The only transformation is the existing Recette removal of both cron schedules.
+           */
+          export function approvedFiles(git = gitRead) {
+            if (String(git(['rev-parse','HEAD'])).trim() !== expected.sha) refuse('SOURCE_SHA_REFUSED');
+            const entries = String(git(['ls-tree','-r','-z',expected.sha])).split('\0').filter(Boolean);
+            const files = entries.map(entry => {
+              const match = /^(100644|100755) blob [a-f0-9]{40}\t(.+)$/.exec(entry);
+              if (!match) refuse('SOURCE_FILE_TYPE_REFUSED');
+              const file = match[2];
+              if (file.startsWith('/') || file.split('/').some(p => p === '..' || p === '.git' || p === '.vercel' || p === '.env' || p.startsWith('.env.') || p === '.npmrc')) refuse('SOURCE_FILE_PATH_REFUSED');
+              let data = Buffer.from(git(['show',expected.sha + ':' + file]));
+              if (file === 'vercel.json') {
+                let config;try { config = JSON.parse(data); } catch { refuse('CRON_CONFIGURATION_REFUSED'); }
+                if (!Array.isArray(config.crons) || config.crons.length !== 2) refuse('CRON_CONFIGURATION_REFUSED');
+                config.crons = [];
+                data = Buffer.from(JSON.stringify(config,null,2) + '\n');
+              }
+              return {file,data,sha:createHash('sha1').update(data).digest('hex'),size:data.length};
+            });
+            if (!['package.json','package-lock.json','vercel.json'].every(name => files.some(f => f.file === name))) refuse('SOURCE_MANIFEST_REFUSED');
+            return files;
+          }
+
+          /** Single-purpose official REST client. No CLI, user lookup, alternate token,
+           * project creation, environment mutation, or automatic POST retry.
+           */
+          export async function deployRecette({token,http = fetch,git = gitRead,wait = () => new Promise(r => setTimeout(r,5000)),emit = () => {}}) {
+            if (!token) refuse('DEDICATED_RECETTE_TOKEN_REQUIRED');
+            const files = approvedFiles(git);
+            async function call(path,{method = 'GET',body,headers = {},json = true} = {}) {
+              const url = new URL(path,'https://api.vercel.com');
+              url.searchParams.set('teamId',expected.team);
+              let response;
+              try {
+                response = await http(url,{method,redirect:'error',signal:AbortSignal.timeout(30000),headers:{Authorization:'Bearer ' + token,...headers},body});
+              } catch {
+                refuse(method === 'POST' && path === '/v13/deployments' ? 'CREATE_OUTCOME_UNCERTAIN_NO_RETRY' : 'API_TRANSPORT_REFUSED');
+              }
+              if (!response.ok) {
+                const kind = path === '/v2/files' ? 'UPLOAD' : path === '/v13/deployments' ? 'CREATE' : 'METADATA';
+                if (kind === 'CREATE' && (response.status >= 500 || response.status === 408)) refuse('CREATE_HTTP_' + response.status + '_OUTCOME_UNCERTAIN_NO_RETRY');
+              refuse(kind + '_HTTP_' + response.status);
+              }
+              try {
+                if (!json) { await response.arrayBuffer();return; }
+                return await response.json();
+              } catch { refuse(path === '/v13/deployments' ? 'CREATE_OUTCOME_UNCERTAIN_NO_RETRY' : 'API_RESPONSE_REFUSED'); }
+            }
+            const project = await call('/v9/projects/' + expected.project);
+            if (project.id !== expected.project || project.name !== expected.slug || project.accountId !== expected.team || project.link || project.gitRepository) refuse('PROJECT_IDENTITY_REFUSED');
+            const environments = await call('/projects/' + expected.project + '/custom-environments');
+            if (!Array.isArray(environments.environments)) refuse('CUSTOM_ENVIRONMENT_REFUSED');
+            const matches = environments.environments.filter(e => e.id === expected.environment || e.slug === expected.slug);
+            if (matches.length !== 1 || matches[0].id !== expected.environment || matches[0].slug !== expected.slug) refuse('CUSTOM_ENVIRONMENT_REFUSED');
+
+            // Upload once per content digest, with bounded concurrency; no create on failure.
+            const queue = [...new Map(files.map(f => [f.sha,f])).values()];
+            let next = 0,failed = false;
+            await Promise.all(Array.from({length:Math.min(4,queue.length)},async () => {
+              while (!failed && next < queue.length) {
+                const file = queue[next++];
+                try {
+                  await call('/v2/files',{method:'POST',body:file.data,json:false,headers:{'Content-Type':'application/octet-stream','Content-Length':String(file.size),'x-vercel-digest':file.sha,'x-now-size':String(file.size)}});
+                } catch (error) { failed = true;throw error; }
+              }
+            }));
+            // customEnvironmentSlugOrId is the documented custom-target selector. No
+            // target=production, Preview default, settings override, env copy or git fetch.
+            const deployment = await call('/v13/deployments',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+              name:expected.slug,project:expected.project,customEnvironmentSlugOrId:expected.environment,
+              files:files.map(({file,sha,size}) => ({file,sha,size})),
+              meta:{githubCommitSha:expected.sha,recetteSourceSha:expected.sha},
+            })});
+            const safeIdentity = d => {
+              if (!/^dpl_[A-Za-z0-9]+$/.test(d.id ?? '') || !/^clara-os-recette-[a-z0-9]+-melodie-digital\.vercel\.app$/.test(d.url ?? '')) refuse('CREATED_DEPLOYMENT_IDENTITY_UNCERTAIN_NO_RETRY');
+              return {id:d.id,url:'https://' + d.url,sourceSha:expected.sha};
+            };
+            const identity = safeIdentity(deployment);
+            emit({event:'CREATED_NOT_YET_CERTIFIED',...identity});
+            const verify = d => {
+              if (d.id !== identity.id || 'https://' + d.url !== identity.url || d.ownerId !== expected.team || d.projectId !== expected.project || d.target === 'production' ||
+                  d.customEnvironment?.id !== expected.environment || d.customEnvironment?.slug !== expected.slug || d.meta?.githubCommitSha !== expected.sha) refuse('DEPLOYMENT_BINDING_UNCERTAIN_NO_RETRY');
+            };
+            let current = deployment;
+            for (let attempt = 0;attempt < 120;attempt++) {
+              verify(current);
+              if (current.readyState === 'READY') {
+                const result = {event:'READY',...identity,environment:expected.slug};emit(result);return result;
+              }
+              if (['ERROR','CANCELED'].includes(current.readyState)) refuse('DEPLOYMENT_' + current.readyState + '_NO_RETRY');
+              await wait();
+              current = await call('/v13/deployments/' + identity.id);
+            }
+            refuse('DEPLOYMENT_NOT_READY_NO_RETRY');
+          }
+
+          // Imported by offline tests; executed only by the separately authorized deploy step.
+          if (process.argv[1] === '-') {
+            try {
+              await deployRecette({token:process.env.VERCEL_RECETTE_TOKEN,emit:result => {
+                const line = JSON.stringify(result);
+                console.log('::notice title=Recette deployment::' + line);
+                if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY,line + '\n');
+              }});
+            } catch (error) {
+              const code = error instanceof Refused ? error.message : 'DEPLOYMENT_DRIVER_FAILED';
+              console.error('::error title=Recette deployment::' + code);
+              process.exitCode = 1;
+            }
+          }
+          NODE_API
