@@ -15,6 +15,7 @@ export function triageMail(
  const subject=mail.subject.normalize('NFKC').toLowerCase().slice(0,300);
  const excerpt=mail.text.normalize('NFKC').toLowerCase().slice(0,1500);
  const source=mail.from.toLowerCase();
+ // Suspicious attachments always take precedence over content-based triage.
  const bulk=/(?:newsletter|unsubscribe|désabonner|se désabonner|abmelden|abbona(?:mento|ti)|cancelar suscripci[oó]n|promotion|promoci[oó]n|werbung|publicit[eé]|black friday)/i;
  if(bulk.test(subject)||(/(?:no-?reply|newsletter)@/.test(source)&&bulk.test(excerpt)))
   return {priority:'low',category:'newsletter',reason:'bulk-message',requiresAttention:false};
@@ -29,7 +30,7 @@ export function triageMail(
  if(commercial.test(subject)||commercial.test(excerpt.slice(0,350)))
   return {priority:'high',category:'commercial',reason:'commercial-request',requiresAttention:true};
  const deadline=/(?:mise en demeure|échéance|deadline|payment overdue|facture impay[eé]e|zahlungserinnerung|fristablauf|scadenza|vencimiento|plazo de entrega)/i;
- if(deadline.test(subject))
+ if(deadline.test(subject)||deadline.test(excerpt.slice(0,350)))
   return {priority:'high',category:'administrative',reason:'possible-deadline',requiresAttention:true};
  const mailbox=mailboxAddress.toLowerCase();
  if(mailbox.startsWith('support@'))return {priority:'normal',category:'support',reason:'support-inbox',requiresAttention:false};
