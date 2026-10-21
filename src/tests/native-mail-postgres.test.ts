@@ -101,7 +101,7 @@ test('IONOS real PostgreSQL: two independent authorities, explicit bindings, exa
   pg(`INSERT INTO clara_connections(id,workspace_id,provider,status) VALUES('${id}','w','ionos','ACTIVE');INSERT INTO clara_native_mail_authority(connection_id,workspace_id,owner_user_id,address,reviewed_by,review_reason) VALUES('${id}','w','a','${address}','a','Explicit five-account isolated fixture; not a real mailbox attestation');`);
  }
  const visibleA=await run(()=>nativeMailCommand('list'),request(),false);
- assert.deepEqual((visibleA.connections as Array<{id:string}>).map(x=>x.id).sort(),['mail-clara','mail-contact','mail-info','mail-support']);
+ assert.deepEqual((visibleA.connections as Array<{id:string}>).map(x=>x.id).sort(),['mail-clara','mail-contact','mail-gildas','mail-info','mail-support']);
  const visibleB=await run(()=>nativeMailCommand('list'),request('B',b),false);
  assert.deepEqual((visibleB.connections as Array<{id:string}>).map(x=>x.id),['mail-gildas']);
  await assert.rejects(()=>run(()=>nativeMailCommand('authority',{connectionId:'mail-support'}),request('B',b),false));
