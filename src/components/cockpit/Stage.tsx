@@ -2,6 +2,7 @@ import type { ClaraSession } from "@/lib/core/session";
 import type { AcquisitionRecord } from "@/lib/acquisition/acquisition-store";
 
 import BriefPanel from "@/components/cockpit/panels/BriefPanel";
+import MailOverviewPanel from "@/components/cockpit/panels/MailOverviewPanel";
 import TasksPanel from "@/components/cockpit/panels/TasksPanel";
 import AgendaPanel from "@/components/cockpit/panels/AgendaPanel";
 import ClaraVoiceWidget from "@/components/cockpit/widgets/voice/ClaraVoiceWidget";
@@ -48,6 +49,8 @@ export default async function Stage({ session, acquisition, nativeScope = false 
         <BriefPanel session={session} acquisition={acquisition} />
       </div>
 
+      {native&&<div className="pointer-events-auto absolute left-[5%] top-[39%] z-20 hidden w-[25%] max-w-[360px] lg:block"><MailOverviewPanel /></div>}
+
       <div className="pointer-events-auto absolute left-[6%] top-[61%] z-20 hidden w-[23%] max-w-[330px] lg:block">
         {native ? unavailable : <ClaraVoiceWidget />}
       </div>
@@ -64,6 +67,7 @@ export default async function Stage({ session, acquisition, nativeScope = false 
         <div className="pointer-events-auto">
           <BriefPanel session={session} acquisition={acquisition} />
         </div>
+        {native&&<div className="pointer-events-auto"><MailOverviewPanel /></div>}
       </div>
 
       <div className="pointer-events-none absolute left-4 right-4 top-[58%] z-20 flex flex-col gap-3 lg:hidden">
