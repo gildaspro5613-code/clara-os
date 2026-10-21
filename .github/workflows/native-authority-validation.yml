@@ -1,9 +1,13 @@
 name: Native resource authority validation
 on:
   pull_request:
-    branches: [main, consolidation/clara-os-clean-base]
+    branches: [main, consolidation/clara-os-clean-base, fix/os-operational-reception-175]
     paths:
       - 'src/lib/native/**'
+      - 'src/lib/canonical/**'
+      - 'src/app/api/core/canonical/conversations/**'
+      - 'src/tests/canonical-conversation*'
+      - 'db/migrations/024_canonical_conversation_links.sql'
       - 'src/lib/external-capabilities/product-callback.ts'
       - 'src/lib/external-capabilities/event-jobs.ts'
       - 'src/tests/live-callback-transport.test.ts'
@@ -93,7 +97,7 @@ jobs:
           done
           exit 1
       - name: Actual handlers and database isolation, revocation, snapshot and history
-        run: node --import tsx --test src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts src/tests/native-commercial-postgres.test.ts src/tests/native-documents-postgres.test.ts src/tests/native-google-oauth.test.ts src/tests/native-mail-postgres.test.ts src/tests/native-mail-triage.test.ts src/tests/native-mail-monitor.test.ts src/tests/native-mail-monitor-postgres.test.ts src/tests/ionos-transport.test.ts src/tests/native-conversation-postgres.test.ts src/tests/native-functional-closure.test.ts src/tests/native-google-work-postgres.test.ts
+        run: node --import tsx --test src/tests/canonical-conversation-postgres.test.ts src/tests/canonical-conversation-routes.test.ts src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts src/tests/native-commercial-postgres.test.ts src/tests/native-documents-postgres.test.ts src/tests/native-google-oauth.test.ts src/tests/native-mail-postgres.test.ts src/tests/native-mail-triage.test.ts src/tests/native-mail-monitor.test.ts src/tests/native-mail-monitor-postgres.test.ts src/tests/ionos-transport.test.ts src/tests/native-conversation-postgres.test.ts src/tests/native-functional-closure.test.ts src/tests/native-google-work-postgres.test.ts
       - name: Existing Live callback bounded transport and authentication
         run: node --import tsx --test src/tests/live-callback-transport.test.ts src/tests/clara-live-product-auth.test.ts src/tests/external-event-message-contract.test.ts
       - run: npx eslint src/lib/external-capabilities/product-callback.ts src/tests/live-callback-transport.test.ts
