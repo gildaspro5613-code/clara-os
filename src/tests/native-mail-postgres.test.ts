@@ -95,6 +95,17 @@ test('IONOS real PostgreSQL: two independent authorities, explicit bindings, exa
  await run(async()=>await (await mail()).stageClaim(crash.operationId,ca.token,'synthetic-crash-attempt'));
  assert.equal(pg(`SELECT state FROM clara_native_mail_operations WHERE id='${crash.operationId}'`).trim(),'processing');await assert.rejects(()=>sendNativeMail(request(),'mail-clara',crash.operationId,ca.token,factory,query));
  await run(async()=>await (await mail()).saveDraft(currentId,{subject:'Uncertain cannot be bypassed',body:'New revision cannot bypass unresolved attempt',recipients:['recipient@example.invalid'],attachmentIds:[]}));await assert.rejects(()=>submit());
+ // The three additional IONOS addresses require independent, explicitly
+ // attested connections; creating an address never provisions its credentials.
+ for(const [id,address] of [['mail-contact','contact@melodie.digital'],['mail-info','info@melodie.digital'],['mail-support','support@melodie.digital']]){
+  pg(`INSERT INTO clara_connections(id,workspace_id,provider,status) VALUES('${id}','w','ionos','ACTIVE');INSERT INTO clara_native_mail_authority(connection_id,workspace_id,owner_user_id,address,reviewed_by,review_reason) VALUES('${id}','w','a','${address}','a','Explicit five-account isolated fixture; not a real mailbox attestation');`);
+ }
+ const visibleA=await run(()=>nativeMailCommand('list'),request(),false);
+ assert.deepEqual((visibleA.connections as Array<{id:string}>).map(x=>x.id).sort(),['mail-clara','mail-contact','mail-info','mail-support']);
+ const visibleB=await run(()=>nativeMailCommand('list'),request('B',b),false);
+ assert.deepEqual((visibleB.connections as Array<{id:string}>).map(x=>x.id),['mail-gildas']);
+ await assert.rejects(()=>run(()=>nativeMailCommand('authority',{connectionId:'mail-support'}),request('B',b),false));
+ assert.throws(()=>pg("INSERT INTO clara_connections(id,workspace_id,provider,status) VALUES('mail-unauthorized','w','ionos','ACTIVE');INSERT INTO clara_native_mail_authority(connection_id,workspace_id,owner_user_id,address,reviewed_by,review_reason) VALUES('mail-unauthorized','w','a','admin@melodie.digital','a','Explicit fixture rejected for sixth address');"));
  // Real backup/restore and migration reapplication retain history and permissions.
  const operationCount=pg('SELECT COUNT(*) FROM clara_native_mail_operations').trim();assert.equal(operationCount,'7');
  const restore=db+'_restore';execFileSync('docker',['exec',container,'createdb','-U','postgres',restore]);try{const dump=execFileSync('docker',['exec',container,'pg_dump','-U','postgres',db]);execFileSync('docker',['exec','-i',container,'psql','-U','postgres','-d',restore,'-q','-v','ON_ERROR_STOP=1'],{input:dump,stdio:'pipe'});migrate(restore);assert.equal(execFileSync('docker',['exec',container,'psql','-U','postgres','-d',restore,'-qAt','-c','SELECT COUNT(*) FROM clara_native_mail_operations'],{encoding:'utf8'}).trim(),operationCount);}finally{execFileSync('docker',['exec',container,'dropdb','-U','postgres',restore]);}
