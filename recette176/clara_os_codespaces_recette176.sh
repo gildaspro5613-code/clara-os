@@ -11,7 +11,7 @@ python3 - <<'PY'
 import os,sys,urllib.parse
 u=urllib.parse.urlsplit(os.environ['NEON_TEST_URL'])
 h=(u.hostname or '').lower()
-if u.scheme not in ('postgresql','postgres') or h != 'ep-young-cake-b2ekuozh.eu-central-1.aws.neon.tech':
+if u.scheme not in ('postgresql','postgres') or h != 'ep-young-cake-b2ekuozh.c-6.eu-central-1.aws.neon.tech':
     sys.exit('STOP: hôte Neon inattendu (vérifier le hostname exact dans la console Neon)')
 if u.path != '/neondb' or u.username != 'neondb_owner' or '-pooler' in h:
     sys.exit('STOP: base, rôle ou endpoint poolé inattendu')
