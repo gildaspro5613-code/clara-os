@@ -19,7 +19,10 @@ worker has been activated. This is not a production acceptance certificate.
 - `GET /api/native/mail?action=overview` is a scoped, read-only snapshot
   across at most five **already authorized** mailbox connections. It returns
   only the first cached page per mailbox, declares `freshnessVerified:false`,
-  never invokes IMAP and does not infer unread state.
+  never invokes IMAP and does not infer unread state. A failed mailbox is
+  isolated as `status:unavailable` with null counts; other authorized mailboxes
+  remain visible. `complete:false` means a mailbox failed or a cached page is
+  truncated. Neither `complete:true` nor `status:cached` attests live freshness.
 - The existing Clara mail panel shows the advisory priority in FR/EN/ES/DE/IT.
   The Cockpit continues to have no email panel.
 
