@@ -15,6 +15,13 @@ export interface MailTransport {
  exists(folder:string,validity:string,uid:number):Promise<boolean>;
  send(envelope:MailEnvelope):Promise<'sent'|'failed'|'uncertain'>;
 }
+export const IONOS_MAILBOX_ADDRESSES = [
+ 'clara@melodie.digital',
+ 'gildas@melodie.digital',
+ 'contact@melodie.digital',
+ 'info@melodie.digital',
+ 'support@melodie.digital',
+] as const;
 export const MAIL_LIMIT=1024*1024;
 export function mailAddress(value:string){if(value.length>254||!/^[-a-zA-Z0-9.!#$%&'*+/=?^_`{|}~]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value))throw Error('MAIL_INVALID_ADDRESS');return value;}
 export async function parseMail(source:Buffer):Promise<MailContent>{
@@ -31,7 +38,7 @@ export async function parseMail(source:Buffer):Promise<MailContent>{
  return {subject:(parsed.subject??'').replace(/[\r\n]/g,' ').slice(0,300),from:address,to,text:(parsed.text??'').slice(0,32000),messageId:(parsed.messageId??'').replace(/[\r\n]/g,'').slice(0,250),attachments:quarantined?[]:attachments,quarantined};
 }
 export function validateMailConfig(c:MailCredentials){
- if(!c.configurationReviewed||!['clara@melodie.digital','gildas@melodie.digital'].includes(c.address)||!c.password||c.password.length>4096||c.imapPort!==993||![465,587].includes(c.smtpPort)||!Array.isArray(c.folders)||c.folders.length<1||c.folders.length>10)throw Error('MAIL_CONFIGURATION_REQUIRED');
+ if(!c.configurationReviewed||!(IONOS_MAILBOX_ADDRESSES as readonly string[]).includes(c.address)||!c.password||c.password.length>4096||c.imapPort!==993||![465,587].includes(c.smtpPort)||!Array.isArray(c.folders)||c.folders.length<1||c.folders.length>10)throw Error('MAIL_CONFIGURATION_REQUIRED');
  for(const host of [c.imapHost,c.smtpHost])if(!/^[a-z0-9-]+\.(?:ionos\.(?:fr|com|de|co\.uk))$/.test(host))throw Error('MAIL_HOST_NOT_APPROVED');
  for(const folder of c.folders)if(!folder||folder.length>200||/[\x00-\x1f]/.test(folder))throw Error('MAIL_INVALID_FOLDER');
 }
