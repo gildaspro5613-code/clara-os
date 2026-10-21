@@ -42,3 +42,18 @@ test('unknown correspondence is retained for review, not silently discarded',()=
  assert.equal(triageMail(mail('Hello'),'support@melodie.digital').category,'support');
  assert.equal(triageMail(mail('Hello'),'gildas@melodie.digital').priority,'normal');
 });
+
+test('administrative deadlines inside message bodies are surfaced without authorizing actions',()=>{
+ for(const [subject,body] of [
+  ['Votre dossier','Une mise en demeure vous a été adressée.'],
+  ['Account update','Payment overdue: please review.'],
+  ['Ihre Unterlagen','Zahlungserinnerung für die Rechnung.'],
+  ['Aggiornamento','Scadenza del pagamento domani.'],
+  ['Actualización','Vencimiento de la factura mañana.'],
+ ]){
+  const result=triageMail(mail(subject,body),'info@melodie.digital');
+  assert.equal(result.priority,'high',body);
+  assert.equal(result.category,'administrative',body);
+  assert.equal(result.requiresAttention,true);
+ }
+});
