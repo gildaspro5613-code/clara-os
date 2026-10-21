@@ -16,13 +16,19 @@ export async function GET(request:Request){try{return await withNativeScope(requ
   const listed=await nativeMailCommand('list');
   const connections=(listed.connections??[]) as Array<{id:string;address:string}>;
   const overview=[];
+  // A failing or revoked mailbox must not hide other authorized mailboxes.
+  // Fail closed for that mailbox; do not expose provider errors or infer freshness.
   for(const connection of connections.slice(0,5)){
-   const mail=await new NativeMail(connection.id).initialize();
-   const page=await mail.list();
-   const attention=page.messages.filter(m=>m.triage.requiresAttention).slice(0,10).map(m=>({id:m.id,subject:m.subject,from:m.from,priority:m.triage.priority,category:m.triage.category,reason:m.triage.reason}));
-   overview.push({connectionId:connection.id,address:connection.address,highPriorityCount:page.messages.filter(m=>m.triage.priority==='high').length,quarantineCount:page.messages.filter(m=>m.triage.priority==='quarantine').length,attention,partial:page.nextCursor!==null});
+   try{
+    const mail=await new NativeMail(connection.id).initialize();
+    const page=await mail.list();
+    const attention=page.messages.filter(m=>m.triage.requiresAttention).slice(0,10).map(m=>({id:m.id,subject:m.subject,from:m.from,priority:m.triage.priority,category:m.triage.category,reason:m.triage.reason}));
+    overview.push({connectionId:connection.id,address:connection.address,status:'cached',highPriorityCount:page.messages.filter(m=>m.triage.priority==='high').length,quarantineCount:page.messages.filter(m=>m.triage.priority==='quarantine').length,attention,partial:page.nextCursor!==null});
+   }catch{
+    overview.push({connectionId:connection.id,address:connection.address,status:'unavailable',highPriorityCount:null,quarantineCount:null,attention:[],partial:true});
+   }
   }
-  return ok({overview,source:'previously-synchronized-first-page',freshnessVerified:false});
+  return ok({overview,source:'previously-synchronized-first-page',freshnessVerified:false,complete:overview.every(m=>m.status==='cached'&&!m.partial)});
  }
 
  const connectionId=opaque(q.get('connectionId')),mail=await new NativeMail(connectionId).initialize();
