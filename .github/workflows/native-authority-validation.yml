@@ -36,6 +36,7 @@ on:
       - 'db/migrations/018_native_mail_pagination.sql'
       - 'db/migrations/019_native_contact_editing.sql'
       - 'db/migrations/020_native_google_workspace.sql'
+      - 'db/migrations/021_native_mail_five_accounts.sql'
       - 'src/components/contacts/**'
       - 'src/tests/native-functional-closure*'
       - 'src/tests/native-conversation*'
@@ -90,7 +91,7 @@ jobs:
           done
           exit 1
       - name: Actual handlers and database isolation, revocation, snapshot and history
-        run: node --import tsx --test src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts src/tests/native-commercial-postgres.test.ts src/tests/native-documents-postgres.test.ts src/tests/native-google-oauth.test.ts src/tests/native-mail-postgres.test.ts src/tests/ionos-transport.test.ts src/tests/native-conversation-postgres.test.ts src/tests/native-functional-closure.test.ts src/tests/native-google-work-postgres.test.ts
+        run: node --import tsx --test src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts src/tests/native-commercial-postgres.test.ts src/tests/native-documents-postgres.test.ts src/tests/native-google-oauth.test.ts src/tests/native-mail-postgres.test.ts src/tests/native-mail-triage.test.ts src/tests/ionos-transport.test.ts src/tests/native-conversation-postgres.test.ts src/tests/native-functional-closure.test.ts src/tests/native-google-work-postgres.test.ts
       - name: Existing Live callback bounded transport and authentication
         run: node --import tsx --test src/tests/live-callback-transport.test.ts src/tests/clara-live-product-auth.test.ts src/tests/external-event-message-contract.test.ts
       - run: npx eslint src/lib/external-capabilities/product-callback.ts src/tests/live-callback-transport.test.ts
