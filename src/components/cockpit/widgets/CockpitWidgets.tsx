@@ -1,7 +1,6 @@
 import {nativeThreadCertified} from '@/lib/native/scoped-context';
 import type {MdProjectIntake} from "@/types";
 import type {Mission} from "@/modules/missions/types/Mission";
-import EmailSummaryPanel from "../panels/EmailSummaryPanel";
 import AgendaWidget from "./agenda/AgendaWidget";
 import MissionWidget from "./missions/MissionWidget";
 import ClaraChatWidget from "./clara/ClaraChatWidget";
@@ -34,8 +33,6 @@ interface CockpitWidgetsProps {
 
 export default async function CockpitWidgets({ session, acquisition,nativeMissions,nativeIntake,nativeSessionId }: CockpitWidgetsProps) {
   const t = await getTranslations("cockpitUi");
-  const ui = await getTranslations("ui");
-  const providerBlocked = <p className="rounded-xl border border-white/10 p-5 text-sm text-white/60">{ui("nativeProviderBlocked")}</p>;
   const workspaceId = process.env.CLARA_MD_WORKSPACE_ID?.trim()
     || process.env.CLARA_WORKSPACE_ID?.trim()
     || "melodie-digital";
@@ -83,14 +80,12 @@ export default async function CockpitWidgets({ session, acquisition,nativeMissio
           </div>
         )}
 
-        <div className="mt-5"><EmailSummaryPanel session={session} /></div>
-
         <div className="mt-5 grid items-stretch gap-5 lg:grid-cols-[1.35fr_1fr]">
           <div className="min-w-0">
             <ConversationsPanel session={session} />
           </div>
           <div className="min-w-0">
-            {nativeMissions!==undefined&&(!session.googleConnectionId||!session.googleCalendarId)?providerBlocked:<AgendaWidget />}
+            <AgendaWidget />
           </div>
         </div>
 
@@ -102,8 +97,8 @@ export default async function CockpitWidgets({ session, acquisition,nativeMissio
               blockedCount={orchestration.blocked.length}
             />
           </div>
-          <div className="min-w-0">{nativeMissions!==undefined?providerBlocked:<WazeWidget />}</div>
-          <div className="min-w-0">{nativeMissions!==undefined?providerBlocked:<WeatherWidget />}</div>
+          <div className="min-w-0"><WazeWidget /></div>
+          <div className="min-w-0"><WeatherWidget /></div>
         </div>
 
         <div className="mt-5">
