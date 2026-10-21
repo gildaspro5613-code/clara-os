@@ -314,5 +314,9 @@
   "googleKind_drive_update": "Textdateiinhalt ändern",
   "googleKind_drive_move": "Datei verschieben und einordnen",
   "googleExistingUncertain": "Ein vorheriger Vorgang hat ein ungewisses Ergebnis. Öffnen und prüfen Sie ihn, ohne die Änderung zu wiederholen.",
-  "googleCalendarReadOnly": "Dieser Kalender ist schreibgeschützt. Änderungen sind nicht verfügbar."
+  "googleCalendarReadOnly": "Dieser Kalender ist schreibgeschützt. Änderungen sind nicht verfügbar.",
+  "mailTriage_high": "Priorität",
+  "mailTriage_normal": "Normal",
+  "mailTriage_low": "Niedrige Priorität",
+  "mailTriage_quarantine": "Prüfung erforderlich"
 }
