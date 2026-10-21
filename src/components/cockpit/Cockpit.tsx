@@ -1,5 +1,4 @@
 import NativeDocumentsPanel from "@/components/native/NativeDocumentsPanel";
-import NativeMailPanel from "@/components/native/NativeMailPanel";
 import type {MdProjectIntake} from "@/types";
 import type {Mission} from "@/modules/missions/types/Mission";
 import type { ClaraSession } from "@/lib/core/session";
@@ -27,7 +26,6 @@ export default function Cockpit({
   return (
     <CockpitLayout hero={<Hero nativeScope={nativeMissions!==undefined} session={session} acquisition={acquisition} />}>
       <NativeDocumentsPanel referencesOnly />
-      <NativeMailPanel referencesOnly />
       <CockpitWidgets nativeSessionId={nativeSessionId} nativeIntake={nativeIntake} nativeMissions={nativeMissions} session={session} acquisition={acquisition} />
     </CockpitLayout>
   );
