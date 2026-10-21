@@ -18,6 +18,8 @@ test('IONOS real PostgreSQL: two independent authorities, explicit bindings, exa
  const migration=readFileSync('db/migrations/016_native_ionos_mail.sql');const migrate=(database=db)=>execFileSync('docker',['exec','-i',container,'psql','-U','postgres','-d',database,'-q','-v','ON_ERROR_STOP=1'],{input:migration,stdio:'pipe'});migrate();migrate();
  execFileSync('docker',['exec','-i',container,'psql','-U','postgres','-d',db,'-q','-v','ON_ERROR_STOP=1'],{input:readFileSync('db/migrations/018_native_mail_pagination.sql'),stdio:'pipe'});
  execFileSync('docker',['exec','-i',container,'psql','-U','postgres','-d',db,'-q','-v','ON_ERROR_STOP=1'],{input:readFileSync('db/migrations/021_native_mail_five_accounts.sql'),stdio:'pipe'});
+ const monitorMigration=readFileSync('db/migrations/022_native_mail_monitor_authority.sql');
+ execFileSync('docker',['exec','-i',container,'psql','-U','postgres','-d',db,'-q','-v','ON_ERROR_STOP=1'],{input:monitorMigration,stdio:'pipe'});
  seedNativeMailFixture(pg);
  const query:RegistryQuery=async(strings,...values)=>{const statement=strings.reduce((s,part,i)=>s+part+(i<values.length?"'"+String(values[i]).replaceAll("'","''")+"'":''),'');try{const r=await promisify(execFile)('docker',['exec',container,'psql','-U','postgres','-d',db,'-qAt','-v','ON_ERROR_STOP=1','-v','VERBOSITY=verbose','-c',`SELECT row_to_json(r) FROM (${statement})r`]);return r.stdout.trim().split('\n').filter(Boolean).map(x=>JSON.parse(x));}catch(e){const stderr=String((e as {stderr:unknown}).stderr);const code=stderr.match(/ERROR:\s+([A-Z0-9]{5}):/)?.[1];if(!['42501','40001','23505'].includes(code??''))console.error(stderr.split('\n')[0]);throw {code};}};
  const digest=(s:string)=>createHash('sha256').update(s.repeat(43)).digest('hex'),commands=nativeCommands(query);
@@ -106,6 +108,22 @@ test('IONOS real PostgreSQL: two independent authorities, explicit bindings, exa
  assert.deepEqual((visibleB.connections as Array<{id:string}>).map(x=>x.id),['mail-gildas']);
  await assert.rejects(()=>run(()=>nativeMailCommand('authority',{connectionId:'mail-support'}),request('B',b),false));
  assert.throws(()=>pg("INSERT INTO clara_connections(id,workspace_id,provider,status) VALUES('mail-unauthorized','w','ionos','ACTIVE');INSERT INTO clara_native_mail_authority(connection_id,workspace_id,owner_user_id,address,reviewed_by,review_reason) VALUES('mail-unauthorized','w','a','admin@melodie.digital','a','Explicit fixture rejected for sixth address');"));
+ // Monitoring is opt-in, isolated per connection and revocable without SMTP changes.
+ const monitor=(id:string,w='w')=>pg(`SELECT clara_native_mail_monitor_authority('${id}','${w}')`);
+ assert.throws(()=>monitor('mail-clara'));
+ pg("INSERT INTO clara_native_mail_monitor_grants(connection_id,workspace_id,granted_by,reviewed_by,review_reason) VALUES('mail-clara','w','a','a','Explicit fixture grant, disabled until independently approved')");
+ assert.throws(()=>monitor('mail-clara'));
+ pg("UPDATE clara_native_mail_monitor_grants SET enabled=true WHERE connection_id='mail-clara'");
+ assert.ok(monitor('mail-clara').includes('mail-clara'));
+ assert.throws(()=>monitor('mail-gildas'));
+ assert.throws(()=>monitor('mail-clara','other-w'));
+ assert.throws(()=>pg("INSERT INTO clara_native_mail_monitor_grants(connection_id,workspace_id,granted_by,reviewed_by,review_reason,enabled) VALUES('mail-gildas','w','b','b','short',true)"));
+ const smtpLedger=pg("SELECT COUNT(*) FROM clara_native_mail_operations").trim();
+ pg("UPDATE clara_native_mail_monitor_grants SET enabled=false,revoked_at=clock_timestamp(),generation=generation+1 WHERE connection_id='mail-clara'");
+ assert.throws(()=>monitor('mail-clara'));
+ assert.equal(pg("SELECT COUNT(*) FROM clara_native_mail_operations").trim(),smtpLedger);
+ assert.equal(pg("SELECT prosecdef FROM pg_proc WHERE proname='clara_native_mail_monitor_authority'").trim(),'f');
+
  // Real backup/restore and migration reapplication retain history and permissions.
  const operationCount=pg('SELECT COUNT(*) FROM clara_native_mail_operations').trim();assert.equal(operationCount,'7');
  const restore=db+'_restore';execFileSync('docker',['exec',container,'createdb','-U','postgres',restore]);try{const dump=execFileSync('docker',['exec',container,'pg_dump','-U','postgres',db]);execFileSync('docker',['exec','-i',container,'psql','-U','postgres','-d',restore,'-q','-v','ON_ERROR_STOP=1'],{input:dump,stdio:'pipe'});migrate(restore);assert.equal(execFileSync('docker',['exec',container,'psql','-U','postgres','-d',restore,'-qAt','-c','SELECT COUNT(*) FROM clara_native_mail_operations'],{encoding:'utf8'}).trim(),operationCount);}finally{execFileSync('docker',['exec',container,'dropdb','-U','postgres',restore]);}
