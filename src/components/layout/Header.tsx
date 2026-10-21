@@ -52,8 +52,7 @@ export default function Header() {
       <div className="mx-5 hidden min-w-0 flex-1 justify-center md:flex xl:mx-8">
         <div className="flex h-10 w-full max-w-2xl min-w-0 items-center rounded-2xl border border-white/5 bg-white/5 px-4 transition-colors duration-200 hover:bg-white/10">
           <Search size={18} className="shrink-0 text-slate-500" />
-          <input type="text" placeholder={tc("search") + "..."} aria-label={tc("search")} className="ml-3 min-w-0 flex-1 bg-transparent text-sm text-white placeholder:text-slate-500 focus:outline-none" />
-          <span className="hidden shrink-0 rounded-md border border-white/10 px-2 py-1 text-[11px] text-slate-500 sm:block">⌘K</span>
+          <input type="text" disabled title={ui("unavailable")} placeholder={tc("search") + " — " + ui("unavailable")} aria-label={tc("search")} className="ml-3 min-w-0 flex-1 bg-transparent text-sm text-white placeholder:text-slate-500 focus:outline-none" />
         </div>
       </div>
 
@@ -65,7 +64,7 @@ export default function Header() {
 
         <LocaleSwitcher currentLocale={locale} />
 
-        <button type="button" aria-label={tc("notifications")} className="rounded-lg p-2 text-slate-400 transition hover:bg-white/10 hover:text-white">
+        <button type="button" disabled title={ui("unavailable")} aria-label={tc("notifications") + " — " + ui("unavailable")} className="rounded-lg p-2 text-slate-500 opacity-50">
           <Bell size={19} />
         </button>
 

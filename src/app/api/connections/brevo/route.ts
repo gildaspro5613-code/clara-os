@@ -1,3 +1,4 @@
+import { nativeOperationFence } from "@/lib/native/authority";
 import { NextResponse } from "next/server";
 import { DatabaseConnectionRepository } from "@/lib/connections/connection-repository";
 import { CURRENT_WORKSPACE_ID } from "@/lib/connections/current-workspace";
@@ -5,7 +6,9 @@ import { toPublicBrevoConnection } from "@/lib/connections/brevo-connection-publ
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const denied = await nativeOperationFence(request);
+  if (denied) return denied;
   const connection = await new DatabaseConnectionRepository()
     .findByWorkspaceAndProvider(CURRENT_WORKSPACE_ID, "brevo");
   return NextResponse.json(toPublicBrevoConnection(connection));

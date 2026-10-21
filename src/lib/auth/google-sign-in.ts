@@ -54,7 +54,7 @@ function decodePart<T>(part: string): T {
 }
 
 async function signingKey(kid: string): Promise<GoogleJwk> {
-  const response = await fetch(GOOGLE_JWKS_ENDPOINT, { cache: "no-store" });
+  const response = await fetch(GOOGLE_JWKS_ENDPOINT, { cache: "no-store",signal:AbortSignal.timeout(15_000) });
   if (!response.ok) throw new Error("GOOGLE_JWKS_UNAVAILABLE");
   const body = await response.json() as { keys?: GoogleJwk[] };
   const key = body.keys?.find((candidate) => candidate.kid === kid && candidate.use !== "enc");
@@ -119,8 +119,8 @@ async function exchangeCode(code: string): Promise<string> {
   return body.id_token;
 }
 
-async function verifyIdToken(idToken: string, expectedNonce: string): Promise<JwtClaims> {
-  const { clientId } = configuredSignIn();
+export async function verifyGoogleIdToken(idToken: string, expectedNonce: string, audience?: string): Promise<JwtClaims> {
+  const clientId = audience ?? configuredSignIn().clientId;
   const parts = idToken.split(".");
   if (parts.length !== 3) throw new Error("INVALID_GOOGLE_ID_TOKEN");
   const header = decodePart<JwtHeader>(parts[0]);
@@ -139,9 +139,9 @@ async function verifyIdToken(idToken: string, expectedNonce: string): Promise<Jw
   const now = Math.floor(Date.now() / 1000);
   if (!claims.iss || !GOOGLE_ISSUERS.has(claims.iss) || claims.aud !== clientId) throw new Error("INVALID_GOOGLE_ID_TOKEN_SCOPE");
   if (claims.azp && claims.azp !== clientId) throw new Error("INVALID_GOOGLE_ID_TOKEN_AUTHORIZED_PARTY");
-  if (!claims.exp || claims.exp <= now || (claims.iat && claims.iat > now + 60)) throw new Error("EXPIRED_GOOGLE_ID_TOKEN");
-  if (!claims.nonce || claims.nonce !== expectedNonce) throw new Error("INVALID_GOOGLE_ID_TOKEN_NONCE");
-  if (!claims.sub) throw new Error("INVALID_GOOGLE_IDENTITY");
+  if (!Number.isFinite(claims.exp) || !claims.exp || claims.exp <= now || (claims.iat !== undefined && (!Number.isFinite(claims.iat) || claims.iat > now + 60))) throw new Error("EXPIRED_GOOGLE_ID_TOKEN");
+  if (typeof claims.nonce !== "string" || !claims.nonce || claims.nonce !== expectedNonce) throw new Error("INVALID_GOOGLE_ID_TOKEN_NONCE");
+  if (typeof claims.sub !== "string" || !claims.sub) throw new Error("INVALID_GOOGLE_IDENTITY");
   return claims;
 }
 
@@ -174,7 +174,7 @@ async function bootstrapIfAuthorized(identity: VerifiedIdentity, claims: JwtClai
 export async function completeGoogleSignIn(code: string, state: string, expectedNonce: string): Promise<string> {
   if (!code.trim()) throw new Error("GOOGLE_AUTHORIZATION_CODE_REQUIRED");
   const idToken = await exchangeCode(code);
-  const claims = await verifyIdToken(idToken, expectedNonce);
+  const claims = await verifyGoogleIdToken(idToken, expectedNonce);
   const consumed = await consumeSignInTransaction("google", state, expectedNonce);
   if (!consumed) throw new Error("INVALID_OR_REPLAYED_SIGN_IN_TRANSACTION");
 

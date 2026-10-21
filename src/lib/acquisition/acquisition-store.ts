@@ -1,3 +1,5 @@
+import {nativeContext,writableNativeContext} from "@/lib/native/scoped-context";
+import {RegistryError} from "@/lib/canonical/registry";
 import { sql } from "@/lib/core/store/database";
 import type { AcquisitionDecisionBrief } from "./decision-brief";
 import type { AcquisitionLifecycle } from "./lifecycle";
@@ -48,6 +50,7 @@ export async function saveAcquisitionRecord(input: {
   lifecycle: AcquisitionLifecycle;
   preserveLifecycle?: boolean;
 }): Promise<void> {
+  if(nativeContext())throw new RegistryError(403,'NATIVE_ACQUISITION_MUTATION_NOT_CERTIFIED');
   await ensureSchema();
 
   if (input.preserveLifecycle) {
@@ -120,6 +123,7 @@ export async function loadAcquisitionRecord(
   workspaceId: string,
   submissionId: string,
 ): Promise<AcquisitionRecord | null> {
+  const ctx=nativeContext();if(ctx){if(ctx.scope.workspaceId!==workspaceId)throw new RegistryError(403,'NATIVE_ACQUISITION_DENIED');return ctx.acquisitions.get(submissionId)??null;}
   await ensureSchema();
   const rows = await sql`
     SELECT submission_id, workspace_id, qualification, decision_brief, lifecycle, commercial_draft, created_at, updated_at
@@ -144,6 +148,7 @@ export async function loadAcquisitionRecord(
 export async function loadAcquisitionDecisionQueue(
   workspaceId: string,
 ): Promise<AcquisitionRecord[]> {
+  const ctx=nativeContext();if(ctx){if(ctx.scope.workspaceId!==workspaceId)throw new RegistryError(403,'NATIVE_ACQUISITION_DENIED');return [...ctx.acquisitions.values()].filter(r=>r.lifecycle.decisionRequired);}
   await ensureSchema();
   const rows = await sql`
     SELECT submission_id, workspace_id, qualification, decision_brief, lifecycle, commercial_draft, created_at, updated_at
@@ -168,6 +173,7 @@ export async function loadAcquisitionDecisionQueue(
 export async function loadActiveAcquisitionQualifications(
   workspaceId: string,
 ): Promise<AcquisitionRecord[]> {
+  const ctx=nativeContext();if(ctx){if(ctx.scope.workspaceId!==workspaceId)throw new RegistryError(403,'NATIVE_ACQUISITION_DENIED');return [...ctx.acquisitions.values()].filter(r=>r.lifecycle.state==='qualifying');}
   await ensureSchema();
   const rows = await sql`
     SELECT submission_id, workspace_id, qualification, decision_brief, lifecycle, commercial_draft, created_at, updated_at
@@ -194,6 +200,7 @@ export async function saveCommercialDraft(
   submissionId: string,
   draft: CommercialCommunicationDraft,
 ): Promise<CommercialCommunicationDraft | null> {
+  if(nativeContext()){const ctx=writableNativeContext();if(ctx.scope.workspaceId!==workspaceId||ctx.session.acquisitionSubmissionId!==submissionId)throw new RegistryError(403,'NATIVE_ACQUISITION_DENIED');const record=ctx.acquisitions.get(submissionId);if(!record)throw new RegistryError(403,'NATIVE_ACQUISITION_DENIED');ctx.acquisitions.set(submissionId,{...record,commercialDraft:draft});ctx.draftWrites.set(submissionId,draft);ctx.draftRevisionSteps.set(submissionId,(ctx.draftRevisionSteps.get(submissionId)??0)+1);return draft;}
   await ensureSchema();
   const rows = await sql`
     UPDATE clara_acquisition_records

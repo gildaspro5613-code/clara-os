@@ -8,6 +8,7 @@ interface JournalStageProps {
 export default async function JournalStage({
   entries,
 }: JournalStageProps) {
+  const ui = await getTranslations("ui");
   const t = await getTranslations("journalPage");
   const locale = await getLocale();
   const latestEntry = entries.at(-1);
@@ -76,7 +77,7 @@ export default async function JournalStage({
                         </span>
 
                         <h2 className="mt-3 text-lg font-medium text-white/90">
-                          {entry.summary}
+                          {typeLabel(entry.type)} · {ui("localizedSummary")}
                         </h2>
                       </div>
 
@@ -91,6 +92,8 @@ export default async function JournalStage({
                       </time>
                     </div>
 
+                    <p className="mt-3 text-xs text-white/40">{ui("sourceOriginal")}</p>
+                    <p className="mt-2 text-sm text-white/75">{entry.summary}</p>
                     {entry.details && (
                       <p className="mt-5 max-w-3xl text-sm leading-7 text-white/55">
                         {entry.details}
@@ -126,7 +129,7 @@ export default async function JournalStage({
 
                 <p className="mt-2 text-sm leading-6 text-white/70">
                   {latestEntry
-                    ? latestEntry.summary
+                    ? typeLabel(latestEntry.type)
                     : t("noActivityRecorded")}
                 </p>
 

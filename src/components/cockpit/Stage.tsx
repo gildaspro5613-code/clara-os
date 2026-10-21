@@ -9,6 +9,7 @@ import GlassPanel from "@/components/ui/GlassPanel";
 import { getTranslations } from "next-intl/server";
 
 interface StageProps {
+  nativeScope?: boolean;
   session: ClaraSession;
   acquisition?: AcquisitionRecord | null;
 }
@@ -35,8 +36,11 @@ async function MissionPanel({ mission }: MissionPanelProps) {
   return mission ? <TasksPanel mission={mission} /> : <EmptyMissionPanel />;
 }
 
-export default async function Stage({ session, acquisition }: StageProps) {
+export default async function Stage({ session, acquisition, nativeScope = false }: StageProps) {
   const mission = session.mission;
+  const native = nativeScope;
+  const ui = await getTranslations("ui");
+  const unavailable = <GlassPanel><p role="status">{ui("nativeProviderBlocked")}</p></GlassPanel>;
 
   return (
     <>
@@ -45,11 +49,11 @@ export default async function Stage({ session, acquisition }: StageProps) {
       </div>
 
       <div className="pointer-events-auto absolute left-[6%] top-[61%] z-20 hidden w-[23%] max-w-[330px] lg:block">
-        <ClaraVoiceWidget />
+        {native ? unavailable : <ClaraVoiceWidget />}
       </div>
 
       <div className="pointer-events-auto absolute right-[5%] top-[7%] z-20 hidden w-[28%] max-w-[420px] lg:block">
-        <AgendaPanel />
+        {native&&(!session.googleConnectionId||!session.googleCalendarId) ? unavailable : <AgendaPanel />}
       </div>
 
       <div className="pointer-events-auto absolute right-[5%] top-[61%] z-20 hidden w-[28%] max-w-[420px] lg:block">

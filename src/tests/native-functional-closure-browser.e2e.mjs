@@ -1,0 +1,44 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {execFileSync,execFile} from 'node:child_process';
+import {promisify} from 'node:util';
+import {readFileSync} from 'node:fs';
+import {X509Certificate,createHash} from 'node:crypto';
+import {chromium} from 'playwright';
+import {nativeMailRouteFixture} from './helpers/native-mail-route-fixture.ts';
+import {seedNativeMailFixture,SimulatedMail} from './helpers/native-mail-fixture.ts';
+const origin=process.env.DOCUMENTS_E2E_ORIGIN,db=process.env.NATIVE_TEST_DATABASE;
+if(!origin||!['127.0.0.1','localhost'].includes(new URL(origin).hostname)||!/^native_browser_[a-f0-9]{32}$/.test(db??''))throw Error('Isolated local fixture required');
+test('Closure UI: contacts create/edit/reload, scoped Mission/Journal, Messagerie 101 records, attachments and unavailable capabilities',async()=>{
+ const pg=s=>execFileSync('docker',['exec','clara-canonical-test-postgres','psql','-U','postgres','-d',db,'-qAt','-v','ON_ERROR_STOP=1','-c',s],{encoding:'utf8',stdio:'pipe'});
+ if(pg('SELECT COUNT(*) FROM clara_native_mail_authority').trim()==='0')seedNativeMailFixture(pg);
+ const query=async(strings,...values)=>{const statement=strings.reduce((s,part,i)=>s+part+(i<values.length?"'"+String(values[i]).replaceAll("'","''")+"'":''),'');try{const r=await promisify(execFile)('docker',['exec','clara-canonical-test-postgres','psql','-U','postgres','-d',db,'-qAt','-v','ON_ERROR_STOP=1','-v','VERBOSITY=verbose','-c',`SELECT row_to_json(r) FROM (${statement})r`]);return r.stdout.trim().split('\n').filter(Boolean).map(x=>JSON.parse(x));}catch(e){throw {code:String(e.stderr).match(/ERROR:\s+([A-Z0-9]{5}):/)?.[1]};}};
+ process.env.CLARA_AUTH_APP_ORIGIN=origin;process.env.CLARA_CREDENTIALS_ENCRYPTION_KEY=Buffer.alloc(32,9).toString('base64');
+ const provider=new SimulatedMail();provider.uids=Array.from({length:101},(_,i)=>i+1);const content='ISOLATED_ATTACHMENT';const attachmentId=createHash('sha256').update(content).digest('hex');provider.content={...provider.content,subject:'CLOSURE_MAIL',text:'CLOSURE_BODY',attachments:[{id:attachmentId,sha256:attachmentId,name:'closure.txt',type:'text/plain',size:content.length,content:Buffer.from(content).toString('base64')}]};
+ const handlers=nativeMailRouteFixture(query,()=>provider);
+ const pin=createHash('sha256').update(new X509Certificate(readFileSync('/tmp/native-runtime-cert.pem')).publicKey.export({type:'spki',format:'der'})).digest('base64');
+ const browser=await chromium.launch({executablePath:process.env.DOCUMENTS_E2E_CHROMIUM,headless:true,args:['--no-sandbox','--ignore-certificate-errors-spki-list='+pin]});
+ try{
+  const context=await browser.newContext();await context.addCookies([{name:'clara_auth_session',value:'E'.repeat(43),url:origin},{name:'NEXT_LOCALE',value:'fr',url:origin}]);
+  await context.route('**/*',r=>new URL(r.request().url()).origin===new URL(origin).origin?r.continue():r.abort());
+  await context.route('**/api/native/mail**',async route=>{const r=route.request(),request=new Request(r.url(),{method:r.method(),headers:await r.allHeaders(),...(r.method()==='POST'?{body:r.postData()}:{} )});const response=await handlers[r.method()](request);await route.fulfill({status:response.status,headers:Object.fromEntries(response.headers),body:Buffer.from(await response.arrayBuffer())});});
+  const page=await context.newPage();await page.goto(origin+'/clara');const selector=page.getByRole('region',{name:'Contexte canonique privé',exact:true});
+  await selector.locator('select').nth(0).selectOption('w');await selector.locator('select').nth(1).selectOption('c1');await selector.locator('select').nth(2).selectOption('p2');await Promise.all([page.waitForEvent('load'),selector.getByRole('button',{name:'Créer un nouveau fil',exact:true}).click()]);
+  await page.goto(origin+'/contacts');await page.getByLabel('Nom du contact',{exact:true}).fill('CLOSURE_PERSON');await page.getByLabel('Adresse du contact',{exact:true}).fill('closure@example.invalid');await page.getByRole('button',{name:'Enregistrer le contact',exact:true}).click();await page.locator('p').filter({hasText:/^CLOSURE_PERSON$/}).waitFor();
+  const card=page.locator('p').filter({hasText:/^CLOSURE_PERSON$/}).locator('..').locator('..');await card.getByRole('button',{name:'Modifier le contact',exact:true}).click();await page.getByLabel('Nom du contact',{exact:true}).fill('CLOSURE_UPDATED');await page.getByRole('button',{name:'Enregistrer le contact',exact:true}).click();await page.locator('p').filter({hasText:/^CLOSURE_UPDATED$/}).waitFor();await page.reload();await page.locator('p').filter({hasText:/^CLOSURE_UPDATED$/}).waitFor();
+  await page.goto(origin+'/clara');const opt=page.getByLabel('Contact / prospect',{exact:true}).locator('option').filter({hasText:'CLOSURE_UPDATED'});const contact=await opt.getAttribute('value');assert.ok(contact);await page.getByLabel('Contact / prospect',{exact:true}).selectOption(contact);await Promise.all([page.waitForEvent('load'),page.getByRole('button',{name:'Sélectionner le contact',exact:true}).click()]);await page.getByLabel('Titre de la mission',{exact:true}).fill('CLOSURE_MISSION');await page.getByLabel('Objectif de la mission',{exact:true}).fill('Follow the explicitly reviewed contact');await Promise.all([page.waitForEvent('load'),page.getByRole('button',{name:'Créer la mission',exact:true}).click()]);
+  await page.goto(origin+'/messagerie');const panel=page.getByRole('region',{name:'Messagerie professionnelle',exact:true});await panel.getByLabel('Boîte email',{exact:true}).selectOption('mail-clara');await panel.getByRole('button',{name:'Dossiers autorisés',exact:true}).click();await panel.getByLabel('Dossier',{exact:true}).selectOption('INBOX');
+  for(let i=0;i<5;i++){await panel.getByRole('button',{name:'Synchroniser',exact:true}).click();await panel.getByRole('button',{name:'Actualiser',exact:true}).waitFor({state:'visible'});await page.waitForFunction(()=>!Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Synchroniser')?.disabled);}
+  const rows=()=>panel.getByRole('button',{name:/CLOSURE_MAIL/});await rows().first().waitFor();assert.equal(await rows().count(),50);assert.equal(Number(pg("SELECT COUNT(*) FROM clara_native_mail_messages WHERE connection_id='mail-clara' AND available")),101);
+  await panel.getByRole('button',{name:'Afficher les emails suivants',exact:true}).click();await page.waitForFunction(()=>Array.from(document.querySelectorAll('li')).filter(n=>n.textContent.includes('CLOSURE_MAIL')).length>=99);if(await panel.getByRole('button',{name:'Afficher les emails suivants',exact:true}).count())await panel.getByRole('button',{name:'Afficher les emails suivants',exact:true}).click();await page.waitForFunction(()=>!Array.from(document.querySelectorAll('button')).some(b=>b.textContent==='Afficher les emails suivants'));const withheld=Number(pg("SELECT COUNT(*) FROM clara_native_mail_messages mm JOIN clara_native_mail_bindings b ON b.message_id=mm.id WHERE mm.connection_id='mail-clara' AND mm.available AND (b.client_id<>'c1' OR b.project_id<>'p2' OR b.revoked_at IS NOT NULL)"));assert.equal(await rows().count(),101-withheld);
+  await panel.getByRole('button',{name:/CLOSURE_MAIL/}).last().click();await panel.getByText('CLOSURE_BODY',{exact:true}).waitFor();const href=await panel.getByRole('link',{name:/closure.txt/}).getAttribute('href');const response=await handlers.GET(new Request(origin+href,{headers:{cookie:(await context.cookies()).map(c=>c.name+'='+c.value).join(';')}}));assert.equal(response.status,200);assert.equal(await response.text(),content);
+  await Promise.all([page.waitForEvent('load'),panel.getByRole('button',{name:'Rattacher au contact et à la mission',exact:true}).click()]);await page.reload();await panel.getByLabel('Boîte email',{exact:true}).selectOption('mail-clara');await panel.getByRole('button',{name:'Actualiser',exact:true}).click();await panel.getByRole('button',{name:/CLOSURE_MAIL/}).first().waitFor();
+  await page.goto(origin+'/clara');assert.equal(await page.getByRole('region',{name:'Messagerie professionnelle',exact:true}).count(),0);
+  await page.goto(origin+'/messagerie');assert.equal(await page.getByRole('region',{name:'Messagerie professionnelle',exact:true}).count(),1);
+  await page.goto(origin+'/');assert.ok((await page.locator('body').innerText()).includes('CLOSURE_MISSION'));
+  await page.goto(origin+'/journal');assert.ok((await page.locator('body').innerText()).includes('CONTACT_CREATED'));
+  await page.goto(origin+'/telephonie');await page.getByText(/Indisponible — capacité non certifiée/).waitFor();assert.equal(await page.getByRole('button',{name:/Appeler/}).isDisabled(),true);
+  await page.goto(origin+'/automatisations');await page.getByText(/Exécution des automatisations indisponible/).waitFor();assert.equal(provider.sent.length,0);
+  await context.close();
+ }finally{await browser.close();}
+});

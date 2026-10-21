@@ -1,3 +1,6 @@
+import {nativeThreadCertified} from '@/lib/native/scoped-context';
+import type {MdProjectIntake} from "@/types";
+import type {Mission} from "@/modules/missions/types/Mission";
 import AgendaWidget from "./agenda/AgendaWidget";
 import MissionWidget from "./missions/MissionWidget";
 import ClaraChatWidget from "./clara/ClaraChatWidget";
@@ -21,17 +24,20 @@ import type { AcquisitionRecord } from "@/lib/acquisition/acquisition-store";
 import { getTranslations } from "next-intl/server";
 
 interface CockpitWidgetsProps {
+  nativeSessionId?:string;
   session: ClaraSession;
+  nativeMissions?:Mission[];
+  nativeIntake?:MdProjectIntake|null;
   acquisition?: AcquisitionRecord | null;
 }
 
-export default async function CockpitWidgets({ session, acquisition }: CockpitWidgetsProps) {
+export default async function CockpitWidgets({ session, acquisition,nativeMissions,nativeIntake,nativeSessionId }: CockpitWidgetsProps) {
   const t = await getTranslations("cockpitUi");
   const workspaceId = process.env.CLARA_MD_WORKSPACE_ID?.trim()
     || process.env.CLARA_WORKSPACE_ID?.trim()
     || "melodie-digital";
 
-  const [acquisitionDecisions, acquisitionQualifications, missions] = await Promise.all([
+  const [acquisitionDecisions, acquisitionQualifications, missions] = nativeMissions ? [[],[],nativeMissions] : await Promise.all([
     loadAcquisitionDecisionQueue(workspaceId),
     loadActiveAcquisitionQualifications(workspaceId),
     loadMissions().catch(() => []),
@@ -64,7 +70,7 @@ export default async function CockpitWidgets({ session, acquisition }: CockpitWi
 
         {orderedQualifications.length > 0 && (
           <div id="acquisition" className="mt-5 scroll-mt-6">
-            <AcquisitionQualificationPanel qualifications={orderedQualifications} />
+            <AcquisitionQualificationPanel nativeIntake={nativeIntake} qualifications={orderedQualifications} />
           </div>
         )}
 
@@ -85,7 +91,7 @@ export default async function CockpitWidgets({ session, acquisition }: CockpitWi
 
         <div className="mt-5 grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-[1.35fr_1fr_1fr]">
           <div className="min-w-0 md:col-span-2 xl:col-span-1">
-            <MissionWidget
+            <MissionWidget nativeScope={nativeMissions!==undefined}
               mission={currentMission}
               activeCount={orchestration.active.length}
               blockedCount={orchestration.blocked.length}
@@ -96,7 +102,7 @@ export default async function CockpitWidgets({ session, acquisition }: CockpitWi
         </div>
 
         <div className="mt-5">
-          <ClaraChatWidget initialMessages={session.conversation} userFirstName={session.user.firstName} />
+          <ClaraChatWidget nativeThreadReadOnly={nativeMissions!==undefined&&!nativeThreadCertified(session)} key={nativeSessionId} nativeSessionId={nativeSessionId} compact initialMessages={session.conversation} userFirstName={session.user.firstName} />
         </div>
       </div>
     </section>

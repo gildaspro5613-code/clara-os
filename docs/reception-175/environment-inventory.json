@@ -1,0 +1,557 @@
+{
+  "checkedAt": "2026-10-14T16:35:03.164430+00:00",
+  "base": "1b7b718f80eafc4195b12fd1bd677ec64b6f89c1",
+  "scope": "Production for deployed connectors; Development for isolated tests only; Preview not required and prohibited",
+  "productionMetadataStatus": "UNVERIFIED: no callable Vercel tool or Vercel credential-name binding in this environment; prior owner-reported team HTTP 403 not retested",
+  "variables": [
+    {
+      "name": "BREVO_CLIENT_ID",
+      "sources": [
+        "src/lib/connectors/brevo/oauth.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "BREVO_CLIENT_SECRET",
+      "sources": [
+        "src/lib/connectors/brevo/oauth.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "BREVO_OAUTH_SCOPES",
+      "sources": [
+        "src/app/api/connections/brevo/connect/route.ts",
+        "src/lib/connectors/brevo/oauth.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "BREVO_REDIRECT_URI",
+      "sources": [
+        "src/app/api/connections/brevo/callback/route.ts",
+        "src/app/api/connections/brevo/connect/route.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "BREVO_WEBHOOK_TOKEN",
+      "sources": [
+        "src/app/api/webhooks/brevo/route.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "CLARA_AUTH_APP_ORIGIN",
+      "sources": [
+        "src/app/api/auth/google/callback/route.ts",
+        "src/app/api/auth/microsoft/callback/route.ts",
+        "src/app/api/auth/session/logout/route.ts",
+        "src/app/api/clara/acquisition/commercial-draft/route.ts",
+        "src/app/api/clara/acquisition/decision/route.ts",
+        "src/app/api/clara/physical-actions/approve/route.ts",
+        "src/app/api/connections/google/callback/route.ts",
+        "src/lib/auth/voice-request-authorization.ts",
+        "src/lib/canonical/http.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "CLARA_AUTH_BOOTSTRAP_EMAIL",
+      "sources": [
+        "src/lib/auth/google-sign-in.ts",
+        "src/lib/auth/microsoft-sign-in.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "CLARA_AUTH_GOOGLE_REDIRECT_URI",
+      "sources": [
+        "src/lib/auth/google-sign-in.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "CLARA_AUTH_MICROSOFT_CLIENT_ID",
+      "sources": [
+        "src/lib/auth/microsoft-sign-in.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "CLARA_AUTH_MICROSOFT_CLIENT_SECRET",
+      "sources": [
+        "src/lib/auth/microsoft-sign-in.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "CLARA_AUTH_MICROSOFT_REDIRECT_URI",
+      "sources": [
+        "src/lib/auth/microsoft-sign-in.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "CLARA_AUTH_MICROSOFT_TENANT_ID",
+      "sources": [
+        "src/lib/auth/microsoft-sign-in.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "CLARA_AUTH_WORKSPACE_ID",
+      "sources": [
+        "src/app/api/clara/physical-actions/approve/route.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "CLARA_CREDENTIALS_ENCRYPTION_KEY",
+      "sources": [
+        "src/lib/auth/oauth/state.ts",
+        "src/lib/connections/credential-store.ts",
+        "src/lib/connectors/google/oauth/google-oauth-state.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "CLARA_EXTERNAL_PRODUCTS_JSON",
+      "sources": [
+        "src/app/api/external/project-intake/route.test.ts",
+        "src/lib/external-capabilities/config.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "CLARA_LIVE_BASE_URL",
+      "sources": [
+        "src/lib/connectors/clara-live/execution-authority.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "CLARA_LIVE_CALLBACK_BASE_URL",
+      "sources": [
+        "src/lib/external-capabilities/config.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "CLARA_LIVE_CAPABILITIES",
+      "sources": [
+        "src/lib/external-capabilities/config.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "CLARA_LIVE_PRODUCT_TOKEN",
+      "sources": [
+        "src/lib/external-capabilities/config.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "CLARA_LIVE_WORKSPACE_ID",
+      "sources": [
+        "src/lib/external-capabilities/config.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "CLARA_MAGICQ_NETWORK_ENABLED",
+      "sources": [
+        "src/lib/capabilities/magicq-lighting/server-executor.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "CLARA_MD_PRODUCT_TOKEN",
+      "sources": [
+        "src/lib/external-capabilities/config.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "CLARA_MD_WORKSPACE_ID",
+      "sources": [
+        "src/app/api/auth/session/status/route.ts",
+        "src/app/api/clara/acquisition/commercial-draft/route.ts",
+        "src/app/api/clara/acquisition/status/[submissionId]/route.ts",
+        "src/app/api/contacts/route.ts",
+        "src/app/api/internal/prospect-e2e-trace/[submissionId]/route.ts",
+        "src/components/cockpit/widgets/CockpitWidgets.tsx",
+        "src/lib/auth/google-sign-in.ts",
+        "src/lib/connections/current-workspace.ts",
+        "src/lib/core/operational-context.ts",
+        "src/lib/external-capabilities/config.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "CLARA_OS_PRODUCT_TOKEN",
+      "sources": [
+        "src/lib/connectors/clara-live/execution-authority.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "CLARA_OWNER_FIRST_NAME",
+      "sources": [
+        "src/lib/core/session.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "CLARA_PHYSICAL_EXECUTION_ENABLED",
+      "sources": [
+        "src/app/api/clara/physical-actions/approve/route.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "CLARA_PLAN",
+      "sources": [
+        "src/app/api/clara/approvals/route.ts",
+        "src/app/api/clara/chat/route.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "CLARA_PROJECT_INTAKE_WORKER_BATCH_SIZE",
+      "sources": [
+        "src/lib/intake/md-project-intake-worker.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "CLARA_PROJECT_INTAKE_WORKER_STALE_SECONDS",
+      "sources": [
+        "src/lib/intake/md-project-intake-worker.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "CLARA_USER_FIRST_NAME",
+      "sources": [
+        "src/lib/core/session.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "CLARA_WORKSPACE_ID",
+      "sources": [
+        "src/app/api/auth/session/status/route.ts",
+        "src/app/api/clara/acquisition/commercial-draft/route.ts",
+        "src/app/api/clara/acquisition/decision/route.ts",
+        "src/app/api/clara/acquisition/decisions/route.ts",
+        "src/app/api/clara/acquisition/status/[submissionId]/route.ts",
+        "src/app/api/internal/prospect-e2e-trace/[submissionId]/route.ts",
+        "src/components/cockpit/widgets/CockpitWidgets.tsx",
+        "src/lib/auth/google-sign-in.ts",
+        "src/lib/auth/microsoft-sign-in.ts",
+        "src/lib/connections/current-workspace.ts",
+        "src/lib/core/operational-context.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "CRON_SECRET",
+      "sources": [
+        "src/app/api/internal/document-operations-purge/route.ts",
+        "src/app/api/internal/event-jobs-run/route.ts",
+        "src/app/api/internal/project-intake-worker/route.ts",
+        "src/app/api/internal/prospect-e2e-trace/[submissionId]/route.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "DATABASE_URL",
+      "sources": [
+        "src/lib/core/store/database.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "ELEVENLABS_AGENT_ID",
+      "sources": [
+        "src/lib/config/elevenlabs.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "ELEVENLABS_AGENT_PHONE_NUMBER_ID",
+      "sources": [
+        "src/lib/config/elevenlabs.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "ELEVENLABS_API_KEY",
+      "sources": [
+        "src/lib/config/elevenlabs.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "ELEVENLABS_VOICE_ID",
+      "sources": [
+        "src/lib/config/elevenlabs.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "GOOGLE_CLIENT_ID",
+      "sources": [
+        "src/lib/auth/google-sign-in.ts",
+        "src/lib/config/google.ts",
+        "src/lib/connectors/google/oauth/oauth-client.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "GOOGLE_CLIENT_SECRET",
+      "sources": [
+        "src/lib/auth/google-sign-in.ts",
+        "src/lib/config/google.ts",
+        "src/lib/connectors/google/oauth/oauth-client.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "GOOGLE_PROJECT_ID",
+      "sources": [
+        "src/lib/config/google.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "GOOGLE_REDIRECT_URI",
+      "sources": [
+        "src/lib/config/google.ts",
+        "src/lib/connectors/google/oauth/oauth-client.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "MICROSOFT_CLIENT_ID",
+      "sources": [
+        "src/lib/config/microsoft.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "MICROSOFT_CLIENT_SECRET",
+      "sources": [
+        "src/lib/config/microsoft.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "MICROSOFT_REDIRECT_URI",
+      "sources": [
+        "src/lib/config/microsoft.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "MICROSOFT_TENANT_ID",
+      "sources": [
+        "src/lib/config/microsoft.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "NEXT_PUBLIC_APP_URL",
+      "sources": [
+        "src/app/api/connections/brevo/callback/route.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "NODE_ENV",
+      "sources": [
+        "src/app/api/auth/google/callback/route.ts",
+        "src/app/api/auth/google/start/route.ts",
+        "src/app/api/auth/microsoft/callback/route.ts",
+        "src/app/api/auth/microsoft/start/route.ts",
+        "src/app/api/connections/brevo/callback/route.ts",
+        "src/app/api/connections/brevo/connect/route.ts",
+        "src/app/api/connections/google/callback/route.ts",
+        "src/app/api/connections/google/connect/route.ts",
+        "src/app/api/connections/microsoft/callback/route.ts",
+        "src/app/api/connections/microsoft/connect/route.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "OPENAI_API_KEY",
+      "sources": [
+        "src/lib/connectors/internal/openai/responses/openai-responses-engine.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "OPENAI_MODEL",
+      "sources": [
+        "src/lib/brain/cognitive-tool-loop.ts",
+        "src/lib/brain/reasoning.ts",
+        "src/lib/brain/response-composer.ts",
+        "src/lib/external-capabilities/external-event-handler.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "PATH",
+      "sources": [
+        "src/lib/documents/pdf-text.ts"
+      ],
+      "cloudPresence": "present",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "POSTGRES_URL",
+      "sources": [
+        "src/lib/core/store/database.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "TWILIO_ACCOUNT_SID",
+      "sources": [
+        "src/lib/config/twilio.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "TWILIO_AUTH_TOKEN",
+      "sources": [
+        "src/lib/config/twilio.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "TWILIO_PHONE_NUMBER",
+      "sources": [
+        "src/lib/config/twilio.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    },
+    {
+      "name": "WEATHER_API_KEY",
+      "sources": [
+        "src/lib/connectors/internal/weather/weather-engine.ts"
+      ],
+      "cloudPresence": "absent",
+      "productionPresence": "unverified",
+      "previewPresence": "unverified"
+    }
+  ]
+}

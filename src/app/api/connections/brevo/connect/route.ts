@@ -1,3 +1,4 @@
+import { nativeOperationFence } from "@/lib/native/authority";
 import { NextResponse } from "next/server";
 import { ConnectionStatus, type Connection } from "@/lib/connections/connection";
 import { DatabaseConnectionRepository } from "@/lib/connections/connection-repository";
@@ -23,6 +24,8 @@ function pendingConnection(workspaceId: string, scopes: string[]): Connection {
 }
 
 export async function GET(request: Request) {
+  const denied = await nativeOperationFence(request);
+  if (denied) return denied;
   const redirectUri = process.env.BREVO_REDIRECT_URI;
   if (!redirectUri) return NextResponse.json({ error: "BREVO_REDIRECT_URI is not configured." }, { status: 503 });
 
