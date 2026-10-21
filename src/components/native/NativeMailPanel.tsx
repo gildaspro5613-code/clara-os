@@ -3,7 +3,7 @@ import {useEffect,useState} from 'react';
 import {useTranslations,useLocale} from 'next-intl';
 import type {MailboxCommunicationDraft} from '@/lib/acquisition/mailbox-communication-draft';
 type Connection={id:string;address:string;owned:boolean};
-type Message={id:string;subject:string;from:string;quarantined:boolean};
+type Message={id:string;subject:string;from:string;quarantined:boolean;triage:{priority:'high'|'normal'|'low'|'quarantine';category:string;reason:string;requiresAttention:boolean}};
 type OpenMail={subject:string;from:string;text:string;quarantined:boolean;attachments:Array<{id:string;name:string;size:number}>};
 type Operation={id:string;state:string};
 type Review={from:string;to:string[];subject:string;text:string;attachments:Array<{name:string;sha256:string}>};
@@ -34,7 +34,7 @@ export default function NativeMailPanel({referencesOnly=false}:{referencesOnly?:
  <select aria-label={t('mailFolder')} className="bg-slate-900" value={folder} onChange={e=>setFolder(e.target.value)}><option value="">{t('mailFolder')}</option>{folders.map(f=><option key={f}>{f}</option>)}</select>
  <button className="m-2 border p-2" disabled={busy||!owned||!folder} onClick={()=>void perform(async()=>{await post('sync',{folder});await refresh();})}>{t('mailSync')}</button>
  <p className="mt-2">{t('mailContextHelp')}</p>
- <ul>{messages.map(m=><li className="my-2" key={m.id}><button disabled={busy||m.quarantined} onClick={()=>void perform(async()=>{setOpened((await get('message',{messageId:m.id})).message);setMessage(m.id);setReview(null);setApproval(null);})}>{m.from} · {m.subject}{m.quarantined?' · '+t('mailQuarantine'):''}</button></li>)}</ul>
+ <ul>{messages.map(m=><li className="my-2" key={m.id}><span className="mr-2 text-xs" aria-label={t('mailTriage_'+m.triage.priority)}>{t('mailTriage_'+m.triage.priority)}</span><button disabled={busy||m.quarantined} onClick={()=>void perform(async()=>{setOpened((await get('message',{messageId:m.id})).message);setMessage(m.id);setReview(null);setApproval(null);})}>{m.from} · {m.subject}{m.quarantined?' · '+t('mailQuarantine'):''}</button></li>)}</ul>
  {nextCursor&&<button className="m-2 border p-2" disabled={busy} onClick={()=>void perform(async()=>{const page=await get('messages',{beforeId:nextCursor});setMessages(previous=>[...previous,...page.messages.filter((m:Message)=>!previous.some(p=>p.id===m.id))]);setNextCursor(page.nextCursor);})}>{t('mailMore')}</button>}
  {opened&&<article className="my-3 rounded border border-white/10 p-3"><h3>{opened.subject}</h3><pre className="whitespace-pre-wrap">{opened.text}</pre><ul>{opened.attachments.map(a=><li key={a.id}><a href={'/api/native/mail?'+new URLSearchParams({action:'attachment',connectionId,messageId,attachmentId:a.id})}>{a.name} · {a.size}</a></li>)}</ul>
  {<fieldset className="my-3 border p-2"><legend>{t('mailContactReview')}</legend><label>{t('mailContactName')} <input disabled={busy} aria-label={t('mailContactName')} className="bg-slate-900" value={contactName} onChange={e=>setContactName(e.target.value)}/></label><label>{t('mailContactEmail')} <input disabled={busy} aria-label={t('mailContactEmail')} className="bg-slate-900" value={contactEmail} onChange={e=>setContactEmail(e.target.value)}/></label><button disabled={busy||!contactName||!contactEmail} onClick={()=>void perform(async()=>{await post('createContact',{messageId,name:contactName,email:contactEmail,locale});location.reload();})}>{t('mailCreateContact')}</button></fieldset>}
