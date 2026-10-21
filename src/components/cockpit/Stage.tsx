@@ -49,8 +49,6 @@ export default async function Stage({ session, acquisition, nativeScope = false 
         <BriefPanel session={session} acquisition={acquisition} />
       </div>
 
-      {native&&<div className="pointer-events-auto absolute left-[5%] top-[39%] z-20 hidden w-[25%] max-w-[360px] lg:block"><MailOverviewPanel /></div>}
-
       <div className="pointer-events-auto absolute left-[6%] top-[61%] z-20 hidden w-[23%] max-w-[330px] lg:block">
         {native ? unavailable : <ClaraVoiceWidget />}
       </div>
@@ -63,10 +61,15 @@ export default async function Stage({ session, acquisition, nativeScope = false 
         <MissionPanel mission={mission} />
       </div>
 
+      {native&&<div className="pointer-events-auto absolute right-[5%] top-[36%] z-20 hidden w-[28%] max-w-[420px] lg:block"><MailOverviewPanel /></div>}
+
       <div className="pointer-events-none absolute left-4 right-4 top-[12%] z-20 flex flex-col gap-3 lg:hidden">
         <div className="pointer-events-auto">
           <BriefPanel session={session} acquisition={acquisition} />
         </div>
+      </div>
+
+      <div className="pointer-events-none absolute left-4 right-4 top-[38%] z-20 flex flex-col gap-3 lg:hidden">
         {native&&<div className="pointer-events-auto"><MailOverviewPanel /></div>}
       </div>
 
