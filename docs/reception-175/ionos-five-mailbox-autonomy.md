@@ -84,3 +84,14 @@ verified approvals. A passing isolated CI run is not real provider acceptance.
   provide a distinct least-privilege service identity, atomic per-mailbox
   generation fencing and durable cursor commits; CRON_SECRET must never be
   treated as sufficient database authority. No SMTP code path in that worker.
+
+
+## Relève autonome — suite du lot
+
+Le runtime de surveillance INBOX est désormais implémenté en isolation, désactivé par défaut,
+avec migration additive 023, identité SQL de service sans session utilisateur, verrous de
+révocation/génération et curseurs atomiques. Les points « background monitoring not
+implemented » ci-dessus décrivent le checkpoint antérieur, pas l'état actuel du code.
+Voir [le rapport de réception détaillé](ionos-autonomous-monitor-reception.md) pour les
+preuves exécutées, les bornes et les autorisations manquantes. **Aucune activation ni
+certification réelle IONOS/Production** n'est déduite de cette implémentation.

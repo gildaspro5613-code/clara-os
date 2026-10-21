@@ -48,8 +48,15 @@ export function createIonosTransport(credentials:MailCredentials):MailTransport{
  if(process.env.CLARA_IONOS_NETWORK_ENABLED!=='true')throw Error('MAIL_PROVIDER_DISABLED');
  validateMailConfig(credentials);return new IonosTransport(credentials);
 }
-export class IonosTransport implements MailTransport {
- constructor(private readonly credentials:MailCredentials){validateMailConfig(credentials);}
+export type MailReadTransport = Pick<MailTransport,'sync'>;
+export function createIonosReadTransport(credentials:MailCredentials):MailReadTransport {
+ if(process.env.CLARA_IONOS_NETWORK_ENABLED!=='true')throw Error('MAIL_PROVIDER_DISABLED');
+ return new IonosReadTransport(credentials);
+}
+/** No SMTP method exists on this class, even at runtime. */
+export class IonosReadTransport {
+
+ constructor(protected readonly credentials:MailCredentials){validateMailConfig(credentials);}
  private client(){const c=this.credentials;return new ImapFlow({host:c.imapHost,port:c.imapPort,secure:true,auth:{user:c.address,pass:c.password},tls:{rejectUnauthorized:true,minVersion:'TLSv1.2'},logger:false,disableAutoIdle:true,connectionTimeout:10000,greetingTimeout:10000,socketTimeout:15000});}
  private async imap<T>(work:(client:ImapFlow)=>Promise<T>){const client=this.client();let timer:ReturnType<typeof setTimeout>|undefined;try{return await Promise.race([(async()=>{await client.connect();return work(client);})(),new Promise<never>((_,reject)=>{timer=setTimeout(()=>{client.close();reject(Error('MAIL_IMAP_TIMEOUT'));},30000);})]);}finally{clearTimeout(timer);client.close();}}
  async folders(){return this.imap(async client=>(await client.list()).map(f=>f.path).filter(f=>this.credentials.folders.includes(f)));}
@@ -62,9 +69,12 @@ export class IonosTransport implements MailTransport {
    if(uids.length>5000)throw Error('MAIL_FOLDER_LIMIT');
    const start=cursor.uidValidity===uidValidity?cursor.lastUid:0,selected=uids.filter(u=>u>start).sort((a,b)=>a-b).slice(0,25),messages:MailSync['messages']=[];
    if(selected.length)for await(const item of client.fetch(selected,{uid:true,source:{start:0,maxLength:MAIL_LIMIT+1}},{uid:true})){if(!item.source||item.source.length>MAIL_LIMIT)throw Error('MAIL_SOURCE_LIMIT');messages.push({uid:item.uid,content:await parseMail(item.source)});}
+   if(messages.length!==selected.length||new Set(messages.map(m=>m.uid)).size!==selected.length||messages.some(m=>!selected.includes(m.uid)))throw Error('MAIL_IMAP_INCOMPLETE_BATCH');
    return {uidValidity,uids,lastUid:selected.length?Math.max(...selected):start,messages};
   }finally{lock.release();}});
  }
+}
+export class IonosTransport extends IonosReadTransport implements MailTransport {
  async send(envelope:MailEnvelope):Promise<'sent'|'failed'|'uncertain'>{
   const c=this.credentials;if(envelope.from!==c.address)throw Error('MAIL_SENDER_DENIED');
   const transport=nodemailer.createTransport({host:c.smtpHost,port:c.smtpPort,secure:c.smtpPort===465,requireTLS:true,auth:{user:c.address,pass:c.password},tls:{rejectUnauthorized:true,minVersion:'TLSv1.2'},connectionTimeout:10000,greetingTimeout:10000,socketTimeout:15000,logger:false,debug:false,disableFileAccess:true,disableUrlAccess:true});
