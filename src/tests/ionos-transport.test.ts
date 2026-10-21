@@ -2,12 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import nodemailer from 'nodemailer';
 import {ImapFlow} from 'imapflow';
-import {parseMail,validateMailConfig,createIonosTransport,IonosTransport,MAIL_LIMIT,type MailCredentials,type MailEnvelope} from '@/lib/connectors/ionos/transport';
+import {parseMail,validateMailConfig,createIonosTransport,IonosTransport,MAIL_LIMIT,IONOS_MAILBOX_ADDRESSES,type MailCredentials,type MailEnvelope} from '@/lib/connectors/ionos/transport';
 const config:MailCredentials={address:'clara@melodie.digital',password:'synthetic-only',imapHost:'imap.ionos.fr',imapPort:993,smtpHost:'smtp.ionos.fr',smtpPort:465,folders:['INBOX'],configurationReviewed:true};
 test('IONOS network is off by default, no self-activation or guessed configuration',()=>{
  assert.notEqual(process.env.CLARA_IONOS_NETWORK_ENABLED,'true');assert.throws(()=>createIonosTransport(config),/DISABLED/);
- for(const c of [{...config,configurationReviewed:false},{...config,imapHost:'127.0.0.1'},{...config,smtpHost:'attacker.invalid'},{...config,smtpPort:25},{...config,imapPort:143},{...config,address:'support@melodie.digital'}])assert.throws(()=>validateMailConfig(c));
- validateMailConfig(config);
+ for(const c of [{...config,configurationReviewed:false},{...config,imapHost:'127.0.0.1'},{...config,smtpHost:'attacker.invalid'},{...config,smtpPort:25},{...config,imapPort:143},{...config,address:'outside@melodie.digital'}])assert.throws(()=>validateMailConfig(c));
+ for(const address of IONOS_MAILBOX_ADDRESSES)validateMailConfig({...config,address});
 });
 test('MIME decoding: plain text only, HTML never rendered or executed; oversized source rejected',async()=>{
  const r=await parseMail(Buffer.from('From: Sender <sender@example.invalid>\r\nTo: clara@melodie.digital\r\nSubject: Hello\r\nContent-Type: text/html\r\n\r\n<script>sendMail()</script><img src="https://attacker.invalid/track">'));
