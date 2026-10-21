@@ -1,6 +1,5 @@
 'use client';
 import {useEffect,useState} from 'react';
-import Link from 'next/link';
 import GlassPanel from '@/components/ui/GlassPanel';
 import {useLocale} from 'next-intl';
 
@@ -30,6 +29,5 @@ export default function MailOverviewPanel(){
     {box.status==='unavailable'?<p className="text-xs text-white/60">{t.partial}</p>:box.attention.length===0?<p className="text-xs text-white/60">{t.none}</p>:<ul className="mt-1 space-y-1">{box.attention.slice(0,3).map(message=><li key={message.id} className="truncate text-xs" title={message.subject}><span className="mr-1 text-amber-100">{message.priority==='quarantine'?t.quarantine:t.high}:</span>{message.subject}</li>)}</ul>}
    </div>)}
   </>}
-  <Link href="/conversations" className="mt-3 inline-block text-xs text-cyan-300 hover:text-cyan-200">{t.open} →</Link>
  </GlassPanel>;
 }
