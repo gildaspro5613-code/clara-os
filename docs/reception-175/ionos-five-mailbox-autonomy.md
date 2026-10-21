@@ -23,8 +23,12 @@ worker has been activated. This is not a production acceptance certificate.
   isolated as `status:unavailable` with null counts; other authorized mailboxes
   remain visible. `complete:false` means a mailbox failed or a cached page is
   truncated. Neither `complete:true` nor `status:cached` attests live freshness.
-- The existing Clara mail panel shows the advisory priority in FR/EN/ES/DE/IT.
-  The Cockpit continues to have no email panel.
+- The dedicated authenticated **OPÉRER → Messagerie** page (`/messagerie`)
+  shows the advisory priority in FR/EN/ES/DE/IT. Mail controls have been
+  removed from Clara and Documents; the Cockpit has no email panel.
+- Migration 022 introduces per-connection opt-in monitoring grants and a
+  SECURITY INVOKER authority check, denied by default. It does **not**
+  provision a worker identity or grant worker database access.
 
 ## Not yet implemented / required before operational acceptance
 
@@ -65,3 +69,18 @@ worker has been activated. This is not a production acceptance certificate.
 PR #176 stays Draft. No merge, Vercel Preview, production migration,
 production secret update, live email or Clara Live changes without separate
 verified approvals. A passing isolated CI run is not real provider acceptance.
+
+## Isolated CI acceptance checkpoint (2026-10-21)
+
+- The five primary HTTPS browser tests, including the simulated IONOS owner
+  approval and restart flow, passed on the earlier `4e90a20` CI run.
+- The same run failed the **functional closure** browser test because it still
+  expected the mail panel on `/documents`; the test now targets `/messagerie`
+  and explicitly asserts the panel is absent on `/clara`.
+- The latest `dcf98eac` Native resource authority workflow was still running
+  when this note was updated. Do not interpret five other green workflows as
+  a completed six-workflow acceptance.
+- Background monitoring is not implemented or scheduled. The next change must
+  provide a distinct least-privilege service identity, atomic per-mailbox
+  generation fencing and durable cursor commits; CRON_SECRET must never be
+  treated as sufficient database authority. No SMTP code path in that worker.
