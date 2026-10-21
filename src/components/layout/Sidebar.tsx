@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 import {
   LayoutDashboard,
   Bot,
   ClipboardList,
   MessageCircle,
+  Mail,
   Users,
   Phone,
   Workflow,
@@ -30,6 +31,7 @@ const sections = [
       { key: "missions", href: "/missions", icon: ClipboardList },
       { key: "conversations", href: "/conversations", icon: MessageCircle },
       { key: "contacts", href: "/contacts", icon: Users },
+      { key: "messagerie", href: "/messagerie", icon: Mail },
     ],
   },
   {
@@ -63,6 +65,8 @@ export default function Sidebar() {
   const t = useTranslations("navigation");
   const tCommon = useTranslations("common");
   const tc = useTranslations("clara");
+  const mailLabel: Record<string,string> = {fr:"Messagerie",en:"Mail",es:"Correo",de:"E-Mail",it:"Posta"};
+  const locale = useLocale();
 
   return (
     <>
@@ -149,7 +153,7 @@ export default function Sidebar() {
                       <Icon className={active ? "text-cyan-300" : "text-slate-500 transition-colors group-hover:text-slate-300"} size={18} strokeWidth={1.8} />
 
                       <span className="text-[14px] font-medium">
-                        {t(item.key)}
+                        {item.key === "messagerie" ? (mailLabel[locale] ?? mailLabel.fr) : t(item.key)}
                       </span>
                     </Link>
                   );
