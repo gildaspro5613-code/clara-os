@@ -22,7 +22,7 @@ export async function GET(request:Request){try{return await withNativeScope(requ
    try{
     const mail=await new NativeMail(connection.id).initialize();
     const page=await mail.list();
-    const attention=page.messages.filter(m=>m.triage.requiresAttention).slice(0,10).map(m=>({id:m.id,subject:m.subject,from:m.from,priority:m.triage.priority,category:m.triage.category,reason:m.triage.reason}));
+    const attention=page.messages.filter(m=>m.triage.requiresAttention).sort((a,b)=>({quarantine:0,high:1,normal:2,low:3}[a.triage.priority]-{quarantine:0,high:1,normal:2,low:3}[b.triage.priority])).slice(0,10).map(m=>({id:m.id,subject:m.subject,from:m.from,priority:m.triage.priority,category:m.triage.category,reason:m.triage.reason}));
     overview.push({connectionId:connection.id,address:connection.address,status:'cached',highPriorityCount:page.messages.filter(m=>m.triage.priority==='high').length,quarantineCount:page.messages.filter(m=>m.triage.priority==='quarantine').length,attention,partial:page.nextCursor!==null});
    }catch{
     overview.push({connectionId:connection.id,address:connection.address,status:'unavailable',highPriorityCount:null,quarantineCount:null,attention:[],partial:true});
