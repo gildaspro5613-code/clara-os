@@ -314,5 +314,9 @@
   "googleKind_drive_update": "Modificar contenido de un archivo de texto",
   "googleKind_drive_move": "Mover y organizar un archivo",
   "googleExistingUncertain": "Una operación anterior tiene un resultado incierto. Recupérela y verifique su resultado sin repetir la escritura.",
-  "googleCalendarReadOnly": "Este calendario es de solo lectura. Las escrituras no están disponibles."
+  "googleCalendarReadOnly": "Este calendario es de solo lectura. Las escrituras no están disponibles.",
+  "mailTriage_high": "Prioritario",
+  "mailTriage_normal": "Habitual",
+  "mailTriage_low": "Baja prioridad",
+  "mailTriage_quarantine": "Revisión necesaria"
 }
