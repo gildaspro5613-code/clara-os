@@ -22,7 +22,9 @@ test('cockpit: unavailable header controls and native Hero services cannot initi
   assert.equal(await page.getByText('⌘K',{exact:true}).count(),0);
   const talkButtons=await page.getByRole('button',{name:/Parler/}).evaluateAll(nodes=>nodes.map(node=>({label:node.getAttribute('aria-label'),text:node.textContent?.trim().slice(0,100),outerHTML:node.outerHTML.slice(0,450)})));
   assert.deepEqual(talkButtons,[],`Unexpected native voice control: ${JSON.stringify(talkButtons)}`);
-  assert.ok(await page.getByText('Ce service externe reste indisponible dans le contexte natif tant que ses autorisations ne sont pas certifiées.',{exact:true}).count()>=2);
+  // Voice is always blocked in native scope. Agenda may be legitimately available
+  // when the selected native session has an attested Google connection/calendar.
+  assert.ok(await page.getByText('Ce service externe reste indisponible dans le contexte natif tant que ses autorisations ne sont pas certifiées.',{exact:true}).count()>=1);
   assert.equal(calls.filter(p=>p==='/api/calendar'||p==='/api/elevenlabs/session').length,0);
   await page.getByRole('link',{name:'Clara →',exact:true}).first().click();await page.waitForURL(origin+'/clara');
   assert.ok(await page.getByRole('textbox',{name:'Rechercher',exact:true}).isDisabled());
