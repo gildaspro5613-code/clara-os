@@ -10,6 +10,21 @@ const ok=(data:unknown)=>Response.json({success:true,...data as object},{headers
 export async function GET(request:Request){try{return await withNativeScope(request,false,async()=>{
  const q=new URL(request.url).searchParams,action=q.get('action')??'connections';
  if(action==='connections')return ok(await nativeMailCommand('list'));
+ if(action==='overview'){
+  // Read-only, bounded snapshot of previously synchronized messages.
+  // Never contact IMAP, claim freshness, infer unread state, or send.
+  const listed=await nativeMailCommand('list');
+  const connections=(listed.connections??[]) as Array<{id:string;address:string}>;
+  const overview=[];
+  for(const connection of connections.slice(0,5)){
+   const mail=await new NativeMail(connection.id).initialize();
+   const page=await mail.list();
+   const attention=page.messages.filter(m=>m.triage.requiresAttention).slice(0,10).map(m=>({id:m.id,subject:m.subject,from:m.from,priority:m.triage.priority,category:m.triage.category,reason:m.triage.reason}));
+   overview.push({connectionId:connection.id,address:connection.address,highPriorityCount:page.messages.filter(m=>m.triage.priority==='high').length,quarantineCount:page.messages.filter(m=>m.triage.priority==='quarantine').length,attention,partial:page.nextCursor!==null});
+  }
+  return ok({overview,source:'previously-synchronized-first-page',freshnessVerified:false});
+ }
+
  const connectionId=opaque(q.get('connectionId')),mail=await new NativeMail(connectionId).initialize();
  if(action==='messages')return ok(await mail.list(q.has('beforeId')?q.get('beforeId')!:undefined));
  if(action==='folders')return ok(await mail.folders());
