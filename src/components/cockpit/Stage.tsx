@@ -60,16 +60,11 @@ export default async function Stage({ session, acquisition, nativeScope = false 
         <MissionPanel mission={mission} />
       </div>
 
-      <div className="pointer-events-none absolute left-4 right-4 top-[12%] z-20 flex flex-col gap-3 lg:hidden">
-        <div className="pointer-events-auto">
-          <BriefPanel session={session} acquisition={acquisition} />
-        </div>
-      </div>
-
-      <div className="pointer-events-none absolute left-4 right-4 top-[58%] z-20 flex flex-col gap-3 lg:hidden">
-        <div className="pointer-events-auto">
-          <MissionPanel mission={mission} />
-        </div>
+      {/* Mobile: keep panels in document flow so long text and translated
+          content never overlap at fixed viewport percentages. */}
+      <div className="relative z-20 flex w-full min-w-0 flex-col gap-4 px-4 py-6 sm:px-6 lg:hidden">
+        <BriefPanel session={session} acquisition={acquisition} />
+        <MissionPanel mission={mission} />
       </div>
     </>
   );
