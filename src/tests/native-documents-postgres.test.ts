@@ -76,7 +76,7 @@ test('native documentary continuity uses real Core/Brain/PDF and PostgreSQL; Goo
  const role='lot2_'+randomUUID().replaceAll('-','');pg('CREATE ROLE '+role);
  try{
   assert.match(pg(`SELECT has_function_privilege('${role}','clara_native_google_command(text,text,text,text,text,text,jsonb)','EXECUTE')`),/f/);
-  pg(`GRANT USAGE ON SCHEMA public TO ${role};GRANT SELECT ON ALL TABLES IN SCHEMA public TO ${role};GRANT EXECUTE ON FUNCTION clara_native_google_command(text,text,text,text,text,text,jsonb),clara_native_runtime_command(text,text,text,text,text,text,jsonb),clara_native_read_session(text,text,text,text,text),clara_native_acquisition_snapshot(text,text) TO ${role}`);
+  pg(`GRANT USAGE ON SCHEMA public TO ${role};GRANT SELECT ON ALL TABLES IN SCHEMA public TO ${role};GRANT EXECUTE ON FUNCTION clara_native_google_command(text,text,text,text,text,text,jsonb),clara_native_runtime_command(text,text,text,text,text,text,jsonb),clara_native_runtime_command_pre_mission_contact(text,text,text,text,text,text,jsonb),clara_native_read_session(text,text,text,text,text),clara_native_acquisition_snapshot(text,text) TO ${role}`);
   const invoke=(operation:string,payload:object={})=>`SET ROLE ${role};SELECT clara_native_google_command('${scope().digest}','w','c1','p1','${sid}','${operation}','${JSON.stringify(payload).replaceAll("'","''")}'::jsonb);RESET ROLE`;
   assert.throws(()=>pg(invoke('list')),/permission denied/,'SELECT alone does not permit the existing authorization locks');
   // Broad grants are restricted to this throwaway fixture database. Production

@@ -318,5 +318,7 @@
   "mailTriage_high": "Prioritaire",
   "mailTriage_normal": "Courant",
   "mailTriage_low": "Secondaire",
-  "mailTriage_quarantine": "À vérifier"
+  "mailTriage_quarantine": "À vérifier",
+  "nativeMissionContactConfirm": "Associer ce contact à la mission ? Les échanges existants restent inchangés. Un nouveau fil peut être nécessaire pour utiliser ce contact avec Clara.",
+  "nativeMissionContactNewThread": "Contact associé à la mission. Pour utiliser ce contact dans la conversation, créez un nouveau fil, sélectionnez ce contact puis ouvrez la mission existante."
 }

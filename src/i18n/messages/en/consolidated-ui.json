@@ -318,5 +318,7 @@
   "mailTriage_high": "Priority",
   "mailTriage_normal": "Routine",
   "mailTriage_low": "Low priority",
-  "mailTriage_quarantine": "Review required"
+  "mailTriage_quarantine": "Review required",
+  "nativeMissionContactConfirm": "Associate this contact with the mission? Existing exchanges remain unchanged. A new thread may be needed to use this contact with Clara.",
+  "nativeMissionContactNewThread": "Contact associated with the mission. To use it in the conversation, create a new thread, select this contact, then open the existing mission."
 }

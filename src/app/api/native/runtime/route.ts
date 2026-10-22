@@ -1,3 +1,4 @@
+import {associateNativeMissionContact,contactContextIsEmpty} from '@/lib/native/mission-contact';
 import {resolveCommercialDraft} from "@/lib/acquisition/commercial-communication-service";
 import {getTranslations} from "next-intl/server";
 import {Journal} from "@/lib/core/journal";
@@ -24,11 +25,18 @@ export async function POST(request:Request){
   return await nativeRequest(request,async()=>{
    const ctx=writableNativeContext();
    const ui=await getTranslations("ui");
-   if(action==='selectAcquisition'){
+   if(action==='associateMissionContact'){
+    fields(body,['action','missionId','submissionId','approve']);if(body.approve!==true)throw new RegistryError(400,'NATIVE_CONTACT_APPROVAL_REQUIRED');
+    return Response.json(await associateNativeMissionContact(opaque(body.missionId),opaque(body.submissionId)),{headers:{'Cache-Control':'no-store'}});
+   }else if(action==='selectAcquisition'){
     fields(body,['action','submissionId']);const submissionId=opaque(body.submissionId);
     if(!ctx.acquisitions.has(submissionId))throw new RegistryError(403,'NATIVE_ACQUISITION_DENIED');
     if(ctx.session.acquisitionSubmissionId&&ctx.session.acquisitionSubmissionId!==submissionId)throw new RegistryError(409,'NATIVE_NEW_SESSION_REQUIRED');
-    if(!ctx.session.acquisitionSubmissionId&&ctx.session.mission)throw new RegistryError(409,'NATIVE_NEW_SESSION_REQUIRED');
+    if(!ctx.session.acquisitionSubmissionId&&ctx.session.mission){
+     if(!contactContextIsEmpty(ctx.session))throw new RegistryError(409,'NATIVE_NEW_SESSION_REQUIRED');
+     return Response.json(await associateNativeMissionContact(ctx.session.mission.id,submissionId),{headers:{'Cache-Control':'no-store'}});
+    }
+    if(ctx.session.acquisitionSubmissionId===submissionId)return Response.json({success:true},{headers:{'Cache-Control':'no-store'}});
     ctx.session.acquisitionSubmissionId=submissionId;ctx.session.updatedAt=new Date();
     await new Journal().addEntry(writeActionEntry(ui('nativeSelectContact'),ctx.intakes.get(submissionId)!.contact.name));
    }else if(action==='prepareCommercialDraft'){
