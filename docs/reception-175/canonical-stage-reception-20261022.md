@@ -45,6 +45,11 @@ Les logs texte publiés ont uniquement leurs espaces de fin de ligne normalisés
 - `db/migrations/027_canonical_stage_decisions.sql`
 - `docs/reception-175/canonical-stage-mutation-v1.md`
 - `docs/reception-175/canonical-stage-proof/matrix.csv`
+- `docs/reception-175/canonical-stage-proof/os-build.log`
+- `docs/reception-175/canonical-stage-proof/os-contracts.log`
+- `docs/reception-175/canonical-stage-proof/os-eslint.log`
+- `docs/reception-175/canonical-stage-proof/os-final.log`
+- `docs/reception-175/canonical-stage-proof/os-tsc.log`
 - `docs/reception-175/canonical-stage-proof/test-summary.json`
 - `docs/reception-175/canonical-stage-proof/tested-source-sha256.json`
 - `docs/reception-175/canonical-stage-reception-20261022.md`
