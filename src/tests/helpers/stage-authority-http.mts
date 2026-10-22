@@ -30,6 +30,7 @@ globalThis.fetch=async(input,init)=>{
 };
 const core=await import('../../app/api/core/canonical/stage/route');
 const native=await import('../../app/api/native/stage/route');
+const approval=await import('../../app/stage-approval/route');
 const server=createServer(async(req,res)=>{
  try{let raw='';for await(const part of req){raw+=part;if(raw.length>20000)throw Error('Too large');}
  if(req.url==='/fixture/expire-owner-session'){pg(`UPDATE clara_auth_sessions SET expires_at=NOW()-INTERVAL '1 second' WHERE token_hash='${hash('A'.repeat(43))}'`);res.end('{}');return;}
@@ -38,7 +39,7 @@ const server=createServer(async(req,res)=>{
   if(!liveProject)pg(`INSERT INTO clara_registry_identity_links(workspace_id,os_user_id,live_user_id,proof_id) VALUES('w','a','u','ip');INSERT INTO clara_registry_project_links(workspace_id,project_id,client_id,live_project_id,live_user_id,os_user_id,proof_id) VALUES('w','p','c','${b.projectId}','u','a','pp');`);liveProject=b.projectId;res.end('{}');return;
  }
  const request=new Request('https://os.fixture.example'+req.url,{method:req.method,headers:Object.fromEntries(Object.entries(req.headers).filter((e):e is [string,string|string[]]=>e[1]!==undefined).map(([k,v])=>[k,Array.isArray(v)?v.join(','):v])),...(req.method==='POST'?{body:raw}:{})});
- const response=req.url?.startsWith('/api/native/stage')?await native.POST(request):req.url==='/api/core/canonical/stage'?await core.POST(request):new Response('',{status:404});res.writeHead(response.status,Object.fromEntries(response.headers));res.end(await response.text());
+ const response=req.url?.startsWith('/stage-approval')?await approval.GET(request):req.url?.startsWith('/api/native/stage')?await native.POST(request):req.url==='/api/core/canonical/stage'?await core.POST(request):new Response('',{status:404});res.writeHead(response.status,Object.fromEntries(response.headers));res.end(await response.text());
  }catch{res.writeHead(500);res.end('{"success":false}');}
 });
 server.listen(0,'127.0.0.1',()=>console.log(JSON.stringify({port:(server.address() as {port:number}).port,database:db})));
