@@ -11,7 +11,7 @@
     }
   ],
   "git": {
-    "deploymentEnabled": {
+    "deploymentEnabled": {"integration/p0-stage-approval-ui": false,
       "fix/canonical-stage-authority-20261022": false
     }
   }
