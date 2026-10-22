@@ -9,5 +9,10 @@
       "path": "/api/internal/event-jobs-run",
       "schedule": "* * * * *"
     }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "fix/canonical-stage-authority-20261022": false
+    }
+  }
 }
