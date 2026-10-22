@@ -318,5 +318,11 @@
   "mailTriage_high": "Priorität",
   "mailTriage_normal": "Normal",
   "mailTriage_low": "Niedrige Priorität",
-  "mailTriage_quarantine": "Prüfung erforderlich"
+  "mailTriage_quarantine": "Prüfung erforderlich",
+  "nativeMissionContactConfirm": "Diesen Kontakt der Mission zuordnen? Bestehende Gespräche bleiben unverändert. Für diesen Kontakt kann ein neuer Gesprächsfaden erforderlich sein.",
+  "nativeMissionContactNewThread": "Kontakt der Mission zugeordnet. Erstellen Sie einen neuen Gesprächsfaden, wählen Sie diesen Kontakt und öffnen Sie die bestehende Mission, um ihn im Gespräch zu verwenden.",
+  "nativeDocumentUnverified": "Ungeprüfte Quellenangaben: Annahmen, Widersprüche und Herkunft beibehalten.",
+  "nativeDocumentFacts": "Berichtete Fakten und Geräte",
+  "nativeDocumentAmbiguities": "Unklarheiten und fehlende Angaben",
+  "nativeDocumentConflicts": "Ungelöste Widersprüche"
 }

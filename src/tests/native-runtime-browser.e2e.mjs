@@ -19,7 +19,7 @@ test('native browser: explicit selection, positive persisted mission/chat and cr
  await page.getByRole('button',{name:'Créer la mission',exact:true}).click();await page.getByText('PRIVATE_NATIVE_A_P1',{exact:true}).first().waitFor();
  const cookies=await context.cookies(),selection=cookies.find(c=>c.name==='clara_native_selection');assert.ok(selection);const scope=JSON.parse(decodeURIComponent(selection.value));assert.equal(scope.projectId,'p1');
  for(const locale of ['fr','en','es','de','it']){await context.addCookies([{name:'NEXT_LOCALE',value:locale,url:origin}]);for(const path of ['/','/clara','/missions','/journal','/conversations','/brain']){
-  const response=await page.goto(origin+path);assert.equal(response.status(),200);assert.equal(await page.locator('[data-native-authority="locked"]').count(),0,path);assert.ok(!(await response.text()).includes('PRIVATE_LEGACY_HISTORY'));assert.equal(await page.locator('html').getAttribute('lang'),locale);
+  const response=await page.goto(origin+path);assert.equal(response.status(),200,locale+" "+path);assert.equal(await page.locator('[data-native-authority="locked"]').count(),0,path);assert.ok(!(await response.text()).includes('PRIVATE_LEGACY_HISTORY'));assert.equal(await page.locator('html').getAttribute('lang'),locale);
  }}
  const headerCookie=cookies.map(c=>c.name+'='+c.value).join(';');
  const response=await fetch(origin+'/api/clara/chat',{method:'POST',headers:{cookie:headerCookie,origin,'Content-Type':'application/json'},body:JSON.stringify({operationId:crypto.randomUUID(),message:'NATIVE_CHAT_A'})});assert.equal(response.status,200,await response.clone().text());

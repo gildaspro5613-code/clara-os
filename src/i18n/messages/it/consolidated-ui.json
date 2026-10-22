@@ -318,5 +318,11 @@
   "mailTriage_high": "Prioritario",
   "mailTriage_normal": "Ordinario",
   "mailTriage_low": "Bassa priorità",
-  "mailTriage_quarantine": "Da verificare"
+  "mailTriage_quarantine": "Da verificare",
+  "nativeMissionContactConfirm": "Associare questo contatto alla missione? Gli scambi esistenti restano invariati. Potrebbe essere necessaria una nuova conversazione per usare questo contatto con Clara.",
+  "nativeMissionContactNewThread": "Contatto associato alla missione. Per usarlo nella conversazione, crea un nuovo thread, seleziona questo contatto e apri la missione esistente.",
+  "nativeDocumentUnverified": "Affermazioni delle fonti non certificate: conservare ipotesi, conflitti e provenienza.",
+  "nativeDocumentFacts": "Fatti e attrezzature riportati",
+  "nativeDocumentAmbiguities": "Ambiguità e informazioni mancanti",
+  "nativeDocumentConflicts": "Conflitti irrisolti"
 }

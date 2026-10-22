@@ -1,0 +1,28 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync,writeFileSync} from 'node:fs';
+import {execFileSync} from 'node:child_process';
+import {X509Certificate,createHash} from 'node:crypto';
+import {chromium} from 'playwright';
+const origin=process.env.DOCUMENTS_E2E_ORIGIN,db=process.env.NATIVE_TEST_DATABASE,out=process.env.DOCUMENT_CONTINUITY_EVIDENCE;
+if(!origin||new URL(origin).hostname!=='127.0.0.1'||!/^native_browser_[a-f0-9]{32}$/.test(db??'')||!out?.startsWith('/workspace/'))throw Error('Isolated restart fixture required');
+test('document continuity restart: same durable references/receipt, new explicitly selected conversation and six browser surfaces',async()=>{
+ const before=JSON.parse(readFileSync(out+'/resume-before.json','utf8')),jar=JSON.parse(readFileSync(out+'/synthetic-cookie-jar.json','utf8'));
+ const cookie=jar.map(c=>c.name+'='+c.value).join(';');
+ const call=(path,body,c=cookie)=>fetch(origin+path,{method:body?'POST':'GET',headers:{cookie:c,origin,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
+ const current=await (await call('/api/native/runtime')).json();assert.equal(current.session.mission.id,before.missionId);assert.deepEqual(current.session.conversation,before.conversation);assert.equal(current.session.mission.documentReferences.length,before.referenceCount);
+ const count=()=>Number(execFileSync('docker',['exec','clara-canonical-test-postgres','psql','-U','postgres','-d',db,'-At','-c',"SELECT count(*) FROM clara_journal_entries WHERE entry->>'summary'='DOCUMENT_RECEIVED'"],{encoding:'utf8'}).trim());
+ const n=count(),proof='/tmp/native-fixture-document-prompts-'+db,calls=readFileSync(proof,'utf8').split('\n').filter(Boolean).length;
+ const replay=await call('/api/documents',before.operation);assert.equal(replay.status,200);assert.equal((await replay.json()).replayed,true);assert.equal(count(),n);assert.equal(readFileSync(proof,'utf8').split('\n').filter(Boolean).length,calls);
+ const created=await call('/api/native/runtime',{action:'createSession',workspaceId:'w',clientId:'c1',projectId:'p1'},'clara_auth_session='+'E'.repeat(43));assert.equal(created.status,200);const newCookie='clara_auth_session='+'E'.repeat(43)+'; '+created.headers.get('set-cookie').split(';')[0];
+ assert.equal((await call('/api/native/runtime',{action:'selectMission',missionId:before.missionId},newCookie)).status,200);
+ const connectionId=current.session.googleConnectionId;assert.equal((await call('/api/connections/google',{action:'select',connectionId},newCookie)).status,200);
+ const fresh=await (await call('/api/native/runtime',undefined,newCookie)).json();assert.equal(fresh.session.conversation.length,0,'No silent transfer of the previous thread history');assert.equal(fresh.session.mission.documentReferences.length,2);
+ const reply=await call('/api/clara/chat',{operationId:crypto.randomUUID(),message:'Nouvelle conversation : synthese des references documentaires de cette mission.'},newCookie);assert.equal(reply.status,200,await reply.clone().text());
+ const afterProof=readFileSync(proof,'utf8').trim().split('\n').filter(Boolean).map(x=>JSON.parse(x)).slice(calls);assert.ok(afterProof.some(p=>p.phase==='brain'&&p.sourceA&&p.sourceB));assert.ok(afterProof.some(p=>p.phase==='composer'&&p.sourceA&&p.sourceB));
+ const pin=createHash('sha256').update(new X509Certificate(readFileSync('/tmp/native-runtime-cert.pem')).publicKey.export({type:'spki',format:'der'})).digest('base64');const browser=await chromium.launch({executablePath:process.env.DOCUMENTS_E2E_CHROMIUM,headless:true,args:['--no-sandbox','--ignore-certificate-errors-spki-list='+pin]});
+ try{const context=await browser.newContext();await context.addCookies(jar);await context.route('**/*',r=>{const h=r.request().headers();return new URL(r.request().url()).origin===new URL(origin).origin&&!h['next-router-prefetch']&&h.purpose!=='prefetch'?r.continue():r.abort();});const page=await context.newPage(),pages=[];
+ for(const path of ['/','/missions','/documents','/brain','/journal','/clara','/conversations']){const r=await page.goto(origin+path);assert.equal(r.status(),200,path);assert.equal(await page.locator('[data-native-authority="locked"]').count(),0);if(['/','/documents','/brain','/clara'].includes(path))await page.locator('[data-document-analysis="structured"]').first().waitFor();if(['/clara','/conversations'].includes(path))await page.getByText(before.chatOperation.message,{exact:true}).waitFor();pages.push({path,status:r.status()});}
+ await page.goto(origin+'/');await page.screenshot({path:out+'/cockpit-after-restart.png'});writeFileSync(out+'/restart-result.json',JSON.stringify({status:'PASS',sameMission:true,sameConversation:true,sameReferences:true,receiptReplayed:true,noExtraDocumentEvent:true,newConversationSourcesRestored:true,pages},null,2));await context.close();}finally{await browser.close();}
+ assert.equal(readFileSync('/tmp/native-fixture-global-attempts-'+db,'utf8'),'');
+});

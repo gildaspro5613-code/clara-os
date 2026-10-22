@@ -1,3 +1,5 @@
+import {RegistryError} from '@/lib/canonical/registry';
+import {nativeFailure} from '@/lib/native/authority';
 import {nativeChatRequest,cancelNativeChat} from '@/lib/native/chat';
 import {nativeContext} from "@/lib/native/scoped-context";
 import { createHash } from "node:crypto";
@@ -320,7 +322,8 @@ async function scopedChat(request:Request) {
         conversationId: physicalConversationId,
       })),
     });
-  } catch {
+  } catch(error) {
+    if(nativeContext()&&error instanceof RegistryError)return nativeFailure(error);
     return NextResponse.json(
       {
         success: false,
