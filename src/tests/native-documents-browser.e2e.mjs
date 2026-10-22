@@ -19,7 +19,7 @@ test('documentary browser E2E: canonical selection → mission → pinned OAuth 
   await Promise.all([page.waitForResponse(r=>r.url().includes('/api/native/runtime')&&r.request().method()==='POST'),page.getByRole('button',{name:'Créer la mission',exact:true}).click()]);
   await page.getByRole('textbox',{name:'Titre de la mission',exact:true}).waitFor();
   const cookie=async()=> (await context.cookies()).map(c=>c.name+'='+c.value).join(';');
-  const call=async(path,method='GET',body,customCookie)=>fetch(origin+path,{method,redirect:'manual',headers:{cookie:customCookie??await cookie(),origin,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
+  const call=async(path,method='GET',body,customCookie)=>fetch(origin+path,{method,redirect:'manual',headers:{cookie:customCookie??await cookie(),origin,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body.action==='read'?{operationId:crypto.randomUUID(),...body}:body)}:{})});
   const begin=async()=>{const r=await page.evaluate(async()=>{const r=await fetch('/api/connections/google/connect',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});return {status:r.status,body:await r.json()};});assert.equal(r.status,200,JSON.stringify(r.body));return new URL(r.body.authorizationUrl);};
   let authorization=await begin();const callback=(account,url)=>'/api/connections/google/callback?'+new URLSearchParams({state:url.searchParams.get('state'),code:account+'.'+Buffer.from(url.searchParams.get('nonce')).toString('base64url')});
   const malformed=await call('/api/connections/google/callback?state=forged&code=synthetic');assert.equal(malformed.status,403);

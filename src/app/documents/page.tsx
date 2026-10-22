@@ -1,4 +1,5 @@
 "use client";
+import {readNativeDocument} from "@/lib/documents/native-read-request";
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -238,7 +239,7 @@ export default function DocumentsPage() {
       setWorking(`read:${file.id}`);
       setStatus(null);
       setError(null);
-      const response = await fetch("/api/documents", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"read",fileId:file.id,locale})});
+      const response = await readNativeDocument(file.id,"",locale);
       const data = (await response.json()) as DocumentsResponse;
       if (generation !== listGeneration.current) return;
       if (!response.ok || !data.success) {

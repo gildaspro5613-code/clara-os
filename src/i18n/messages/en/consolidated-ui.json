@@ -320,5 +320,9 @@
   "mailTriage_low": "Low priority",
   "mailTriage_quarantine": "Review required",
   "nativeMissionContactConfirm": "Associate this contact with the mission? Existing exchanges remain unchanged. A new thread may be needed to use this contact with Clara.",
-  "nativeMissionContactNewThread": "Contact associated with the mission. To use it in the conversation, create a new thread, select this contact, then open the existing mission."
+  "nativeMissionContactNewThread": "Contact associated with the mission. To use it in the conversation, create a new thread, select this contact, then open the existing mission.",
+  "nativeDocumentUnverified": "Unverified source assertions: preserve hypotheses, conflicts and provenance.",
+  "nativeDocumentFacts": "Reported facts and equipment",
+  "nativeDocumentAmbiguities": "Ambiguities and missing information",
+  "nativeDocumentConflicts": "Unresolved conflicts"
 }

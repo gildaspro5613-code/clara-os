@@ -16,6 +16,7 @@ export interface ScopedNativeContext {
  query:RegistryQuery;scope:NativeSelectors&{digest:string};userId:string;session:ClaraSession;
  missions:Map<string,Mission>;journal:JournalEntry[];writes:Map<string,Mission>;entries:JournalEntry[];
  acquisitions:Map<string,AcquisitionRecord>;intakes:Map<string,MdProjectIntake>;intakeMetadata:Map<string,{productId:string;sessionKey:string;eventId:string}>;acquisitionSnapshots:Record<string,unknown>;draftWrites:Map<string,CommercialCommunicationDraft>;draftRevisionSteps:Map<string,number>;
+ documentProtocolVersion?:number;documentOperationProof?:Record<string,unknown>;documentReadProofs?:Record<string,unknown>[];documentRevalidate?:()=>Promise<void>;documentRevalidators?:Map<string,()=>Promise<void>>;
  documentSource?:import("@/lib/brain/brain-source").BrainSourceContext;documentCommitProof?:Record<string,unknown>;
  googleWorkCommitProof?:Record<string,unknown>;
  mailCommitProof?:Record<string,unknown>;
@@ -34,7 +35,10 @@ export function nativeMission(mission:Mission){
   if(mission.id.startsWith('native:'))throw new RegistryError(403,'NATIVE_SCOPE_DENIED');
   mission.id='native:'+randomUUID();
  }
- const linked=ctx.missions.get(mission.id)?.acquisitionSubmissionId;
+ const previous=ctx.missions.get(mission.id);
+ // Replanning is not an explicit document detach operation. Preserve the owned mission's references.
+ if(mission.documentReferences===undefined&&previous?.documentReferences)mission.documentReferences=previous.documentReferences;
+ const linked=previous?.acquisitionSubmissionId;
  if(linked){if(mission.acquisitionSubmissionId&&mission.acquisitionSubmissionId!==linked)throw new RegistryError(403,'NATIVE_ACQUISITION_DENIED');mission.acquisitionSubmissionId=linked;}
  if(ctx.session.acquisitionSubmissionId){
   if(mission.acquisitionSubmissionId&&mission.acquisitionSubmissionId!==ctx.session.acquisitionSubmissionId)throw new RegistryError(403,'NATIVE_ACQUISITION_DENIED');
@@ -69,16 +73,20 @@ export async function withNativeScope<T>(request:Request,write:boolean,render:()
   const row=snapshot.record,id=String(row.submission_id);acquisitionSnapshots[id]=snapshot;intakes.set(id,snapshot.intake);intakeMetadata.set(id,snapshot.intakeMetadata);
   acquisitions.set(id,{submissionId:id,workspaceId:String(row.workspace_id),qualification:row.qualification as AcquisitionRecord['qualification'],decisionBrief:row.decision_brief as AcquisitionRecord['decisionBrief'],lifecycle:row.lifecycle as AcquisitionRecord['lifecycle'],commercialDraft:row.commercial_draft as CommercialCommunicationDraft|null,createdAt:new Date(String(row.created_at)),updatedAt:new Date(String(row.updated_at))});
  }
- const ctx:ScopedNativeContext={missionContactProtocolVersion:Number(data.missionContactProtocolVersion??0),contactProtocolVersion:Number(data.contactProtocolVersion??0),query,scope,userId:String(data.userId),session,acquisitions,intakes,intakeMetadata,acquisitionSnapshots,draftWrites:new Map(),draftRevisionSteps:new Map(),missions:new Map(missions.map(m=>[m.id,m])),journal:(data.journal as JournalEntry[]).map(j=>({...j,createdAt:new Date(j.createdAt)})),writes:new Map(),entries:[],writable:write,dirty:false};
+ const ctx:ScopedNativeContext={documentProtocolVersion:Number(data.documentProtocolVersion??0),missionContactProtocolVersion:Number(data.missionContactProtocolVersion??0),contactProtocolVersion:Number(data.contactProtocolVersion??0),query,scope,userId:String(data.userId),session,acquisitions,intakes,intakeMetadata,acquisitionSnapshots,draftWrites:new Map(),draftRevisionSteps:new Map(),missions:new Map(missions.map(m=>[m.id,m])),journal:(data.journal as JournalEntry[]).map(j=>({...j,createdAt:new Date(j.createdAt)})),writes:new Map(),entries:[],writable:write,dirty:false};
  return storage.run(ctx,async()=>{
   const result=await render();
   if(write&&(ctx.dirty||ctx.chatCommitProof)){
    const discard=result instanceof Response&&result.status>=400&&!ctx.commitOnFailure;
    if(discard&&!ctx.chatCommitProof)return result;
-   const commit={missionContactWrite:ctx.missionContactWrite,expected,session:ctx.session,missions:[...ctx.writes.values()],journal:ctx.entries,contactWrite:ctx.contactWrite,expectedAcquisitions:ctx.acquisitionSnapshots,acquisitions:[...ctx.draftWrites].map(([submissionId,draft])=>({submissionId,draft,revisionSteps:ctx.draftRevisionSteps.get(submissionId)}))};
+   if(ctx.documentRevalidate)await ctx.documentRevalidate();
+   // Source text is request-scoped. Durable knowledge stays encrypted in existing references.
+   if(ctx.documentReadProofs?.length){ctx.session.sources=[];if(ctx.session.brainDashboard)ctx.session.brainDashboard.sources=[];}
+   const commit={documentProofs:ctx.documentReadProofs,missionContactWrite:ctx.missionContactWrite,expected,session:ctx.session,missions:[...ctx.writes.values()],journal:ctx.entries,contactWrite:ctx.contactWrite,expectedAcquisitions:ctx.acquisitionSnapshots,acquisitions:[...ctx.draftWrites].map(([submissionId,draft])=>({submissionId,draft,revisionSteps:ctx.draftRevisionSteps.get(submissionId)}))};
    if(ctx.chatCommitProof){const {nativeChatCommands}=await import('./chat');await nativeChatCommands(query)(scope,'finish',{...ctx.chatCommitProof,commit:ctx.dirty&&!discard?commit:null});}
    else if(ctx.googleWorkCommitProof){const {googleWorkCommands}=await import('./google-work');const {operation,...proof}=ctx.googleWorkCommitProof;await googleWorkCommands(query)(String(operation),{...proof,commit});}
    else if(ctx.mailCommitProof){const {nativeMailCommands}=await import('./mail-authority');const {operation,...proof}=ctx.mailCommitProof;await nativeMailCommands(query)(String(operation),{...proof,commit});}
+   else if(ctx.documentOperationProof){const {nativeDocumentCommand}=await import('./document-operation');await nativeDocumentCommand(ctx.query)('finish',{...ctx.documentOperationProof,commit});}
    else if(ctx.documentCommitProof){const {nativeGoogleCommands}=await import('./google-authority');await nativeGoogleCommands(query)('commit',{...ctx.documentCommitProof,commit});}
    else await command(scope,'commit',commit);
   }

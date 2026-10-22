@@ -25,6 +25,7 @@ export async function nativeChatRequest(request:Request,render:()=>Promise<Respo
   const locale=resolveLocale((request.headers.get('cookie')??'').split(';').map(v=>v.trim()).find(v=>v.startsWith('NEXT_LOCALE='))?.slice(12));
   const command=nativeChatCommands(query),reserved=await command(scope,'reserve',{operationId:body.operationId,message:body.message.trim(),locale,sessionId:scope.sessionId});
   if(reserved.state==='completed'){
+   await withNativeScope(request,false,async()=>{const ctx=nativeContext()!;if(ctx.session.mission?.documentReferences?.length||ctx.session.documentReferences?.length){const {selectedNativeDocuments}=await import('./documents');await (await selectedNativeDocuments()).brainSource();}},query);
    const receipt=reserved.result as {body:unknown;status:number};return Response.json(receipt.body,{status:receipt.status,headers:{'Cache-Control':'no-store','X-Clara-Operation-Replayed':'1'}});
   }
   if(reserved.state!=='owned')return Response.json({success:false,code:'NATIVE_CHAT_PENDING',operationId:body.operationId,...(reserved.request?{pendingRequest:reserved.request}:{})},{status:202,headers:{'Cache-Control':'no-store'}});
