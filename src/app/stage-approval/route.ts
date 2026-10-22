@@ -8,7 +8,10 @@ export async function GET(request:Request){try{
  const configured=new URL(process.env.CLARA_LIVE_CALLBACK_BASE_URL??'');
  if(configured.protocol!=='https:'||configured.username||configured.password)throw new RegistryError(503,'LIVE_RETURN_ORIGIN_UNAVAILABLE');
  const returnOrigin=query.get('returnOrigin');
- if(returnOrigin!==configured.origin)throw new RegistryError(403,'LIVE_RETURN_ORIGIN_DENIED');
+ // Canonical frontend origin is already fixed by canonical/archive-service.ts.
+ // The callback origin may be a distinct API host; never infer browser trust from a query.
+ const trustedOrigins=new Set([configured.origin,'https://live.melodie.digital']);
+ if(!returnOrigin||!trustedOrigins.has(returnOrigin))throw new RegistryError(403,'LIVE_RETURN_ORIGIN_DENIED');
  await readAuthorizedNativeSession(request);const scope=nativeSelectors(request);
  const nonce=randomUUID();
  const data=JSON.stringify({intentId,returnOrigin,workspaceId:scope.workspaceId,projectId:scope.projectId}).replaceAll('<','\\u003c');
