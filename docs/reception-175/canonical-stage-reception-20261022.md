@@ -37,6 +37,8 @@ OS : migration additive 027 après les fondations canoniques/natives et 025/026 
 
 **Décision : GO pour le contrat technique/API en isolation, NO-GO Production.** Le raccord des deux côtés est réellement exercé localement ; ce GO ne certifie ni l’ergonomie d’un éditeur spatial absent, ni une archive fabricant authentique, ni un déploiement distant.
 
+Les logs texte publiés ont uniquement leurs espaces de fin de ligne normalisés.
+
 ## Fichiers modifiés (liste exhaustive à ce commit)
 
 - `.github/workflows/native-authority-validation.yml`
