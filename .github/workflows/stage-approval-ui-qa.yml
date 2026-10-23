@@ -4,6 +4,11 @@ on:
     paths:
       - 'src/app/stage-approval/**'
       - 'src/tests/stage-approval-ui.test.ts'
+      - 'src/tests/canonical-stage-multidomain*'
+      - 'src/lib/canonical/stage-authority.ts'
+      - 'src/app/api/core/canonical/stage/**'
+      - 'src/app/api/native/stage/**'
+      - 'db/migrations/028_canonical_stage_multidomain.sql'
       - 'src/tests/helpers/stage-authority-http.mts'
       - '.github/workflows/stage-approval-ui-qa.yml'
 permissions:
@@ -28,7 +33,7 @@ jobs:
             sleep 1
           done
           exit 1
-      - run: node --import tsx --test src/tests/stage-approval-ui.test.ts src/tests/canonical-stage-routes.test.ts src/tests/canonical-stage-postgres.test.ts src/tests/canonical-registry-postgres.test.ts src/tests/voice-route-security.test.ts
+      - run: node --import tsx --test src/tests/stage-approval-ui.test.ts src/tests/canonical-stage-routes.test.ts src/tests/canonical-stage-postgres.test.ts src/tests/canonical-stage-multidomain-postgres.test.ts src/tests/canonical-stage-multidomain-boundary.test.ts src/tests/canonical-registry-postgres.test.ts src/tests/voice-route-security.test.ts
       - run: npx tsc --noEmit
       - run: npx eslint src/app/stage-approval/route.ts src/tests/stage-approval-ui.test.ts
       - name: Remove isolated fixture

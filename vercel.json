@@ -14,7 +14,8 @@
     "deploymentEnabled": {
       "integration/p0-stage-approval-ui": false,
       "fix/canonical-stage-authority-20261022": false,
-      "proposal/stage-multidomain-contract": false
+      "proposal/stage-multidomain-contract": false,
+      "reception/stage-multidomain-authority": false
     }
   }
 }
