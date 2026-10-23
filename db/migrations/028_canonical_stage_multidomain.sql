@@ -64,6 +64,7 @@ BEGIN
    OR NOT EXISTS(SELECT 1 FROM clara_registry_project_access WHERE workspace_id=w AND project_id=p AND user_id=actor AND can_manage AND revoked_at IS NULL)
    OR NOT EXISTS(SELECT 1 FROM clara_registry_client_access WHERE workspace_id=w AND client_id=c AND user_id=actor AND can_manage AND revoked_at IS NULL)
    OR NOT EXISTS(SELECT 1 FROM clara_registry_project_access WHERE workspace_id=w AND project_id=p AND user_id=payload->>'userId' AND can_read AND can_manage AND revoked_at IS NULL)
+   OR NOT EXISTS(SELECT 1 FROM clara_workspace_memberships m JOIN clara_auth_identities i ON i.user_id=m.user_id WHERE m.workspace_id=w AND m.user_id=payload->>'userId' AND m.revoked_at IS NULL)
    OR jsonb_typeof(payload->'enabled') IS DISTINCT FROM 'boolean'
    OR COALESCE(payload->>'domain','') NOT IN ('light','sound','video','structure','production')
    OR COALESCE(payload->>'operation','') NOT IN ('create','pose','support','retire') THEN RAISE EXCEPTION 'STAGE_MANAGE_REQUIRED' USING ERRCODE='42501'; END IF;

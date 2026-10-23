@@ -11,7 +11,7 @@ La proposition #205 n'activait aucun droit. L'audit initial a confirmé : `stage
 - v1 inchangé : `clara.stage-intent.v1` / `stage:light:mutate:v1` / `grantLight`.
 - v2 distinct : `clara.stage-intent.v2`, capability exacte `stage:<light|sound|video|structure|production>:mutate:v2`, opération fermée `create`, `pose`, `support` ou `retire`.
 - Migration028 additive : table de grants par workspace/projet/utilisateur/métier/opération, **vide par défaut**, aucune conversion des droits Light, d'abonnement ou de rôle en grant v2.
-- `grantSpatial` explicite : acteur natif owner/admin, droits de gestion client ET projet, cible disposant des droits projet. Un appel porte sur un seul métier et une seule opération. Pas de grant global.
+- `grantSpatial` explicite : acteur natif owner/admin, droits de gestion client ET projet, cible disposant des droits projet, d’une identité vérifiée et d’une appartenance workspace active. Un appel porte sur un seul métier et une seule opération. Pas de grant global.
 - `approve` inspecte l'intention réelle auprès de Live, puis vérifie le grant en SQL. Le produit doit également posséder la capability exacte de l'intention avant toute redemption ; posséder Light v1 n'autorise jamais Sound v2.
 - Même fonction SQL `clara_registry_stage_command`, même table de décisions, même nonce haché à usage unique, même expiration45s, sessions natives et liens révoquables. Le writer Mongo Live reste `CanonicalStageMutation.apply` avec CAS tête/historique/reçus ; aucun autre writer.
 - Prévisualisation OS du métier/opération et du diff exact. Bouton distinct pour l'octroi de son propre droit si l'acteur peut administrer ; aucune permission automatique. L'approbation reste une seconde action.

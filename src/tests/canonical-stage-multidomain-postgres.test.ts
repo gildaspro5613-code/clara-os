@@ -38,6 +38,8 @@ test('v2 Stage: explicit per-domain operation grants on real PostgreSQL and rest
   await service.command(ctx,'c','p','grantSpatial',{userId:'a',domain,operation:'pose',enabled:false});
   await assert.rejects(service.command({digest:'',workspaceId:'w'},'','','claim',ticket));
  }
+ pg("INSERT INTO clara_registry_project_access(workspace_id,project_id,user_id,can_read,can_archive,can_manage) VALUES('w','p','b',true,true,true);UPDATE clara_workspace_memberships SET revoked_at=NOW() WHERE user_id='b'");
+ await assert.rejects(service.command(ctx,'c','p','grantSpatial',{userId:'b',domain:'structure',operation:'pose',enabled:true}),'revoked target membership cannot receive a new grant');
  const expIntent={schemaVersion:'clara.stage-intent.v2',capability:'stage:structure:mutate:v2',domain:'structure',operation:'pose',intentDigest:hash('expiry-intent'),scope:{nativeSessionId:'native:stage',workspaceId:'w',osUserId:'a',clientId:'c',projectId:'p',liveUserId:'u',liveProjectId:'lp'}};
  await service.command(ctx,'c','p','grantSpatial',{userId:'a',domain:'structure',operation:'pose',enabled:true});
  const exp={id:randomUUID(),nonceHash:hash('expiry'),intent:expIntent};

@@ -1,12 +1,12 @@
-✔ real PostgreSQL: explicit registry, double consent, conflicts, revocation and isolation (6173.610697ms)
-✔ canonical PostgreSQL commands and tickets share workspace-first lock order (1167.293077ms)
-✔ unimplemented multidomain capabilities cannot reach SQL or Live through the current Stage route (22.928938ms)
-✔ v2 Stage: explicit per-domain operation grants on real PostgreSQL and restricted runtime role (9695.619633ms)
-✔ canonical Stage: real PostgreSQL explicit Light ACL, nonce, expiry, revocation, scope and restart (4639.608205ms)
-✔ Stage HTTP authority fails before SQL/transport for missing product/native identity, read/archive scopes and foreign origins (32.157639ms)
-✔ Stage approval UI rejects foreign return origins and unauthenticated or external native sessions before any transport (26.060329ms)
-✔ voice authorization uses existing server-owned workspace and operator permissions, rejects foreign origin before auth (74.554788ms)
-✔ four provider routes deny unauthenticated requests before any provider and localize secret-free failures in five languages (85.279623ms)
+✔ real PostgreSQL: explicit registry, double consent, conflicts, revocation and isolation (14544.805494ms)
+✔ canonical PostgreSQL commands and tickets share workspace-first lock order (2663.328752ms)
+✔ unimplemented multidomain capabilities cannot reach SQL or Live through the current Stage route (68.933021ms)
+✔ v2 Stage: explicit per-domain operation grants on real PostgreSQL and restricted runtime role (23201.625197ms)
+✔ canonical Stage: real PostgreSQL explicit Light ACL, nonce, expiry, revocation, scope and restart (9769.083795ms)
+✔ Stage HTTP authority fails before SQL/transport for missing product/native identity, read/archive scopes and foreign origins (87.707777ms)
+✔ Stage approval UI rejects foreign return origins and unauthenticated or external native sessions before any transport (41.277676ms)
+✔ voice authorization uses existing server-owned workspace and operator permissions, rejects foreign origin before auth (187.177038ms)
+✔ four provider routes deny unauthenticated requests before any provider and localize secret-free failures in five languages (212.451765ms)
 ℹ tests 9
 ℹ suites 0
 ℹ pass 9
@@ -14,4 +14,4 @@
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 23352.993358
+ℹ duration_ms 54464.302571
