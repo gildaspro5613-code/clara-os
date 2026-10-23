@@ -11,14 +11,23 @@ export function createStageAuthority(query:RegistryQuery=sql){
    return (rows[0] as {result:Record<string,unknown>}).result;
   }catch(e){if(e&&typeof e==='object'&&'code' in e&&e.code==='40001')throw new RegistryError(409,'STAGE_CANCELLATION_REQUIRED');databaseError(e);}
  }
- async function approve(context:RegistryContext&{sessionId:string},c:string,p:string,intentId:string){
+ async function preview(context:RegistryContext&{sessionId:string},c:string,p:string,intentId:string){
   const scope={...await authority.current(context,c,p,'read'),nativeSessionId:context.sessionId};
   const proof=await callLiveCanonical('/api/core/canonical/stage/inspect',{intentId,scope}) as {intent?:Record<string,unknown>};
-  if(!proof.intent||proof.intent.schemaVersion!=='clara.stage-intent.v1'||proof.intent.capability!=='stage:light:mutate:v1'||proof.intent.intentId!==intentId)throw new RegistryError(403,'LIVE_STAGE_INTENT_REQUIRED');
+  if(!proof.intent||!validStageIntent(proof.intent)||proof.intent.intentId!==intentId)throw new RegistryError(403,'LIVE_STAGE_INTENT_REQUIRED');
+  return proof.intent;
+ }
+ async function approve(context:RegistryContext&{sessionId:string},c:string,p:string,intentId:string){
+  const intent=await preview(context,c,p,intentId);
   const nonce=randomBytes(32).toString('base64url'),id=randomUUID();
-  const decision=await command(context,c,p,'approve',{id,nonceHash:challengeDigest(nonce),intent:proof.intent});
+  const decision=await command(context,c,p,'approve',{id,nonceHash:challengeDigest(nonce),intent});
   return {...decision,nonce};
  }
- return {command,approve};
+ return {command,approve,preview};
 }
 export const stageAuthority=createStageAuthority();
+
+export function validStageIntent(i:Record<string,unknown>){
+ return (i.schemaVersion==='clara.stage-intent.v1'&&i.capability==='stage:light:mutate:v1') ||
+ (i.schemaVersion==='clara.stage-intent.v2'&&['light','sound','video','structure','production'].includes(String(i.domain))&&['create','pose','support','retire'].includes(String(i.operation))&&i.capability===`stage:${i.domain}:mutate:v2`);
+}

@@ -9,6 +9,7 @@ export async function POST(request:Request){try{
  const b=await registryBody(request);
  if(b.action==='list'){fields(b,['action']);return registrySuccess(await stageAuthority.command(scope,scope.clientId,scope.projectId,'list',{nativeSessionId:scope.sessionId}));}
  if(b.action==='grantLight'){fields(b,['action','userId','enabled']);if(typeof b.enabled!=='boolean')throw new RegistryError(400,'EXPLICIT_LIGHT_GRANT_REQUIRED');return registrySuccess(await stageAuthority.command(scope,scope.clientId,scope.projectId,'grantLight',{userId:opaque(b.userId),enabled:b.enabled}));}
+ if(b.action==='grantSpatial'){fields(b,['action','userId','enabled','domain','operation']);if(typeof b.enabled!=='boolean'||!['light','sound','video','structure','production'].includes(String(b.domain))||!['create','pose','support','retire'].includes(String(b.operation)))throw new RegistryError(400,'EXPLICIT_SPATIAL_GRANT_REQUIRED');return registrySuccess(await stageAuthority.command(scope,scope.clientId,scope.projectId,'grantSpatial',{userId:opaque(b.userId),enabled:b.enabled,domain:b.domain,operation:b.operation}));}
  if(b.action==='approve'){fields(b,['action','intentId']);return registrySuccess(await stageAuthority.approve(scope,scope.clientId,scope.projectId,opaque(b.intentId)));}
  if(b.action!=='revoke')throw new RegistryError(400,'INVALID_STAGE_ACTION');
  fields(b,['action','decisionId','nonce','intentDigest']);
