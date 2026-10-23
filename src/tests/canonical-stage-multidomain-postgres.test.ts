@@ -40,6 +40,14 @@ test('v2 Stage: explicit per-domain operation grants on real PostgreSQL and rest
  }
  pg("INSERT INTO clara_registry_project_access(workspace_id,project_id,user_id,can_read,can_archive,can_manage) VALUES('w','p','b',true,true,true);UPDATE clara_workspace_memberships SET revoked_at=NOW() WHERE user_id='b'");
  await assert.rejects(service.command(ctx,'c','p','grantSpatial',{userId:'b',domain:'structure',operation:'pose',enabled:true}),'revoked target membership cannot receive a new grant');
+ const binding={version:1,digest:hash('source')};
+ const boundIntent={schemaVersion:'clara.stage-intent.v2',capability:'stage:structure:mutate:v2',domain:'structure',operation:'pose',source:binding,intentDigest:hash('bound-intent'),modelDigest:hash('model'),modelId:'stage-model',preparationId:'prep',runId:null,expectedRevision:null,scope:{nativeSessionId:'native:stage',workspaceId:'w',osUserId:'a',clientId:'c',projectId:'p',liveUserId:'u',liveProjectId:'lp'}};
+ await service.command(ctx,'c','p','grantSpatial',{userId:'a',domain:'structure',operation:'pose',enabled:true});
+ const issued={id:randomUUID(),nonceHash:hash('bound-nonce'),intent:boundIntent};await service.command(ctx,'c','p','approve',issued);
+ const redeem={id:issued.id,nonceHash:issued.nonceHash,intentDigest:boundIntent.intentDigest};await service.command({digest:'',workspaceId:'w'},'','','claim',redeem);
+ const receipt={schemaVersion:'clara.stage-receipt.v1',decisionId:issued.id,intentDigest:boundIntent.intentDigest,modelId:'stage-model',preparationId:'prep',runId:null,parent:null,modelDigest:boundIntent.modelDigest,revision:hash('clara.stage-revision.v1\n'+issued.id+'\nnone\n'+boundIntent.modelDigest),domain:'structure',operation:'pose',source:binding};
+ for(const change of [{source:{...binding,version:2}},{domain:'sound'},{operation:'retire'},{intentDigest:hash('foreign-intent')},{certified:true}])await assert.rejects(service.command({digest:'',workspaceId:'w'},'','','settle',{...redeem,receipt:{...receipt,...change}}));
+ assert.equal((await service.command({digest:'',workspaceId:'w'},'','','settle',{...redeem,receipt})).state,'committed');
  const expIntent={schemaVersion:'clara.stage-intent.v2',capability:'stage:structure:mutate:v2',domain:'structure',operation:'pose',intentDigest:hash('expiry-intent'),scope:{nativeSessionId:'native:stage',workspaceId:'w',osUserId:'a',clientId:'c',projectId:'p',liveUserId:'u',liveProjectId:'lp'}};
  await service.command(ctx,'c','p','grantSpatial',{userId:'a',domain:'structure',operation:'pose',enabled:true});
  const exp={id:randomUUID(),nonceHash:hash('expiry'),intent:expIntent};

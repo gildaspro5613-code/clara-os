@@ -123,6 +123,9 @@ BEGIN
    RAISE EXCEPTION 'STAGE_AUTHORITY_REVOKED' USING ERRCODE='42501'; END IF;
   IF NOT clara_stage_permission(w,d.project_id,actor,d.intent) THEN RAISE EXCEPTION 'STAGE_AUTHORITY_REVOKED' USING ERRCODE='42501'; END IF;
   IF op='settle' THEN
+   IF d.intent->>'schemaVersion'='clara.stage-intent.v2' AND (jsonb_typeof(payload->'receipt') IS DISTINCT FROM 'object' OR NOT ((payload->'receipt') ?& ARRAY['schemaVersion','modelId','revision','modelDigest','parent','decisionId','intentDigest','preparationId','runId','domain','operation','source']) OR ((payload->'receipt') - ARRAY['schemaVersion','modelId','revision','modelDigest','parent','decisionId','intentDigest','preparationId','runId','domain','operation','source']) IS DISTINCT FROM '{}'::jsonb OR payload#>>'{receipt,intentDigest}' IS DISTINCT FROM d.intent->>'intentDigest' OR payload#>>'{receipt,domain}' IS DISTINCT FROM d.intent->>'domain' OR payload#>>'{receipt,operation}' IS DISTINCT FROM d.intent->>'operation' OR payload#>'{receipt,source}' IS DISTINCT FROM d.intent->'source') THEN
+    RAISE EXCEPTION 'STAGE_RECEIPT_MISMATCH' USING ERRCODE='42501';
+   END IF;
    IF d.state NOT IN ('claimed','committed') OR d.intent->>'intentDigest' IS DISTINCT FROM payload->>'intentDigest'
     OR payload#>>'{receipt,decisionId}' IS DISTINCT FROM d.id
     OR payload#>>'{receipt,modelDigest}' IS DISTINCT FROM d.intent->>'modelDigest'

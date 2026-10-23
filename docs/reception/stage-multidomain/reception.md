@@ -46,3 +46,7 @@ AntiPreview exact de la branche ajouté avant publication. Draft uniquement ; au
 ## Annulation ergonomique reçue
 
 La page native d'approbation offre maintenant une liste explicite, bornée au projet/utilisateur courant et au batch100 existant, des autorisations en attente. « Annuler cette autorisation » utilise `native/stage revoke` et la cancellation atomique Live existante ; aucun retrait de modèle ni retour arrière implicite. Une décision déjà committée reste non annulable. La recette navigateur Live clique cette commande, vérifie le refus de redemption et conserve les données. Aucun nouveau pouvoir serveur n'est introduit par cette interface. Le dernier passage bilatéral compte 3 tests PASS (Structure, premier Stage Sound sans Light, PDF unitaires), avec les 9 tests OS ciblés toujours PASS.
+
+## Intégrité du reçu v2 — contrôle final
+
+Le settlement vérifie désormais la forme exacte du reçu et son rattachement à l'intention approuvée : source, métier, opération et digest interne. Les champs supplémentaires sont refusés. Les tests PostgreSQL exercent un settlement valide et les altérations de chacun de ces champs, y compris une fausse certification injectée. Résultat final : 9 tests ciblés PASS, TypeScript et lint PASS ; recette bilatérale premier Stage Sound sans Light PASS (17,83 s) avec ce contrôle activé. Le protocole et les validations v1 restent conservés.
