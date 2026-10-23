@@ -42,3 +42,7 @@ CI globale OS non revendiquée : les échecs Google historiques signalés sur la
 ## Gouvernance et décision
 
 AntiPreview exact de la branche ajouté avant publication. Draft uniquement ; aucun merge, Ready, migration distante ou déploiement. GO isolation limité aux opérations reçues par la recette bilatérale dépendante. NO-GO configuration/mode seul et suppression globale. NO-GO Production tant que migrations, rôle réel, capabilities produit, consentements et parcours fournisseur n'ont pas été reçus séparément.
+
+## Annulation ergonomique reçue
+
+La page native d'approbation offre maintenant une liste explicite, bornée au projet/utilisateur courant et au batch100 existant, des autorisations en attente. « Annuler cette autorisation » utilise `native/stage revoke` et la cancellation atomique Live existante ; aucun retrait de modèle ni retour arrière implicite. Une décision déjà committée reste non annulable. La recette navigateur Live clique cette commande, vérifie le refus de redemption et conserve les données. Aucun nouveau pouvoir serveur n'est introduit par cette interface. Le dernier passage bilatéral compte 3 tests PASS (Structure, premier Stage Sound sans Light, PDF unitaires), avec les 9 tests OS ciblés toujours PASS.
