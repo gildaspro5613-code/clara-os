@@ -16,11 +16,13 @@ test('document continuity browser E2E: canonical selection → mission → pinne
  const browser=await chromium.launch({executablePath:process.env.DOCUMENTS_E2E_CHROMIUM,headless:true,args:['--no-sandbox','--ignore-certificate-errors-spki-list='+pin]});
  try{
   const context=await browser.newContext();await context.addCookies([{name:'clara_auth_session',value:'A'.repeat(43),url:origin},{name:'NEXT_LOCALE',value:'fr',url:origin}]);await context.route('**/*',r=>{const h=r.request().headers();return new URL(r.request().url()).origin===new URL(origin).origin&&!h['next-router-prefetch']&&h.purpose!=='prefetch'?r.continue():r.abort();});
-  const page=await context.newPage();await page.goto(origin+'/clara');const selector=page.getByRole('region',{name:'Contexte canonique privé',exact:true});
+  const page=await context.newPage();
+  page.on('response',async r=>{if(new URL(r.url()).pathname==='/api/documents'){try{const b=await r.json();console.info('ISOLATED_DOCUMENT_HTTP',JSON.stringify({method:r.request().method(),action:r.request().method()==='POST'?r.request().postDataJSON()?.action:new URL(r.url()).searchParams.get('action'),status:r.status(),code:b.code??null,success:b.success}));}catch{/* Binary download has no JSON diagnostic. */}}});
+  await page.goto(origin+'/clara');const selector=page.getByRole('region',{name:'Contexte canonique privé',exact:true});
   await selector.locator('select').nth(0).selectOption('w');await selector.locator('select').nth(1).selectOption('c1');await selector.locator('select').nth(2).selectOption('p1');
-  await Promise.all([page.waitForResponse(r=>r.url().includes('/api/native/runtime')&&r.request().method()==='POST'),selector.getByRole('button',{name:'Créer un nouveau fil'}).click()]);
+  await Promise.all([page.waitForEvent('load'),page.waitForResponse(r=>r.url().includes('/api/native/runtime')&&r.request().method()==='POST'&&r.request().postDataJSON()?.action==='createSession'),selector.getByRole('button',{name:'Créer un nouveau fil'}).click()]);
   await page.getByRole('textbox',{name:'Titre de la mission',exact:true}).fill('LOT2_DOCUMENTARY_MISSION');await page.getByRole('textbox',{name:'Objectif de la mission',exact:true}).fill('Analyze the project document and preserve commercial continuity');
-  await Promise.all([page.waitForResponse(r=>r.url().includes('/api/native/runtime')&&r.request().method()==='POST'),page.getByRole('button',{name:'Créer la mission',exact:true}).click()]);
+  await Promise.all([page.waitForEvent('load'),page.waitForResponse(r=>r.url().includes('/api/native/runtime')&&r.request().method()==='POST'&&r.request().postDataJSON()?.action==='createMission'),page.getByRole('button',{name:'Créer la mission',exact:true}).click()]);
   await page.getByRole('textbox',{name:'Titre de la mission',exact:true}).waitFor();
   const cookie=async()=> (await context.cookies()).map(c=>c.name+'='+c.value).join(';');
   const call=async(path,method='GET',body,customCookie)=>fetch(origin+path,{method,redirect:'manual',headers:{cookie:customCookie??await cookie(),origin,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body.action==='read'?{operationId:crypto.randomUUID(),...body}:body)}:{})});
@@ -32,10 +34,17 @@ test('document continuity browser E2E: canonical selection → mission → pinne
   const list=await (await call('/api/connections/google')).json();const connection=list.connections.find(c=>c.status==='ACTIVE');assert.ok(connection);assert.ok(!JSON.stringify(list).includes('encryptedPayload'));assert.ok(!JSON.stringify(list).includes('google-a'));
   assert.equal((await call('/api/connections/google','POST',{action:'select',connectionId:'foreign-google-b'})).status,403);
   await page.goto(origin+'/documents');const panel=page.getByRole('region',{name:'Documents de la mission',exact:true});await panel.getByRole('combobox',{name:'Connexion Google autorisée'}).selectOption(connection.id);
-  await Promise.all([page.waitForResponse(r=>r.url().endsWith('/api/connections/google')&&r.request().method()==='POST'),panel.getByRole('button',{name:'Sélectionner la connexion'}).click()]);
-  await page.getByRole('textbox',{name:'Identifiant du document Drive'}).fill('document-a');await page.getByRole('button',{name:'Examiner le document',exact:true}).click();await page.getByText('Authorized project PDF · Révision 1').waitFor();
-  await Promise.all([page.waitForResponse(r=>r.url().endsWith('/api/documents')&&r.request().method()==='POST'&&r.request().postDataJSON().action==='bind'),page.getByRole('button',{name:'Attester pour ce projet',exact:true}).click()]);
-  const article=page.locator('article').filter({has:page.getByText('Authorized project PDF',{exact:true})});await article.getByRole('button',{name:'Lire avec Clara',exact:true}).click();await page.locator('pre').getByText(/LOT2_AUTHORIZED_PDF/).waitFor();
+  await Promise.all([page.waitForEvent('load'),page.waitForResponse(r=>r.url().endsWith('/api/connections/google')&&r.request().method()==='POST'),panel.getByRole('button',{name:'Sélectionner la connexion'}).click()]);
+  await page.getByRole('textbox',{name:'Identifiant du document Drive'}).fill('document-a');const inspected=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/documents'&&r.request().method()==='POST'&&r.request().postDataJSON()?.action==='inspect');await page.getByRole('button',{name:'Examiner le document',exact:true}).click();const inspectedResponse=await inspected;assert.equal(inspectedResponse.status(),200,JSON.stringify(await inspectedResponse.json()));await page.getByText('Authorized project PDF · Révision 1').waitFor();
+  await Promise.all([page.waitForEvent('load'),page.waitForResponse(r=>r.url().endsWith('/api/documents')&&r.request().method()==='POST'&&r.request().postDataJSON().action==='bind'),page.getByRole('button',{name:'Attester pour ce projet',exact:true}).click()]);
+  const article=page.locator('article').filter({has:page.getByText('Authorized project PDF',{exact:true})});
+  const preRead=await page.evaluate(async()=>{const r=await fetch('/api/documents?action=references',{cache:'no-store'});const b=await r.json();return {status:r.status,code:b.code??null,hasMission:!!b.missionId,hasConnection:!!b.connectionId,uuid:typeof crypto.randomUUID,pending:Object.keys(sessionStorage).filter(k=>k.startsWith('clara.document.pending:')).length};});console.info('ISOLATED_DOCUMENT_CONTEXT',JSON.stringify(preRead));
+  assert.equal(preRead.status,200);assert.ok(preRead.hasMission&&preRead.hasConnection);
+  const completedRead=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/documents'&&r.request().method()==='POST'&&r.request().postDataJSON()?.action==='read');
+  await article.getByRole('button',{name:'Lire avec Clara',exact:true}).click();const readResponse=await completedRead;
+  const readResult=await readResponse.json();console.info('ISOLATED_DOCUMENT_READ',JSON.stringify({status:readResponse.status(),code:readResult.code??null,success:readResult.success,textLength:readResult.textContent?.length??0}));
+  assert.equal(readResponse.status(),200,readResult.code??'document read failed');
+  await page.locator('pre').getByText(/LOT2_AUTHORIZED_PDF/).waitFor();
 
   const out=process.env.DOCUMENT_CONTINUITY_EVIDENCE;if(!out||!out.startsWith('/workspace/'))throw Error('Isolated evidence path required');
   const proofPath='/tmp/native-fixture-document-prompts-'+db;
@@ -61,5 +70,8 @@ test('document continuity browser E2E: canonical selection → mission → pinne
   const deniedChatReplay=await call('/api/clara/chat','POST',chatBody);assert.equal(deniedChatReplay.status,403);state.denied=[];writeFileSync(statePath,JSON.stringify(state));
   writeFileSync(out+'/resume-before.json',JSON.stringify(before));writeFileSync(out+'/synthetic-cookie-jar.json',JSON.stringify(await context.cookies()));writeFileSync(out+'/browser-result.json',JSON.stringify({status:'PASS',pages,structured:true,chatContext:true,replayWithoutNewJournal:true,revocation:true,crossProjectDenied:true,fiveLocaleSourcesUnchanged:true},null,2));
   await context.close();
+ }catch(error){
+  const page=browser.contexts()[0]?.pages()[0];if(page)console.error('ISOLATED_DOCUMENT_DOM',(await page.locator('body').innerText().catch(()=>'<unavailable>')).slice(-3000));
+  throw error;
  }finally{await browser.close();}
 });

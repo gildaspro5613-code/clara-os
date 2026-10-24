@@ -45,6 +45,8 @@ on:
       - 'db/migrations/028_native_job_kind_compatibility.sql'
       - 'src/tests/native-job-kind-compatibility.test.ts'
       - 'src/tests/v1-mission-identity.test.ts'
+      - 'src/tests/native-runtime-proxy.test.mjs'
+      - 'src/tests/helpers/native-runtime-http-forward.mjs'
       - 'src/components/contacts/**'
       - 'src/tests/native-functional-closure*'
       - 'src/tests/native-conversation*'
@@ -99,7 +101,7 @@ jobs:
           done
           exit 1
       - name: Existing job types, 026 upgrade compatibility and local restore
-        run: node --import tsx --test src/tests/native-job-kind-compatibility.test.ts src/tests/v1-mission-identity.test.ts
+        run: node --import tsx --test src/tests/native-job-kind-compatibility.test.ts src/tests/v1-mission-identity.test.ts src/tests/native-runtime-proxy.test.mjs
       - name: Actual handlers and database isolation, revocation, snapshot and history
         run: node --import tsx --test src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts src/tests/native-commercial-postgres.test.ts src/tests/native-mission-contact-postgres.test.ts src/tests/native-documents-postgres.test.ts src/tests/native-google-oauth.test.ts src/tests/native-mail-postgres.test.ts src/tests/native-mail-triage.test.ts src/tests/native-mail-monitor.test.ts src/tests/native-mail-monitor-postgres.test.ts src/tests/ionos-transport.test.ts src/tests/native-conversation-postgres.test.ts src/tests/native-functional-closure.test.ts src/tests/native-google-work-postgres.test.ts
       - name: Existing Live callback bounded transport and authentication
