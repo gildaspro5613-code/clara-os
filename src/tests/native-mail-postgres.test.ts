@@ -7,6 +7,7 @@ import {randomUUID,createHash} from 'node:crypto';
 import {withNativeScope,nativeCommands,nativeMission,writableNativeContext} from '@/lib/native/scoped-context';
 import {nativeMailCommand} from '@/lib/native/mail-authority';
 import {NativeMail,sendNativeMail} from '@/lib/native/mail';
+import {prepareSignedMailDraft} from '@/lib/native/mail/signature-draft-preview';
 import {OpenAIResponsesEngine} from '@/lib/connectors/internal/openai/responses/openai-responses-engine';
 import type {RegistryQuery} from '@/lib/canonical/registry';
 import {seedNativeMailFixture,SimulatedMail} from './helpers/native-mail-fixture';
@@ -57,11 +58,17 @@ test('IONOS real PostgreSQL: two independent authorities, explicit bindings, exa
  const approved=await run(async()=>await (await mail()).approve(operation.operationId));
  const frozen=await run(async()=>await (await mail()).review(operation.operationId),request(),false);assert.equal(Buffer.from(frozen.envelope.attachments[0].content,'base64').toString(),'APPROVED_NOTE');assert.equal(frozen.envelope.attachments[0].sha256,attachmentId);
  // Editing any envelope field invalidates approval by the current Mission hash.
- await run(async()=>{await (await mail()).saveDraft(id,{subject:'Changed',body:'Changed content',recipients:['other@example.invalid'],attachmentIds:[]});});
+ await run(async()=>{await (await mail()).saveDraft(id,{subject:'Changed',body:prepareSignedMailDraft({sender:'clara@melodie.digital',locale:'en',body:'Changed content <untrusted> & reply'}).body,recipients:['other@example.invalid'],attachmentIds:[]});});
  await assert.rejects(()=>sendNativeMail(request(),'mail-clara',operation.operationId,approved.token,factory,query));assert.equal(providerA.sent.length,0);
- operation=await submit();const approval=await run(async()=>await (await mail()).approve(operation.operationId));
+ operation=await submit();const multipartReview=await run(async()=>await (await mail()).review(operation.operationId),request(),false);
+ assert.ok(multipartReview.envelope.html,'Multipart HTML must be frozen into encrypted review snapshot');
+ assert.match(multipartReview.envelope.html, /Changed content &lt;untrusted&gt; &amp; reply/);
+ assert.match(multipartReview.envelope.text, /Changed content <untrusted> & reply/);
+ const approval=await run(async()=>await (await mail()).approve(operation.operationId));
  const race=await Promise.allSettled([sendNativeMail(request(),'mail-clara',operation.operationId,approval.token,factory,query),sendNativeMail(request(),'mail-clara',operation.operationId,approval.token,factory,query)]);
- assert.equal(race.filter(r=>r.status==='fulfilled').length,1);assert.equal(providerA.sent.length,1);assert.equal(pg(`SELECT state FROM clara_native_mail_operations WHERE id='${operation.operationId}'`).trim(),'sent');
+ assert.equal(race.filter(r=>r.status==='fulfilled').length,1);assert.equal(providerA.sent.length,1);
+ assert.equal(providerA.sent[0].html,multipartReview.envelope.html,'Simulated SMTP HTML must exactly match owner-approved snapshot');
+ assert.equal(providerA.sent[0].text,multipartReview.envelope.text,'Simulated SMTP fallback must exactly match owner-approved snapshot');assert.equal(pg(`SELECT state FROM clara_native_mail_operations WHERE id='${operation.operationId}'`).trim(),'sent');
  await assert.rejects(()=>sendNativeMail(request(),'mail-clara',operation.operationId,approval.token,factory,query));assert.equal(providerA.sent.length,1);
  // Delegate can read/prepare, never approve/send as mailbox owner by admin role.
  await run(()=>nativeMailCommand('delegate',{connectionId:'mail-clara',userId:'b'}));await run(async()=>{assert.equal((await (await mail()).read(id)).subject,providerA.content.subject);},request('B',b),false);
