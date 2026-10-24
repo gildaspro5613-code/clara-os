@@ -4,6 +4,8 @@ import test from "node:test";
 import type { ConnectionResolver } from "@/lib/connections/connection-resolver";
 import { MakeConnectorAdapter } from "@/lib/connectors/make/adapter";
 import { MakeWebhookClient, MakeWebhookError } from "@/lib/connectors/make/client";
+import { MakeExecutableConnector } from "@/lib/connectors/make/make-executable-connector";
+import type { ConnectorContext } from "@/lib/connectors/core/connector-context";
 import { MAKE_CAPABILITIES, MakeConnectorDefinition } from "@/lib/connectors/make/definition";
 
 type Call = { url: string; init?: RequestInit };
@@ -147,4 +149,12 @@ test('Make transport timeouts perform one handoff and are never a success receip
   const client=new MakeWebhookClient(async()=>{calls++;throw new DOMException('Simulated acknowledgement lost','AbortError');});
   await assert.rejects(()=>client.execute({url:'https://hook.eu2.make.com/synthetic-reception-only'},{scenarioKey:'notify-team'}),error=>error instanceof MakeWebhookError && error.code==='TIMEOUT');
   assert.equal(calls,1);
+});
+
+test('a pending Make acknowledgement is not announced as successful execution', async () => {
+  const adapter={execute:async()=>({provider:'make',capability:MAKE_CAPABILITIES.SCENARIO_EXECUTE,data:{ok:true,scenarioKey:'notify-team',status:202,executionStatus:'accepted',data:{status:'accepted'}}})} as unknown as MakeConnectorAdapter;
+  const connector=new MakeExecutableConnector({} as ConnectorContext,'synthetic-connection',true,adapter);
+  const result=await connector.execute({id:'synthetic-operation',capability:MAKE_CAPABILITIES.SCENARIO_EXECUTE,payload:{scenarioKey:'notify-team'},source:'isolated-reception',receivedAt:new Date()});
+  assert.equal((result.data as {executionStatus:string}).executionStatus,'accepted');
+  assert.doesNotMatch(result.message??'',/executed successfully/i);
 });

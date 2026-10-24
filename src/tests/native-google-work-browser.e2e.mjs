@@ -73,5 +73,10 @@ test('Google business UI: Cockpit → Mission/Clara → consent → Agenda → c
   await page.goto(origin+'/');await page.getByText('GOOGLE_WORK_RECEPTION',{exact:true}).first().waitFor();assert.ok((await page.locator('body').innerText()).includes('GOOGLE_WORK_RECEPTION'));await page.getByText('GOOGLE_UPDATED_APPOINTMENT',{exact:true}).first().waitFor();
   assert.equal(readFileSync('/tmp/native-fixture-global-attempts-'+db,'utf8'),'','Google work must never enter a global loader');
   assert.equal(pg("SELECT COUNT(*) FROM clara_tool_approvals WHERE capability_id LIKE 'google.%' AND status='SUCCEEDED'").trim(),'5');writeFileSync('/tmp/native-google-restart-'+db,JSON.stringify({selection:(await context.cookies()).find(c=>c.name==='clara_native_selection').value,fileId,operationId:upload.operationId,reviewHash:upload.reviewHash,writes:5}));await context.close();
+ }catch(error){
+  // Diagnostic only; preserve the original exception and every assertion.
+  const page=browser.contexts()[0]?.pages()[0];
+  if(page){const text=await page.locator('body').innerText().catch(()=>'<unavailable>');console.error('ISOLATED_AGENDA_DOM',JSON.stringify({path:new URL(page.url()).pathname,language:await page.locator('html').getAttribute('lang'),text:text.slice(0,4000)}));}
+  throw error;
  }finally{await browser.close();}
 });
