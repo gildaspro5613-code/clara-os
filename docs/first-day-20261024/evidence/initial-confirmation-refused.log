@@ -1,0 +1,123 @@
+ISOLATED_DOCUMENT_DOM CLARA OS
+
+OPÉRER
+
+Cockpit
+Missions
+Conversations
+Contacts
+Messagerie
+
+CONNECTER
+
+Connexions
+Téléphonie
+Automatisations
+Agenda
+
+CONNAÎTRE
+
+Documents
+Mémoire
+Brain
+
+CLARA
+
+Clara
+Clara est prête
+
+Melodie Digital
+
+Version 0.2
+
+Clara
+Clara prépare votre journée…
+FR
+EN
+ES
+DE
+IT
+G
+
+Contexte canonique privé · w / c1 / p1 · native:be3fcae4-f93d-407c-a288-bba5c51474c6
+
+Espace
+Choisir
+w
+Client
+Choisir un client
+Projet
+Choisir un projet
+Créer un nouveau fil
+Identifiant du fil
+Choisir
+Ouvrir ce fil
+Contact / prospect
+Choisir
+PRIVATE_prospect-a
+Sélectionner le contact
+Communication préparée par Clara
+Mission autorisée
+Choisir
+LOT2_DOCUMENTARY_MISSION
+Reprendre cette mission
+Titre de la mission
+Objectif de la mission
+Créer la mission
+Documents de la mission
+Connexion Google autorisée
+Choisir
+Sélectionner la connexion
+Associer mon compte Google
+Question sur le document
+
+INTELLIGENCE OPÉRATIONNELLE
+
+Clara
+
+L’intelligence opérationnelle de Clara OS, connectée à son état courant et à sa mission active.
+
+ÉTAT
+
+Démarrage
+
+MISSION ACTUELLE
+
+LOT2_DOCUMENTARY_MISSION
+
+OBJECTIF
+
+Analyze the project document and preserve commercial continuity
+
+PROCHAINE ACTION
+
+Aucune action suivante définie
+
+CLARA
+
+Parler à Clara
+Bonjour. Me voilà. Que faisons-nous aujourd’hui ?
+
+Ce service externe reste indisponible dans le contexte natif tant que ses autorisations ne sont pas certifiées.
+✖ document continuity browser E2E: canonical selection → mission → pinned OAuth → explicit Google selection → project attestation → PDF/Core/Brain → Journal/Cockpit → fresh resume and revocation (40529.546873ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 47382.331226
+
+✖ failing tests:
+
+test at src/tests/native-document-continuity-browser.e2e.mjs:13:1
+✖ document continuity browser E2E: canonical selection → mission → pinned OAuth → explicit Google selection → project attestation → PDF/Core/Brain → Journal/Cockpit → fresh resume and revocation (40529.546873ms)
+  page.waitForEvent: Timeout 30000ms exceeded while waiting for event "load"
+  =========================== logs ===========================
+  waiting for event "load"
+  ============================================================
+      at TestContext.<anonymous> (/workspace/clara-os-v1-reception/src/tests/native-document-continuity-browser.e2e.mjs:29:111) {
+    name: 'TimeoutError',
+    log: []
+  }

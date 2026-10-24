@@ -1,0 +1,8 @@
+{
+  "base": "fff3fb2384b88c9830e5f22a29bed1110130b791",
+  "bundle": "/workspace/clara-os-v1-candidate-20261024.bundle",
+  "requiredBase": "01e3d253ea435d99462e5f80ba68c9c5e0582986",
+  "historicalProofs": 137,
+  "unchanged": true,
+  "uncommittedAtStart": false
+}

@@ -1,0 +1,29 @@
+▶ V1 job ledger: legacy 026 regression, Google/chat/document coexistence, reapplication and restore
+  ✔ old constraint refuses Google receipts before any provider handoff (1092.500819ms)
+  ✔ repair preserves all existing receipt kinds and rejects unknown types (1380.570021ms)
+  ✔ 026 and 028 reapplication preserve completed receipts byte for byte (2745.941579ms)
+  ✔ actual pg_dump and restore preserve histories, receipts and constraint (2178.710163ms)
+✔ V1 job ledger: legacy 026 regression, Google/chat/document coexistence, reapplication and restore (17939.283879ms)
+✔ cached overview ranks quarantine and high-priority messages before truncating attention (1.262114ms)
+✔ overview never claims a complete or fresh inbox without evidence (0.228984ms)
+✔ draft submission is disabled until every local edit is saved (1.622684ms)
+✔ approval token is retained after refresh rather than cleared by refresh (0.234336ms)
+✔ changing mailbox or refreshing invalidates locally cached draft baseline (0.16551ms)
+▶ IONOS real PostgreSQL: two independent authorities, explicit bindings, exact approvals, concurrent single-use SMTP, revocation and durable restart
+  ✔ Cockpit projects pending canonical operations without transport, secrets or cross-project visibility (4376.758187ms)
+  ✔ Cockpit retains approved as recorded state, never SMTP acceptance (1112.896759ms)
+✔ IONOS real PostgreSQL: two independent authorities, explicit bindings, exact approvals, concurrent single-use SMTP, revocation and durable restart (154986.844533ms)
+✔ five-language commercial messages are prioritized, independent of mailbox UI language (12.952652ms)
+✔ service incidents require attention without executing email content (0.266893ms)
+✔ newsletter and bulk content are low priority, quarantine remains separate (0.163175ms)
+✔ urgency claims alone do not trigger high priority or grant send approval (1.095548ms)
+✔ unknown correspondence is retained for review, not silently discarded (0.233126ms)
+✔ administrative deadlines inside message bodies are surfaced without authorizing actions (0.408739ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 169074.955638
