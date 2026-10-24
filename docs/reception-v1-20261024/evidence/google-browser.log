@@ -1,0 +1,17 @@
+Google reception: Agenda consent
+Google reception: Drive consent
+Google reception: Drive upload proposal
+Google reception: Drive availability {"capabilities":{"status":200,"owned":true,"canManage":true,"drive":true,"mission":true},"resources":{"status":200,"mission":false,"resources":[{"id":"calendar-a","kind":"calendar"},{"id":"folder-a","kind":"folder"}]},"ui":{"status":["Pré-requis de consentement disponibles ; droits vérifiés à chaque opération."],"alerts":[],"disabled":false}}
+Google reception: Drive handoff
+Google reception: Drive read-only recovery
+Google reception: Drive reading
+Google reception: Drive move/update
+✔ Google business UI: Cockpit → Mission/Clara → consent → Agenda → confirmed Drive import/move/update → Journal → Cockpit and recovery (517597.281751ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 521161.822774
