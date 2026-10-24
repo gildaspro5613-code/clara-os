@@ -1,10 +1,12 @@
 'use client';
 import {useEffect,useState} from 'react';
 import GlassPanel from '@/components/ui/GlassPanel';
-import {useLocale} from 'next-intl';
+import {useLocale,useTranslations} from 'next-intl';
+import Link from 'next/link';
 
 type Attention={id:string;subject:string;from:string;priority:'high'|'normal'|'low'|'quarantine';category:string;reason:string};
-type Mailbox={connectionId:string;address:string;status:'cached'|'unavailable';highPriorityCount:number|null;quarantineCount:number|null;attention:Attention[];partial:boolean};
+type Operation={id:string;missionId:string;state:'pending'|'approved'|'processing'|'sent'|'failed'|'uncertain'};
+type Mailbox={connectionId:string;address:string;status:'cached'|'unavailable';highPriorityCount:number|null;quarantineCount:number|null;attention:Attention[];operations?:Operation[];partial:boolean};
 type Snapshot={success:boolean;overview:Mailbox[];source:string;freshnessVerified:boolean;complete:boolean};
 const copy={
  fr:{title:'Courrier à examiner',empty:'Aucune boîte autorisée',none:'Aucun message signalé dans cet aperçu',stale:'Aperçu enregistré — actualité non vérifiée',partial:'Données partielles ou indisponibles',error:'Aperçu du courrier indisponible',open:'Ouvrir le courrier',quarantine:'Pièce jointe suspecte',high:'À examiner'},
@@ -14,7 +16,7 @@ const copy={
  it:{title:'Posta da esaminare',empty:'Nessuna casella autorizzata',none:'Nessun messaggio segnalato in questa panoramica',stale:'Panoramica salvata — aggiornamento non verificato',partial:'Dati parziali o non disponibili',error:'Panoramica posta non disponibile',open:'Apri posta',quarantine:'Allegato sospetto',high:'Da esaminare'},
 } as const;
 export default function MailOverviewPanel(){
- const locale=useLocale();const t=copy[locale as keyof typeof copy]??copy.fr;
+ const locale=useLocale();const t=copy[locale as keyof typeof copy]??copy.fr;const ui=useTranslations('ui');
  const [snapshot,setSnapshot]=useState<Snapshot|null>(null),[error,setError]=useState(false);
  useEffect(()=>{const controller=new AbortController();fetch('/api/native/mail?action=overview',{cache:'no-store',signal:controller.signal,credentials:'same-origin'}).then(async response=>{if(!response.ok)throw Error('mail overview');return response.json() as Promise<Snapshot>;}).then(data=>{if(!controller.signal.aborted){if(!data.success||!Array.isArray(data.overview))setError(true);else setSnapshot(data);}}).catch(()=>{if(!controller.signal.aborted)setError(true);});return()=>controller.abort();},[]);
  const boxes=snapshot?.overview??[];const partial=!!snapshot&&(!snapshot.complete||boxes.some(box=>box.partial||box.status!=='cached'));
@@ -26,8 +28,10 @@ export default function MailOverviewPanel(){
    {snapshot&&boxes.length===0&&<p className="mt-2 text-white/70">{t.empty}</p>}
    {boxes.map(box=><div key={box.connectionId} className="mt-3 border-t border-white/10 pt-2">
     <p className="break-all font-medium">{box.address}</p>
+    {(box.operations??[]).length>0&&<ul aria-label={ui('mailRecordedOperations')} className="my-2 space-y-1">{[...(box.operations??[])].sort((a,b)=>({uncertain:0,failed:1,pending:2,approved:3,processing:4,sent:5}[a.state]-{uncertain:0,failed:1,pending:2,approved:3,processing:4,sent:5}[b.state])).map(op=><li key={op.id} className="text-xs"><Link href="/messagerie" className="text-cyan-200 underline">{ui(`mailState_${op.state}`)}</Link><span className="block break-all text-white/50">{ui('mailRecordedOnly')} · {op.missionId}</span></li>)}</ul>}
     {box.status==='unavailable'?<p className="text-xs text-white/60">{t.partial}</p>:box.attention.length===0?<p className="text-xs text-white/60">{t.none}</p>:<ul className="mt-1 space-y-1">{box.attention.slice(0,3).map(message=><li key={message.id} className="truncate text-xs" title={message.subject}><span className="mr-1 text-amber-100">{message.priority==='quarantine'?t.quarantine:t.high}:</span>{message.subject}</li>)}</ul>}
    </div>)}
   </>}
+  <Link href="/messagerie" className="mt-3 inline-block text-cyan-200 underline">{t.open}</Link>
  </GlassPanel>;
 }

@@ -324,5 +324,9 @@
   "nativeDocumentUnverified": "Unverified source assertions: preserve hypotheses, conflicts and provenance.",
   "nativeDocumentFacts": "Reported facts and equipment",
   "nativeDocumentAmbiguities": "Ambiguities and missing information",
-  "nativeDocumentConflicts": "Unresolved conflicts"
+  "nativeDocumentConflicts": "Unresolved conflicts",
+  "mailRecordedOperations": "Recorded mail operations",
+  "mailRecordedOnly": "Recorded state; rights and validity checked again on action",
+  "currentMissionSummary": "Active mission summary",
+  "summaryScopeNotice": "This summary covers only the selected mission and thread. A checked task or approval does not prove provider execution; check the receipts in the Journal."
 }

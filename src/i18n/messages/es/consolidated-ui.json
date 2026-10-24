@@ -324,5 +324,9 @@
   "nativeDocumentUnverified": "Datos de fuentes sin certificar: conservar hipótesis, conflictos y procedencia.",
   "nativeDocumentFacts": "Hechos y equipos descritos",
   "nativeDocumentAmbiguities": "Ambigüedades e información faltante",
-  "nativeDocumentConflicts": "Conflictos sin resolver"
+  "nativeDocumentConflicts": "Conflictos sin resolver",
+  "mailRecordedOperations": "Operaciones de correo registradas",
+  "mailRecordedOnly": "Estado registrado; permisos y validez se verifican al actuar",
+  "currentMissionSummary": "Resumen de la misión activa",
+  "summaryScopeNotice": "Este resumen cubre solo la misión y el hilo seleccionados. Una tarea marcada o aprobación no demuestra ejecución del proveedor; consulte los recibos en el Diario."
 }

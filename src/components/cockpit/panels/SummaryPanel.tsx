@@ -30,8 +30,9 @@ export default function SummaryPanel({
   const progress = mission?.progress ?? 0;
 
   return (
-    <GlassPanel title={t("dailySummary")}>
+    <GlassPanel title={ui("currentMissionSummary")}>
       <div className="space-y-5">
+        <p className="text-xs text-amber-100/80">{ui("summaryScopeNotice")}</p>
 
         <div className="flex items-center justify-between">
           <span className="text-white/70">{t("completedTasks")}</span>

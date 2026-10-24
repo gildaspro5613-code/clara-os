@@ -324,5 +324,9 @@
   "nativeDocumentUnverified": "Affermazioni delle fonti non certificate: conservare ipotesi, conflitti e provenienza.",
   "nativeDocumentFacts": "Fatti e attrezzature riportati",
   "nativeDocumentAmbiguities": "Ambiguità e informazioni mancanti",
-  "nativeDocumentConflicts": "Conflitti irrisolti"
+  "nativeDocumentConflicts": "Conflitti irrisolti",
+  "mailRecordedOperations": "Operazioni di posta registrate",
+  "mailRecordedOnly": "Stato registrato; diritti e validità ricontrollati al momento dell’azione",
+  "currentMissionSummary": "Riepilogo della missione attiva",
+  "summaryScopeNotice": "Questo riepilogo riguarda solo la missione e la conversazione selezionate. Una attività spuntata o approvazione non prova l’esecuzione del fornitore; verificare le ricevute nel Diario."
 }

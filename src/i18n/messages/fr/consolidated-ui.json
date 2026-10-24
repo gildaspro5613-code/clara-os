@@ -324,5 +324,9 @@
   "nativeDocumentUnverified": "Assertions documentaires non certifiées : conserver hypothèses, contradictions et provenance.",
   "nativeDocumentFacts": "Faits et équipements rapportés",
   "nativeDocumentAmbiguities": "Ambiguïtés et informations manquantes",
-  "nativeDocumentConflicts": "Contradictions non résolues"
+  "nativeDocumentConflicts": "Contradictions non résolues",
+  "mailRecordedOperations": "Opérations de courrier enregistrées",
+  "mailRecordedOnly": "État enregistré ; droits et validité revérifiés à l’action",
+  "currentMissionSummary": "Résumé de la mission active",
+  "summaryScopeNotice": "Ce résumé concerne uniquement la mission et le fil sélectionnés. Une tâche cochée ou une approbation ne prouve pas une exécution fournisseur ; vérifier les reçus dans le Journal."
 }

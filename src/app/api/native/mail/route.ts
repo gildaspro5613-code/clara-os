@@ -22,8 +22,12 @@ export async function GET(request:Request){try{return await withNativeScope(requ
    try{
     const mail=await new NativeMail(connection.id).initialize();
     const page=await mail.list();
+    // Reuse the canonical, project/actor-scoped ledger. No credentials, frozen
+    // envelope or approval token belong in the Cockpit projection.
+    const recorded=await nativeMailCommand('operations',{connectionId:connection.id});
+    const operations=(recorded.operations as Array<{id:string;mission_id:string;state:string}>).map(op=>({id:op.id,missionId:op.mission_id,state:op.state}));
     const attention=page.messages.filter(m=>m.triage.requiresAttention).sort((a,b)=>({quarantine:0,high:1,normal:2,low:3}[a.triage.priority]-{quarantine:0,high:1,normal:2,low:3}[b.triage.priority])).slice(0,10).map(m=>({id:m.id,subject:m.subject,from:m.from,priority:m.triage.priority,category:m.triage.category,reason:m.triage.reason}));
-    overview.push({connectionId:connection.id,address:connection.address,status:'cached',highPriorityCount:page.messages.filter(m=>m.triage.priority==='high').length,quarantineCount:page.messages.filter(m=>m.triage.priority==='quarantine').length,attention,partial:page.nextCursor!==null});
+    overview.push({connectionId:connection.id,address:connection.address,status:'cached',highPriorityCount:page.messages.filter(m=>m.triage.priority==='high').length,quarantineCount:page.messages.filter(m=>m.triage.priority==='quarantine').length,attention,operations,operationsPartial:operations.length>=50,partial:page.nextCursor!==null||operations.length>=50});
    }catch{
     overview.push({connectionId:connection.id,address:connection.address,status:'unavailable',highPriorityCount:null,quarantineCount:null,attention:[],partial:true});
    }

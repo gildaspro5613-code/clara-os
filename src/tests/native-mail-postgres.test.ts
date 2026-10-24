@@ -10,6 +10,7 @@ import {NativeMail,sendNativeMail} from '@/lib/native/mail';
 import {OpenAIResponsesEngine} from '@/lib/connectors/internal/openai/responses/openai-responses-engine';
 import type {RegistryQuery} from '@/lib/canonical/registry';
 import {seedNativeMailFixture,SimulatedMail} from './helpers/native-mail-fixture';
+import {nativeMailRouteFixture} from './helpers/native-mail-route-fixture';
 
 test('IONOS real PostgreSQL: two independent authorities, explicit bindings, exact approvals, concurrent single-use SMTP, revocation and durable restart',{skip:!process.env.CANONICAL_TEST_CONTAINER},async t=>{
  assert.equal(process.env.CANONICAL_TEST_CONTAINER,'clara-canonical-test-postgres');const db='native_browser_'+randomUUID().replaceAll('-',''),container='clara-canonical-test-postgres';
@@ -54,7 +55,28 @@ test('IONOS real PostgreSQL: two independent authorities, explicit bindings, exa
  await assert.rejects(()=>run(async()=>await (await mail()).saveDraft(id,{subject:'Attachment review',body:'Explicit reply',recipients:['recipient@example.invalid'],attachmentIds:['foreign-attachment']})));
  await run(async()=>await (await mail()).saveDraft(id,{subject:'Attachment review',body:'Explicit reply',recipients:['recipient@example.invalid'],attachmentIds:[attachmentId]}));
  const submit=()=>run(async()=>await (await mail()).submit());let operation=await submit();
+ const http=nativeMailRouteFixture(query,factory);
+ const overviewRequest=(req=request())=>new Request(req.url+'&action=overview',{headers:req.headers});
+ await t.test('Cockpit projects pending canonical operations without transport, secrets or cross-project visibility',async()=>{
+  const snapshot=()=>pg("SELECT jsonb_build_object('ops',(SELECT jsonb_agg(to_jsonb(x) ORDER BY id) FROM clara_native_mail_operations x),'journal',(SELECT count(*) FROM clara_journal_entries),'cursors',(SELECT jsonb_agg(to_jsonb(x)) FROM clara_native_mail_sync x))::text");
+  const before=snapshot(),sent=providerA.sent.length;
+  const r=await http.GET(overviewRequest());assert.equal(r.status,200);const body=await r.json();
+  const own=body.overview.find((x:{connectionId:string})=>x.connectionId==='mail-clara');
+  assert.equal(own.operations.find((x:{id:string})=>x.id===operation.operationId).state,'pending');
+  assert.equal(body.freshnessVerified,false);assert.equal(own.operationsPartial,false);
+  assert.deepEqual(Object.keys(own.operations[0]).sort(),['id','missionId','state']);
+  for(const forbidden of ['encryptedSnapshot','encrypted_payload','tokenHash','synthetic-mail','APPROVED_NOTE','recipient@example.invalid'])assert.ok(!JSON.stringify(body).includes(forbidden),forbidden);
+  for(const req of [request('B',b),request('A',p2,'c1','p2'),otherRequest]){
+   const other=await http.GET(overviewRequest(req));assert.equal(other.status,200);assert.ok(!(await other.text()).includes(operation.operationId));
+  }
+  for(const req of [new Request('https://os.fixture.example/api/native/mail?action=overview'),request('invalid'),request('D')])assert.ok([401,403].includes((await http.GET(overviewRequest(req))).status));
+  assert.equal(snapshot(),before);assert.equal(providerA.sent.length,sent);
+ });
  const approved=await run(async()=>await (await mail()).approve(operation.operationId));
+ await t.test('Cockpit retains approved as recorded state, never SMTP acceptance',async()=>{
+  const r=await http.GET(overviewRequest());assert.equal(r.status,200);const body=await r.json();
+  assert.equal(body.overview[0].operations.find((x:{id:string})=>x.id===operation.operationId).state,'approved');assert.equal(providerA.sent.length,0);
+ });
  const frozen=await run(async()=>await (await mail()).review(operation.operationId),request(),false);assert.equal(Buffer.from(frozen.envelope.attachments[0].content,'base64').toString(),'APPROVED_NOTE');assert.equal(frozen.envelope.attachments[0].sha256,attachmentId);
  // Editing any envelope field invalidates approval by the current Mission hash.
  await run(async()=>{await (await mail()).saveDraft(id,{subject:'Changed',body:'Changed content',recipients:['other@example.invalid'],attachmentIds:[]});});
