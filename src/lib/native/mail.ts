@@ -16,6 +16,7 @@ import {CLARA_RESPONSE_LANGUAGE} from '@/i18n/response-language';
 import {triageMail} from './mail-triage';
 import {prepareSignedMailDraft} from './mail/signature-draft-preview';
 import {replySignatureLocale} from './mail/reply-locale';
+import {htmlFromSignedDraft} from './mail/signed-html';
 import type {Locale} from '@/i18n/types';
 import type {MdProjectIntake} from '@/types';
 import {qualifyProjectIntake} from '@/lib/acquisition/qualification';
@@ -100,7 +101,8 @@ export class NativeMail {
   if(!stored||stored.connectionId!==this.connectionId)throw new RegistryError(409,'MAIL_DRAFT_REQUIRED');
   const draft=decryptCredentialPayload<MailboxCommunicationDraft>(stored.encryptedDraft);
   const mail=await this.read(draft.messageId),operationId=randomUUID();
-  const envelope:MailEnvelope={from:this.address,to:draft.recipients,subject:draft.subject,text:draft.body,messageId:`<${operationId}@melodie.digital>`,inReplyTo:mail.messageId||undefined,attachments:mail.attachments.filter(a=>draft.attachmentIds.includes(a.id))};
+  const html=htmlFromSignedDraft(this.address,draft.body);
+  const envelope:MailEnvelope={from:this.address,to:draft.recipients,subject:draft.subject,text:draft.body,...(html?{html}:{}),messageId:`<${operationId}@melodie.digital>`,inReplyTo:mail.messageId||undefined,attachments:mail.attachments.filter(a=>draft.attachmentIds.includes(a.id))};
   ctx.mailCommitProof=this.proof({operation:'submit',messageId:draft.messageId,operationId,encryptedSnapshot:encryptCredentialPayload(envelope)});
   await mailJournal('MAIL_SEND_REQUESTED',{connectionId:this.connectionId,operationId,missionId:ctx.session.mission!.id,revision:draft.revision});return {success:true,operationId};
  }
