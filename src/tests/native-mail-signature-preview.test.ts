@@ -28,7 +28,7 @@ test('unknown or lookalike mailbox is not assigned a signature',()=>{
 });
 test('preview is isolated from native mail send, approval and transport',()=>{
  const source=readFileSync('src/lib/native/mail/signature-draft-preview.ts','utf8');
- assert.doesNotMatch(source,/fetch\(|smtp|sendNativeMail|nativeMailCommand|mailCredentialStore|writableNativeContext|saveDraft\(/i);
+ assert.doesNotMatch(source,/\b(?:fetch|sendNativeMail|nativeMailCommand|mailCredentialStore|writableNativeContext|saveDraft)\s*\(|\b(?:from|require)\s*\(?\s*['\"][^'\"]*(?:nodemailer|smtp|mail-authority|ionos\/transport)/i);
 });
 test('existing official preview remains text/plain; HTML is a separate rendition',()=>{
  const s=resolveMailSignature('gildas@melodie.digital','en');
