@@ -27,7 +27,7 @@ const markers:Record<SignatureLocale,string[]>={
 };
 export function verifyReplyLanguage(body:string,declared:SignatureLocale):void {
  if(!body.trim()||body.length>20000)throw Error('MAIL_REPLY_LANGUAGE_UNVERIFIED');
- const words=new Set((body.toLocaleLowerCase('und').match(/[\\p{L}]+/gu)??[]));
+ const words=new Set((body.toLocaleLowerCase('und').match(/[\p{L}]+/gu)??[]));
  const scores=(Object.keys(markers) as SignatureLocale[]).map(lang=>({lang,score:markers[lang].filter(word=>words.has(word)).length})).sort((a,b)=>b.score-a.score);
  const first=scores[0],second=scores[1];
  if(first.lang!==declared && first.score>=2 && first.score>=second.score+2)throw Error('MAIL_REPLY_LANGUAGE_MISMATCH');
