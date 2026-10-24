@@ -71,6 +71,12 @@ function readExecutionMetadata(response: Response, data: unknown): { executionSt
   if (data && typeof data === "object") {
     const record = data as Record<string, unknown>;
     const status = record.executionStatus ?? record.execution_status ?? record.status;
+    // A successful HTTP transport is not a successful business operation.
+    // Do not expose provider content (which may contain personal data/secrets).
+    if (record.ok === false || record.success === false ||
+        (typeof status === "string" && ["failed", "error", "rejected", "cancelled"].includes(status.toLowerCase()))) {
+      throw new MakeWebhookError("Make reported an unsuccessful scenario execution.", response.status, "HTTP_ERROR", false);
+    }
     if (status === "accepted" || status === "pending" || status === "completed") executionStatus = status;
     const id = record.executionId ?? record.execution_id;
     if (typeof id === "string" && id.trim()) executionId = id.trim();

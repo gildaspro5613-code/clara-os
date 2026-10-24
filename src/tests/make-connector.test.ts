@@ -132,3 +132,19 @@ test("webhook client rejects non-HTTPS destinations", async () => {
     (error) => error instanceof MakeWebhookError && /HTTPS/.test(error.message),
   );
 });
+
+test('HTTP 200 with an explicit provider failure never produces a completed Make receipt', async () => {
+  for (const body of [{status:'failed',provider:'brevo'}, {success:false,provider:'brevo'}, {ok:false,status:'completed'}]) {
+    let calls=0;
+    const client=new MakeWebhookClient(async()=>{calls++;return Response.json(body);});
+    await assert.rejects(()=>client.execute({url:'https://hook.eu2.make.com/synthetic-reception-only'},{scenarioKey:'crm-contact-sync',payload:{workspaceId:'isolated-workspace'}}),error=>error instanceof MakeWebhookError && !error.retryable);
+    assert.equal(calls,1,'no automatic retry after an explicit provider refusal');
+  }
+});
+
+test('Make transport timeouts perform one handoff and are never a success receipt', async () => {
+  let calls=0;
+  const client=new MakeWebhookClient(async()=>{calls++;throw new DOMException('Simulated acknowledgement lost','AbortError');});
+  await assert.rejects(()=>client.execute({url:'https://hook.eu2.make.com/synthetic-reception-only'},{scenarioKey:'notify-team'}),error=>error instanceof MakeWebhookError && error.code==='TIMEOUT');
+  assert.equal(calls,1);
+});

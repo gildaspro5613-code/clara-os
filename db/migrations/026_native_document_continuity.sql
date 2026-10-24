@@ -2,7 +2,7 @@
 BEGIN;
 ALTER TABLE clara_external_event_jobs DROP CONSTRAINT IF EXISTS clara_external_event_jobs_job_kind_check;
 ALTER TABLE clara_external_event_jobs ADD CONSTRAINT clara_external_event_jobs_job_kind_check
- CHECK(job_kind IN ('external-event','native-chat','native-document'));
+ CHECK(job_kind IN ('external-event','native-chat','native-google','native-document'));
 DO $$ BEGIN
  IF to_regprocedure('clara_native_runtime_command_pre_document(text,text,text,text,text,text,jsonb)') IS NULL THEN
   ALTER FUNCTION clara_native_runtime_command(TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,JSONB) RENAME TO clara_native_runtime_command_pre_document;
