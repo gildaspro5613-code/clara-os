@@ -11,7 +11,7 @@ export type SignatureIdentity = 'clara' | 'gildas' | 'support' | 'contact' | 'in
 
 type Translated = Record<SignatureLocale, string>;
 type SignatureProfile = {
-  email: string;
+  address: string;
   name: string | Translated;
   role: Translated;
 };
@@ -23,7 +23,7 @@ const esc = (value:string) => value.replace(/&/g,'&amp;').replace(/</g,'&lt;').r
 const localized = (value:string|Translated, locale:SignatureLocale) => typeof value==='string'?value:value[locale];
 const emailIdentity = (sender:string): SignatureIdentity|null => {
   const normalized=sender.trim().toLowerCase();
-  return (Object.keys(profiles) as SignatureIdentity[]).find(id=>profiles[id].email===normalized) ?? null;
+  return (Object.keys(profiles) as SignatureIdentity[]).find(id=>profiles[id].address===normalized) ?? null;
 };
 export function resolveMailSignature(sender:string, locale:SignatureLocale) {
   const identity=emailIdentity(sender);
@@ -32,7 +32,7 @@ export function resolveMailSignature(sender:string, locale:SignatureLocale) {
   const location=registry.locations[p.location as keyof typeof registry.locations];
   if(!location) return null;
   const address=location.lines.join(' · ');
-  const text=[name,role,'Mélodie Digital',p.email,'melodie.digital',address].join('\n');
-  const html=`<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;color:#173247;max-width:540px;"><tr><td style="padding:0 18px 0 0;vertical-align:top;border-right:2px solid #41cfff;"><a href="${esc(website)}" style="text-decoration:none;"><img src="${esc(logoUrl)}" width="110" alt="Mélodie Digital" style="width:110px;max-width:110px;height:auto;display:block;border:0;"></a></td><td style="padding:0 0 0 18px;vertical-align:top;font-size:13px;line-height:1.5;"><strong style="font-size:17px;color:#071f32;">${esc(name)}</strong><br><span style="color:#49677b;">${esc(role)}</span><br><strong style="color:#071f32;">Mélodie Digital</strong><br><a href="mailto:${esc(p.email)}" style="color:#087b9f;text-decoration:none;">${esc(p.email)}</a><br><a href="${esc(website)}" style="color:#087b9f;text-decoration:none;">melodie.digital</a><br><span style="color:#49677b;">${esc(address)}</span></td></tr></table>`;
-  return {identity, sender:p.email, locale, text, html};
+  const text=[name,role,'Mélodie Digital',p.address,'melodie.digital',address].join('\n');
+  const html=`<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;color:#173247;max-width:540px;"><tr><td style="padding:0 18px 0 0;vertical-align:top;border-right:2px solid #41cfff;"><a href="${esc(website)}" style="text-decoration:none;"><img src="${esc(logoUrl)}" width="110" alt="Mélodie Digital" style="width:110px;max-width:110px;height:auto;display:block;border:0;"></a></td><td style="padding:0 0 0 18px;vertical-align:top;font-size:13px;line-height:1.5;"><strong style="font-size:17px;color:#071f32;">${esc(name)}</strong><br><span style="color:#49677b;">${esc(role)}</span><br><strong style="color:#071f32;">Mélodie Digital</strong><br><a href="mailto:${esc(p.address)}" style="color:#087b9f;text-decoration:none;">${esc(p.address)}</a><br><a href="${esc(website)}" style="color:#087b9f;text-decoration:none;">melodie.digital</a><br><span style="color:#49677b;">${esc(address)}</span></td></tr></table>`;
+  return {identity, sender:p.address, locale, text, html};
 }
