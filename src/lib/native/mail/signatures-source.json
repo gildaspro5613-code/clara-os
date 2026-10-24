@@ -1,0 +1,92 @@
+{
+  "schema": "melodie.email-signatures.v1",
+  "status": "draft-visual-only",
+  "logoUrl": "https://melodie.digital/branding/melodie-m-master-rgba.png",
+  "web": "https://melodie.digital",
+  "locales": [
+    "fr",
+    "en",
+    "es",
+    "de",
+    "it"
+  ],
+  "identities": {
+    "clara": {
+      "address": "clara@melodie.digital",
+      "name": "Clara",
+      "role": {
+        "fr": "Collaboratrice numérique",
+        "en": "Digital collaborator",
+        "es": "Colaboradora digital",
+        "de": "Digitale Mitarbeiterin",
+        "it": "Collaboratrice digitale"
+      },
+      "location": "paris"
+    },
+    "gildas": {
+      "address": "gildas@melodie.digital",
+      "name": "Gildas Percevault",
+      "role": {
+        "fr": "Fondateur",
+        "en": "Founder",
+        "es": "Fundador",
+        "de": "Gründer",
+        "it": "Fondatore"
+      },
+      "location": "paris"
+    },
+    "support": {
+      "address": "support@melodie.digital",
+      "name": {
+        "fr": "Support technique",
+        "en": "Technical Support",
+        "es": "Soporte técnico",
+        "de": "Technischer Support",
+        "it": "Supporto tecnico"
+      },
+      "role": {
+        "fr": "Assistance Clara Live",
+        "en": "Clara Live support",
+        "es": "Asistencia Clara Live",
+        "de": "Clara Live Support",
+        "it": "Assistenza Clara Live"
+      },
+      "location": "paris"
+    },
+    "contact": {
+      "address": "contact@melodie.digital",
+      "name": "Mélodie Digital",
+      "role": {
+        "fr": "Contact",
+        "en": "Contact",
+        "es": "Contacto",
+        "de": "Kontakt",
+        "it": "Contatti"
+      },
+      "location": "paris"
+    },
+    "info": {
+      "address": "info@melodie.digital",
+      "name": "Mélodie Digital",
+      "role": {
+        "fr": "Informations générales",
+        "en": "General information",
+        "es": "Información general",
+        "de": "Allgemeine Informationen",
+        "it": "Informazioni generali"
+      },
+      "location": "paris"
+    }
+  },
+  "locations": {
+    "paris": {
+      "label": "Siège — Paris",
+      "lines": [
+        "231, rue Saint-Honoré",
+        "75001 Paris",
+        "France"
+      ]
+    }
+  },
+  "defaultLocation": "paris"
+}
