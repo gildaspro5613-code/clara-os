@@ -11,6 +11,12 @@ on:
       - 'db/migrations/028_canonical_stage_multidomain.sql'
       - 'src/tests/helpers/stage-authority-http.mts'
       - '.github/workflows/stage-approval-ui-qa.yml'
+      - 'src/lib/connectors/internal/lighting-console-configuration-server.ts'
+      - 'src/lib/connectors/internal/chamsys/magicq/configuration-repository.ts'
+      - 'src/app/api/external/lighting/onboarding/configuration/**'
+      - 'src/tests/magicq-configuration-postgres.test.ts'
+      - 'src/tests/helpers/magicq-configuration-http.mts'
+      - 'db/migrations/029_magicq_configuration_revision.sql'
 permissions:
   contents: read
 jobs:
@@ -34,6 +40,10 @@ jobs:
           done
           exit 1
       - run: node --import tsx --test src/tests/stage-approval-ui.test.ts src/tests/canonical-stage-routes.test.ts src/tests/canonical-stage-postgres.test.ts src/tests/canonical-stage-multidomain-postgres.test.ts src/tests/canonical-stage-multidomain-boundary.test.ts src/tests/canonical-registry-postgres.test.ts src/tests/voice-route-security.test.ts
+      - name: MagicQ configuration CAS, mapping preservation and scoped PostgreSQL
+        env:
+          MAGICQ_TEST_CONTAINER: clara-canonical-test-postgres
+        run: node --import tsx --test src/tests/magicq-configuration-postgres.test.ts src/tests/integration/magicq-persistence-udp.test.ts src/tests/integration/lighting-console-connections-v1.test.ts src/tests/integration/lighting-onboarding-session-v1.test.ts src/tests/integration/lighting-self-service-onboarding-v1.test.ts
       - run: npx tsc --noEmit
       - run: npx eslint src/app/stage-approval/route.ts src/tests/stage-approval-ui.test.ts
       - name: Remove isolated fixture

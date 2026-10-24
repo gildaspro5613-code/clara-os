@@ -1,0 +1,30 @@
+✔ grandMA3 configuration requires explicit OSC port and normalizes fixture mapping (1.496852ms)
+✔ grandMA3 configuration fails closed when OSC port is omitted (0.513966ms)
+✔ grandMA3 resolves fixture only through active workspace-owned Universal Connection (0.447388ms)
+✔ grandMA3 fails closed for wrong provider and missing fixture mapping (0.362163ms)
+✔ Titan configuration defaults to documented WebAPI port 4430 (0.169199ms)
+✔ Titan resolves API target only through active workspace-owned Universal Connection (0.200464ms)
+✔ Titan fails closed for inactive or cross-workspace connections (0.329084ms)
+✔ readiness session preserves configuration state without claiming certification (1.46835ms)
+✔ Titan readiness with automatic read-only stages becomes mapping-ready (0.159325ms)
+✔ simulation normalizes connection failure for Clara Live QA (0.431234ms)
+✔ simulation normalizes no-fixture and success states (0.171743ms)
+✔ MagicQ self-service plan requires CREP readiness and keeps network test disabled (1.600825ms)
+✔ grandMA3 self-service plan requires customer OSC readiness and does not claim connectivity (0.304908ms)
+✔ Titan self-service plan exposes certified read-only connection test and keeps writes disabled (0.271449ms)
+✔ self-service planning fails closed on workspace mismatch and inactive connections (0.484924ms)
+✔ self-service planning rejects unsupported providers and missing configuration (0.5302ms)
+✔ MagicQ connection configuration normalizes the default CREP port (1.247115ms)
+✔ MagicQ connection configuration rejects invalid channel mappings (0.526004ms)
+✔ MagicQ environment network gate is exact-match fail closed (0.284589ms)
+✔ real UDP sender validates datagrams without emitting network traffic (0.30611ms)
+✔ MagicQ real handlers/SQL: preserve, explicit replace/clear, atomic CAS, scope, revocation, integrity and invoker role (3689.731588ms)
+✔ additive migration preserves existing configuration, is repeatable, and detects revision alteration (1493.029389ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5846.918084
