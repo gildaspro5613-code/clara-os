@@ -28,3 +28,11 @@
 - Synchronisation : `node scripts/check-mail-signature-source.mjs` détecte les dérives (lecture seule). Une mise à jour locale n'est permise qu'avec `SIGNATURE_SOURCE_SYNC_APPROVED=yes node scripts/check-mail-signature-source.mjs --sync-local` ; schéma et 5 expéditeurs vérifiés, diff Git puis PR Draft et approbation humaine obligatoires. Aucune propagation automatique, aucun déploiement. L'accès GitHub au dépôt source doit être vérifié lors de la recette.
 - Langue : `verifyReplyLanguage` constitue une seconde vérification lexicale déterministe avant sauvegarde et rejette des contradictions évidentes entre corps et métadonnées. Messages ambigus non classifiés : **ce n'est pas un détecteur linguistique exhaustif**. Une qualification linguistique réelle sur corpus varié reste nécessaire avant certification complète.
 - Tests ajoutés : `src/tests/native-mail-language-source-gates.test.ts`. **À exécuter** en Codespaces avant GO final : tests ciblés, TypeScript, contrôle source, recette PostgreSQL.
+
+## Clôture de réception technique en isolation — 24 octobre 2026
+
+L'opérateur a exécuté sur le dernier commit de la branche (106d29a) : `CANONICAL_TEST_CONTAINER=clara-canonical-test-postgres node --import tsx --test src/tests/native-mail-postgres.test.ts` : **1 PASS, 0 FAIL**, durée totale 68,56 s. PostgreSQL a d'abord répondu `no response` juste après `docker start`, puis la recette a achevé ses vérifications avec succès. Les 22 tests ciblés et TypeScript avaient également réussi sur ce commit.
+
+Le registre officiel du site PR #21 et l'instantané OS PR #207 ont été comparés par l'intégration GitHub : contenus identiques (SHA blob `7e9c8764b1f24526949fe03d2a740dd0645cd419`). Le script lancé dans Codespaces reste bloqué par HTTP 404, donc la lecture automatisée inter-dépôts depuis Codespaces n'est **pas certifiée**.
+
+**Décision : GO clôture technique en isolation uniquement ; NO-GO Production, NO-GO fournisseur IONOS réel.** PR #207 maintenue en Draft ; aucun merge, déploiement ni SMTP réel. Le contrôle lexical ne garantit pas une classification linguistique exhaustive.
