@@ -21,9 +21,11 @@ test('25 HTML signatures are separate presentational artifacts with text-only co
 });
 test('native transport supports optional approved multipart HTML with text fallback',()=>{
  assert.match(transport,/interface MailEnvelope \{[^}]*text:string/);
- assert.doesNotMatch(transport,/interface MailEnvelope \{[^}]*html:string/);
- assert.match(transport,/subject:envelope.subject,text:envelope.text/);\n assert.match(transport,/html:envelope.html/);
- assert.match(nativeMail,/subject:draft.subject,text:draft.body/);\n assert.match(nativeMail,/encryptedSnapshot:encryptCredentialPayload\\(envelope\\)/);
+ assert.match(transport,/interface MailEnvelope \{[^}]*html\?:string/);
+ assert.match(transport,/subject:envelope.subject,text:envelope.text/);
+ assert.match(transport,/html:envelope.html/);
+ assert.match(nativeMail,/subject:draft.subject,text:draft.body/);
+ assert.match(nativeMail,/encryptedSnapshot:encryptCredentialPayload\(envelope\)/);
 });
 test('declared language parsing rejects invalid metadata but does not claim to independently detect language',()=>{
  assert.equal(replySignatureLocale(JSON.stringify({language:'it',body:'Hello there'}),'fr'),'it');
