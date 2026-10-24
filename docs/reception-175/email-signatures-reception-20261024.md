@@ -22,3 +22,9 @@
 `npx tsc --noEmit`
 
 **Verdict** : GO technique limité aux signatures textuelles en isolation, **NO-GO HTML envoyé, NO-GO synchronisation automatique, NO-GO Production**. PR #207 Draft empilée sur #199. Le site PR #21 est indépendant et reste en Draft.
+
+## Complément PR #207 — contrôles finaux (non réceptionnés à ce stade)
+- PostgreSQL multipart approuvé ↔ transport simulé : **PASS opérateur**, 1/1, 64,4 s sur commit `d727cc7` ; assertions de stricte égalité texte et HTML intégrées.
+- Synchronisation : `node scripts/check-mail-signature-source.mjs` détecte les dérives (lecture seule). Une mise à jour locale n'est permise qu'avec `SIGNATURE_SOURCE_SYNC_APPROVED=yes node scripts/check-mail-signature-source.mjs --sync-local` ; schéma et 5 expéditeurs vérifiés, diff Git puis PR Draft et approbation humaine obligatoires. Aucune propagation automatique, aucun déploiement. L'accès GitHub au dépôt source doit être vérifié lors de la recette.
+- Langue : `verifyReplyLanguage` constitue une seconde vérification lexicale déterministe avant sauvegarde et rejette des contradictions évidentes entre corps et métadonnées. Messages ambigus non classifiés : **ce n'est pas un détecteur linguistique exhaustif**. Une qualification linguistique réelle sur corpus varié reste nécessaire avant certification complète.
+- Tests ajoutés : `src/tests/native-mail-language-source-gates.test.ts`. **À exécuter** en Codespaces avant GO final : tests ciblés, TypeScript, contrôle source, recette PostgreSQL.
