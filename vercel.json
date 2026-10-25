@@ -9,5 +9,14 @@
       "path": "/api/internal/event-jobs-run",
       "schedule": "* * * * *"
     }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "integration/p0-stage-approval-ui": false,
+      "fix/canonical-stage-authority-20261022": false,
+      "proposal/stage-multidomain-contract": false,
+      "reception/stage-multidomain-authority": false,
+      "fix/magicq-config-revision": false
+    }
+  }
 }
