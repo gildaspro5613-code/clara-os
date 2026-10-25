@@ -7,6 +7,7 @@ import {randomUUID,createHash} from 'node:crypto';
 import {withNativeScope,nativeCommands,nativeMission,writableNativeContext} from '@/lib/native/scoped-context';
 import {nativeMailCommand} from '@/lib/native/mail-authority';
 import {NativeMail,sendNativeMail} from '@/lib/native/mail';
+import {prepareSignedMailDraft} from '@/lib/native/mail/signature-draft-preview';
 import {OpenAIResponsesEngine} from '@/lib/connectors/internal/openai/responses/openai-responses-engine';
 import type {RegistryQuery} from '@/lib/canonical/registry';
 import {seedNativeMailFixture,SimulatedMail} from './helpers/native-mail-fixture';
@@ -50,8 +51,8 @@ test('IONOS real PostgreSQL: two independent authorities, explicit bindings, exa
  // Synchronization repeats without duplicate rows. No contact inferred from From.
  await run(async()=>{await (await mail()).sync('INBOX');});assert.equal(Number(pg("SELECT COUNT(*) FROM clara_native_mail_messages WHERE connection_id='mail-clara'")),1);
  for(const r of [request('A',p2,'c1','p2'),request('A',p3,'c2','p3')]){await assert.rejects(()=>run(async()=>{await (await mail()).read(id);},r));await assert.rejects(()=>run(async()=>{await (await mail()).bind(id);},r));}
- const prompts:string[]=[];t.mock.method(OpenAIResponsesEngine.prototype,'generate',async(context:{prompt:string;instructions?:string;tools?:unknown[]})=>{prompts.push(context.instructions??context.prompt);assert.equal(context.tools,undefined);return {success:true,content:JSON.stringify({subject:'SAFE_REPLY',body:'Authorized response, please review.',sender:'attacker@example.invalid',send:true}),responseStatus:'completed'};});
- await run(async()=>{const r=await (await mail()).prepare(id,'en');assert.equal(r.draft.sender.email,'clara@melodie.digital');assert.deepEqual(r.draft.recipients,['correspondent@example.invalid']);});assert.ok(prompts.some(p=>p.includes('untrusted evidence')));assert.ok(prompts.some(p=>p.includes('same language, regardless of the Clara OS interface locale')));assert.ok(prompts.some(p=>p.includes('use anglais as the fallback language')));assert.equal(providerA.sent.length,0);
+ const prompts:string[]=[];t.mock.method(OpenAIResponsesEngine.prototype,'generate',async(context:{prompt:string;instructions?:string;tools?:unknown[]})=>{prompts.push(context.instructions??context.prompt);assert.equal(context.tools,undefined);return {success:true,content:JSON.stringify({subject:'SAFE_REPLY',body:'Authorized response, please review.',language:'en',sender:'attacker@example.invalid',send:true}),responseStatus:'completed'};});
+ await run(async()=>{const r=await (await mail()).prepare(id,'en');assert.equal(r.draft.sender.email,'clara@melodie.digital');assert.deepEqual(r.draft.recipients,['correspondent@example.invalid']);assert.match(r.draft.body,/Digital collaborator/);assert.match(r.draft.body,/clara@melodie\.digital/);});assert.ok(prompts.some(p=>p.includes('untrusted evidence')));assert.ok(prompts.some(p=>p.includes('same language, regardless of the Clara OS interface locale')));assert.ok(prompts.some(p=>p.includes('use anglais as the fallback language')));assert.equal(providerA.sent.length,0);
  await assert.rejects(()=>run(async()=>await (await mail()).saveDraft(id,{subject:'Attachment review',body:'Explicit reply',recipients:['recipient@example.invalid'],attachmentIds:['foreign-attachment']})));
  await run(async()=>await (await mail()).saveDraft(id,{subject:'Attachment review',body:'Explicit reply',recipients:['recipient@example.invalid'],attachmentIds:[attachmentId]}));
  const submit=()=>run(async()=>await (await mail()).submit());let operation=await submit();
@@ -79,11 +80,17 @@ test('IONOS real PostgreSQL: two independent authorities, explicit bindings, exa
  });
  const frozen=await run(async()=>await (await mail()).review(operation.operationId),request(),false);assert.equal(Buffer.from(frozen.envelope.attachments[0].content,'base64').toString(),'APPROVED_NOTE');assert.equal(frozen.envelope.attachments[0].sha256,attachmentId);
  // Editing any envelope field invalidates approval by the current Mission hash.
- await run(async()=>{await (await mail()).saveDraft(id,{subject:'Changed',body:'Changed content',recipients:['other@example.invalid'],attachmentIds:[]});});
+ await run(async()=>{await (await mail()).saveDraft(id,{subject:'Changed',body:prepareSignedMailDraft({sender:'clara@melodie.digital',locale:'en',body:'Changed content <untrusted> & reply'}).body,recipients:['other@example.invalid'],attachmentIds:[]});});
  await assert.rejects(()=>sendNativeMail(request(),'mail-clara',operation.operationId,approved.token,factory,query));assert.equal(providerA.sent.length,0);
- operation=await submit();const approval=await run(async()=>await (await mail()).approve(operation.operationId));
+ operation=await submit();const multipartReview=await run(async()=>await (await mail()).review(operation.operationId),request(),false);
+ assert.ok(multipartReview.envelope.html,'Multipart HTML must be frozen into encrypted review snapshot');
+ assert.match(multipartReview.envelope.html, /Changed content &lt;untrusted&gt; &amp; reply/);
+ assert.match(multipartReview.envelope.text, /Changed content <untrusted> & reply/);
+ const approval=await run(async()=>await (await mail()).approve(operation.operationId));
  const race=await Promise.allSettled([sendNativeMail(request(),'mail-clara',operation.operationId,approval.token,factory,query),sendNativeMail(request(),'mail-clara',operation.operationId,approval.token,factory,query)]);
- assert.equal(race.filter(r=>r.status==='fulfilled').length,1);assert.equal(providerA.sent.length,1);assert.equal(pg(`SELECT state FROM clara_native_mail_operations WHERE id='${operation.operationId}'`).trim(),'sent');
+ assert.equal(race.filter(r=>r.status==='fulfilled').length,1);assert.equal(providerA.sent.length,1);
+ assert.equal(providerA.sent[0].html,multipartReview.envelope.html,'Simulated SMTP HTML must exactly match owner-approved snapshot');
+ assert.equal(providerA.sent[0].text,multipartReview.envelope.text,'Simulated SMTP fallback must exactly match owner-approved snapshot');assert.equal(pg(`SELECT state FROM clara_native_mail_operations WHERE id='${operation.operationId}'`).trim(),'sent');
  await assert.rejects(()=>sendNativeMail(request(),'mail-clara',operation.operationId,approval.token,factory,query));assert.equal(providerA.sent.length,1);
  // Delegate can read/prepare, never approve/send as mailbox owner by admin role.
  await run(()=>nativeMailCommand('delegate',{connectionId:'mail-clara',userId:'b'}));await run(async()=>{assert.equal((await (await mail()).read(id)).subject,providerA.content.subject);},request('B',b),false);

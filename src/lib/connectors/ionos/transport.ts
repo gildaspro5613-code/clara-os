@@ -8,7 +8,7 @@ export interface MailContent {subject:string;from:string;to:string[];text:string
 export interface MailCredentials {address:string;password:string;imapHost:string;imapPort:number;smtpHost:string;smtpPort:number;folders:string[];configurationReviewed:boolean}
 export interface MailCursor {uidValidity?:string;lastUid:number}
 export interface MailSync {uidValidity:string;uids:number[];lastUid:number;messages:Array<{uid:number;content:MailContent}>}
-export interface MailEnvelope {from:string;to:string[];subject:string;text:string;messageId:string;inReplyTo?:string;attachments:MailAttachment[]}
+export interface MailEnvelope {from:string;to:string[];subject:string;text:string;html?:string;messageId:string;inReplyTo?:string;attachments:MailAttachment[]}
 export interface MailTransport {
  folders():Promise<string[]>;
  sync(folder:string,cursor:MailCursor):Promise<MailSync>;
@@ -78,7 +78,7 @@ export class IonosTransport extends IonosReadTransport implements MailTransport 
  async send(envelope:MailEnvelope):Promise<'sent'|'failed'|'uncertain'>{
   const c=this.credentials;if(envelope.from!==c.address)throw Error('MAIL_SENDER_DENIED');
   const transport=nodemailer.createTransport({host:c.smtpHost,port:c.smtpPort,secure:c.smtpPort===465,requireTLS:true,auth:{user:c.address,pass:c.password},tls:{rejectUnauthorized:true,minVersion:'TLSv1.2'},connectionTimeout:10000,greetingTimeout:10000,socketTimeout:15000,logger:false,debug:false,disableFileAccess:true,disableUrlAccess:true});
-  try{const info=await transport.sendMail({from:mailAddress(envelope.from),to:envelope.to.map(mailAddress),subject:envelope.subject,text:envelope.text,messageId:envelope.messageId,inReplyTo:envelope.inReplyTo,attachments:envelope.attachments.map(a=>({filename:a.name,content:Buffer.from(a.content,'base64'),contentType:a.type})),disableFileAccess:true,disableUrlAccess:true});return info.accepted.length===envelope.to.length?'sent':'uncertain';}
+  try{const info=await transport.sendMail({from:mailAddress(envelope.from),to:envelope.to.map(mailAddress),subject:envelope.subject,text:envelope.text,...(envelope.html?{html:envelope.html}:{}),messageId:envelope.messageId,inReplyTo:envelope.inReplyTo,attachments:envelope.attachments.map(a=>({filename:a.name,content:Buffer.from(a.content,'base64'),contentType:a.type})),disableFileAccess:true,disableUrlAccess:true});return info.accepted.length===envelope.to.length?'sent':'uncertain';}
   catch(error){const e=error as {code?:string;command?:string};return ['EAUTH','EDNS'].includes(e.code??'')||(e.code==='ECONNECTION'&&e.command==='CONN')?'failed':'uncertain';}
   finally{transport.close();}
  }
