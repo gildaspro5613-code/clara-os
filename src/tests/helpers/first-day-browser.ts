@@ -6,6 +6,7 @@ import type {BrowserContext,Page} from 'playwright';
 import type {TestContext} from 'node:test';
 import {seedNativeMailFixture,SimulatedMail} from './native-mail-fixture';
 import {nativeMailRouteFixture} from './native-mail-route-fixture';
+import {prepareSignedMailDraft} from '@/lib/native/mail/signature-draft-preview';
 import {OpenAIResponsesEngine} from '@/lib/connectors/internal/openai/responses/openai-responses-engine';
 
 /** Isolated acceptance extension, using existing services and PostgreSQL.
@@ -23,7 +24,9 @@ export async function firstDayBrowser(t:TestContext,page:Page,context:BrowserCon
  };
  process.env.CLARA_CREDENTIALS_ENCRYPTION_KEY=Buffer.alloc(32,9).toString('base64');
  const handlers=nativeMailRouteFixture(query,()=>provider);
- t.mock.method(OpenAIResponsesEngine.prototype,'generate',async()=>({success:true,content:JSON.stringify({language:'fr',subject:'J1_BROUILLON_VERIFIE',body:'Brouillon synthétique à relire. Aucune communication effectuée.'}),responseStatus:'completed'}));
+ const draftBody='Synthetic draft for review. No communication has been performed.';
+ const signedBody=prepareSignedMailDraft({sender:'clara@melodie.digital',locale:'en',body:draftBody}).body;
+ t.mock.method(OpenAIResponsesEngine.prototype,'generate',async()=>({success:true,content:JSON.stringify({language:'en',subject:'J1_BROUILLON_VERIFIE',body:draftBody}),responseStatus:'completed'}));
  await context.route('**/api/native/mail**',async route=>{
   const r=route.request(),method=r.method() as 'GET'|'POST';
   const response=await handlers[method](new Request(r.url(),{method,headers:await r.allHeaders(),...(method==='POST'?{body:r.postData()!}:{})}));
@@ -41,18 +44,20 @@ export async function firstDayBrowser(t:TestContext,page:Page,context:BrowserCon
  await agenda.getByLabel('Identifiant explicite du calendrier',{exact:true}).fill('calendar-a');
  await agenda.getByRole('button',{name:'Vérifier la ressource',exact:true}).click();
  await Promise.all([page.waitForEvent('load'),agenda.getByRole('button',{name:'Confirmer le rattachement au projet',exact:true}).click()]);
- await agenda.getByRole('button',{name:'Consulter les événements autorisés',exact:true}).click();await agenda.getByText(/J1_RENDEZ_VOUS_CONFIRME/).waitFor();
+ await agenda.getByRole('button',{name:'Consulter les événements autorisés',exact:true}).click({timeout:90000});await agenda.getByText(/J1_RENDEZ_VOUS_CONFIRME/).waitFor();
  await page.goto(origin+'/messagerie');const panel=page.getByRole('region',{name:'Messagerie professionnelle',exact:true});
  await panel.getByLabel('Boîte email',{exact:true}).selectOption('mail-clara');await panel.getByRole('button',{name:'Dossiers autorisés',exact:true}).click();await panel.getByLabel('Dossier',{exact:true}).selectOption('INBOX');await panel.getByRole('button',{name:'Synchroniser',exact:true}).click();
  await panel.getByRole('button',{name:/correspondent@example.invalid/}).click();await panel.getByText(/UNTRUSTED_MAIL/).waitFor();
  await Promise.all([page.waitForEvent('load'),panel.getByRole('button',{name:'Rattacher au contact et à la mission',exact:true}).click()]);
  const open=async()=>{await panel.getByLabel('Boîte email',{exact:true}).selectOption('mail-clara');await panel.getByRole('button',{name:'Actualiser',exact:true}).click();await panel.getByRole('button',{name:/correspondent@example.invalid/}).click();await panel.getByText(/UNTRUSTED_MAIL/).waitFor();};await open();
  await panel.getByRole('button',{name:'Préparer une réponse avec Clara',exact:true}).click();await panel.getByLabel('Objet',{exact:true}).waitFor();assert.equal(await panel.getByLabel('Objet',{exact:true}).inputValue(),'J1_BROUILLON_VERIFIE');
- await panel.getByRole('button',{name:'Soumettre le brouillon enregistré',exact:true}).click();await panel.getByRole('button',{name:'Relire le contenu figé',exact:true}).click();await panel.getByText('Brouillon synthétique à relire. Aucune communication effectuée.',{exact:true}).waitFor();
+ await panel.getByRole('button',{name:'Soumettre le brouillon enregistré',exact:true}).click();await panel.getByRole('button',{name:'Relire le contenu figé',exact:true}).click();await panel.getByText(signedBody,{exact:true}).waitFor();
  assert.equal(provider.sent.length,0);
  await page.goto(origin+'/');await page.getByRole('list',{name:'Opérations de courrier enregistrées'}).first().getByRole('link',{name:'À approuver',exact:true}).waitFor();
  await page.getByRole('link',{name:'À approuver',exact:true}).first().click();await page.waitForURL(origin+'/messagerie');await open();await panel.getByRole('button',{name:'Relire le contenu figé',exact:true}).click();
- await panel.getByRole('button',{name:'Approuver en tant que propriétaire',exact:true}).click();await panel.getByRole('button',{name:'Envoyer le message approuvé',exact:true}).waitFor();assert.equal(provider.sent.length,0);
+ await Promise.all([page.waitForResponse(r=>r.url().includes('/api/native/mail')&&r.request().method()==='POST'&&r.request().postDataJSON()?.action==='approve'&&r.status()===200),panel.getByRole('button',{name:'Approuver en tant que propriétaire',exact:true}).click()]);
+ assert.equal(pg("SELECT state FROM clara_native_mail_operations"),'approved','The approval must be durably committed before leaving the page');
+ await panel.getByRole('button',{name:'Envoyer le message approuvé',exact:true}).waitFor();assert.equal(provider.sent.length,0);
  await page.goto(origin+'/');await page.getByRole('link',{name:'Approuvé',exact:true}).first().waitFor();assert.equal(await page.getByText('Transmission SMTP acceptée',{exact:false}).count(),0);await page.getByText('J1_RENDEZ_VOUS_CONFIRME',{exact:true}).first().waitFor();
  const before=pg("SELECT count(*) FROM clara_native_mail_operations");await page.reload();await page.getByRole('link',{name:'Approuvé',exact:true}).first().waitFor();assert.equal(pg("SELECT count(*) FROM clara_native_mail_operations"),before);
  await page.goto(origin+'/journal');await page.getByText('MAIL_APPROVED',{exact:true}).first().waitFor();assert.equal(await page.getByText('MAIL_SEND_SENT',{exact:true}).count(),0);
