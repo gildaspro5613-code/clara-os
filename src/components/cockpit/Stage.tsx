@@ -63,20 +63,12 @@ export default async function Stage({ session, acquisition, nativeScope = false 
 
       {native&&<div className="pointer-events-auto absolute right-[5%] top-[36%] z-20 hidden w-[28%] max-w-[420px] lg:block"><MailOverviewPanel /></div>}
 
-      <div className="pointer-events-none absolute left-4 right-4 top-[12%] z-20 flex flex-col gap-3 lg:hidden">
-        <div className="pointer-events-auto">
-          <BriefPanel session={session} acquisition={acquisition} />
-        </div>
-      </div>
-
-      <div className="pointer-events-none absolute left-4 right-4 top-[38%] z-20 flex flex-col gap-3 lg:hidden">
-        {native&&<div className="pointer-events-auto"><MailOverviewPanel /></div>}
-      </div>
-
-      <div className="pointer-events-none absolute left-4 right-4 top-[58%] z-20 flex flex-col gap-3 lg:hidden">
-        <div className="pointer-events-auto">
-          <MissionPanel mission={mission} />
-        </div>
+      {/* Mobile: keep panels in document flow so long text and translated
+          content never overlap at fixed viewport percentages. */}
+      <div className="relative z-20 flex w-full min-w-0 flex-col gap-4 px-4 py-6 sm:px-6 lg:hidden">
+        <BriefPanel session={session} acquisition={acquisition} />
+        {native&&<MailOverviewPanel />}
+        <MissionPanel mission={mission} />
       </div>
     </>
   );
