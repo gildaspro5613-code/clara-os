@@ -1,3 +1,4 @@
+import { assertRecetteExternalExecutionBlocked } from "@/lib/recette/external-execution-guard";
 const MICROSOFT_GRAPH_BASE_URL = "https://graph.microsoft.com/v1.0";
 
 export interface MicrosoftCloudPc {
@@ -12,6 +13,7 @@ export class MicrosoftGraphClient {
   constructor(private readonly accessToken: string) {}
 
   private async request<T>(path: string): Promise<T> {
+    assertRecetteExternalExecutionBlocked('microsoft.graph');
     const response = await fetch(`${MICROSOFT_GRAPH_BASE_URL}${path}`, {
       headers: {
         Authorization: `Bearer ${this.accessToken}`,

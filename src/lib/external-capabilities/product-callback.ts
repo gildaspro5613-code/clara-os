@@ -1,3 +1,4 @@
+import { assertRecetteExternalExecutionBlocked } from "@/lib/recette/external-execution-guard";
 import type { ExternalProductConfig } from "./config";
 
 export interface ExternalProductExecutionRequest {
@@ -18,6 +19,7 @@ export async function executeExternalProductCapability(
   // Native certification remains separate: bounded transport is not user/project
   // authorization, operation attestation, or an atomic cross-product transaction.
   if (product.productId === "clara-live") return executeLiveCallback(product, request);
+  assertRecetteExternalExecutionBlocked("external-product.callback");
   const response = await fetch(`${product.callbackBaseUrl}/api/core/capabilities/execute`, {
     method: "POST",
     headers: {
@@ -46,6 +48,7 @@ async function executeLiveCallback(product: ExternalProductConfig, request: Exte
   const timer = setTimeout(() => controller.abort(), 5_000);
   const failed = { success: false, message: "Clara Live result unavailable; reconcile before retrying." };
   try {
+    assertRecetteExternalExecutionBlocked("external-product.callback");
     const response = await fetch(`${product.callbackBaseUrl}/api/core/capabilities/execute`, {
       method: "POST", redirect: "error", signal: controller.signal,
       headers: { Authorization: `Bearer ${product.token}`, "x-clara-product": product.productId,

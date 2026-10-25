@@ -1,3 +1,4 @@
+import { assertRecetteExternalExecutionBlocked } from "@/lib/recette/external-execution-guard";
 import type { WeatherContext } from "./weather-context";
 import type { WeatherResult } from "./weather-result";
 
@@ -8,6 +9,8 @@ export class WeatherEngine {
   public async read(
     context: WeatherContext,
   ): Promise<WeatherResult> {
+
+    assertRecetteExternalExecutionBlocked("weather.read");
 
     const apiKey = process.env.WEATHER_API_KEY;
 

@@ -1,3 +1,4 @@
+import { assertRecetteExternalExecutionBlocked } from "@/lib/recette/external-execution-guard";
 import { normalizeBrevoError } from "./error";
 import type {
   BrevoCampaign,
@@ -46,6 +47,7 @@ export class BrevoClient {
   }
 
   private async request<T>(path: string, init: RequestInit = {}): Promise<T> {
+    assertRecetteExternalExecutionBlocked("brevo.api");
     const response = await this.fetcher(`${this.baseUrl}${path}`, {
       ...init,
       headers: {

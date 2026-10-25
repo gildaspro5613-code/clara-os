@@ -1,3 +1,4 @@
+import { assertRecetteExternalExecutionBlocked } from "@/lib/recette/external-execution-guard";
 import {nativeContext} from "@/lib/native/scoped-context";
 import { google } from "googleapis";
 import type { Credentials } from "google-auth-library";
@@ -15,6 +16,7 @@ export const GOOGLE_OAUTH_SCOPES = [
 ] as const;
 
 export function createGoogleOAuthClient() {
+  assertRecetteExternalExecutionBlocked("google.workspace-oauth");
   if (!googleConfig.clientId || !googleConfig.clientSecret || !googleConfig.redirectUri) {
     throw new Error("Google OAuth server configuration is incomplete.");
   }

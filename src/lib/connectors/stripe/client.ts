@@ -1,3 +1,4 @@
+import { assertRecetteExternalExecutionBlocked } from "@/lib/recette/external-execution-guard";
 import type {
   StripeBillingPortalInput,
   StripeBillingPortalResult,
@@ -48,6 +49,7 @@ export class StripeClient {
   }
 
   private async request<T>(path: string, init: RequestInit = {}): Promise<T> {
+    assertRecetteExternalExecutionBlocked("stripe.api");
     const headers = new Headers(init.headers);
     headers.set("authorization", `Bearer ${this.secretKey}`);
     if (init.body) headers.set("content-type", "application/x-www-form-urlencoded");

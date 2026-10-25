@@ -48,7 +48,7 @@ export interface CapabilityToolBridgeResult {
   readonly message: string;
   readonly content?: string;
   readonly completedAt: Date;
-  readonly code?: "PLAN_REQUIRED" | "APPROVAL_REQUIRED";
+  readonly code?: "PLAN_REQUIRED" | "APPROVAL_REQUIRED" | "RECETTE_EXTERNAL_EXECUTION_DENIED";
   readonly approvalRequest?: ToolApprovalRequest;
 }
 

@@ -1,3 +1,4 @@
+import { assertRecetteExternalExecutionBlocked } from "@/lib/recette/external-execution-guard";
 import { createPublicKey, verify } from "node:crypto";
 import { sql } from "@/lib/core/store/database";
 import { completeVerifiedSignIn } from "./verified-sign-in";
@@ -41,6 +42,7 @@ function decodePart<T>(part: string): T {
 }
 
 async function signingKey(tenantId: string, kid: string): Promise<MicrosoftJwk> {
+  assertRecetteExternalExecutionBlocked('auth.provider-sign-in');
   const response = await fetch(`${MICROSOFT_HOST}/${encodeURIComponent(tenantId)}/discovery/v2.0/keys`, { cache: "no-store" });
   if (!response.ok) throw new Error("MICROSOFT_JWKS_UNAVAILABLE");
   const body = await response.json() as { keys?: MicrosoftJwk[] };
@@ -64,6 +66,7 @@ export function microsoftSignInAuthorizationUrl(state: string, nonce: string): s
 }
 
 async function exchangeCode(code: string): Promise<string> {
+  assertRecetteExternalExecutionBlocked("auth.provider-sign-in");
   const { tenantId, clientId, clientSecret, redirectUri } = configuredSignIn();
   const response = await fetch(`${MICROSOFT_HOST}/${encodeURIComponent(tenantId)}/oauth2/v2.0/token`, {
     method: "POST",
