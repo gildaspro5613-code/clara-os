@@ -1,0 +1,211 @@
+{
+  "os": [
+    {
+      "file": "authenticated-workspace-validation.yml",
+      "events": [
+        "push",
+        "pull_request",
+        "workflow_dispatch"
+      ],
+      "deploymentIndicators": false,
+      "writeDisabledMarker": false
+    },
+    {
+      "file": "clara-live-execution-authority.yml",
+      "events": [
+        "push",
+        "workflow_dispatch"
+      ],
+      "deploymentIndicators": false,
+      "writeDisabledMarker": false
+    },
+    {
+      "file": "clara-os-independent-recette.yml",
+      "events": [
+        "workflow_dispatch"
+      ],
+      "deploymentIndicators": true,
+      "writeDisabledMarker": true
+    },
+    {
+      "file": "clara-os-recette-security.yml",
+      "events": [
+        "workflow_dispatch",
+        "pull_request"
+      ],
+      "deploymentIndicators": false,
+      "writeDisabledMarker": false
+    },
+    {
+      "file": "documents-workspace-validation.yml",
+      "events": [
+        "pull_request"
+      ],
+      "deploymentIndicators": false,
+      "writeDisabledMarker": false
+    },
+    {
+      "file": "i18n-consolidation-validation.yml",
+      "events": [
+        "pull_request"
+      ],
+      "deploymentIndicators": false,
+      "writeDisabledMarker": false
+    },
+    {
+      "file": "microsoft-connector-validation.yml",
+      "events": [
+        "push",
+        "pull_request",
+        "workflow_dispatch"
+      ],
+      "deploymentIndicators": false,
+      "writeDisabledMarker": false
+    },
+    {
+      "file": "native-authority-validation.yml",
+      "events": [
+        "pull_request"
+      ],
+      "deploymentIndicators": false,
+      "writeDisabledMarker": false
+    },
+    {
+      "file": "neon-preview-cleanup.yml",
+      "events": [
+        "pull_request"
+      ],
+      "deploymentIndicators": false,
+      "writeDisabledMarker": false
+    },
+    {
+      "file": "production-p0-validation.yml",
+      "events": [
+        "push",
+        "pull_request"
+      ],
+      "deploymentIndicators": false,
+      "writeDisabledMarker": false
+    },
+    {
+      "file": "stage-approval-ui-qa.yml",
+      "events": [
+        "pull_request"
+      ],
+      "deploymentIndicators": false,
+      "writeDisabledMarker": false
+    }
+  ],
+  "live": [
+    {
+      "file": "analysis-report-ui-qa.yml",
+      "events": [
+        "pull_request"
+      ],
+      "deploymentIndicators": false,
+      "writeDisabledMarker": false
+    },
+    {
+      "file": "business-workspaces-qa.yml",
+      "events": [
+        "pull_request"
+      ],
+      "deploymentIndicators": false,
+      "writeDisabledMarker": false
+    },
+    {
+      "file": "library-qa.yml",
+      "events": [
+        "pull_request",
+        "workflow_dispatch"
+      ],
+      "deploymentIndicators": false,
+      "writeDisabledMarker": false
+    },
+    {
+      "file": "lot3a-isolated-qa.yml",
+      "events": [
+        "pull_request"
+      ],
+      "deploymentIndicators": false,
+      "writeDisabledMarker": false
+    },
+    {
+      "file": "mq50-protocol-offline.yml",
+      "events": [
+        "pull_request",
+        "push",
+        "workflow_dispatch"
+      ],
+      "deploymentIndicators": false,
+      "writeDisabledMarker": false
+    },
+    {
+      "file": "navigation-performance-qa.yml",
+      "events": [
+        "pull_request"
+      ],
+      "deploymentIndicators": false,
+      "writeDisabledMarker": false
+    },
+    {
+      "file": "production-advice-qa.yml",
+      "events": [
+        "pull_request"
+      ],
+      "deploymentIndicators": false,
+      "writeDisabledMarker": false
+    },
+    {
+      "file": "professional-workspaces-qa.yml",
+      "events": [
+        "pull_request"
+      ],
+      "deploymentIndicators": false,
+      "writeDisabledMarker": false
+    },
+    {
+      "file": "python-import-qa.yml",
+      "events": [
+        "pull_request",
+        "push"
+      ],
+      "deploymentIndicators": false,
+      "writeDisabledMarker": false
+    },
+    {
+      "file": "runtime-qa.yml",
+      "events": [
+        "pull_request",
+        "push"
+      ],
+      "deploymentIndicators": false,
+      "writeDisabledMarker": false
+    },
+    {
+      "file": "spatial-production-build-qa.yml",
+      "events": [
+        "pull_request"
+      ],
+      "deploymentIndicators": false,
+      "writeDisabledMarker": false
+    },
+    {
+      "file": "spatial-ui-qa.yml",
+      "events": [
+        "pull_request"
+      ],
+      "deploymentIndicators": false,
+      "writeDisabledMarker": false
+    },
+    {
+      "file": "stage-model-lot2-qa.yml",
+      "events": [
+        "pull_request"
+      ],
+      "deploymentIndicators": false,
+      "writeDisabledMarker": false
+    }
+  ],
+  "conclusion": "Workflow YAML parses. Candidate delivery refs not covered by versioned Vercel exclusions; external hooks/settings not accessible. Publication remains blocked. No workflow dispatched."
+}

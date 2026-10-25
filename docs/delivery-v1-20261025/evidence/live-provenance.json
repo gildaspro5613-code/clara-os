@@ -1,0 +1,335 @@
+[
+  {
+    "baseRefName": "fix/magicq-config-recovery",
+    "headRefName": "reception/cognitive-provider-readiness",
+    "headRefOid": "b17cf916ae9bf946281165f6a4021a961718ce46",
+    "isDraft": true,
+    "number": 334,
+    "title": "docs(reception): real cognition blocked by provider and gateway access",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "reception/targeted-show-connectors",
+    "headRefName": "fix/magicq-config-recovery",
+    "headRefOid": "16cbbb2a5d4d7d7f13741c16c3d0220929620ad0",
+    "isDraft": true,
+    "number": 333,
+    "title": "fix(magicq): recover saved configuration without losing fixture mapping",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "reception/interop-connectors-audit",
+    "headRefName": "reception/targeted-show-connectors",
+    "headRefOid": "579506f8c1c408f40bc81c9ba9d3c26249461c70",
+    "isDraft": true,
+    "number": 332,
+    "title": "fix(reception): show preparation and connector onboarding integrity",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "reception/lot5-production",
+    "headRefName": "reception/interop-connectors-audit",
+    "headRefOid": "b365a7610f4467c36cacd3a5dc7263325c44ef1c",
+    "isDraft": true,
+    "number": 331,
+    "title": "fix(interop): receive offline MagicQ preparation and connector audit",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "reception/stage-multidomain-structure",
+    "headRefName": "reception/lot5-production",
+    "headRefOid": "7163870dd6d6fa1e8b407628b64fffc9ff48f28a",
+    "isDraft": true,
+    "number": 330,
+    "title": "feat(production): receive versioned multidiscipline dossier and six durable exports",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "reception/lot4-sound-video",
+    "headRefName": "reception/stage-multidomain-structure",
+    "headRefOid": "fdfdf05062f67d645ee4382b4c3f4dc287c3f767",
+    "isDraft": true,
+    "number": 329,
+    "title": "feat(stage): autorit\u00e9 multim\u00e9tier et premier parcours Structure durable",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "reception/lot3-light-finalisation",
+    "headRefName": "reception/lot4-sound-video",
+    "headRefOid": "0c8cc46e1d1de5409402a09e34bf028f4595c9bc",
+    "isDraft": true,
+    "number": 328,
+    "title": "feat(workshops): r\u00e9ception Light et premiers parcours Sound Video",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "reception/lot3-light-console",
+    "headRefName": "reception/lot3-light-finalisation",
+    "headRefOid": "b3c95007ee484f9ed67b069f39391e49351a176f",
+    "isDraft": true,
+    "number": 327,
+    "title": "feat(light): r\u00e9ception isol\u00e9e implantation cues et six exports durables",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "reception/lot2-completion-structure",
+    "headRefName": "reception/lot3-light-console",
+    "headRefOid": "0a4a137a8faf19ae2cdc4e5b41c934e59909e142",
+    "isDraft": true,
+    "number": 326,
+    "title": "feat(light): cues versionn\u00e9s, simulation locale et dossier technique durable",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "reception/global-functional-lot2",
+    "headRefName": "reception/lot2-completion-structure",
+    "headRefOid": "127ab2fafba8b2061c58a5385f3837ce32f5a86a",
+    "isDraft": true,
+    "number": 325,
+    "title": "feat(reception): documents durables, calculs et contr\u00f4les sourc\u00e9s ; diagnostic Structure",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "reception/global-functional-lot0-1",
+    "headRefName": "reception/global-functional-lot2",
+    "headRefOid": "ea6b7d4f8bc9071edf5d6f0d7fb9aaeded0fb277",
+    "isDraft": true,
+    "number": 324,
+    "title": "feat(tools): calculs born\u00e9s, contr\u00f4le d\u00e9claratif et rapports PDF durables",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "integration/p0-gdtf-mvr-stage",
+    "headRefName": "reception/global-functional-lot0-1",
+    "headRefOid": "91d72c73c47b72f71cf8e01b3ef18f94ab64ab84",
+    "isDraft": true,
+    "number": 323,
+    "title": "R\u00e9ception fonctionnelle \u2014 audit Lot 0 et navigation m\u00e9tier, sans d\u00e9ploiement",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "fix/canonical-stage-mutation-20261022",
+    "headRefName": "integration/p0-gdtf-mvr-stage",
+    "headRefOid": "befca0f4d660b038f877d498e1fce74f9d1a9989",
+    "isDraft": true,
+    "number": 322,
+    "title": "feat(reception): GDTF/MVR vers Stage canonique, validation m\u00e9tier et dossier durable",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "reception/lot2bis-canonical-light-stage",
+    "headRefName": "fix/canonical-stage-mutation-20261022",
+    "headRefOid": "8d14260de8ed6fa1110a6bba18f0547890e72d20",
+    "isDraft": true,
+    "number": 321,
+    "title": "feat(stage): OS-authorized canonical Light creation and atomic revisions",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "deploy/clara-live-api",
+    "headRefName": "feat/live-branding-on-production-base-20261022",
+    "headRefOid": "877237dde212113d3c808cfefe4a5477b8117583",
+    "isDraft": true,
+    "number": 320,
+    "title": "Clara Live: identit\u00e9 graphique sur base production (Draft)",
+    "includedByAncestry": false
+  },
+  {
+    "baseRefName": "main",
+    "headRefName": "feat/live-official-logo-20261022",
+    "headRefOid": "cef276a005947a631fbf0f0048211d646b966557",
+    "isDraft": true,
+    "number": 319,
+    "title": "Branding: int\u00e9grer le symbole Clara Live valid\u00e9 (Draft)",
+    "includedByAncestry": false
+  },
+  {
+    "baseRefName": "fix/voice-delegation-index-authority",
+    "headRefName": "feat/live-canonical-conversation-link-v1",
+    "headRefOid": "68d02cad772625428c458cf3ed23572513328c50",
+    "isDraft": true,
+    "number": 318,
+    "title": "feat(canonical): verify Live consent for OS conversation associations",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "fix/live-dashboard-operational-actions",
+    "headRefName": "fix/voice-delegation-index-authority",
+    "headRefOid": "1eb2fd1e15e056e326e2ff807989a4f9fb58529f",
+    "isDraft": true,
+    "number": 317,
+    "title": "fix(voice): enforce unique-index readiness before delegation writes",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "reception/lot2-light-stage-documents",
+    "headRefName": "reception/lot2bis-canonical-light-stage",
+    "headRefOid": "c027db8a4f2dbb8496a5a8f1e939c6f300e74b76",
+    "isDraft": true,
+    "number": 316,
+    "title": "Lot 2 bis \u2014 profils Library \u2192 Light, r\u00e9ception isol\u00e9e et blocage canonique",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "security/lot1-mvr-gdtf-reception",
+    "headRefName": "reception/lot2-light-stage-documents",
+    "headRefOid": "cf8f6ce28541a65b0f6a380ee6121a0f8e4101af",
+    "isDraft": true,
+    "number": 315,
+    "title": "Lot 2 \u2014 r\u00e9ception Light, Stage et PDF durable ; blocage canonique document\u00e9",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "security/lot1-mvr-gdtf-reception",
+    "headRefName": "fix/live-dashboard-operational-actions",
+    "headRefOid": "f273ebfef0b2b2fe37fdbbc87b8c69efea42d222",
+    "isDraft": true,
+    "number": 314,
+    "title": "fix(live): begin operational dashboard navigation reception",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "feat/live-operational-domain-navigation-312",
+    "headRefName": "security/lot1-mvr-gdtf-reception",
+    "headRefOid": "be61794897f7fe4a131cf98ec26ba714d0f82c9d",
+    "isDraft": true,
+    "number": 313,
+    "title": "Lot 1 \u2014 r\u00e9ception s\u00e9curit\u00e9 et int\u00e9grit\u00e9 MVR/GDTF",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "deploy/clara-live-api",
+    "headRefName": "feat/live-operational-domain-navigation-312",
+    "headRefOid": "d8ac52fbcb8ab2eb6f12ae49f4feaab37f905f7b",
+    "isDraft": true,
+    "number": 312,
+    "title": "Live: operational discipline sidebar and project subpages",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "feat/stage-model-professional-lot2",
+    "headRefName": "feat/light-show-simulation-lot3",
+    "headRefOid": "59076bdf7deb9b9eb7024d345cc177bbaab41431",
+    "isDraft": true,
+    "number": 306,
+    "title": "Light show simulation: saved fixture states and isolated 3D sequence playback",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "deploy/clara-live-api",
+    "headRefName": "feat/lot3a-isolated-authority-v2",
+    "headRefOid": "dd1636649dce889e3b735a0dcd1c1a6074651649",
+    "isDraft": true,
+    "number": 303,
+    "title": "Lot 3A P0: preserve canonical project context and conversation access",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "deploy/clara-live-api",
+    "headRefName": "test/cross-repo-os-live-auth-20261009",
+    "headRefOid": "c7f72cba4bfff778e8af19d00fd3e35935896ba7",
+    "isDraft": true,
+    "number": 275,
+    "title": "test: verify Clara Live \u2192 Clara OS authentication across repositories",
+    "includedByAncestry": false
+  },
+  {
+    "baseRefName": "deploy/clara-live-api",
+    "headRefName": "codex/ajouter-le-workflow-de-revision-de-proposition-01riw2",
+    "headRefOid": "b9acd0639514f83e3ac625abf30cff8f91fb991e",
+    "isDraft": false,
+    "number": 260,
+    "title": "Domain\u2011neutral Clara proposals, preserve V1 spatial compatibility, and add operator modification workflow/UI",
+    "includedByAncestry": false
+  },
+  {
+    "baseRefName": "deploy/clara-live-api",
+    "headRefName": "fix/gdtf-canonical-world-transform",
+    "headRefOid": "c21c7e4ef3890121d370d9f49f21d660e2b76c56",
+    "isDraft": false,
+    "number": 229,
+    "title": "GDTF Viewer: compose canonical child transforms explicitly",
+    "includedByAncestry": false
+  },
+  {
+    "baseRefName": "deploy/clara-live-api",
+    "headRefName": "fix/gdtf-r3f-render-state-crash",
+    "headRefOid": "a37d08003d0e5c81befde61d5d51a832cf753722",
+    "isDraft": false,
+    "number": 222,
+    "title": "GDTF Viewer: fix R3F render-state crash",
+    "includedByAncestry": false
+  },
+  {
+    "baseRefName": "deploy/clara-live-api",
+    "headRefName": "fix/gdtf-viewer-diagnostics",
+    "headRefOid": "a8d181c3f8cc00ca3d7a8a29792f3611cada34d5",
+    "isDraft": false,
+    "number": 221,
+    "title": "GDTF Viewer: expose runtime diagnostics",
+    "includedByAncestry": false
+  },
+  {
+    "baseRefName": "deploy/clara-live-api",
+    "headRefName": "fix/lighting-onboarding-connection-id-guard",
+    "headRefOid": "bc2adca30d3704a870fc9d8380d0a544354aa055",
+    "isDraft": false,
+    "number": 166,
+    "title": "Fix: guard lighting onboarding connection ID",
+    "includedByAncestry": false
+  },
+  {
+    "baseRefName": "deploy/clara-live-api",
+    "headRefName": "codex/fix-large-pdf-upload-process-d3kflo",
+    "headRefOid": "342e66d66369b230ec861b1261b2f8d862f498b7",
+    "isDraft": false,
+    "number": 162,
+    "title": "Direct browser->Vercel Blob uploads: backend handler, head verification and client changes",
+    "includedByAncestry": false
+  },
+  {
+    "baseRefName": "main",
+    "headRefName": "fix/stabilize-core-and-video-shell",
+    "headRefOid": "e95a091a37553e6db6ba119f778a200519abdf82",
+    "isDraft": false,
+    "number": 70,
+    "title": "feat: add Video environment shell for stabilized Clara Live",
+    "includedByAncestry": false
+  },
+  {
+    "baseRefName": "main",
+    "headRefName": "feat/horizon-tour-demo-project",
+    "headRefOid": "87e5d3897b5df15ad43a447fa6bdb34c8e042e22",
+    "isDraft": false,
+    "number": 68,
+    "title": "docs: establish Horizon Tour reference project",
+    "includedByAncestry": false
+  },
+  {
+    "baseRefName": "feat/auth-clara-live-v1",
+    "headRefName": "feat/runtime-autonomy-v1",
+    "headRefOid": "4b0bf847b210c2a3b89ff31c7d8d9001f8a3ec31",
+    "isDraft": true,
+    "number": 55,
+    "title": "feat(runtime): prepare Clara Live backend autonomy",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "main",
+    "headRefName": "feat/auth-clara-live-v1",
+    "headRefOid": "96021a48680d1e7eaa44187faff1ec38fb8f17c9",
+    "isDraft": false,
+    "number": 53,
+    "title": "feat(auth): make Clara Live authentication autonomous",
+    "includedByAncestry": false
+  },
+  {
+    "baseRefName": "main",
+    "headRefName": "fix/personalize-owner-dashboard",
+    "headRefOid": "e2ed1f6377bf63902df2fd2117e54ec038cf3967",
+    "isDraft": false,
+    "number": 51,
+    "title": "feat(ui): personalize Clara Live owner experience and branding",
+    "includedByAncestry": false
+  }
+]
