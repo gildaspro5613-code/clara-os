@@ -1,6 +1,6 @@
 # Livraison V1 intégrée Clara OS — conservation et réception isolée
 
-PR Draft à créer uniquement après attestation d'absence de déploiement automatique pour la nouvelle branche. Aucune PR créée dans cette mission à ce stade.
+Publication GitHub seule fondée sur les protections historiques retrouvées : voir publication-protection-evidence.md. Règle globale Production uniquement confirmée par le propriétaire ; pas de nouvelle configuration ni de déploiement volontaire. PR maintenue Draft, aucun merge autorisé.
 
 Le candidat rassemble les travaux existants et leurs dépendances dans une branche unique, sans réécrire les branches sources. La provenance exacte et les résolutions de conflits sont documentées dans ce dossier. Le périmètre reste gelé ; aucune activation fournisseur, aucun merge et aucun déploiement.
 
