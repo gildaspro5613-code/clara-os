@@ -1,9 +1,13 @@
 name: Native resource authority validation
 on:
   pull_request:
-    branches: [main, consolidation/clara-os-clean-base, fix/native-documents-brain-continuity-20261022]
+    branches: [main, consolidation/clara-os-clean-base, fix/native-documents-brain-continuity-20261022, fix/os-operational-reception-175]
     paths:
       - 'src/lib/native/**'
+      - 'src/lib/canonical/**'
+      - 'src/app/api/core/canonical/conversations/**'
+      - 'src/tests/canonical-conversation*'
+      - 'db/migrations/024_canonical_conversation_links.sql'
       - 'src/lib/canonical/stage-authority.ts'
       - 'src/app/api/core/canonical/stage/**'
       - 'src/app/api/native/stage/**'
@@ -108,7 +112,7 @@ jobs:
       - name: Existing job types, 026 upgrade compatibility and local restore
         run: node --import tsx --test src/tests/native-job-kind-compatibility.test.ts src/tests/v1-mission-identity.test.ts src/tests/native-runtime-proxy.test.mjs
       - name: Actual handlers and database isolation, revocation, snapshot and history
-        run: node --import tsx --test src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts src/tests/native-commercial-postgres.test.ts src/tests/native-mission-contact-postgres.test.ts src/tests/native-documents-postgres.test.ts src/tests/native-google-oauth.test.ts src/tests/native-mail-postgres.test.ts src/tests/native-mail-triage.test.ts src/tests/native-mail-monitor.test.ts src/tests/native-mail-monitor-postgres.test.ts src/tests/ionos-transport.test.ts src/tests/native-conversation-postgres.test.ts src/tests/native-functional-closure.test.ts src/tests/native-google-work-postgres.test.ts
+        run: node --import tsx --test src/tests/canonical-conversation-postgres.test.ts src/tests/canonical-conversation-routes.test.ts src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts src/tests/native-commercial-postgres.test.ts src/tests/native-mission-contact-postgres.test.ts src/tests/native-documents-postgres.test.ts src/tests/native-google-oauth.test.ts src/tests/native-mail-postgres.test.ts src/tests/native-mail-triage.test.ts src/tests/native-mail-monitor.test.ts src/tests/native-mail-monitor-postgres.test.ts src/tests/ionos-transport.test.ts src/tests/native-conversation-postgres.test.ts src/tests/native-functional-closure.test.ts src/tests/native-google-work-postgres.test.ts
       - name: Canonical Stage decision, native identity and restricted SQL role
         run: node --import tsx --test src/tests/canonical-stage*.test.ts
       - name: Existing Live callback bounded transport and authentication
