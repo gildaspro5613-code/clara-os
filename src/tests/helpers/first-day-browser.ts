@@ -23,7 +23,7 @@ export async function firstDayBrowser(t:TestContext,page:Page,context:BrowserCon
  };
  process.env.CLARA_CREDENTIALS_ENCRYPTION_KEY=Buffer.alloc(32,9).toString('base64');
  const handlers=nativeMailRouteFixture(query,()=>provider);
- t.mock.method(OpenAIResponsesEngine.prototype,'generate',async()=>({success:true,content:JSON.stringify({subject:'J1_BROUILLON_VERIFIE',body:'Brouillon synthétique à relire. Aucune communication effectuée.'}),responseStatus:'completed'}));
+ t.mock.method(OpenAIResponsesEngine.prototype,'generate',async()=>({success:true,content:JSON.stringify({language:'fr',subject:'J1_BROUILLON_VERIFIE',body:'Brouillon synthétique à relire. Aucune communication effectuée.'}),responseStatus:'completed'}));
  await context.route('**/api/native/mail**',async route=>{
   const r=route.request(),method=r.method() as 'GET'|'POST';
   const response=await handlers[method](new Request(r.url(),{method,headers:await r.allHeaders(),...(method==='POST'?{body:r.postData()!}:{})}));
