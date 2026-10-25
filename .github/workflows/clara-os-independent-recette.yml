@@ -28,20 +28,21 @@ jobs:
         run: |
           echo "::error::REST_WRITES_DISABLED — separate authorization and reviewed activation required"
           exit 1
+      # Preflight the approved application only. Writes remain disabled above and below.
       - name: Checkout approved source (never main)
         uses: actions/checkout@v4
         with:
-          ref: 6cfed8f80f9b8451d5698ca1040bcf42d513c4f2
+          ref: 4cb5f2e226eb118ba772a68671590fd7c8d1cd82
           persist-credentials: false
-          fetch-depth: 2
-      - name: Verify pinned Git source (no local artifact transformation)
+          fetch-depth: 1
+      - name: Verify pinned reception candidate
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "6cfed8f80f9b8451d5698ca1040bcf42d513c4f2"
+          test "$(git rev-parse HEAD)" = "4cb5f2e226eb118ba772a68671590fd7c8d1cd82"
           test "$(git remote get-url origin)" = "https://github.com/gildaspro5613-code/clara-os"
-          test "$(git cat-file -t 6cfed8f80f9b8451d5698ca1040bcf42d513c4f2)" = commit
-          test "$(git rev-parse 6cfed8f80f9b8451d5698ca1040bcf42d513c4f2^)" = "b2a51dd59381daa1e5d3278f3d7104b986015170"
-          test "$(git diff --name-only b2a51dd59381daa1e5d3278f3d7104b986015170 6cfed8f80f9b8451d5698ca1040bcf42d513c4f2)" = vercel.json
+          test "$(git cat-file -t 4cb5f2e226eb118ba772a68671590fd7c8d1cd82)" = commit
+      # Historical transport below remains unreachable and retains its own old
+      # cron-free artifact checks. Do not activate it for this candidate.
       - name: Set up deployment controller Node.js
         if: ${{ false }}
         uses: actions/setup-node@v4

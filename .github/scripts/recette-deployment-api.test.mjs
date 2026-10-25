@@ -59,7 +59,9 @@ test('workflow has three write locks and default read-only verification; exact s
  const config=yaml.load(workflow);
  assert.equal(config.on.workflow_dispatch.inputs.verify_only.default,true);
  assert.equal(config.jobs.deploy.environment,expected.slug);
- assert.equal(config.jobs.deploy.steps.find(s=>s.uses==='actions/checkout@v4').with.ref,expected.sha);
+ assert.equal(config.jobs.deploy.steps.find(s=>s.uses==='actions/checkout@v4').with.ref,'4cb5f2e226eb118ba772a68671590fd7c8d1cd82');
+ // Historical write transport is separately pinned and deliberately unreachable.
+ assert.equal(expected.sha,'6cfed8f80f9b8451d5698ca1040bcf42d513c4f2');
  assert.match(workflow,/secrets.VERCEL_RECETTE_TOKEN/);assert(!workflow.includes('secrets.VERCEL_TOKEN'));
  assert(workflow.includes('test "${{ github.run_attempt }}" = "1"'));
  const deployStep=config.jobs.deploy.steps.find(s=>s.name.startsWith('Deploy only custom'));
@@ -204,7 +206,11 @@ test('real source manifest includes every approved byte; Production schedules re
  delete base.crons;assert.deepEqual(recette,base);
  const localHead=String(git(['rev-parse','HEAD'])).trim();
  assert.notEqual(localHead,expected.sha);
- assert.deepEqual(git(['show',localHead+':vercel.json']),git(['show',expected.baseSha+':vercel.json']));
+ // The delivery candidate added Git publication exclusions after the historical
+ // transport artifact. Preserve its complete config, plus the original crons.
+ assert.deepEqual(git(['show',localHead+':vercel.json']),git(['show','4cb5f2e226eb118ba772a68671590fd7c8d1cd82:vercel.json']));
+ assert.deepEqual(JSON.parse(git(['show',localHead+':vercel.json'])).crons,
+   JSON.parse(git(['show',expected.baseSha+':vercel.json'])).crons);
  assert.throws(()=>git(['merge-base','--is-ancestor',expected.sha,localHead]));
  const actualGit=args=>args[0]==='remote'?fakeGit(args):args[0]==='rev-parse'&&args[1]==='HEAD'?Buffer.from(expected.sha):git(args);
  assert.equal(verifyApprovedSource(actualGit),undefined);

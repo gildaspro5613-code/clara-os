@@ -1,0 +1,45 @@
+✔ Live transport refuses success without a structured result (155.89763ms)
+✔ Live transport rejects oversized response before decoding and never retries (0.854289ms)
+✔ Live transport refuses redirects and binds its timeout to the body read (29.878685ms)
+✔ Live network and malformed responses fail without leaking errors or retrying (7.719043ms)
+✔ Live timeout aborts a stalled body and leaves an uncertain outcome without retry (5001.820085ms)
+✔ Recette blocks write/execute capabilities even with premium approval (2.051459ms)
+✔ Recette denies physical execution before credentials and transport (0.755869ms)
+✔ Recette denies direct Brevo client transport (0.466748ms)
+✔ Recette denies Google OAuth client before repository and provider access (3855.118114ms)
+✔ Recette denies native Google work before DB claim or HTTP (34.015917ms)
+✔ Recette denies ElevenLabs API before API key access and network (11.0395ms)
+✔ Recette denies Make webhook without invoking injected fetch (26.45785ms)
+✔ Recette denies telephony outbound call without provider credentials (3.929182ms)
+✔ Recette project identity denies external execution even with missing or incorrect runtime mode (0.822108ms)
+✔ Recette dedicated deployment marker denies external execution without runtime mode or project id (0.505194ms)
+✔ Recette IONOS IMAP and SMTP are denied before network (1077.226897ms)
+✔ Google-only Recette exception refuses incomplete, Production, foreign binding and unsafe callback configurations (4.420279ms)
+✔ real Google verifier and completion: signed identity only, one-time state, no Recette bootstrap, no business transport (852.775004ms)
+✔ actual start route refuses invalid Recette before transaction or redirect (358.042766ms)
+✔ actual database entry refuses ambiguous Recette before Neon client construction; outside Recette unchanged (188.768824ms)
+✔ Microsoft Graph denies Recette before invoking fetch (1.878013ms)
+✔ External product callback denies Recette before invoking fetch (0.718297ms)
+✔ Provider denials also activate from isolated Vercel project identity (0.688899ms)
+▶ five corrected boundaries deny before HTTP/SDK in every Recette detection mode; non-Recette contracts remain usable
+  ✔ zero HTTP/SDK calls for CLARA_OS_RUNTIME_MODE (4.541125ms)
+  ✔ zero HTTP/SDK calls for VERCEL_PROJECT_ID (1.752772ms)
+  ✔ zero HTTP/SDK calls for CLARA_RECETTE_MODE (1.040504ms)
+  ✔ zero HTTP/SDK calls for VERCEL_TARGET_ENV (1.542928ms)
+  ✔ outside Recette sign-in reaches only its simulated exchange; OAuth and Live payloads are unchanged (108.119396ms)
+✔ five corrected boundaries deny before HTTP/SDK in every Recette detection mode; non-Recette contracts remain usable (1304.229677ms)
+▶ attestation: real SDK, simulated control planes and READ ONLY SQL; no secret or fingerprint in reports
+  ✔ missing effective bindings are not attested, zero transport (3.574477ms)
+  ✔ production, URL override or fallback are refused before any API or SQL (1.357272ms)
+  ✔ unproven source/target and foreign branch never connect to SQL (104.938686ms)
+  ✔ positive attestation requires actual readonly SQL role result; owner is refused (17.688556ms)
+  ✔ unavailable permissions/transport never pass or expose exception values (0.915965ms)
+✔ attestation: real SDK, simulated control planes and READ ONLY SQL; no secret or fingerprint in reports (135.564127ms)
+ℹ tests 35
+ℹ suites 0
+ℹ pass 35
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6775.306385
