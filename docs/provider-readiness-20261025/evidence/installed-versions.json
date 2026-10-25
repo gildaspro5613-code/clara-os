@@ -1,0 +1,57 @@
+[
+  {
+    "package": "next",
+    "before": "16.4.3",
+    "after": "16.4.3"
+  },
+  {
+    "package": "googleapis",
+    "before": "174.0.0",
+    "after": "174.0.0"
+  },
+  {
+    "package": "twilio",
+    "before": "6.1.0",
+    "after": "6.1.0"
+  },
+  {
+    "package": "openai",
+    "before": "7.3.0",
+    "after": "7.3.0"
+  },
+  {
+    "package": "@elevenlabs/client",
+    "before": "1.17.0",
+    "after": "1.17.0"
+  },
+  {
+    "package": "nodemailer",
+    "before": "10.1.1",
+    "after": "10.1.4"
+  },
+  {
+    "package": "mailparser",
+    "before": "3.9.39",
+    "after": "3.9.43"
+  },
+  {
+    "package": "axios",
+    "before": "1.19.0",
+    "after": "1.20.0"
+  },
+  {
+    "package": "follow-redirects",
+    "before": "1.16.0",
+    "after": "1.16.1"
+  },
+  {
+    "package": "qs",
+    "before": "6.15.3",
+    "after": "6.16.1"
+  },
+  {
+    "package": "zod",
+    "before": "4.4.3",
+    "after": "4.6.7"
+  }
+]

@@ -1,0 +1,36 @@
+▶ native document continuity: existing structured contract, real ledger, atomic Journal and scoped cognition
+  ✔ structured proposal preserves evidence, rejects invented locators and flags hypotheses (18211.436929ms)
+  ✔ lost acknowledgement/restart replay returns encrypted receipt without another analysis or Journal (12247.396501ms)
+  ✔ a new explicit operation is journaled, conflicts remain unresolved across two documents (14688.314192ms)
+  ✔ ordinary Brain replanning preserves the mission documentary references (26734.05553ms)
+  ✔ fresh thread explicitly resuming the same mission restores documentary knowledge (11894.33201ms)
+  ✔ another project, another owner and revoked rights cannot consume stored evidence or receipts (15699.787727ms)
+  ✔ verified provider failure is a durable failed receipt; replay never calls the model again (19043.481488ms)
+  ✔ concurrent submission has one owner; SQL revocation at commit cannot leak a cached result (75083.550512ms)
+  ✔ migration 026 reapplies without discarding receipts/history and never grants PUBLIC execution (2710.977168ms)
+✔ native document continuity: existing structured contract, real ledger, atomic Journal and scoped cognition (240525.057681ms)
+▶ Google native workspace: real PostgreSQL, exact confirmations, immutable scopes, single handoff, recovery and existing stores
+  ✔ consent transactions retain actual grants and reject missing or partial scopes (22085.385445ms)
+  ✔ explicit resource binding, two users/clients/projects and historical/primary/root refusals (26995.728425ms)
+  ✔ prepared encrypted file, exact human confirmation and concurrent one-time execution/replay (69892.103449ms)
+  ✔ lost provider acknowledgement, read-only reconciliation, fresh service/reconnect and no automatic resend (35461.369415ms)
+  ✔ conditional calendar update and Drive content/move preserve IDs, metadata, rights and versions (157888.308489ms)
+  ✔ project and Google resource revocation, read-only delegations, expired consent/proposals (21900.030937ms)
+  ✔ read delegation never becomes write authority; second owner retains independent mailbox/project resources (39175.931819ms)
+  ✔ single HTTP handoff never retries errors; explicit precondition and refusal receipt release scope (36061.651731ms)
+  ✔ uncertain no-effect blocks new handoffs and inbound maintenance cannot consume or expire native Google receipts (14406.011702ms)
+  ✔ 020 additive reapplication and pg_dump restoration preserve every operation/attestation/receipt (4628.180053ms)
+✔ Google native workspace: real PostgreSQL, exact confirmations, immutable scopes, single handoff, recovery and existing stores (465591.920738ms)
+✔ Google import validation rejects oversized bodies, ambiguous identities, native document conversion and offset-less times (17.188921ms)
+▶ IONOS real PostgreSQL: two independent authorities, explicit bindings, exact approvals, concurrent single-use SMTP, revocation and durable restart
+  ✔ Cockpit projects pending canonical operations without transport, secrets or cross-project visibility (7722.136931ms)
+  ✔ Cockpit retains approved as recorded state, never SMTP acceptance (16505.481249ms)
+✔ IONOS real PostgreSQL: two independent authorities, explicit bindings, exact approvals, concurrent single-use SMTP, revocation and durable restart (349740.341433ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 25
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 476153.008857
