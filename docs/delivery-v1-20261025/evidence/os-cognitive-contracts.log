@@ -1,0 +1,41 @@
+✔ dedicated Live authenticates independently of JSON and rejects wrong or cross-product credentials (12.245746ms)
+✔ absent dedicated variables preserve legacy JSON authentication (0.614893ms)
+✔ dedicated Live overrides only its credentials and grants, preserving callback, other products and Studio (6.476952ms)
+✔ partial or invalid dedicated configuration never falls back or leaks supplied values (1.550228ms)
+✔ empty dedicated grants authenticate but cannot execute any gateway capability (55.879609ms)
+✔ empty JSON grants remain invalid for Live and other legacy products (0.547143ms)
+✔ dedicated products remain available with malformed legacy JSON, without inventing other grants (0.36917ms)
+✔ capabilities are explicit, trimmed and deduplicated; invalid callbacks are still rejected (0.637661ms)
+✔ existing Live event headers and unified scope authenticate without contract changes (75.803255ms)
+✔ dedicated HTTPS callback is independent of JSON and overrides only Live's destination (22.339168ms)
+✔ malformed or unsafe dedicated callbacks are refused without disclosing URL contents (2.070014ms)
+✔ callback transport appends the existing route exactly once with unchanged product authentication (17.012015ms)
+✔ document output budget is honored while other callers retain their ceiling; incomplete metadata survives (264.475293ms)
+✔ document failures retain real 500 and safe correlated categories, never fake success (2270.889274ms)
+✔ actual Live Work Cycle payload reaches Core with project identity preserved (483.771027ms)
+✔ slashes and JSON backslashes are valid text, never valid scope identifiers (167.363108ms)
+✔ malformed event bodies and invalid messages are explicitly refused (181.229155ms)
+✔ authentication precedes event validation and other product isolation is unchanged (241.83512ms)
+✔ correlated phase logs preserve status and exclude credentials and message contents (223.252253ms)
+✔ untrusted correlation headers are replaced and auth failures remain observable (153.424626ms)
+✔ Core failures identify the failed phase and real 500 without logging exception contents (52.580273ms)
+✔ durable documentary calls reserve once under concurrency and recover the stored result (54.58847ms)
+✔ operation IDs conflict on changed payload and status access is scoped and authenticated (56.032571ms)
+✔ a crash never authorizes another analysis and session failure cannot erase the completed document result (1017.456536ms)
+✔ new registry fails closed while legacy consumers do not require its migration (810.041722ms)
+✔ incomplete document output persists failure, never a fake completed result or a duplicate analysis (390.387683ms)
+▶ attestation: real SDK, simulated control planes and READ ONLY SQL; no secret or fingerprint in reports
+  ✔ missing effective bindings are not attested, zero transport (1.32995ms)
+  ✔ production, URL override or fallback are refused before any API or SQL (0.871394ms)
+  ✔ unproven source/target and foreign branch never connect to SQL (31.434527ms)
+  ✔ positive attestation requires actual readonly SQL role result; owner is refused (5.704493ms)
+  ✔ unavailable permissions/transport never pass or expose exception values (0.51032ms)
+✔ attestation: real SDK, simulated control planes and READ ONLY SQL; no secret or fingerprint in reports (42.683352ms)
+ℹ tests 32
+ℹ suites 0
+ℹ pass 32
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8567.60695
