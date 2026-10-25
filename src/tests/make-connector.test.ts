@@ -158,3 +158,21 @@ test('a pending Make acknowledgement is not announced as successful execution', 
   assert.equal((result.data as {executionStatus:string}).executionStatus,'accepted');
   assert.doesNotMatch(result.message??'',/executed successfully/i);
 });
+
+test('unqualified HTTP acknowledgements never certify a completed Make execution',async()=>{
+ for(const body of [null,'Accepted',{accepted:true},{status:'success'},{status:'unrecognized'},{status:'COMPLETED'}]){
+  let calls=0;const client=new MakeWebhookClient(async()=>{calls++;return typeof body==='string'?new Response(body):Response.json(body);});
+  const result=await client.execute({url:'https://hook.eu2.make.com/synthetic-only'},{scenarioKey:'crm-contact-sync'});
+  assert.equal(result.executionStatus,'accepted');assert.equal(calls,1);
+ }
+});
+
+test('contradictory provider statuses fail closed and ambiguous POST failures never authorize retry',async()=>{
+ const invocation={scenarioKey:'crm-contact-sync'},configuration={url:'https://hook.eu2.make.com/synthetic-only'};
+ const conflicting=new MakeWebhookClient(async()=>Response.json({executionStatus:'completed',status:'failed'}));
+ await assert.rejects(()=>conflicting.execute(configuration,invocation),error=>error instanceof MakeWebhookError&&!error.retryable);
+ for(const response of [new Error('Synthetic response lost'),new DOMException('Synthetic timeout','AbortError'),Response.json({error:'synthetic'},{status:503})]){
+  let calls=0;const client=new MakeWebhookClient(async()=>{calls++;if(response instanceof Error)throw response;return response;});
+  await assert.rejects(()=>client.execute(configuration,invocation),error=>error instanceof MakeWebhookError&&!error.retryable);assert.equal(calls,1);
+ }
+});

@@ -25,8 +25,12 @@ export default function TelephoniePage() {
   const [calling, setCalling] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // The existing reception fence applies to every UI path, including Enter.
+  // Enabling calls requires its own authorization; provider transport is intact.
+  const callAvailable = false;
 
   async function startCall() {
+    if (!callAvailable || calling) return;
     const toNumber = number.trim();
 
     if (!toNumber) {
@@ -137,7 +141,7 @@ export default function TelephoniePage() {
                       setError(null);
                     }}
                     onKeyDown={(event) => {
-                      if (event.key === "Enter" && !calling) {
+                      if (event.key === "Enter" && callAvailable && !calling) {
                         void startCall();
                       }
                     }}
@@ -162,7 +166,7 @@ export default function TelephoniePage() {
                   <button
                     type="button"
                     onClick={() => void startCall()}
-                    disabled title={ui("capabilityNotCertified")}
+                    disabled={!callAvailable || calling} title={ui("capabilityNotCertified")}
                     className="
                       inline-flex
                       items-center

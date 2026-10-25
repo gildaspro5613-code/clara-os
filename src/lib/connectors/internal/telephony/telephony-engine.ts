@@ -98,6 +98,8 @@ export class TelephonyEngine {
         conversation_id?: string;
         callSid?: string;
         detail?: unknown;
+        success?: boolean;
+        status?: string;
       };
 
       if (!response.ok) {
@@ -108,12 +110,21 @@ export class TelephonyEngine {
         );
       }
 
+      const identifier = (value: unknown) => typeof value === "string" && value.trim()
+        && value.length <= 256 && !/[\r\n\x00]/.test(value) ? value.trim() : undefined;
+      const conversationId = identifier(data.conversation_id);
+      const callSid = identifier(data.callSid);
+      if (data.success === false || ["failed", "error", "rejected", "cancelled"].includes(data.status?.toLowerCase() ?? "")
+        || (!conversationId && !callSid)) {
+        throw new Error("Telephony provider did not attest call initiation; do not retry automatically.");
+      }
+
       return {
         success: true,
         operation: "outbound-call",
         toNumber,
-        conversationId: data.conversation_id,
-        callSid: data.callSid,
+        conversationId,
+        callSid,
         message: "Clara est en train de lancer l'appel.",
         completedAt: new Date(),
       };
