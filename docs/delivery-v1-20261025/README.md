@@ -2,7 +2,7 @@
 
 ## Décision et portée
 
-Deux candidats intégrés sont préparés localement. Aucun push, création de PR, merge GitHub, déploiement, accès fournisseur métier ou changement de base distante n'a été effectué. Les assemblages Git ont lieu exclusivement dans les nouvelles branches locales ; aucune branche source n'est réécrite.
+Les deux candidats sont publiés dans les PR Draft OS #209 et Live #335. Le dossier initial fige les preuves prépublication ; voir publication-and-ci-followup.md pour la publication effective et les premiers échecs de recettes CI. Aucun merge GitHub, déploiement volontaire, accès fournisseur métier ou changement de base distante. Les assemblages Git ont lieu exclusivement dans les nouvelles branches locales ; aucune branche source n'est réécrite.
 
 **Protection de publication retrouvée** : les attestations globales « Only build production » pour OS/Live/Live API, l'absence de liaison Git du projet Recette au dernier précontrôle authentifié et les workflows manuels sont documentés dans [publication-protection-evidence.md](publication-protection-evidence.md). Le précédent blocage général fondé sur la seule absence de delivery/* dans les exclusions locales est retiré. Aucun réglage n'est changé ; aucune inspection actuelle Vercel n'est prétendue. Publication GitHub seule, sans merge ni déploiement volontaire, selon le GO conditionnel du propriétaire ; surveillance des métadonnées GitHub après publication.
 
