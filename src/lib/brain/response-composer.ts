@@ -1,4 +1,5 @@
 import {nativeContext} from "@/lib/native/scoped-context";
+import { authenticatedNativeCognitiveScope } from "@/lib/native/cognitive-scope";
 /**
  * ============================================
  * CLARA OS
@@ -148,6 +149,7 @@ export async function composeClaraResponseWithProposal(
     "Tu n'as aucun outil, aucune capability et aucune autorité d'exécution.",
     "Tu ne modifies pas la décision du Brain et tu ne prétends jamais avoir effectué une action.",
     "",
+    ...(authenticatedNativeCognitiveScope() ? [authenticatedNativeCognitiveScope()!, ""] : []),
     "IDENTITÉ UTILISATEUR",
     `Prénom : ${firstName ?? "non identifié"}`,
     "Utilise le prénom naturellement quand cela apporte de la chaleur ou de la continuité, sans le répéter mécaniquement à chaque réponse.",
