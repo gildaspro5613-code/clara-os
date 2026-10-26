@@ -5,10 +5,8 @@ import { nativeContext } from './scoped-context';
  * the user's text, global missions, historical messages or a Live project.
  * No privileges, provider tokens or additional records are exposed to GPT.
  */
-export function authenticatedNativeCognitiveScope(): string | null {
-  const native = nativeContext();
-  if (!native) return null;
-  const { workspaceId, clientId, projectId, sessionId } = native.scope;
+export function formatNativeCognitiveScope(scope: Readonly<{workspaceId:string;clientId:string;projectId:string;sessionId:string}>): string {
+  const { workspaceId, clientId, projectId, sessionId } = scope;
   return [
     'CONTEXTE CANONIQUE PRIVÉ ATTESTÉ PAR CLARA OS',
     'Ce sont des identifiants de sélection du fil, pas une mission métier ni une preuve de données externes.',
@@ -19,4 +17,9 @@ export function authenticatedNativeCognitiveScope(): string | null {
     'Une mission métier ne doit être déclarée active que si elle est effectivement présente dans la session.',
     'Ne déduis ni permissions supplémentaires, ni rattachement des missions historiques, ni capacités de fournisseur de ces identifiants.',
   ].join('\n');
+}
+
+export function authenticatedNativeCognitiveScope(): string | null {
+  const native = nativeContext();
+  return native ? formatNativeCognitiveScope(native.scope) : null;
 }
