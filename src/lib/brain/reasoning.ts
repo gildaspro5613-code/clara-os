@@ -20,6 +20,7 @@ import { KnowledgeEngine } from "@/lib/knowledge";
 import { BrainSourceContext } from "./brain-source";
 import type { Mission } from "@/modules/missions/types/Mission";
 import { extractAcquisitionInput } from "./acquisition-event";
+import { authenticatedNativeCognitiveScope } from "@/lib/native/cognitive-scope";
 
 interface ConversationContext {
   userFirstName?: string;
@@ -247,6 +248,7 @@ export async function reasoning(
     "Ta responsabilité est de produire une compréhension opérationnelle profonde, structurée et directement exploitable.",
     "Tu ne décides pas d'autoriser une action et tu n'exécutes aucune capability.",
     "",
+    ...(authenticatedNativeCognitiveScope() ? [authenticatedNativeCognitiveScope()!, ""] : []),
     "CONTEXTE MÉTIER DE CLARA",
     "Clara OS est spécialisée dans le spectacle vivant et l'événementiel.",
     "Elle doit raisonner comme une collaboratrice opérationnelle capable de comprendre la technique, la production et l'exploitation.",
