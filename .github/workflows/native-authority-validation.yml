@@ -27,6 +27,10 @@ on:
       - 'src/app/api/internal/prospect-e2e-trace/**'
       - 'src/app/**/*.tsx'
       - 'src/tests/operational-recovery*'
+      - 'src/tests/operational-delivery*'
+      - 'public/brand/**'
+      - 'src/app/icon.svg'
+      - 'src/i18n/messages/**'
       - 'src/tests/native-authority*'
       - 'src/tests/native-runtime*'
       - 'src/tests/native-mission-contact*'
@@ -164,6 +168,7 @@ jobs:
           PYDIAG
             exit 1
           fi
+          NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node src/tests/helpers/native-browser-diagnostics.mjs core --import tsx --test src/tests/operational-delivery-browser.e2e.mjs
           NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node src/tests/helpers/native-browser-diagnostics.mjs core --import tsx --test --test-concurrency=1 src/tests/native-runtime-browser.e2e.mjs src/tests/native-commercial-browser.e2e.mjs src/tests/native-documents-browser.e2e.mjs src/tests/native-mail-browser.e2e.mjs src/tests/native-conversation-browser.e2e.mjs src/tests/native-mission-contact-browser.e2e.mjs
           NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node src/tests/helpers/native-browser-diagnostics.mjs core --import tsx --test src/tests/native-functional-closure-browser.e2e.mjs
           NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node src/tests/helpers/native-browser-diagnostics.mjs core --import tsx --test src/tests/native-google-work-browser.e2e.mjs

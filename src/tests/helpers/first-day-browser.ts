@@ -15,6 +15,12 @@ import {OpenAIResponsesEngine} from '@/lib/connectors/internal/openai/responses/
 export async function firstDayBrowser(t:TestContext,page:Page,context:BrowserContext,connectionId:string,out:string){
  const origin=process.env.DOCUMENTS_E2E_ORIGIN!,db=process.env.NATIVE_TEST_DATABASE!;
  assert.equal(new URL(origin).hostname,'127.0.0.1');assert.match(db,/^native_browser_[a-f0-9]{32}$/);
+ // The real mail handler runs in this test process, not in Next's process.
+ // Configure the same exact expected origin here; never disable its CSRF check.
+ const previousOrigin=process.env.CLARA_AUTH_APP_ORIGIN;
+ assert.ok(!previousOrigin||previousOrigin===origin,'The isolated handler must use the same trusted origin as the local app');
+ process.env.CLARA_AUTH_APP_ORIGIN=origin;
+ t.after(()=>{if(previousOrigin===undefined)delete process.env.CLARA_AUTH_APP_ORIGIN;else process.env.CLARA_AUTH_APP_ORIGIN=previousOrigin;});
  const pg=(sql:string)=>execFileSync('docker',['exec','clara-canonical-test-postgres','psql','-U','postgres','-d',db,'-qAt','-v','ON_ERROR_STOP=1','-c',sql],{encoding:'utf8',stdio:'pipe'}).trim();
  seedNativeMailFixture(pg);const provider=new SimulatedMail();
  const query=async(strings:TemplateStringsArray,...values:unknown[])=>{
@@ -30,6 +36,7 @@ export async function firstDayBrowser(t:TestContext,page:Page,context:BrowserCon
  await context.route('**/api/native/mail**',async route=>{
   const r=route.request(),method=r.method() as 'GET'|'POST';
   const response=await handlers[method](new Request(r.url(),{method,headers:await r.allHeaders(),...(method==='POST'?{body:r.postData()!}:{})}));
+  if(!response.ok){const b=await response.clone().json().catch(()=>({}));const code=typeof b.code==='string'&&/^[A-Z][A-Z0-9_]{0,79}$/.test(b.code)?b.code:'UNAVAILABLE';console.info('ISOLATED_MAIL_REFUSAL',JSON.stringify({method,status:response.status,code}));}
   await route.fulfill({status:response.status,headers:Object.fromEntries(response.headers),body:Buffer.from(await response.arrayBuffer())});
  });
  await page.goto(origin+'/');await page.getByText('Résumé de la mission active',{exact:true}).waitFor();

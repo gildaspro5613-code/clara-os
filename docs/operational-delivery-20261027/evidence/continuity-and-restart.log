@@ -1,0 +1,70 @@
+Native browser fixture initialized; no production connections.
+PASS: two consultations, durable history, no mission mutation, explicit creation, reload, safe Drive diagnostic
+✔ browser: consultation history without mission, exact Drive diagnostic, explicit mission and reload (38454.155475ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 39451.029306
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":null,"status":409,"code":"NATIVE_GOOGLE_EXPLICIT_SELECTION_REQUIRED","success":false}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":null,"status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":"references","status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"POST","action":"inspect","status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_CONTEXT {"status":200,"code":null,"hasMission":true,"hasConnection":true,"uuid":"function","pending":0}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":"references","status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":null,"status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":"references","status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":"references","status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"POST","action":"read","status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_READ {"status":200,"code":null,"success":true,"textLength":301}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":"references","status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":"references","status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":"references","status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":null,"status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":"references","status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":null,"status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":"references","status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":null,"status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":"references","status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":null,"status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":"references","status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":null,"status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":"references","status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":"references","status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":"references","status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":null,"status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":"references","status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":"references","status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":null,"status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":"references","status":200,"code":null,"success":true}
+✔ document continuity browser E2E: canonical selection → mission → pinned OAuth → explicit Google selection → project attestation → PDF/Core/Brain → Journal/Cockpit → fresh resume and revocation (532593.950564ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 538043.069769
+PASS: consultation history and missionless identity survive application restart
+✔ browser: consultation history without mission, exact Drive diagnostic, explicit mission and reload (6301.03872ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7073.938212
+✔ document continuity restart: same durable references/receipt, new explicitly selected conversation and six browser surfaces (106967.91807ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 108352.602148

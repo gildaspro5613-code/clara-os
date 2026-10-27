@@ -183,6 +183,8 @@
   "nativeContact": "Contatto / potenziale cliente",
   "nativeSelectContact": "Seleziona contatto",
   "nativeDocuments": "Documenti della missione",
+  "nativeContextIdentifiers": "Identificativi del contesto selezionato",
+  "documentAuthoritySettings": "Connessione e autorizzazioni avanzate",
   "nativeGoogleConnection": "Connessione Google autorizzata",
   "nativeGoogleSelect": "Seleziona connessione",
   "nativeGoogleConnect": "Collega il mio account Google",
