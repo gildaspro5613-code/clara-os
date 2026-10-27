@@ -40,7 +40,7 @@ test('commercial browser E2E: authenticated canonical selection → contact → 
   // Compact Cockpit deliberately links to history instead of rendering message bodies.
   await page.getByRole('link',{name:'Ouvrir l’historique →',exact:true}).click();
   await page.getByText(consultation,{exact:true}).waitFor();
-  await page.goto(origin+'/clara');await page.reload();assert.ok((await page.locator('body').innerText()).includes('LOT1_DURABLE_BODY'));assert.ok((await page.locator('body').innerText()).includes('LOT1_DIALOGUE'));
+  await page.goto(origin+'/clara');await page.reload();const restoredDraft=page.locator('#commercial-draft');assert.equal(await restoredDraft.evaluate(e=>e.open),false);await restoredDraft.locator(':scope > summary').click();assert.ok((await page.locator('body').innerText()).includes('LOT1_DURABLE_BODY'));assert.ok((await page.locator('body').innerText()).includes('LOT1_DIALOGUE'));
   const send=await call('/api/clara/chat','POST',{operationId:crypto.randomUUID(),message:'Oui, envoie le mail'});assert.equal(send.status,403);assert.equal((await send.json()).code,'NATIVE_COMMERCIAL_SEND_DISABLED');
   for(const id of ['prospect-b','prospect-p2','prospect-p3','unbound-history']){const denied=await call('/api/native/runtime','POST',{action:'selectAcquisition',submissionId:id});assert.equal(denied.status,403);}
   const create=async(token,c,p)=>{const r=await call('/api/native/runtime','POST',{action:'createSession',workspaceId:'w',clientId:c,projectId:p},'clara_auth_session='+token.repeat(43));assert.equal(r.status,200);return 'clara_auth_session='+token.repeat(43)+'; '+r.headers.get('set-cookie').split(';')[0];};
