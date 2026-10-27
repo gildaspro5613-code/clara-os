@@ -53,3 +53,19 @@ La nouvelle compilation et le lint ciblé sont conservés. Le résultat du derni
 Exclusion Vercel de la branche ajoutée dans `git.deploymentEnabled`, avec réutilisation des protections historiques. Les workflows manuels de déploiement ne sont pas lancés. Les résultats CI terminés et les déploiements observables GitHub du SHA publié seront consignés dans la PR. Aucune absence d’accès Vercel n’est présentée comme une absence de protection.
 
 Les anciennes réserves dépendances, lint global et HTTP 503 restent documentées ; aucune nouvelle campagne générale n’a été lancée. Les pages visitées doivent répondre 200 dans cette recette ; les 401/403/409/503 natifs attendus restent des refus explicites, pas de faux succès.
+
+
+## PR #218 — attente obsolète de recherche Cockpit
+
+Départ : a4835738112f8781871f17b19464d4843158e0dc. Échec du run [40559819307](https://github.com/gildaspro5613-code/clara-os/actions/runs/40559819307) transmis par le propriétaire, puis reproduit localement à la même assertion (native fixture et build optimisé existants).
+
+Cause démontrée : Header.tsx remplace volontairement le champ global désactivé par le lien « Rechercher dans les documents » vers /documents#document-search. Le bouton Notifications désactivé a également été remplacé par « Consulter le Journal ». Le test conservait trois attentes de l’ancien champ et une de l’ancien bouton. Aucun défaut applicatif n’est démontré ; aucun contrôle inactif n’est réintroduit.
+
+Seul cockpit-availability-browser.e2e.mjs est adapté : présence/destination des liens, absence des anciens contrôles inactifs, clic vers Documents, soumission réelle d’une recherche et refus 409 NATIVE_GOOGLE_EXPLICIT_SELECTION_REQUIRED, puis accès au Journal et à la mission persistée. Les assertions existantes de refus vocal, navigation, identité de session, perte d’acquittement, rejeu unique et lecture seule du fil historique sont conservées.
+
+- Avant : 1 échec reproduit, attente 30 s du textbox absent — evidence/cockpit-header-before.txt.
+- Après : 1 PASS, 0 FAIL, 0 SKIP (30,4 s) — evidence/cockpit-header-accepted.txt.
+- Syntaxe Node et ESLint ciblé : PASS — evidence/cockpit-header-lint.txt.
+- Aucun changement de composants, routes, stores, contrats, marques ou dépendances depuis a483573. Le build déjà reçu reste applicable (arbre applicatif identique vérifié par Git) ; aucune nouvelle compilation/campagne générale locale nécessaire pour ce changement de test uniquement.
+
+La publication du test correspond aux chemins déclenchant le workflow Native resource authority validation existant. Son résultat final doit être lu sur le nouveau SHA : cette instance refuse actuellement api.github.com dans sa politique réseau, malgré l’accès Git fonctionnel. Aucun nouveau résultat CI distant n’est déduit du PASS local ; aucun réglage réseau, OAuth, fournisseur ou Vercel n’est modifié.

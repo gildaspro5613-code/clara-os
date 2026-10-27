@@ -83,6 +83,9 @@ docs/interface-finalization-20261027/evidence/ci-fix-lint.txt
 docs/interface-finalization-20261027/evidence/ci-pair-accepted.txt
 docs/interface-finalization-20261027/evidence/ci-pair-before.txt
 docs/interface-finalization-20261027/evidence/ci-pair-intermediate.txt
+docs/interface-finalization-20261027/evidence/cockpit-header-accepted.txt
+docs/interface-finalization-20261027/evidence/cockpit-header-before.txt
+docs/interface-finalization-20261027/evidence/cockpit-header-lint.txt
 docs/interface-finalization-20261027/evidence/initial-contact-locator-failure.txt
 docs/interface-finalization-20261027/evidence/interface-browser.txt
 docs/interface-finalization-20261027/evidence/lint-targeted.txt
