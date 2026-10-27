@@ -14,6 +14,10 @@ test('delivery UI: official logo, business navigation, private advanced controls
   const context=await browser.newContext({viewport:{width:1440,height:1000}});
   await context.addCookies([{name:'clara_auth_session',value:'A'.repeat(43),url:origin},{name:'NEXT_LOCALE',value:'fr',url:origin}]);
   await context.route('**/*',r=>new URL(r.request().url()).origin===new URL(origin).origin?r.continue():r.abort());
+  // This UI receipt does not certify Microsoft's separate authenticated workspace adapter.
+  // Its auth SQL is deliberately outside the native fixture allowlist: render a refused
+  // status, never broaden that allowlist or contaminate the security receipt's marker.
+  await context.route('**/api/connections/microsoft',r=>r.fulfill({status:403,contentType:'application/json',body:JSON.stringify({error:'MICROSOFT_WORKSPACE_AUTH_REQUIRED'})}));
   const page=await context.newPage();
   const call=await context.request.post(origin+'/api/native/runtime',{headers:{origin},data:{action:'createSession',workspaceId:'w',clientId:'c1',projectId:'p1'}});assert.equal(call.status(),200);
   const logo=await context.request.get(origin+'/brand/clara-os-symbol.svg');assert.equal(logo.status(),200);assert.equal(await logo.text(),readFileSync('public/brand/clara-os-symbol.svg','utf8'));
@@ -21,6 +25,7 @@ test('delivery UI: official logo, business navigation, private advanced controls
    const response=await page.goto(origin+'/'+path);assert.equal(response.status(),200,path);
    await page.getByRole('region',{name:'Contexte canonique privé',exact:true}).waitFor();
    await page.getByText('Identifiants du contexte sélectionné',{exact:true}).waitFor();
+   await page.getByText(/Contexte canonique privé · w \/ Client c1 \/ Project p1/).waitFor();
    if(path==='documents')await page.getByText(/\[NATIVE_GOOGLE_EXPLICIT_SELECTION_REQUIRED\]/).waitFor();
    assert.equal(await page.locator('[data-native-authority="locked"]').count(),0,path);
    await page.screenshot({path:out+'/'+(path||'cockpit')+'-desktop.png',fullPage:true});
@@ -31,6 +36,7 @@ test('delivery UI: official logo, business navigation, private advanced controls
   let mutations=0;await page.route('**/api/connections/google/connect',async route=>{mutations++;await route.fulfill({status:403,contentType:'application/json',body:JSON.stringify({success:false,code:'PRIVATE_TOKEN_MUST_NOT_ESCAPE',message:'private diagnostic sentinel'})});});
   await settings.locator('summary').click();await settings.getByRole('button',{name:'Associer mon compte Google',exact:true}).click();
   await page.getByRole('alert').filter({hasText:'DOCUMENT_REQUEST_FAILED'}).waitFor();assert.equal(mutations,1);assert.ok(!(await page.locator('body').innerText()).includes('private diagnostic sentinel'));assert.ok(!(await page.locator('body').innerText()).includes('PRIVATE_TOKEN_MUST_NOT_ESCAPE'));
+  await page.getByRole('alert').filter({hasText:'DOCUMENT_REQUEST_FAILED'}).screenshot({path:out+'/filtered-diagnostic.png'});
   await page.unroute('**/api/connections/google/connect');
   for(const locale of ['fr','en','es','de','it']){
    await context.addCookies([{name:'NEXT_LOCALE',value:locale,url:origin}]);await page.goto(origin+'/documents');await page.locator('[data-document-authority-settings] summary').waitFor();
@@ -43,6 +49,7 @@ test('delivery UI: official logo, business navigation, private advanced controls
   assert.equal(Math.round((await page.locator('aside').boundingBox()).x),0);
   await page.screenshot({path:out+'/navigation-mobile.png',fullPage:true});await page.getByRole('link',{name:'Missions',exact:true}).click();await page.waitForURL(origin+'/missions');
   await page.screenshot({path:out+'/missions-mobile.png',fullPage:true});
+  assert.equal(readFileSync('/tmp/native-fixture-global-attempts-'+process.env.NATIVE_TEST_DATABASE,'utf8'),'','No unexpected global loader may execute during the native UI receipt');
   writeFileSync(out+'/results.json',JSON.stringify({environment:'isolated PostgreSQL, real Next endpoints, providers simulated; no Production certification',results},null,2)+'\n');
  }finally{await browser.close();}
 });
