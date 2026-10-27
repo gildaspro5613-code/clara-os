@@ -21,8 +21,11 @@ test('delivery UI: official logo, business navigation, private advanced controls
   const page=await context.newPage();
   const call=await context.request.post(origin+'/api/native/runtime',{headers:{origin},data:{action:'createSession',workspaceId:'w',clientId:'c1',projectId:'p1'}});assert.equal(call.status(),200);
   const logo=await context.request.get(origin+'/brand/clara-os-symbol.svg');assert.equal(logo.status(),200);assert.equal(await logo.text(),readFileSync('public/brand/clara-os-symbol.svg','utf8'));
+  const tabIcon=await context.request.get(origin+'/icon.svg');assert.equal(tabIcon.status(),200);assert.equal(await tabIcon.text(),await logo.text());
   for(const path of ['clara','missions','conversations','contacts','documents','messagerie','agenda','journal','brain','automatisations','connexions','']){
    const response=await page.goto(origin+'/'+path);assert.equal(response.status(),200,path);
+   assert.equal(await page.locator('link[rel="icon"][href^="/icon.svg"]').count(),1);
+   assert.equal(await page.locator('link[rel="icon"][href^="/favicon.ico"]').count(),0);
    await page.getByRole('region',{name:'Contexte canonique privé',exact:true}).waitFor();
    await page.getByText('Identifiants du contexte sélectionné',{exact:true}).waitFor();
    await page.getByText(/Contexte canonique privé · w \/ Client c1 \/ Project p1/).waitFor();

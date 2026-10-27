@@ -29,6 +29,7 @@ on:
       - 'src/tests/operational-recovery*'
       - 'src/tests/operational-delivery*'
       - 'public/brand/**'
+      - 'src/app/icon.svg'
       - 'src/i18n/messages/**'
       - 'src/tests/native-authority*'
       - 'src/tests/native-runtime*'
