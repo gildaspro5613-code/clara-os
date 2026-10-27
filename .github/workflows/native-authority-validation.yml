@@ -28,6 +28,8 @@ on:
       - 'src/app/**/*.tsx'
       - 'src/tests/operational-recovery*'
       - 'src/tests/operational-delivery*'
+      - 'src/tests/google-native-hub*'
+      - 'src/components/connections/**'
       - 'public/brand/**'
       - 'src/app/icon.svg'
       - 'src/i18n/messages/**'
@@ -118,6 +120,10 @@ jobs:
           exit 1
       - name: Existing job types, 026 upgrade compatibility and local restore
         run: node --import tsx --test src/tests/native-job-kind-compatibility.test.ts src/tests/v1-mission-identity.test.ts src/tests/native-runtime-proxy.test.mjs
+      - name: Native Google hub contract
+        run: |
+          node --import tsx --test src/tests/google-native-hub.test.ts
+          npx eslint src/components/connections src/tests/google-native-hub*
       - name: Operational recovery, consultations and scoped provider reads
         run: node --import tsx --test src/tests/operational-recovery*.test.ts
       - name: Actual handlers and database isolation, revocation, snapshot and history
@@ -183,6 +189,20 @@ jobs:
           test "$ready" = true
           NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node src/tests/helpers/native-browser-diagnostics.mjs core --import tsx --test src/tests/native-google-work-restart-browser.e2e.mjs src/tests/native-mission-contact-restart-browser.e2e.mjs
           NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node src/tests/helpers/native-browser-diagnostics.mjs cockpit --import tsx --test src/tests/cockpit-availability-browser.e2e.mjs
+          # The hub receipt has its own disposable data, using the existing fixture
+          # and server, so previous recipes cannot supply a stale authority/session.
+          kill "$native_app_pid"
+          wait "$native_app_pid" || true
+          export NATIVE_TEST_DATABASE="native_browser_$(node -e 'process.stdout.write(require("crypto").randomUUID().replaceAll("-",""))')"
+          node --import tsx src/tests/helpers/native-runtime-browser-fixture.mts "$NATIVE_TEST_DATABASE"
+          start_native_app
+          ready=false
+          for attempt in $(seq 1 60); do
+            if curl --cacert /tmp/native-runtime-cert.pem --fail --silent https://127.0.0.1:3060/clara > /dev/null; then ready=true; break; fi
+            sleep 1
+          done
+          test "$ready" = true
+          NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node src/tests/helpers/native-browser-diagnostics.mjs core --import tsx --test src/tests/google-native-hub-browser.e2e.mjs
       - name: Stop isolated fixture
         if: always()
         run: docker rm -f "$CANONICAL_TEST_CONTAINER" || true

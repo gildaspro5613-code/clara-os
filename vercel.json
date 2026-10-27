@@ -18,7 +18,8 @@
       "reception/stage-multidomain-authority": false,
       "fix/magicq-config-revision": false,
       "fix/clara-os-operational-recovery-20261027": false,
-      "fix/clara-os-operational-delivery-20261027": false
+      "fix/clara-os-operational-delivery-20261027": false,
+      "fix/google-native-hub-216": false
     }
   }
 }
