@@ -51,3 +51,5 @@ Les résultats finaux et logs sont conservés dans evidence/. Une réussite isol
 Les erreurs SQL NATIVE_SCOPE_DENIED / NATIVE_NEW_SESSION_REQUIRED et conflits CAS imprimés dans non-regression.log sont les refus attendus des tests négatifs réussis. Les tentatives intermédiaires restent locales ; les résultats finaux ci-dessus ne les effacent pas et ne les additionnent pas.
 
 **GO technique isolé pour revue de la PR. NO-GO pour merge/déploiement/réception Production sans autorisation distincte**, cible SQL attestée, sauvegarde propre et application approuvée de 030. Les contrôles GitHub de la PR sont à consulter sur son SHA final ; aucun résultat CI futur n'est présumé ici.
+
+Normalisation documentaire finale : seuls les retours chariot/espaces de progression du journal de build ont été normalisés après la campagne ; aucun résultat ni message de test modifié. git diff --check est rejoué sur le diff complet avant publication.
