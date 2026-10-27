@@ -1,0 +1,25 @@
+Native browser fixture initialized; no production connections.
+✖ Google hub: real owner/delegate authority and revocation, explicit selection, native statuses, five locales and legacy cards (90713.720485ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 96199.242409
+
+✖ failing tests:
+
+test at src/tests/google-native-hub-browser.e2e.mjs:11:1
+✖ Google hub: real owner/delegate authority and revocation, explicit selection, native statuses, five locales and legacy cards (90713.720485ms)
+  locator.waitFor: Error: strict mode violation: locator('article').filter({ has: getByRole('heading', { name: 'Make', exact: true }) }).getByText('Indisponible', { exact: true }) resolved to 2 elements:
+      1) <span class="rounded-full border px-3 py-1 text-[11px] border-white/10 text-white/45">Indisponible</span> aka locator('span').filter({ hasText: 'Indisponible' })
+      2) <p class="mt-3 text-xs leading-5 text-white/35">Indisponible</p> aka getByRole('paragraph').filter({ hasText: 'Indisponible' })
+  
+  Call log:
+  [2m  - waiting for locator('article').filter({ has: getByRole('heading', { name: 'Make', exact: true }) }).getByText('Indisponible', { exact: true }) to be visible[22m
+  
+      at TestContext.<anonymous> (/workspace/clara-os-google-hub-216/src/tests/google-native-hub-browser.e2e.mjs:51:354) {
+    log: [ "  - waiting for locator('article').filter({ has: getByRole('heading', { name: 'Make', exact: true }) }).getByText('Indisponible', { exact: true }) to be visible" ]
+  }
