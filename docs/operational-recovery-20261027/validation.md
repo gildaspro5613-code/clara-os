@@ -53,3 +53,16 @@ Les erreurs SQL NATIVE_SCOPE_DENIED / NATIVE_NEW_SESSION_REQUIRED et conflits CA
 **GO technique isolé pour revue de la PR. NO-GO pour merge/déploiement/réception Production sans autorisation distincte**, cible SQL attestée, sauvegarde propre et application approuvée de 030. Les contrôles GitHub de la PR sont à consulter sur son SHA final ; aucun résultat CI futur n'est présumé ici.
 
 Normalisation documentaire finale : seuls les retours chariot/espaces de progression du journal de build ont été normalisés après la campagne ; aucun résultat ni message de test modifié. git diff --check est rejoué sur le diff complet avant publication.
+
+## Correction ciblée des deux échecs CI — PR #214
+
+Référence avant correction : de21095ac0bf4aa975bbbb8d276e2b7e09d29a7e. Run natif 40465494188, job 122059756743. Les logs complets sont refusés par le point de téléchargement GitHub ; les annotations officielles du check et la reproduction locale retrouvent exactement les deux assertions. Les quatre autres recettes du groupe CI étaient déjà réussies.
+
+| Recette | Cause reproduite | Correction limitée au test |
+|---|---|---|
+| native-commercial-browser.e2e.mjs:34 | Le marqueur de dialogue était retrouvé dans le Cockpit parce qu'une consultation renommait implicitement la mission. Le Cockpit compact présente intentionnellement un lien d'historique, pas le corps des messages. | Vérifier la mission intégralement inchangée, son titre explicite dans le Cockpit, puis ouvrir le lien réel vers l'historique et vérifier le message persisté. Le brouillon, son CAS, le refus d'envoi, les permissions, la révocation et la reprise restent testés. |
+| native-runtime-browser.e2e.mjs:29 | Le test attendait qu'un message informatif crée un plan et une tâche manuelle. L'absence de tâche est le nouveau comportement correct. | Vérifier la mission inchangée après consultation, demander explicitement la planification dans la même autorité, vérifier l'identité canonique conservée, puis tester le basculement durable des tâches manuelles comme précédemment. Tous les refus étrangers sont conservés. |
+
+Aucun code applicatif, migration, mock fournisseur, timeout, retry, garde, permission ou paramètre de déploiement changé. Les données restent synthétiques, les stores PostgreSQL réels et jetables, les fournisseurs simulés. Les assertions obsolètes sont remplacées par des assertions plus directes sur les contrats reçus ; aucune assertion de sécurité n'est retirée. Les campagnes déjà reçues ne sont pas réexécutées localement sans nécessité ; le workflow natif existant qualifie le diff complet sur le nouveau SHA.
+
+Résultats de cette correction : reproduction avant modification **0/2 PASS**, avec les deux mêmes échecs qu'en CI ; après correction **2/2 recettes concernées PASS** ; non-régression consultation/commande et arrêt/redémarrage **2/2 PASS** ; tests ciblés **3/3 PASS** ; lint des deux fichiers modifiés et diff check **PASS**. Preuves ci214-*.log et annotations officielles dans evidence/. Aucun rebuild nécessaire pour ce diff strictement tests/documentation : l'application testée est celle de de21095. La CI existante sera évaluée sur le nouveau SHA publié, sans présumer son résultat ni relancer de workflow de déploiement.

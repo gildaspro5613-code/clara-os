@@ -1,0 +1,11 @@
+✔ consultations and ambiguous follow-ups cannot authorize a mission mutation (6.662372ms)
+✔ explicit commands retain the existing mission pipeline (2.414234ms)
+✔ Drive diagnostics only display reviewed public codes, never messages or provider payloads (3.475455ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5178.469775

@@ -23,10 +23,16 @@ test('native browser: explicit selection, positive persisted mission/chat and cr
   const response=await page.goto(origin+path);assert.equal(response.status(),200,locale+" "+path);assert.equal(await page.locator('[data-native-authority="locked"]').count(),0,path);assert.ok(!(await response.text()).includes('PRIVATE_LEGACY_HISTORY'));assert.equal(await page.locator('html').getAttribute('lang'),locale);
  }}
  const headerCookie=cookies.map(c=>c.name+'='+c.value).join(';');
+ const beforeConsultation=await (await fetch(origin+'/api/clara/session?'+new URLSearchParams(scope),{headers:{cookie:headerCookie}})).json();
  const response=await fetch(origin+'/api/clara/chat',{method:'POST',headers:{cookie:headerCookie,origin,'Content-Type':'application/json'},body:JSON.stringify({operationId:crypto.randomUUID(),message:'NATIVE_CHAT_A'})});assert.equal(response.status,200,await response.clone().text());
  await page.goto(origin+'/conversations');await page.getByText('NATIVE_CHAT_A',{exact:true}).waitFor();await page.getByText('Isolated Clara response',{exact:true}).waitFor();
  const current=await (await fetch(origin+'/api/clara/session?'+new URLSearchParams(scope),{headers:{cookie:headerCookie}})).json();
- const manual=current.mission.tasks.find(task=>!task.execution);assert.ok(manual,'The real Brain fallback exposes a non-executable manual task in this fixture.');
+ assert.deepEqual(current.mission,beforeConsultation.mission,'An informational message must not generate tasks or alter the selected mission.');
+ // Planning is an explicit authorized command, never a side effect of consultation.
+ const planned=await fetch(origin+'/api/clara/chat',{method:'POST',headers:{cookie:headerCookie,origin,'Content-Type':'application/json'},body:JSON.stringify({operationId:crypto.randomUUID(),message:'Planifie les étapes de la mission sélectionnée'})});assert.equal(planned.status,200,await planned.clone().text());
+ const afterCommand=await (await fetch(origin+'/api/clara/session?'+new URLSearchParams(scope),{headers:{cookie:headerCookie}})).json();
+ assert.equal(afterCommand.mission.id,current.mission.id,'Explicit planning must retain the canonical mission identity.');
+ const manual=afterCommand.mission.tasks.find(task=>!task.execution);assert.ok(manual,'An explicit planning command exposes a non-executable manual task in the deterministic Brain fallback.');
  for(const completed of [true,false]){
   const changed=await fetch(origin+'/api/native/runtime',{method:'POST',headers:{cookie:headerCookie,origin,'Content-Type':'application/json'},body:JSON.stringify({action:'toggleTask',missionId:current.mission.id,taskId:manual.id,completed})});assert.equal(changed.status,200,await changed.clone().text());
   const persisted=await (await fetch(origin+'/api/clara/session?'+new URLSearchParams(scope),{headers:{cookie:headerCookie}})).json();assert.equal(persisted.mission.tasks.find(task=>task.id===manual.id).completed,completed);

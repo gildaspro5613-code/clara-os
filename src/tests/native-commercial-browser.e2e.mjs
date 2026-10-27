@@ -24,14 +24,21 @@ test('commercial browser E2E: authenticated canonical selection → contact → 
   const cookies=await context.cookies(),cookie=cookies.map(c=>c.name+'='+c.value).join(';');const selected=JSON.parse(decodeURIComponent(cookies.find(c=>c.name==='clara_native_selection').value));
   const call=(path,method='GET',body,auth=cookie)=>fetch(origin+path,{method,headers:{cookie:auth,...(method!=='GET'?{origin,'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
   const contacts=await (await call('/api/contacts')).json();assert.deepEqual(contacts.contacts.map(c=>c.id),['prospect-a']);assert.equal(contacts.selectedSubmissionId,'prospect-a');
-  const chat=await call('/api/clara/chat','POST',{operationId:crypto.randomUUID(),message:'LOT1_DIALOGUE — prépare le suivi du contact sélectionné'});assert.equal(chat.status,200,await chat.clone().text());
+  const missionBeforeChat=(await (await call('/api/clara/session?'+new URLSearchParams(selected))).json()).mission;
+  const consultation='LOT1_DIALOGUE — quel est le suivi du contact sélectionné ?';
+  const chat=await call('/api/clara/chat','POST',{operationId:crypto.randomUUID(),message:consultation});assert.equal(chat.status,200,await chat.clone().text());
+  const missionAfterChat=(await (await call('/api/clara/session?'+new URLSearchParams(selected))).json()).mission;
+  assert.deepEqual(missionAfterChat,missionBeforeChat,'Consultation must preserve the selected commercial mission, including its title and tasks.');
   await page.goto(origin+'/journal');assert.ok((await page.locator('body').innerText()).includes('PRIVATE_prospect-a'));
   await page.goto(origin+'/clara');const [preparedResponse]=await Promise.all([page.waitForResponse(r=>new URL(r.url()).pathname==='/api/native/runtime'&&r.request().method()==='POST'&&r.request().postDataJSON()?.action==='prepareCommercialDraft'),page.getByRole('button',{name:'Communication préparée par Clara',exact:true}).click()]);assert.equal(preparedResponse.status(),200);
   await page.locator('#commercial-draft').getByText('prospect-a@example.invalid',{exact:false}).waitFor();
   const draft=JSON.parse(pg("SELECT commercial_draft::text FROM clara_acquisition_records WHERE submission_id='prospect-a'"));assert.equal(draft.revision,1);assert.equal(draft.delivery.allowed,false);
   const patch=await call('/api/clara/acquisition/commercial-draft','PATCH',{submissionId:'prospect-a',revision:1,subject:'LOT1_DURABLE_SUBJECT',body:'LOT1_DURABLE_BODY'});assert.equal(patch.status,200,await patch.clone().text());
   const stale=await call('/api/clara/acquisition/commercial-draft','PATCH',{submissionId:'prospect-a',revision:1,subject:'STALE',body:'MUST_NOT_PERSIST'});assert.equal(stale.status,409);
-  await page.goto(origin+'/');const cockpit=await page.locator('body').innerText();assert.ok(cockpit.includes('prospect-a@example.invalid'));assert.ok(cockpit.includes('LOT1_DURABLE_SUBJECT'));assert.ok(cockpit.includes('LOT1_DIALOGUE'));
+  await page.goto(origin+'/');const cockpit=await page.locator('body').innerText();assert.ok(cockpit.includes('prospect-a@example.invalid'));assert.ok(cockpit.includes('LOT1_DURABLE_SUBJECT'));assert.ok(cockpit.includes('LOT1_MISSION_A'),'Cockpit must retain the explicitly created mission title, not rename it after a consultation.');
+  // Compact Cockpit deliberately links to history instead of rendering message bodies.
+  await page.getByRole('link',{name:'Ouvrir l’historique →',exact:true}).click();
+  await page.getByText(consultation,{exact:true}).waitFor();
   await page.goto(origin+'/clara');await page.reload();assert.ok((await page.locator('body').innerText()).includes('LOT1_DURABLE_BODY'));assert.ok((await page.locator('body').innerText()).includes('LOT1_DIALOGUE'));
   const send=await call('/api/clara/chat','POST',{operationId:crypto.randomUUID(),message:'Oui, envoie le mail'});assert.equal(send.status,403);assert.equal((await send.json()).code,'NATIVE_COMMERCIAL_SEND_DISABLED');
   for(const id of ['prospect-b','prospect-p2','prospect-p3','unbound-history']){const denied=await call('/api/native/runtime','POST',{action:'selectAcquisition',submissionId:id});assert.equal(denied.status,403);}

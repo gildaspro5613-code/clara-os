@@ -1,0 +1,21 @@
+Native browser fixture initialized; no production connections.
+PASS: two consultations, durable history, no mission mutation, explicit creation, reload, safe Drive diagnostic
+✔ browser: consultation history without mission, exact Drive diagnostic, explicit mission and reload (27039.158395ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 28158.938654
+PASS: consultation history and missionless identity survive application restart
+✔ browser: consultation history without mission, exact Drive diagnostic, explicit mission and reload (5512.835983ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6941.160923
