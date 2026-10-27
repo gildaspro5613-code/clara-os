@@ -1,0 +1,26 @@
+✔ commercial draft modification persists in and reloads from the acquisition record (2.566865ms)
+✔ Clara revises the same durable draft from a conversational instruction (0.937815ms)
+✔ conversation rewrite persists revision 2 in the acquisition record and survives reload (1.924964ms)
+✔ exact E2E replacement phrase is classified as a durable commercial revision (0.557021ms)
+✔ commercial substitution wording is also classified as a revision (0.147597ms)
+✔ commercial confirmation creates an approval and remains fail-closed without Gmail or Brevo (1.397633ms)
+✔ P0 projection preserves the contextual owner session (0.561512ms)
+✔ P0-A: actual reasoning receives scoped facts, statuses, production, calculations and provenance (19.874276ms)
+✔ P0-A: context limits preserve valid JSON and declare omission without inventing project facts (7.505886ms)
+✔ P0-B: server history is bounded, chronological, deduplicated and overrides caller-supplied history (3.963213ms)
+✔ P0-B: legacy memory cannot leak another user, project or session into reasoning (1.074026ms)
+✔ P0-D: project A/B never loads foreign Drive; legitimate non-project Drive still works (620.57058ms)
+✔ P0-C/E: incomplete provider output retains text, suppresses proposals and signals interruption in five languages (6.827386ms)
+✔ P0-C: complete, limit, filter, timeout, failure and empty output remain distinct (3.259138ms)
+✔ P0-C/F: actual external handler retains interrupted generation and returns existing Live-compatible failure (416.748114ms)
+✔ P0-C: provider adapter enforces conversational ceiling and timeout without changing other profiles (48.000642ms)
+✔ P0-D: missing document identity cannot associate a foreign attachment (0.811685ms)
+✔ P0-B: opaque scope identifiers reject controls that could collide in the durable key (0.925711ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 10307.325908

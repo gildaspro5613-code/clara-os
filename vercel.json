@@ -16,7 +16,8 @@
       "fix/canonical-stage-authority-20261022": false,
       "proposal/stage-multidomain-contract": false,
       "reception/stage-multidomain-authority": false,
-      "fix/magicq-config-revision": false
+      "fix/magicq-config-revision": false,
+      "fix/clara-os-operational-recovery-20261027": false
     }
   }
 }

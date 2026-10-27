@@ -1,3 +1,4 @@
+import {GoogleReauthRequiredError} from '@/lib/connectors/google/auth/google-auth-error';
 import {withNativeScope,nativeRequest} from '@/lib/native/scoped-context';
 import {selectedNativeDocuments} from '@/lib/native/documents';
 import {nativeFailure} from '@/lib/native/authority';
@@ -6,7 +7,9 @@ import {RegistryError} from '@/lib/canonical/registry';
 import {DocumentReadError} from '@/lib/documents/document-read-error';
 import {safeResponseLocale} from '@/i18n/response-language';
 export const runtime='nodejs';export const dynamic='force-dynamic';
-function failure(error:unknown){if(error instanceof DocumentReadError)return Response.json({success:false,code:error.code},{status:error.status,headers:{'Cache-Control':'no-store',...('terminal'in error&&error.terminal?{'X-Clara-Document-Result':'failed'}:{})}});return nativeFailure(error);}
+function failure(error:unknown){if(error instanceof GoogleReauthRequiredError)return Response.json({success:false,code:'GOOGLE_REAUTH_REQUIRED'},{status:401,headers:{'Cache-Control':'no-store'}});
+const providerStatus=(error as {response?:{status?:number}})?.response?.status;
+if(providerStatus)return Response.json({success:false,code:providerStatus===401?'GOOGLE_REAUTH_REQUIRED':providerStatus===403||providerStatus===404?'NATIVE_DOCUMENT_GOOGLE_RIGHTS_DENIED':'DOCUMENT_GOOGLE_UNAVAILABLE'},{status:providerStatus===401?401:providerStatus===403||providerStatus===404?403:503,headers:{'Cache-Control':'no-store'}});if(error instanceof DocumentReadError)return Response.json({success:false,code:error.code},{status:error.status,headers:{'Cache-Control':'no-store',...('terminal'in error&&error.terminal?{'X-Clara-Document-Result':'failed'}:{})}});return nativeFailure(error);}
 export async function GET(request:Request){try{return await withNativeScope(request,false,async()=>{
  const params=new URL(request.url).searchParams,action=params.get('action')??'list';
  if(!['list','references','download'].includes(action))throw new RegistryError(405,'NATIVE_DOCUMENT_POST_REQUIRED');

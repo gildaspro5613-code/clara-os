@@ -13,7 +13,7 @@ import type {AcquisitionRecord} from '@/lib/acquisition/acquisition-store';
 import type {MdProjectIntake} from '@/types';
 import type {CommercialCommunicationDraft} from '@/lib/acquisition/commercial-communication-draft';
 export interface ScopedNativeContext {
- query:RegistryQuery;scope:NativeSelectors&{digest:string};userId:string;session:ClaraSession;
+ consultationProtocolVersion:number;query:RegistryQuery;scope:NativeSelectors&{digest:string};userId:string;session:ClaraSession;
  missions:Map<string,Mission>;journal:JournalEntry[];writes:Map<string,Mission>;entries:JournalEntry[];
  acquisitions:Map<string,AcquisitionRecord>;intakes:Map<string,MdProjectIntake>;intakeMetadata:Map<string,{productId:string;sessionKey:string;eventId:string}>;acquisitionSnapshots:Record<string,unknown>;draftWrites:Map<string,CommercialCommunicationDraft>;draftRevisionSteps:Map<string,number>;
  documentProtocolVersion?:number;documentOperationProof?:Record<string,unknown>;documentReadProofs?:Record<string,unknown>[];documentRevalidate?:()=>Promise<void>;documentRevalidators?:Map<string,()=>Promise<void>>;
@@ -46,7 +46,12 @@ export function nativeMission(mission:Mission){
  }
  ctx.missions.set(mission.id,mission);ctx.writes.set(mission.id,mission);
 }
-export function nativeThreadCertified(session:ClaraSession){return session.mission ? session.nativeMissionId===session.mission.id : !session.conversation.length&&!session.brainDashboard&&!session.recommendation&&!session.sources?.length&&!session.documentReferences?.length;}
+export function nativeThreadCertified(session:ClaraSession){
+ if(session.mission)return session.nativeMissionId===session.mission.id;
+ const consultation=session.nativeConsultationVersion===1&&!session.nativeMissionId&&!session.documentReferences?.length;
+ const empty=!session.conversation.length&&!session.brainDashboard&&!session.recommendation&&!session.sources?.length&&!session.documentReferences?.length;
+ return consultation||empty;
+}
 export function hydrateNative(data:Record<string,unknown>):ClaraSession {
  const parsed=normalizeSession(data as unknown as ClaraSession);
  return {...parsed,startedAt:new Date(parsed.startedAt),updatedAt:new Date(parsed.updatedAt)};
@@ -73,7 +78,7 @@ export async function withNativeScope<T>(request:Request,write:boolean,render:()
   const row=snapshot.record,id=String(row.submission_id);acquisitionSnapshots[id]=snapshot;intakes.set(id,snapshot.intake);intakeMetadata.set(id,snapshot.intakeMetadata);
   acquisitions.set(id,{submissionId:id,workspaceId:String(row.workspace_id),qualification:row.qualification as AcquisitionRecord['qualification'],decisionBrief:row.decision_brief as AcquisitionRecord['decisionBrief'],lifecycle:row.lifecycle as AcquisitionRecord['lifecycle'],commercialDraft:row.commercial_draft as CommercialCommunicationDraft|null,createdAt:new Date(String(row.created_at)),updatedAt:new Date(String(row.updated_at))});
  }
- const ctx:ScopedNativeContext={documentProtocolVersion:Number(data.documentProtocolVersion??0),missionContactProtocolVersion:Number(data.missionContactProtocolVersion??0),contactProtocolVersion:Number(data.contactProtocolVersion??0),query,scope,userId:String(data.userId),session,acquisitions,intakes,intakeMetadata,acquisitionSnapshots,draftWrites:new Map(),draftRevisionSteps:new Map(),missions:new Map(missions.map(m=>[m.id,m])),journal:(data.journal as JournalEntry[]).map(j=>({...j,createdAt:new Date(j.createdAt)})),writes:new Map(),entries:[],writable:write,dirty:false};
+ const ctx:ScopedNativeContext={consultationProtocolVersion:Number(data.consultationProtocolVersion??0),documentProtocolVersion:Number(data.documentProtocolVersion??0),missionContactProtocolVersion:Number(data.missionContactProtocolVersion??0),contactProtocolVersion:Number(data.contactProtocolVersion??0),query,scope,userId:String(data.userId),session,acquisitions,intakes,intakeMetadata,acquisitionSnapshots,draftWrites:new Map(),draftRevisionSteps:new Map(),missions:new Map(missions.map(m=>[m.id,m])),journal:(data.journal as JournalEntry[]).map(j=>({...j,createdAt:new Date(j.createdAt)})),writes:new Map(),entries:[],writable:write,dirty:false};
  return storage.run(ctx,async()=>{
   const result=await render();
   if(write&&(ctx.dirty||ctx.chatCommitProof)){

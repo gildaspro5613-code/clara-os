@@ -59,7 +59,7 @@ export async function buildBrainContext(
    * Load the capabilities available to Clara.
    */
   const capabilities: Array<{ id: string; name: string; description: string }> =
-    (nativeContext()?[]:new CapabilityRegistry().getAvailableCapabilities()).map((capability) => ({
+    (nativeContext()?sources.map(source=>({id:source.source,name:source.source,description:source.available?"Authorized scoped read context loaded; no execution or send approval implied.":source.summary})):new CapabilityRegistry().getAvailableCapabilities()).map((capability) => ({
       id: capability.id,
       name: capability.name,
       description: capability.description ?? "Capability available to Clara.",

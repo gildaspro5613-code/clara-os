@@ -1,0 +1,47 @@
+Native browser fixture initialized; no production connections.
+✖ commercial browser E2E: authenticated canonical selection → contact → mission → dialogue → journal → draft → cockpit → reload and fresh authenticated session (34437.76747ms)
+✖ native browser: explicit selection, positive persisted mission/chat and cross-user/project refusals (89173.966845ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 127245.8087
+
+✖ failing tests:
+
+test at src/tests/native-commercial-browser.e2e.mjs:10:1
+✖ commercial browser E2E: authenticated canonical selection → contact → mission → dialogue → journal → draft → cockpit → reload and fresh authenticated session (34437.76747ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+
+    assert.ok(cockpit.includes('LOT1_DIALOGUE'))
+
+      at TestContext.<anonymous> (file:///workspace/clara-os-operational-recovery/src/tests/native-commercial-browser.e2e.mjs:34:201)
+      at runNextTicks (node:internal/process/task_queues:65:5)
+      at process.processImmediate (node:internal/timers:502:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at src/tests/native-runtime-browser.e2e.mjs:8:1
+✖ native browser: explicit selection, positive persisted mission/chat and cross-user/project refusals (89173.966845ms)
+  AssertionError [ERR_ASSERTION]: The real Brain fallback exposes a non-executable manual task in this fixture.
+      at TestContext.<anonymous> (file:///workspace/clara-os-operational-recovery/src/tests/native-runtime-browser.e2e.mjs:29:72)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

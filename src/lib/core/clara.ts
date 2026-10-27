@@ -1,3 +1,4 @@
+import { missionMutationRequested } from "./orchestrator";
 import {nativeContext} from "@/lib/native/scoped-context";
 /**
  * ============================================
@@ -74,6 +75,7 @@ export class Clara {
       );
 
       if (
+        (!event || missionMutationRequested(event)) &&
         persistedMission.status === "blocked" &&
         nextPendingTask &&
         !nextPendingTask.execution
@@ -147,7 +149,7 @@ export class Clara {
     let autonomousTasksExecuted = 0;
 
     while (
-      this.session.mission && !isLiveAdvice(event) &&
+      this.session.mission && missionMutationRequested(event) && !isLiveAdvice(event) &&
       autonomousTasksExecuted < MAX_AUTONOMOUS_TASKS_PER_EVENT
     ) {
       const nextPendingTask = this.session.mission.tasks.find(
