@@ -1,0 +1,24 @@
+▶ operational recovery through scoped runtime and real PostgreSQL persistence
+  ✔ consultation in empty thread does not create a mission (9792.156634ms)
+  ✔ historical unproven thread cannot be certified by a forged marker (7276.67759ms)
+  ✔ explicit command creates an authorized mission (1849.782495ms)
+  ✔ consultation cannot replan/reactivate/execute or alter a blocked mission; history remains durable (3861.551902ms)
+  ✔ unselected Google connection has precise HTTP diagnostic and no provider access (656.072169ms)
+  ✔ native calendar missing binding and mailbox missing authority are explicit, no global fallback (789.579917ms)
+  ✔ selected-calendar cognition reuses real scoped authority and no mutation transport (29052.694229ms)
+  ✔ Google reauthentication response does not leak a provider message (3056.608603ms)
+  ✔ mail cognition reads the authorized encrypted cache only; no SMTP/IMAP and revocation fences commit (15641.282148ms)
+  ✔ 030 reapplication preserves runtime ACL, data and wrapper identities (3182.397252ms)
+  ✔ foreign project and revoked session cannot use these paths (1250.254978ms)
+✔ operational recovery through scoped runtime and real PostgreSQL persistence (99726.585373ms)
+✔ consultations and ambiguous follow-ups cannot authorize a mission mutation (7.376257ms)
+✔ explicit commands retain the existing mission pipeline (0.323805ms)
+✔ Drive diagnostics only display reviewed public codes, never messages or provider payloads (0.389537ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 121515.816956

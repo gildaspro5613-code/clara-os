@@ -1,7 +1,7 @@
 name: Native resource authority validation
 on:
   pull_request:
-    branches: [main, consolidation/clara-os-clean-base, fix/native-documents-brain-continuity-20261022, fix/os-operational-reception-175, chore/recette-effective-binding-attestation]
+    branches: [delivery/clara-os-v1-20261025, main, consolidation/clara-os-clean-base, fix/native-documents-brain-continuity-20261022, fix/os-operational-reception-175, chore/recette-effective-binding-attestation]
     paths:
       - 'src/lib/native/**'
       - 'src/lib/canonical/**'
@@ -26,6 +26,7 @@ on:
       - 'src/app/api/openai/test/**'
       - 'src/app/api/internal/prospect-e2e-trace/**'
       - 'src/app/**/*.tsx'
+      - 'src/tests/operational-recovery*'
       - 'src/tests/native-authority*'
       - 'src/tests/native-runtime*'
       - 'src/tests/native-mission-contact*'
@@ -52,6 +53,7 @@ on:
       - 'db/migrations/025_native_mission_contact_association.sql'
       - 'db/migrations/026_native_document_continuity.sql'
       - 'db/migrations/028_native_job_kind_compatibility.sql'
+      - 'db/migrations/030_native_consultation_threads.sql'
       - 'src/tests/native-job-kind-compatibility.test.ts'
       - 'src/tests/v1-mission-identity.test.ts'
       - 'src/tests/native-runtime-proxy.test.mjs'
@@ -112,6 +114,8 @@ jobs:
           exit 1
       - name: Existing job types, 026 upgrade compatibility and local restore
         run: node --import tsx --test src/tests/native-job-kind-compatibility.test.ts src/tests/v1-mission-identity.test.ts src/tests/native-runtime-proxy.test.mjs
+      - name: Operational recovery, consultations and scoped provider reads
+        run: node --import tsx --test src/tests/operational-recovery*.test.ts
       - name: Actual handlers and database isolation, revocation, snapshot and history
         run: node --import tsx --test src/tests/google-sign-in-postgres.test.ts src/tests/canonical-conversation-postgres.test.ts src/tests/canonical-conversation-routes.test.ts src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts src/tests/native-commercial-postgres.test.ts src/tests/native-mission-contact-postgres.test.ts src/tests/native-documents-postgres.test.ts src/tests/native-google-oauth.test.ts src/tests/native-mail-postgres.test.ts src/tests/native-mail-triage.test.ts src/tests/native-mail-monitor.test.ts src/tests/native-mail-monitor-postgres.test.ts src/tests/ionos-transport.test.ts src/tests/native-conversation-postgres.test.ts src/tests/native-functional-closure.test.ts src/tests/native-google-work-postgres.test.ts
       - name: Canonical Stage decision, native identity and restricted SQL role

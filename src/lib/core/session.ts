@@ -44,6 +44,7 @@ export interface NativeDocumentReference {
 export interface ClaraSession {
   /** Server-attested immutable Mission of a native thread; never inferred for old history. */
   nativeMissionId?:string|null;
+  nativeConsultationVersion?:number|null;
   googleConnectionId?:string;
   googleCalendarId?:string;
   googleFolderId?:string;

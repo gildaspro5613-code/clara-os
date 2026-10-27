@@ -1,4 +1,5 @@
 "use client";
+import { documentDiagnostic } from "@/lib/documents/document-read-error";
 import {readNativeDocument} from "@/lib/documents/native-read-request";
 
 import { useEffect, useRef, useState } from "react";
@@ -77,14 +78,14 @@ export default function DocumentsPage() {
       const response = await fetch(`/api/documents?${params}`, { cache: "no-store" });
       const data = (await response.json()) as DocumentsResponse;
       if (generation !== listGeneration.current) return;
-      if (!response.ok || !data.success) throw new Error(t("loadError"));
+      if (!response.ok || !data.success) throw new Error(`${t("loadError")} [${documentDiagnostic(data)}]`);
       setReadOnly(data.readOnly===true);
       setFiles(data.files ?? []);
       setActiveSearch(search);
       setActiveFolderId(search ? "" : folderId);
       setNextPageToken(data.nextPageToken ?? null);
-    } catch {
-      if (generation === listGeneration.current) setError(t("loadError"));
+    } catch (error) {
+      if (generation === listGeneration.current) setError(error instanceof Error && error.message.startsWith(t("loadError")) ? error.message : `${t("loadError")} [DOCUMENT_REQUEST_FAILED]`);
     } finally {
       if (generation === listGeneration.current) setLoading(false);
     }
@@ -98,13 +99,13 @@ export default function DocumentsPage() {
     void fetch("/api/documents", { cache: "no-store", signal: controller.signal })
       .then(async response => {
         const data = await response.json() as DocumentsResponse;
-        if (!response.ok || !data.success) throw new Error(ui("unableToViewGoogleDrive"));
+        if (!response.ok || !data.success) throw new Error(`${ui("unableToViewGoogleDrive")} [${documentDiagnostic(data)}]`);
         if (generation !== listing.current) return;
         setReadOnly(data.readOnly===true);
       setFiles(data.files ?? []);
         setNextPageToken(data.nextPageToken ?? null);
-      }).catch(() => {
-        if (generation === listing.current && !controller.signal.aborted) setError(ui("unableToViewGoogleDrive"));
+      }).catch((error: unknown) => {
+        if (generation === listing.current && !controller.signal.aborted) setError(error instanceof Error && error.message.startsWith(ui("unableToViewGoogleDrive")) ? error.message : `${ui("unableToViewGoogleDrive")} [DOCUMENT_REQUEST_FAILED]`);
       }).finally(() => { if (generation === listing.current) setLoading(false); });
     return () => { controller.abort(); listing.current++; destinations.current++; };
   }, [ui]);
@@ -244,7 +245,7 @@ export default function DocumentsPage() {
       if (generation !== listGeneration.current) return;
       if (!response.ok || !data.success) {
         const known = ["PDF_TOO_LARGE", "PDF_TOO_MANY_PAGES", "PDF_NO_TEXT", "PDF_ENCRYPTED", "PDF_INVALID", "PDF_RESOURCE_LIMIT", "PDF_BUSY", "DOCUMENT_TOO_LONG"];
-        setError(data.code && known.includes(data.code) ? ui(data.code) : ui("unableToReadTheDocument"));
+        setError(data.code && known.includes(data.code) ? ui(data.code) : `${ui("unableToReadTheDocument")} [${documentDiagnostic(data)}]`);
         return;
       }
       setSelected({ name: file.name, content: data.textContent ?? "", recommendation: data.brain?.recommendation });
