@@ -32,4 +32,6 @@ Drive/Agenda/IONOS ne sont pas déclarés opérationnels par cette livraison d�
 
 Les réserves historiques dépendances, lint global et HTTP 503 sont conservées. Un avertissement ESLint préexistant concerne l’image SVG locale du logo : ressource conservée à l’identique. La réception isolée ne certifie pas une session authentifiée Production ni un fournisseur.
 
+Le premier run CI [40556240352](https://github.com/gildaspro5613-code/clara-os/actions/runs/40556240352) a reproduit deux attentes liées au repli : lecture du brouillon sans ouverture et avertissement P1 masqué avec les commandes. Le second est corrigé dans l’application : le message exigeant un nouveau fil reste visible hors de la section. Le premier est adapté dans la recette, qui ouvre l’éditeur après rechargement et réauthentification. Les assertions d’intégrité, historique, révocation et refus d’envoi sont conservées ; l’état replié et la visibilité du message sont maintenant contrôlés explicitement. Aucun backend modifié.
+
 GO technique/visuel uniquement sur résultats terminés des tests impactés, de la réception navigateur et de la CI. GO pour réception utilisateur **isolée** si ces contrôles passent. Pas de certification opérationnelle complète ni de GO Production/fournisseur sans réception réelle autorisée. Aucun merge ou déploiement exécuté ; arrêt après PR Draft et livrables.

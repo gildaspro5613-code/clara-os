@@ -50,7 +50,7 @@ test('commercial browser E2E: authenticated canonical selection → contact → 
   // represented by another independently seeded verified-user session, never an email guess.
   assert.equal((await call('/api/auth/session/logout','POST',{})).status,200);
   assert.equal((await call('/api/contacts')).status,403);
-  await context.addCookies([{name:'clara_auth_session',value:'E'.repeat(43),url:origin}]);await page.goto(origin+'/clara');assert.ok((await page.locator('body').innerText()).includes('LOT1_DURABLE_BODY'));assert.ok((await page.locator('body').innerText()).includes('LOT1_DIALOGUE'));
+  await context.addCookies([{name:'clara_auth_session',value:'E'.repeat(43),url:origin}]);await page.goto(origin+'/clara');assert.equal(await restoredDraft.evaluate(e=>e.open),false);await restoredDraft.locator(':scope > summary').click();assert.ok((await page.locator('body').innerText()).includes('LOT1_DURABLE_BODY'));assert.ok((await page.locator('body').innerText()).includes('LOT1_DIALOGUE'));
   const newCookie=(await context.cookies()).map(c=>c.name+'='+c.value).join(';');
   pg("UPDATE clara_registry_project_access SET revoked_at=NOW() WHERE user_id='a' AND project_id='p1'");assert.equal((await call('/api/contacts','GET',undefined,newCookie)).status,403);pg("UPDATE clara_registry_project_access SET revoked_at=NULL WHERE user_id='a' AND project_id='p1'");
   assert.equal(pg("SELECT COUNT(*) FROM clara_native_resource_authority WHERE resource_id='w/unbound-history'").trim(),'0');

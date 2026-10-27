@@ -33,6 +33,7 @@ test('P1 browser: mission first/contact first, immutable old conversation, expli
   page.once('dialog',d=>d.accept());let ack;const committed=new Promise(r=>{ack=r;});
   await page.route('**/api/native/runtime',async r=>{if(r.request().method()!=='POST'||r.request().postDataJSON()?.action!=='associateMissionContact')return r.continue();const q=r.request(),response=await fetch(q.url(),{method:'POST',headers:await q.allHeaders(),body:q.postData()});assert.equal(response.status,200,await response.clone().text());await response.json();await r.abort('failed');ack();});
   await page.getByRole('button',{name:'Sélectionner le contact',exact:true}).click();await committed;await page.unroute('**/api/native/runtime');await page.reload();
+  await page.locator('[data-context-loading="false"]').waitFor();
   assert.equal(await page.locator('[data-native-business-context]').evaluate(e=>e.open),false);
   const warning=page.getByRole('status').filter({hasText:'Contact associé à la mission'});await warning.waitFor();
   if(process.env.P1_UI_EVIDENCE){mkdirSync(process.env.P1_UI_EVIDENCE,{recursive:true});await warning.screenshot({path:process.env.P1_UI_EVIDENCE+'/contact-requires-new-thread.png'});}

@@ -20,3 +20,5 @@ Données synthétiques uniquement, mêmes fondations graphiques. Voir README pou
 - Réception métier avec providers simulés : [documents analysés](evidence/business/documents.png), [Cockpit après redémarrage](evidence/business/cockpit-after-restart.png).
 
 Toutes les captures de la campagne finale sont conservées dans evidence/after ; la couverture est détaillée dans browser-matrix.csv. L’émulation de viewport Chromium ne remplace pas une réception matérielle Safari/iOS/Android.
+
+- [Avertissement P1 visible lorsque les commandes sont repliées](evidence/after/contact-requires-new-thread.png), reçu sur le correctif de visibilité, avec historique inchangé.

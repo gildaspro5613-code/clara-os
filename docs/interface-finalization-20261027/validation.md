@@ -1,6 +1,6 @@
 # Validation de l’interface candidate
 
-Source applicative : `074909541b91f48024f4d83a1be3c7b3be9166da`, base `bc1fda97fcbb003479fbc49f7260e9c560c0b5e9`. Les commits documentaires suivants ne modifient pas l’application reçue. Environnement : Next.js optimisé, Chromium local, proxy TLS et PostgreSQL jetable ; transport Neon substitué par l’adaptateur PostgreSQL existant. Aucune preuve de transport Neon HTTP/fournisseur réel n’est déduite.
+Source initiale : `074909541b91f48024f4d83a1be3c7b3be9166da` ; correction applicative de visibilité P1 : `2da4a0fedc3757fc3def5bed4ac61db2eed590e1`, base `bc1fda97fcbb003479fbc49f7260e9c560c0b5e9`. Le delta applicatif depuis la réception transverse initiale est limité au placement du message P1 hors de la section repliée. Il est vérifié par la recette P1 ; les autres parcours, captures et preuves restent applicables. La CI du HEAD final rejoue aussi la matrice complète. Les commits de preuves ne changent pas l’application. Environnement : Next.js optimisé, Chromium local, proxy TLS et PostgreSQL jetable ; transport Neon substitué par l’adaptateur PostgreSQL existant. Aucune preuve de transport Neon HTTP/fournisseur réel n’est déduite.
 
 | Contrôle | Résultat local | Preuve |
 | --- | --- | --- |
@@ -10,6 +10,7 @@ Source applicative : `074909541b91f48024f4d83a1be3c7b3be9166da`, base `bc1fda97f
 | TypeScript et build Next.js optimisé | PASS, code de sortie 0 | evidence/build-typescript.txt |
 | Lint des composants modifiés et recettes impactées | 0 erreur, avertissement préexistant sur le SVG img du logo | evidence/lint-targeted.txt |
 | Réception interface finale | 1 test transverse PASS ; 13 pages × 3 formats FR et × 5 langues desktop, soit 91 combinaisons distinctes | evidence/interface-browser.txt, browser-matrix.csv |
+| Deux écarts CI reproduits puis corrigés | 2 recettes ciblées PASS, build et lint réussis | evidence/ci-pair-before.txt, evidence/ci-pair-accepted.txt |
 | Continuité métier, document, approbation et redémarrage | 4 recettes PASS, dont reprise après redémarrage effectif ; zéro envoi réel | evidence/business-restart.txt |
 
 La première commande agrégée de tests opérationnels, sans CANONICAL_TEST_CONTAINER, avait 15 PASS et 1 SKIP (PostgreSQL). Ce sous-ensemble a ensuite été exécuté avec le conteneur réel et ses 12 contrôles PASS ; le SKIP n’est pas présenté comme réussi. Les résultats ci-dessus sont détaillés par commande, sans additionner plusieurs fois les mêmes scénarios.
@@ -34,6 +35,16 @@ Les états Microsoft refusé et les états IONOS vide/refusé sont explicitement
 - Premier test de la nouvelle recette : sélection ambiguë d’un nom Contact, pointant une option cachée. Le test cible maintenant la fiche identifiée, sans clic forcé ou délai augmenté.
 - Un passage intermédiaire complet a reçu la navigation multiformat/langue avant le dernier repli des réglages. Il n’est pas substitué à la campagne sur la source finale, qui a été rejouée avec succès.
 - Une exécution du lanceur de continuité a été interrompue par une commande parasite lors de sa modification locale. Les résultats partiels ne sont pas comptés. Le lanceur est ensuite figé et relancé sur une nouvelle base jetable ; la trace initiale est conservée.
+
+## Qualification du premier run CI
+
+Run 40556240352, SHA 11dcbad6203ede84a61d5ef84297122a6c167838 : FAIL terminé, annotations conservées dans evidence/ci-first-failure.json. Les deux échecs sont reproduits localement, sans augmenter les timeouts.
+
+- Commercial : le brouillon durable est replié après rechargement et nouvelle session authentifiée. La recette ouvre le panneau avant les mêmes assertions de contenu ; version/CAS/refus d’envoi restent contrôlés.
+- P1 : le message de nouveau fil était caché avec les commandes. Le composant le place désormais hors du panneau. La recette attend le contexte chargé, confirme que le panneau est replié, puis exige le message visible ; identité, historique, idempotence et refus NATIVE_NEW_SESSION_REQUIRED restent contrôlés.
+- Le premier passage ciblé a également révélé la seconde lecture repliée après réauthentification et une assertion d’état avant fin d’hydratation. Ces adaptations de tests sont tracées dans ci-pair-intermediate.txt ; aucune assertion métier n’est retirée.
+
+La nouvelle compilation et le lint ciblé sont conservés. Le résultat du dernier passage ciblé est consigné dans ci-pair-accepted.txt ; le run CI final sera lié dans la PR après achèvement, sans présenter le premier comme réussi.
 
 ## Protections et réserves
 

@@ -21,6 +21,7 @@ docs/interface-finalization-20261027/evidence/after/cockpit-tablet.png
 docs/interface-finalization-20261027/evidence/after/connexions-desktop.png
 docs/interface-finalization-20261027/evidence/after/connexions-mobile.png
 docs/interface-finalization-20261027/evidence/after/connexions-tablet.png
+docs/interface-finalization-20261027/evidence/after/contact-requires-new-thread.png
 docs/interface-finalization-20261027/evidence/after/contacts-desktop.png
 docs/interface-finalization-20261027/evidence/after/contacts-mobile.png
 docs/interface-finalization-20261027/evidence/after/contacts-tablet.png
@@ -76,6 +77,12 @@ docs/interface-finalization-20261027/evidence/business/cockpit-after-restart.png
 docs/interface-finalization-20261027/evidence/business/documents.png
 docs/interface-finalization-20261027/evidence/business/first-day-result.json
 docs/interface-finalization-20261027/evidence/business/restart-result.json
+docs/interface-finalization-20261027/evidence/ci-first-failure.json
+docs/interface-finalization-20261027/evidence/ci-fix-build-typescript.txt
+docs/interface-finalization-20261027/evidence/ci-fix-lint.txt
+docs/interface-finalization-20261027/evidence/ci-pair-accepted.txt
+docs/interface-finalization-20261027/evidence/ci-pair-before.txt
+docs/interface-finalization-20261027/evidence/ci-pair-intermediate.txt
 docs/interface-finalization-20261027/evidence/initial-contact-locator-failure.txt
 docs/interface-finalization-20261027/evidence/interface-browser.txt
 docs/interface-finalization-20261027/evidence/lint-targeted.txt
