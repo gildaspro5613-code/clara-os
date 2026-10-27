@@ -9,6 +9,7 @@ Base 242560261f91d5f32790191d989e321dfa71d757. Source applicative fdfe1136f88132
 - Le test navigateur utilise Chromium, le build optimisé, le proxy TLS et les vrais handlers/SQL natifs sur une base PostgreSQL jetable. Aucune base distante.
 - Les réponses Google non natives restantes sont des fixtures de présentation, ainsi que Microsoft et Make. Les captures ne certifient pas ces fournisseurs.
 - Aucun changement src/app/api, src/lib, db/migrations, package.json ou package-lock.json par rapport à la base (git diff --exit-code).
+- Les journaux texte sont normalisés uniquement pour les retours de ligne/progress bars et espaces de fin de ligne (git diff --check), sans changement des résultats.
 - Les traces des deux erreurs de test locales sont conservées : locator Make ambigu puis variable hors portée dans un scénario ajouté. Pas de retries automatiques ni durée augmentée.
 
 ## Publication et sécurité
@@ -18,3 +19,5 @@ Protection historique : docs/delivery-v1-20261025/publication-protection-evidenc
 Aucun fichier de secret, TLS privé, cookie, contenu de message ou donnée réelle exporté. Aucun provisionnement ou SQL Production exécuté. Le modèle SQL IONOS est préparatoire, paramétré et non exécuté.
 
 Les CI finales, leur SHA et les déploiements observables GitHub sont rapportés dans la description de PR et ses Checks après leur achèvement. L'absence d'entrée GitHub ne constitue pas une inspection exhaustive de Vercel. Aucun merge ni déploiement autorisé.
+
+Contrôle avant publication : aucun motif de credential réel dans les fichiers modifiés. Le seul motif URI SQL repéré est la configuration de fixture préexistante synthetic@documents-e2e.invalid dans le workflow, inchangée. git diff --check contrôlé sur le delta complet.
