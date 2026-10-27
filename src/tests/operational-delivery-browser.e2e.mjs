@@ -20,6 +20,8 @@ test('delivery UI: official logo, business navigation, private advanced controls
   for(const path of ['clara','missions','conversations','contacts','documents','messagerie','agenda','journal','brain','automatisations','connexions','']){
    const response=await page.goto(origin+'/'+path);assert.equal(response.status(),200,path);
    await page.getByRole('region',{name:'Contexte canonique privé',exact:true}).waitFor();
+   await page.getByText('Identifiants du contexte sélectionné',{exact:true}).waitFor();
+   if(path==='documents')await page.getByText(/\[NATIVE_GOOGLE_EXPLICIT_SELECTION_REQUIRED\]/).waitFor();
    assert.equal(await page.locator('[data-native-authority="locked"]').count(),0,path);
    await page.screenshot({path:out+'/'+(path||'cockpit')+'-desktop.png',fullPage:true});
    results.push({path:'/'+path,status:'PASS rendered authenticated synthetic context',scope:'page rendering, not provider certification'});
@@ -37,6 +39,8 @@ test('delivery UI: official logo, business navigation, private advanced controls
   }
   await context.addCookies([{name:'NEXT_LOCALE',value:'fr',url:origin}]);await page.setViewportSize({width:390,height:844});await page.goto(origin+'/documents');
   await page.getByRole('button',{name:'Ouvrir le menu',exact:true}).click();const image=page.locator('aside img[src="/brand/clara-os-symbol.svg"]');await image.waitFor();assert.equal(await image.evaluate(e=>e.complete&&e.naturalWidth>0),true);
+  await page.locator('aside').evaluate(async e=>{await new Promise(requestAnimationFrame);await Promise.all(e.getAnimations().map(a=>a.finished));});
+  assert.equal(Math.round((await page.locator('aside').boundingBox()).x),0);
   await page.screenshot({path:out+'/navigation-mobile.png',fullPage:true});await page.getByRole('link',{name:'Missions',exact:true}).click();await page.waitForURL(origin+'/missions');
   await page.screenshot({path:out+'/missions-mobile.png',fullPage:true});
   writeFileSync(out+'/results.json',JSON.stringify({environment:'isolated PostgreSQL, real Next endpoints, providers simulated; no Production certification',results},null,2)+'\n');
