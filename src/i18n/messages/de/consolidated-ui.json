@@ -1,4 +1,5 @@
 {
+  "googleHub_returnReceived": "Google-Rückmeldung erhalten. Prüfen Sie unten die erlaubten Verbindungen; diese Rückmeldung bestätigt keinen Drive- oder Kalenderzugriff.",
   "googleHub_selected": "Verbindung ausgewählt",
   "googleHub_selected_help": "Dieses Konto ist für diesen Verlauf registriert und ausgewählt. Drive- und Kalenderrechte werden bei jeder Nutzung geprüft.",
   "googleHub_selectionRequired": "Auswahl erforderlich",

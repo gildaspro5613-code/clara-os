@@ -43,6 +43,7 @@ export default function ConnectionsHub() {
   const microsoftResult = searchParams.get("microsoft");
   const oauthResult = googleResult ? { provider: "Google Workspace", status: googleResult } : microsoftResult ? { provider: "Microsoft", status: microsoftResult } : null;
   const oauthSuccess = oauthResult?.status === "connected";
+  const googleReturnReceived = Boolean(googleResult) && oauthSuccess;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -62,8 +63,8 @@ export default function ConnectionsHub() {
   return (
     <>
       {oauthResult && (
-        <div className={`mb-5 rounded-2xl border px-5 py-4 text-sm ${oauthSuccess ? "border-emerald-400/20 bg-emerald-400/[0.06] text-emerald-200" : "border-amber-400/20 bg-amber-400/[0.06] text-amber-100"}`} role="status">
-          {oauthSuccess ? ui("oauthConnected",{provider:oauthResult.provider}) : oauthResult.status === "auth_required" ? ui("signInToClaraOSAgainBeforeConnectingMicrosoft") : oauthResult.status === "access_denied" ? ui("oauthCancelled",{provider:oauthResult.provider}) : ui("oauthFailed",{provider:oauthResult.provider})}
+        <div className={`mb-5 rounded-2xl border px-5 py-4 text-sm ${oauthSuccess && !googleReturnReceived ? "border-emerald-400/20 bg-emerald-400/[0.06] text-emerald-200" : "border-amber-400/20 bg-amber-400/[0.06] text-amber-100"}`} role="status">
+          {googleReturnReceived ? ui("googleHub_returnReceived") : oauthSuccess ? ui("oauthConnected",{provider:oauthResult.provider}) : oauthResult.status === "auth_required" ? ui("signInToClaraOSAgainBeforeConnectingMicrosoft") : oauthResult.status === "access_denied" ? ui("oauthCancelled",{provider:oauthResult.provider}) : ui("oauthFailed",{provider:oauthResult.provider})}
         </div>
       )}
       <div className="grid gap-4 md:grid-cols-2">

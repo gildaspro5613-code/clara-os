@@ -1,4 +1,5 @@
 {
+  "googleHub_returnReceived": "Ritorno Google ricevuto. Consulta le connessioni autorizzate qui sotto; questo ritorno non certifica l’accesso a Drive o Calendar.",
   "googleHub_selected": "Connessione selezionata",
   "googleHub_selected_help": "Questo account è registrato e selezionato per questo filo. I permessi Drive e Calendar sono verificati a ogni utilizzo.",
   "googleHub_selectionRequired": "Selezione necessaria",

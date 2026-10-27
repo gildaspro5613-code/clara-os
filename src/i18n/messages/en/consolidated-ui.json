@@ -1,4 +1,5 @@
 {
+  "googleHub_returnReceived": "Google return received. Check the authorized connections below; this return does not certify Drive or Calendar access.",
   "googleHub_selected": "Connection selected",
   "googleHub_selected_help": "This account is registered and selected for this thread. Drive and Calendar permissions are still checked on each use.",
   "googleHub_selectionRequired": "Selection required",

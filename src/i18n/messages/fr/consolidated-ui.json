@@ -1,4 +1,5 @@
 {
+  "googleHub_returnReceived": "Retour Google reçu. Consultez les connexions autorisées ci-dessous ; ce retour ne certifie pas l’accès à Drive ou Agenda.",
   "googleHub_selected": "Connexion sélectionnée",
   "googleHub_selected_help": "Ce compte est enregistré et sélectionné pour ce fil. Les droits Drive et Agenda restent vérifiés à chaque utilisation.",
   "googleHub_selectionRequired": "Sélection requise",
