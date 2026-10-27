@@ -1,3 +1,4 @@
+import {revealMissionCreation,revealContextSelection} from './helpers/native-ui-disclosures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
@@ -13,11 +14,11 @@ test('documentary browser E2E: canonical selection → mission → pinned OAuth 
  try{
   const context=await browser.newContext();await context.addCookies([{name:'clara_auth_session',value:'A'.repeat(43),url:origin},{name:'NEXT_LOCALE',value:'fr',url:origin}]);await context.route('**/*',r=>new URL(r.request().url()).origin===new URL(origin).origin?r.continue():r.abort());
   const page=await context.newPage();await page.goto(origin+'/clara');const selector=page.getByRole('region',{name:'Contexte canonique privé',exact:true});
-  await selector.locator('select').nth(0).selectOption('w');await selector.locator('select').nth(1).selectOption('c1');await selector.locator('select').nth(2).selectOption('p1');
+  await revealContextSelection(page);await selector.locator('select').nth(0).selectOption('w');await selector.locator('select').nth(1).selectOption('c1');await selector.locator('select').nth(2).selectOption('p1');
   await Promise.all([page.waitForResponse(r=>r.url().includes('/api/native/runtime')&&r.request().method()==='POST'),selector.getByRole('button',{name:'Créer un nouveau fil'}).click()]);
-  await page.getByRole('textbox',{name:'Titre de la mission',exact:true}).fill('LOT2_DOCUMENTARY_MISSION');await page.getByRole('textbox',{name:'Objectif de la mission',exact:true}).fill('Analyze the project document and preserve commercial continuity');
+  await revealMissionCreation(page);await page.getByRole('textbox',{name:'Titre de la mission',exact:true}).fill('LOT2_DOCUMENTARY_MISSION');await page.getByRole('textbox',{name:'Objectif de la mission',exact:true}).fill('Analyze the project document and preserve commercial continuity');
   await Promise.all([page.waitForResponse(r=>r.url().includes('/api/native/runtime')&&r.request().method()==='POST'),page.getByRole('button',{name:'Créer la mission',exact:true}).click()]);
-  await page.getByRole('textbox',{name:'Titre de la mission',exact:true}).waitFor();
+  await revealMissionCreation(page);await page.getByRole('textbox',{name:'Titre de la mission',exact:true}).waitFor();
   const cookie=async()=> (await context.cookies()).map(c=>c.name+'='+c.value).join(';');
   const call=async(path,method='GET',body,customCookie)=>fetch(origin+path,{method,redirect:'manual',headers:{cookie:customCookie??await cookie(),origin,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body.action==='read'?{operationId:crypto.randomUUID(),...body}:body)}:{})});
   const begin=async()=>{const r=await page.evaluate(async()=>{const r=await fetch('/api/connections/google/connect',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});return {status:r.status,body:await r.json()};});assert.equal(r.status,200,JSON.stringify(r.body));return new URL(r.body.authorizationUrl);};

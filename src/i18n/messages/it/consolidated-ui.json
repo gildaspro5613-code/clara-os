@@ -350,5 +350,18 @@
   "mailRecordedOperations": "Operazioni di posta registrate",
   "mailRecordedOnly": "Stato registrato; diritti e validità ricontrollati al momento dell’azione",
   "currentMissionSummary": "Riepilogo della missione attiva",
-  "summaryScopeNotice": "Questo riepilogo riguarda solo la missione e la conversazione selezionate. Una attività spuntata o approvazione non prova l’esecuzione del fornitore; verificare le ricevute nel Diario."
+  "summaryScopeNotice": "Questo riepilogo riguarda solo la missione e la conversazione selezionate. Una attività spuntata o approvazione non prova l’esecuzione del fornitore; verificare le ricevute nel Diario.",
+  "uiWorkspace": "Spazio di lavoro",
+  "uiNewMission": "Nuova missione",
+  "uiArchiveAdministration": "Amministrazione archivi",
+  "uiSkipContent": "Vai al contenuto",
+  "uiDocumentSearch": "Cerca nei documenti",
+  "uiOpenJournal": "Apri il Diario",
+  "uiLoading": "Caricamento…",
+  "uiMailEmpty": "Nessuna casella autorizzata in questo contesto. Le connessioni esistenti devono essere verificate prima dell’uso.",
+  "uiCurrentThread": "Conversazione attuale",
+  "uiChangeContext": "Cambia spazio o progetto",
+  "uiTechnicalDetails": "Dettagli tecnici",
+  "googleHubDescription": "Connessioni Google autorizzate per documenti e calendario.",
+  "uiMissionContact": "Missione e contatto"
 }

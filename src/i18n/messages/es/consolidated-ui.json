@@ -350,5 +350,18 @@
   "mailRecordedOperations": "Operaciones de correo registradas",
   "mailRecordedOnly": "Estado registrado; permisos y validez se verifican al actuar",
   "currentMissionSummary": "Resumen de la misión activa",
-  "summaryScopeNotice": "Este resumen cubre solo la misión y el hilo seleccionados. Una tarea marcada o aprobación no demuestra ejecución del proveedor; consulte los recibos en el Diario."
+  "summaryScopeNotice": "Este resumen cubre solo la misión y el hilo seleccionados. Una tarea marcada o aprobación no demuestra ejecución del proveedor; consulte los recibos en el Diario.",
+  "uiWorkspace": "Espacio de trabajo",
+  "uiNewMission": "Nueva misión",
+  "uiArchiveAdministration": "Administración de archivos",
+  "uiSkipContent": "Ir al contenido",
+  "uiDocumentSearch": "Buscar documentos",
+  "uiOpenJournal": "Consultar el Diario",
+  "uiLoading": "Cargando…",
+  "uiMailEmpty": "No hay buzones autorizados en este contexto. Las conexiones existentes deben verificarse antes de utilizarlas.",
+  "uiCurrentThread": "Conversación actual",
+  "uiChangeContext": "Cambiar espacio o proyecto",
+  "uiTechnicalDetails": "Detalles técnicos",
+  "googleHubDescription": "Conexiones de Google autorizadas para documentos y calendario.",
+  "uiMissionContact": "Misión y contacto"
 }

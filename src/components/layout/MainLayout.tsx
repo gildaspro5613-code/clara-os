@@ -30,13 +30,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
       <Sidebar />
 
       {/* Main content */}
-      <div className="flex h-screen flex-col overflow-hidden lg:ml-64 xl:ml-72">
+      <div className="flex h-dvh flex-col overflow-hidden lg:ml-64 xl:ml-72">
         {/* Top header */}
         <Header />
 
         {/* Workspace */}
-        <main className="clara-workspace-scroll relative flex min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
-          <div className="w-full"><NativeScopeSelector />{children}</div>
+        <main id="main-workspace" tabIndex={-1} className="clara-workspace-scroll relative flex min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
+          <div className="clara-page-content min-w-0 w-full"><NativeScopeSelector />{children}</div>
         </main>
       </div>
     </div>

@@ -350,5 +350,18 @@
   "mailRecordedOperations": "Opérations de courrier enregistrées",
   "mailRecordedOnly": "État enregistré ; droits et validité revérifiés à l’action",
   "currentMissionSummary": "Résumé de la mission active",
-  "summaryScopeNotice": "Ce résumé concerne uniquement la mission et le fil sélectionnés. Une tâche cochée ou une approbation ne prouve pas une exécution fournisseur ; vérifier les reçus dans le Journal."
+  "summaryScopeNotice": "Ce résumé concerne uniquement la mission et le fil sélectionnés. Une tâche cochée ou une approbation ne prouve pas une exécution fournisseur ; vérifier les reçus dans le Journal.",
+  "uiWorkspace": "Espace de travail",
+  "uiNewMission": "Nouvelle mission",
+  "uiArchiveAdministration": "Administration des archives",
+  "uiSkipContent": "Aller au contenu",
+  "uiDocumentSearch": "Rechercher dans les documents",
+  "uiOpenJournal": "Consulter le Journal",
+  "uiLoading": "Chargement…",
+  "uiMailEmpty": "Aucune boîte autorisée dans ce contexte. Les connexions existantes doivent être vérifiées avant leur utilisation.",
+  "uiCurrentThread": "Fil actuel",
+  "uiChangeContext": "Changer d’espace ou de projet",
+  "uiTechnicalDetails": "Détails techniques",
+  "googleHubDescription": "Connexions Google autorisées pour les documents et l’agenda.",
+  "uiMissionContact": "Mission et contact"
 }

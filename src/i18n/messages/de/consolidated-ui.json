@@ -350,5 +350,18 @@
   "mailRecordedOperations": "Gespeicherte E-Mail-Vorgänge",
   "mailRecordedOnly": "Gespeicherter Status; Rechte und Gültigkeit werden bei der Aktion erneut geprüft",
   "currentMissionSummary": "Übersicht der aktiven Mission",
-  "summaryScopeNotice": "Diese Übersicht gilt nur für die gewählte Mission und Unterhaltung. Eine abgehakte Aufgabe oder Freigabe belegt keine Ausführung beim Anbieter; Belege im Journal prüfen."
+  "summaryScopeNotice": "Diese Übersicht gilt nur für die gewählte Mission und Unterhaltung. Eine abgehakte Aufgabe oder Freigabe belegt keine Ausführung beim Anbieter; Belege im Journal prüfen.",
+  "uiWorkspace": "Arbeitsbereich",
+  "uiNewMission": "Neue Mission",
+  "uiArchiveAdministration": "Archivverwaltung",
+  "uiSkipContent": "Zum Inhalt",
+  "uiDocumentSearch": "Dokumente durchsuchen",
+  "uiOpenJournal": "Journal öffnen",
+  "uiLoading": "Wird geladen…",
+  "uiMailEmpty": "In diesem Kontext ist kein Postfach autorisiert. Bestehende Verbindungen müssen vor der Nutzung geprüft werden.",
+  "uiCurrentThread": "Aktuelles Gespräch",
+  "uiChangeContext": "Arbeitsbereich oder Projekt wechseln",
+  "uiTechnicalDetails": "Technische Details",
+  "googleHubDescription": "Autorisierte Google-Verbindungen für Dokumente und Kalender.",
+  "uiMissionContact": "Mission und Kontakt"
 }

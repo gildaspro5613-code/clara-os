@@ -350,5 +350,18 @@
   "mailRecordedOperations": "Recorded mail operations",
   "mailRecordedOnly": "Recorded state; rights and validity checked again on action",
   "currentMissionSummary": "Active mission summary",
-  "summaryScopeNotice": "This summary covers only the selected mission and thread. A checked task or approval does not prove provider execution; check the receipts in the Journal."
+  "summaryScopeNotice": "This summary covers only the selected mission and thread. A checked task or approval does not prove provider execution; check the receipts in the Journal.",
+  "uiWorkspace": "Workspace",
+  "uiNewMission": "New mission",
+  "uiArchiveAdministration": "Archive administration",
+  "uiSkipContent": "Skip to content",
+  "uiDocumentSearch": "Search documents",
+  "uiOpenJournal": "Open Journal",
+  "uiLoading": "Loading…",
+  "uiMailEmpty": "No mailbox is authorized in this context. Existing connections must be verified before use.",
+  "uiCurrentThread": "Current conversation",
+  "uiChangeContext": "Change workspace or project",
+  "uiTechnicalDetails": "Technical details",
+  "googleHubDescription": "Authorized Google connections for documents and calendar.",
+  "uiMissionContact": "Mission and contact"
 }

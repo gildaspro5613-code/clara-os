@@ -236,15 +236,15 @@ export default function ClaraChatWidget({
         </h2>
       </div>
 
-      <div className="max-h-[360px] space-y-3 overflow-y-auto pr-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div role="log" aria-label={t("title")} tabIndex={0} className="clara-workspace-scroll max-h-[60dvh] min-h-40 space-y-4 overflow-y-auto pr-2">
       <NativeEarlierMessages sessionId={nativeSessionId} firstMessageId={initialMessages[0]?.id} windowSize={initialMessages.length}/>
         {messages.map((message) => (
           <div
             key={message.id}
             className={
               message.role === "user"
-                ? "ml-auto max-w-[80%] rounded-2xl bg-cyan-500/15 px-4 py-3 text-sm text-white"
-                : "max-w-[80%] rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm leading-relaxed text-white/80"
+                ? "ml-auto whitespace-pre-wrap [overflow-wrap:anywhere] max-w-[94%] sm:max-w-[85%] rounded-2xl bg-cyan-500/15 px-4 py-3 text-sm text-white"
+                : "whitespace-pre-wrap [overflow-wrap:anywhere] max-w-[94%] sm:max-w-[85%] rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm leading-7 text-white/80"
             }
           >
             {compact && message.id !== "clara-greeting" ? <Link href="/conversations" className="text-cyan-200">{ui("openConversationMessage")} →</Link> : message.content}
@@ -358,13 +358,16 @@ export default function ClaraChatWidget({
         onSubmit={handleSubmit}
         className="mt-4 flex items-center gap-2"
       >
-        <input
+        <textarea
+          rows={2}
+          onKeyDown={event=>{if(event.key==="Enter"&&!event.shiftKey&&!event.nativeEvent.isComposing){event.preventDefault();event.currentTarget.form?.requestSubmit();}}}
+          aria-label={t("placeholder")}
           value={input}
           onChange={(event) => setInput(event.target.value)}
           disabled={loading||!!pending||nativeThreadReadOnly}
           autoFocus={autoFocus}
           placeholder={t("placeholder")}
-          className="h-11 flex-1 rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-cyan-400/40"
+          className="min-h-12 min-w-0 flex-1 resize-y rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-cyan-400/40"
         />
 
         <button

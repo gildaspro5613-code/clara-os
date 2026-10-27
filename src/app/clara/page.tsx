@@ -35,7 +35,6 @@ export default async function ClaraPage({
 
   return (
     <MainLayout>
-      <NativeDocumentsPanel />
       <div className="w-full p-8">
         <div className="mb-6">
           <p className="text-xs uppercase tracking-[0.22em] text-cyan-400">
@@ -51,7 +50,7 @@ export default async function ClaraPage({
           </p>
         </div>
 
-        <section className="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <details data-clara-mission-context className="native-panel mb-6 rounded-2xl border border-white/10 p-4"><summary>{t("currentMission")} · <span>{mission?.title ?? t("noMission")}</span></summary><section className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <article className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
             <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
               {t("state")}
@@ -87,11 +86,11 @@ export default async function ClaraPage({
               {mission?.nextAction ?? t("noNextAction")}
             </p>
           </article>
-        </section>
+        </section></details>
 
         {acquisition && <details id="source-details" className="mb-6 max-w-5xl rounded-xl border border-white/10 p-4"><summary className="cursor-pointer text-sm text-cyan-200">{ui("sourceOriginal")}</summary><p className="mt-3 whitespace-pre-wrap text-sm text-white/75">{acquisition.qualification.opportunity.brief}</p><p className="mt-3 text-sm text-white/75">{acquisition.lifecycle.nextAction}</p></details>}
 
-        {draft && <section id="commercial-draft" className="mb-6 max-w-5xl"><CommercialDraftEditor initialDraft={draft} /></section>}
+        {draft && <details id="commercial-draft" open={intent==="email"} className="native-panel mb-6 max-w-5xl rounded-2xl border border-white/10 p-4"><summary>{ui("communicationPreparedByClara")}</summary><CommercialDraftEditor initialDraft={draft} /></details>}
 
         <div className="grid max-w-5xl gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
           <ClaraChatWidget nativeThreadReadOnly={!!nativeContext()&&!nativeThreadCertified(session)} key={nativeContext()?.scope.sessionId} nativeSessionId={nativeContext()?.scope.sessionId}
@@ -101,6 +100,7 @@ export default async function ClaraPage({
           />
           {nativeContext()?<p className="text-sm text-white/60">{ui("nativeProviderBlocked")}</p>:<ClaraVoiceWidget />}
         </div>
+        <NativeDocumentsPanel referencesOnly />
       </div>
     </MainLayout>
   );
