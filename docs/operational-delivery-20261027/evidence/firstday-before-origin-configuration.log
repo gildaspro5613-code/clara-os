@@ -1,0 +1,135 @@
+Native browser fixture initialized; no production connections.
+PASS: two consultations, durable history, no mission mutation, explicit creation, reload, safe Drive diagnostic
+✔ browser: consultation history without mission, exact Drive diagnostic, explicit mission and reload (36677.819831ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 38304.762164
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":null,"status":409,"code":"NATIVE_GOOGLE_EXPLICIT_SELECTION_REQUIRED","success":false}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":null,"status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":"references","status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"POST","action":"inspect","status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_CONTEXT {"status":200,"code":null,"hasMission":true,"hasConnection":true,"uuid":"function","pending":0}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":"references","status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":null,"status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":"references","status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":"references","status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"POST","action":"read","status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_READ {"status":200,"code":null,"success":true,"textLength":301}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":"references","status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_HTTP {"method":"GET","action":"references","status":200,"code":null,"success":true}
+ISOLATED_DOCUMENT_DOM CLARA OS
+
+OPÉRER
+
+Cockpit
+Missions
+Conversations
+Contacts
+Messagerie
+
+CONNECTER
+
+Connexions
+Téléphonie
+Automatisations
+Agenda
+
+CONNAÎTRE
+
+Documents
+Mémoire
+Brain
+
+CLARA
+
+Clara
+Clara est prête
+
+Melodie Digital
+
+Version 0.2
+
+Messagerie
+Clara prépare votre journée…
+FR
+EN
+ES
+DE
+IT
+G
+
+Contexte canonique privé · w / Client c1 / Project p1
+
+Identifiants du contexte sélectionné
+Espace
+Choisir
+w
+Client
+Choisir un client
+Projet
+Choisir un projet
+Créer un nouveau fil
+Identifiant du fil
+Choisir
+Ouvrir ce fil
+Contact / prospect
+Choisir
+PRIVATE_prospect-a
+Sélectionner le contact
+Communication préparée par Clara
+Mission autorisée
+Choisir
+Recovery synthetic mission
+LOT2_DOCUMENTARY_MISSION
+Reprendre cette mission
+Titre de la mission
+Objectif de la mission
+Créer la mission
+Messagerie professionnelle
+
+Choisissez une boîte autorisée. Aucun envoi automatique.
+
+Boîte email
+Choisir
+clara@melodie.digital
+ActualiserDossiers autorisés
+Dossier
+INBOX
+Synchroniser
+
+Sélectionnez explicitement le contact et la mission dans le contexte courant avant de rattacher un email.
+
+Utilisateur canonique délégué
+Déléguer pour ce projet
+Révoquer la délégation
+Révoquer la boîte
+
+Action indisponible ou non autorisée. Aucun résultat fournisseur n’est certifié.
+✖ document continuity browser E2E: canonical selection → mission → pinned OAuth → explicit Google selection → project attestation → PDF/Core/Brain → Journal/Cockpit → fresh resume and revocation (208980.077972ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 213313.270577
+
+✖ failing tests:
+
+test at src/tests/native-document-continuity-browser.e2e.mjs:13:1
+✖ document continuity browser E2E: canonical selection → mission → pinned OAuth → explicit Google selection → project attestation → PDF/Core/Brain → Journal/Cockpit → fresh resume and revocation (208980.077972ms)
+  locator.click: Timeout 30000ms exceeded.
+  Call log:
+  [2m  - waiting for getByRole('region', { name: 'Messagerie professionnelle', exact: true }).getByRole('button', { name: /correspondent@example.invalid/ })[22m
+
+      at firstDayBrowser (/workspace/clara-os-operational-delivery/src/tests/helpers/first-day-browser.ts:50:73)
+      at async TestContext.<anonymous> (/workspace/clara-os-operational-delivery/src/tests/native-document-continuity-browser.e2e.mjs:65:40) {
+    name: 'TimeoutError',
+    log: [ "  - waiting for getByRole('region', { name: 'Messagerie professionnelle', exact: true }).getByRole('button', { name: /correspondent@example.invalid/ })" ]
+  }
