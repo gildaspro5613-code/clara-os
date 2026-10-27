@@ -1,12 +1,13 @@
 "use client";
 
+import {nativeGoogleHubState,type NativeGoogleHubState} from "./google-native-status";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Cloud, Workflow, CreditCard, Building2, ExternalLink, Settings2, ShieldCheck } from "lucide-react";
 
-type Status = { connected?: boolean; status?: string; error?: string; connectUrl?: string; scopes?: string[]; scenarioKeys?: string[] };
+type Status = { nativeGoogle?: NativeGoogleHubState; connected?: boolean; status?: string; error?: string; connectUrl?: string; scopes?: string[]; scenarioKeys?: string[] };
 type Provider = "google" | "microsoft" | "make";
 
 const providers = [
@@ -16,6 +17,7 @@ const providers = [
 ];
 
 function label(ui: ReturnType<typeof useTranslations>, status?: Status) {
+  if (status?.nativeGoogle) return ui(`googleHub_${status.nativeGoogle}`);
   if (status?.connected) return ui("connected");
   if (status?.error?.includes("AUTH_REQUIRED")) return ui("authRequired");
   if (status?.status === "RECONNECT_REQUIRED") return ui("reconnectRequired");
@@ -24,6 +26,7 @@ function label(ui: ReturnType<typeof useTranslations>, status?: Status) {
 }
 function detail(ui: ReturnType<typeof useTranslations>, id: Provider, state?: Status) {
   if (!state) return ui("checkingConnection");
+  if (id === "google" && state.nativeGoogle) return ui(`googleHub_${state.nativeGoogle}_help`);
   if (state.error?.includes("AUTH_REQUIRED")) return ui("signInWorkspace");
   if (state.status === "RECONNECT_REQUIRED") return ui("checkConfiguration");
   if (state.status === "UNAVAILABLE" || state.connected===undefined) return ui("unavailable");
@@ -47,9 +50,10 @@ export default function ConnectionsHub() {
       try {
         const response = await fetch(provider.endpoint, { cache: "no-store", credentials: "same-origin", signal: controller.signal });
         const data = await response.json() as Status;
+        if (provider.id === "google") return [provider.id,{nativeGoogle:nativeGoogleHubState(data,response.status)}] as const;
         return [provider.id, !response.ok && !data.status && !data.error?.includes("AUTH_REQUIRED") ? {...data,status:"UNAVAILABLE"} : data] as const;
       } catch {
-        return [provider.id, { status: "UNAVAILABLE" }] as const;
+        return [provider.id, provider.id === "google" ? {nativeGoogle:"unavailable" as const} : { status: "UNAVAILABLE" }] as const;
       }
     })).then((entries) => { if (!controller.signal.aborted) setStates(Object.fromEntries(entries)); });
     return () => controller.abort();
@@ -79,7 +83,7 @@ export default function ConnectionsHub() {
               {!state?.connected && connectUrl && !state?.error?.includes("AUTH_REQUIRED") && (
                 <a href={connectUrl} className="inline-flex items-center gap-2 rounded-xl border border-cyan-400/20 bg-cyan-400/[0.07] px-4 py-2.5 text-sm text-cyan-200 transition hover:bg-cyan-400/[0.12]">{ui("connect")}{" "}<ExternalLink size={14} /></a>
               )}
-              {id === "google" && state?.connected && <Link href="/agenda" className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white/65 hover:border-cyan-400/20"><ShieldCheck size={14} />{" "}{ui("useGoogle")}</Link>}
+              {id === "google" && <Link href="/documents" className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white/65 hover:border-cyan-400/20"><ShieldCheck size={14} />{" "}{ui("googleHub_documents")}</Link>}
               {id === "microsoft" && state?.connected && <span className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white/55"><ShieldCheck size={14} />{" "}{ui("windows365Authorized")}</span>}
               {id === "make" && <Link href="/automatisations" className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white/65 hover:border-cyan-400/20"><Settings2 size={14} /> {state?.connected ? ui("manage") : ui("configure")}</Link>}
             </div>

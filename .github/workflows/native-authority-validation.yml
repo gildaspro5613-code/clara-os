@@ -28,6 +28,8 @@ on:
       - 'src/app/**/*.tsx'
       - 'src/tests/operational-recovery*'
       - 'src/tests/operational-delivery*'
+      - 'src/tests/google-native-hub*'
+      - 'src/components/connections/**'
       - 'public/brand/**'
       - 'src/app/icon.svg'
       - 'src/i18n/messages/**'
@@ -118,6 +120,8 @@ jobs:
           exit 1
       - name: Existing job types, 026 upgrade compatibility and local restore
         run: node --import tsx --test src/tests/native-job-kind-compatibility.test.ts src/tests/v1-mission-identity.test.ts src/tests/native-runtime-proxy.test.mjs
+      - name: Native Google hub contract
+        run: node --import tsx --test src/tests/google-native-hub.test.ts
       - name: Operational recovery, consultations and scoped provider reads
         run: node --import tsx --test src/tests/operational-recovery*.test.ts
       - name: Actual handlers and database isolation, revocation, snapshot and history
@@ -182,6 +186,7 @@ jobs:
           done
           test "$ready" = true
           NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node src/tests/helpers/native-browser-diagnostics.mjs core --import tsx --test src/tests/native-google-work-restart-browser.e2e.mjs src/tests/native-mission-contact-restart-browser.e2e.mjs
+          NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node src/tests/helpers/native-browser-diagnostics.mjs core --import tsx --test src/tests/google-native-hub-browser.e2e.mjs
           NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node src/tests/helpers/native-browser-diagnostics.mjs cockpit --import tsx --test src/tests/cockpit-availability-browser.e2e.mjs
       - name: Stop isolated fixture
         if: always()
