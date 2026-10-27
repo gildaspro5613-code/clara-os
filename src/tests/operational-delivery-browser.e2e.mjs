@@ -24,6 +24,7 @@ test('delivery UI: official logo, business navigation, private advanced controls
   const tabIcon=await context.request.get(origin+'/icon.svg');assert.equal(tabIcon.status(),200);assert.equal(await tabIcon.text(),await logo.text());
   for(const path of ['clara','missions','conversations','contacts','documents','messagerie','agenda','journal','brain','automatisations','connexions','']){
    const response=await page.goto(origin+'/'+path);assert.equal(response.status(),200,path);
+   await page.locator('link[rel="icon"][href^="/icon.svg"]').waitFor({state:'attached'});
    assert.equal(await page.locator('link[rel="icon"][href^="/icon.svg"]').count(),1);
    assert.equal(await page.locator('link[rel="icon"][href^="/favicon.ico"]').count(),0);
    await page.getByRole('region',{name:'Contexte canonique privé',exact:true}).waitFor();
