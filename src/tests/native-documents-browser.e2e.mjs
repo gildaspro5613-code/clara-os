@@ -29,6 +29,7 @@ test('documentary browser E2E: canonical selection → mission → pinned OAuth 
   assert.equal((await call('/api/connections/google','POST',{action:'select',connectionId:'foreign-google-b'})).status,403);
   await page.goto(origin+'/documents');const panel=page.getByRole('region',{name:'Documents de la mission',exact:true});await panel.getByRole('combobox',{name:'Connexion Google autorisée'}).selectOption(connection.id);
   await Promise.all([page.waitForResponse(r=>r.url().endsWith('/api/connections/google')&&r.request().method()==='POST'),panel.getByRole('button',{name:'Sélectionner la connexion'}).click()]);
+  await page.locator('[data-document-authority-settings] summary').click();
   await page.getByRole('textbox',{name:'Identifiant du document Drive'}).fill('document-a');await page.getByRole('button',{name:'Examiner le document',exact:true}).click();await page.getByText('Authorized project PDF · Révision 1').waitFor();
   await Promise.all([page.waitForResponse(r=>r.url().endsWith('/api/documents')&&r.request().method()==='POST'&&r.request().postDataJSON().action==='bind'),page.getByRole('button',{name:'Attester pour ce projet',exact:true}).click()]);
   const article=page.locator('article').filter({has:page.getByText('Authorized project PDF',{exact:true})});await article.getByRole('button',{name:'Lire avec Clara',exact:true}).click();await page.locator('pre').getByText(/LOT2_AUTHORIZED_PDF/).waitFor();
