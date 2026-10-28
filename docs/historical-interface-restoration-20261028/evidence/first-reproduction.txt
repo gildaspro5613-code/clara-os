@@ -20,10 +20,10 @@ test at src/tests/cockpit-availability-browser.e2e.mjs:20:1
   locator.click: Error: strict mode violation: locator('aside a[href="/clara"]') resolved to 2 elements:
       1) <a href="/clara" class="↵                        group↵                        relative↵                        flex↵                        items-center↵                        gap-3↵                        rounded-xl border border-transparent↵                        px-3↵                        py-2.5↵                        transition-all↵                        duration-200↵                        text-slate-400 hover:border-white/[0.06] hover:bg-white/[0.04] hover:text-slate-100↵            …>…</a> aka getByRole('navigation').getByRole('link', { name: 'Clara' })
       2) <a href="/clara">Clara</a> aka getByRole('link', { name: 'Clara' }).nth(1)
-  
+
   Call log:
-  [2m  - waiting for locator('aside a[href="/clara"]')[22m
-  
+    - waiting for locator('aside a[href="/clara"]')
+
       at TestContext.<anonymous> (/workspace/clara-os-historical-interface/src/tests/cockpit-availability-browser.e2e.mjs:61:51) {
     log: [ `  - waiting for locator('aside a[href="/clara"]')` ]
   }
@@ -43,32 +43,32 @@ test at src/tests/native-commercial-browser.e2e.mjs:11:1
 ✖ commercial browser E2E: authenticated canonical selection → contact → mission → dialogue → journal → draft → cockpit → reload and fresh authenticated session (32313.639199ms)
   locator.click: Timeout 30000ms exceeded.
   Call log:
-  [2m  - waiting for getByRole('region', { name: 'Contexte canonique privé', exact: true }).getByRole('button', { name: 'Créer un nouveau fil', exact: true })[22m
-  [2m    - locator resolved to <button disabled id="native-new-thread">Créer un nouveau fil</button>[22m
-  [2m  - attempting click action[22m
-  [2m    2 × waiting for element to be visible, enabled and stable[22m
-  [2m      - element is not enabled[22m
-  [2m    - retrying click action[22m
-  [2m    - waiting 20ms[22m
-  [2m    - waiting for element to be visible, enabled and stable[22m
-  [2m    - element is not enabled[22m
-  [2m  2 × retrying click action[22m
-  [2m      - waiting 100ms[22m
-  [2m      - waiting for element to be visible, enabled and stable[22m
-  [2m      - element is visible, enabled and stable[22m
-  [2m      - scrolling into view if needed[22m
-  [2m      - done scrolling[22m
-  [2m      - <div class="clara-page-content min-w-0 w-full">…</div> from <main tabindex="-1" id="main-workspace" class="clara-workspace-scroll relative flex min-h-0 flex-1 overflow-x-hidden overflow-y-auto">…</main> subtree intercepts pointer events[22m
-  [2m  56 × retrying click action[22m
-  [2m       - waiting 500ms[22m
-  [2m       - waiting for element to be visible, enabled and stable[22m
-  [2m       - element is visible, enabled and stable[22m
-  [2m       - scrolling into view if needed[22m
-  [2m       - done scrolling[22m
-  [2m       - <div class="clara-page-content min-w-0 w-full">…</div> from <main tabindex="-1" id="main-workspace" class="clara-workspace-scroll relative flex min-h-0 flex-1 overflow-x-hidden overflow-y-auto">…</main> subtree intercepts pointer events[22m
-  [2m  - retrying click action[22m
-  [2m    - waiting 500ms[22m
-  
+    - waiting for getByRole('region', { name: 'Contexte canonique privé', exact: true }).getByRole('button', { name: 'Créer un nouveau fil', exact: true })
+      - locator resolved to <button disabled id="native-new-thread">Créer un nouveau fil</button>
+    - attempting click action
+      2 × waiting for element to be visible, enabled and stable
+        - element is not enabled
+      - retrying click action
+      - waiting 20ms
+      - waiting for element to be visible, enabled and stable
+      - element is not enabled
+    2 × retrying click action
+        - waiting 100ms
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <div class="clara-page-content min-w-0 w-full">…</div> from <main tabindex="-1" id="main-workspace" class="clara-workspace-scroll relative flex min-h-0 flex-1 overflow-x-hidden overflow-y-auto">…</main> subtree intercepts pointer events
+    56 × retrying click action
+         - waiting 500ms
+         - waiting for element to be visible, enabled and stable
+         - element is visible, enabled and stable
+         - scrolling into view if needed
+         - done scrolling
+         - <div class="clara-page-content min-w-0 w-full">…</div> from <main tabindex="-1" id="main-workspace" class="clara-workspace-scroll relative flex min-h-0 flex-1 overflow-x-hidden overflow-y-auto">…</main> subtree intercepts pointer events
+    - retrying click action
+      - waiting 500ms
+
       at TestContext.<anonymous> (/workspace/clara-os-historical-interface/src/tests/native-commercial-browser.e2e.mjs:20:79) {
     name: 'TimeoutError',
     log: [ "  - waiting for getByRole('region', { name: 'Contexte canonique privé', exact: true }).getByRole('button', { name: 'Créer un nouveau fil', exact: true })", '    - locator resolved to <button disabled id="native-new-thread">Créer un nouveau fil</button>', '  - attempting click action', '    2 × waiting for element to be visible, enabled and stable', '      - element is not enabled', '    - retrying click action', '    - waiting 20ms', '    - waiting for element to be visible, enabled and stable', '    - element is not enabled', '  2 × retrying click action', '      - waiting 100ms', '      - waiting for element to be visible, enabled and stable', '      - element is visible, enabled and stable', '      - scrolling into view if needed', '      - done scrolling', '      - <div class="clara-page-content min-w-0 w-full">…</div> from <main tabindex="-1" id="main-workspace" class="clara-workspace-scroll relative flex min-h-0 flex-1 overflow-x-hidden overflow-y-auto">…</main> subtree intercepts pointer events', '  56 × retrying click action', '       - waiting 500ms', '       - waiting for element to be visible, enabled and stable', '       - element is visible, enabled and stable', '       - scrolling into view if needed', '       - done scrolling', '       - <div class="clara-page-content min-w-0 w-full">…</div> from <main tabindex="-1" id="main-workspace" class="clara-workspace-scroll relative flex min-h-0 flex-1 overflow-x-hidden overflow-y-auto">…</main> subtree intercepts pointer events', '  - retrying click action', '    - waiting 500ms' ]
@@ -90,32 +90,32 @@ test at src/tests/native-runtime-browser.e2e.mjs:9:1
 ✖ native browser: explicit selection, positive persisted mission/chat and cross-user/project refusals (33071.140597ms)
   locator.click: Timeout 30000ms exceeded.
   Call log:
-  [2m  - waiting for getByRole('region', { name: 'Contexte canonique privé', exact: true }).getByRole('button', { name: 'Créer un nouveau fil', exact: true })[22m
-  [2m    - locator resolved to <button disabled id="native-new-thread">Créer un nouveau fil</button>[22m
-  [2m  - attempting click action[22m
-  [2m    2 × waiting for element to be visible, enabled and stable[22m
-  [2m      - element is not enabled[22m
-  [2m    - retrying click action[22m
-  [2m    - waiting 20ms[22m
-  [2m    - waiting for element to be visible, enabled and stable[22m
-  [2m    - element is not enabled[22m
-  [2m  2 × retrying click action[22m
-  [2m      - waiting 100ms[22m
-  [2m      - waiting for element to be visible, enabled and stable[22m
-  [2m      - element is visible, enabled and stable[22m
-  [2m      - scrolling into view if needed[22m
-  [2m      - done scrolling[22m
-  [2m      - <div class="clara-page-content min-w-0 w-full">…</div> from <main tabindex="-1" id="main-workspace" class="clara-workspace-scroll relative flex min-h-0 flex-1 overflow-x-hidden overflow-y-auto">…</main> subtree intercepts pointer events[22m
-  [2m  56 × retrying click action[22m
-  [2m       - waiting 500ms[22m
-  [2m       - waiting for element to be visible, enabled and stable[22m
-  [2m       - element is visible, enabled and stable[22m
-  [2m       - scrolling into view if needed[22m
-  [2m       - done scrolling[22m
-  [2m       - <div class="clara-page-content min-w-0 w-full">…</div> from <main tabindex="-1" id="main-workspace" class="clara-workspace-scroll relative flex min-h-0 flex-1 overflow-x-hidden overflow-y-auto">…</main> subtree intercepts pointer events[22m
-  [2m  - retrying click action[22m
-  [2m    - waiting 500ms[22m
-  
+    - waiting for getByRole('region', { name: 'Contexte canonique privé', exact: true }).getByRole('button', { name: 'Créer un nouveau fil', exact: true })
+      - locator resolved to <button disabled id="native-new-thread">Créer un nouveau fil</button>
+    - attempting click action
+      2 × waiting for element to be visible, enabled and stable
+        - element is not enabled
+      - retrying click action
+      - waiting 20ms
+      - waiting for element to be visible, enabled and stable
+      - element is not enabled
+    2 × retrying click action
+        - waiting 100ms
+        - waiting for element to be visible, enabled and stable
+        - element is visible, enabled and stable
+        - scrolling into view if needed
+        - done scrolling
+        - <div class="clara-page-content min-w-0 w-full">…</div> from <main tabindex="-1" id="main-workspace" class="clara-workspace-scroll relative flex min-h-0 flex-1 overflow-x-hidden overflow-y-auto">…</main> subtree intercepts pointer events
+    56 × retrying click action
+         - waiting 500ms
+         - waiting for element to be visible, enabled and stable
+         - element is visible, enabled and stable
+         - scrolling into view if needed
+         - done scrolling
+         - <div class="clara-page-content min-w-0 w-full">…</div> from <main tabindex="-1" id="main-workspace" class="clara-workspace-scroll relative flex min-h-0 flex-1 overflow-x-hidden overflow-y-auto">…</main> subtree intercepts pointer events
+    - retrying click action
+      - waiting 500ms
+
       at TestContext.<anonymous> (/workspace/clara-os-historical-interface/src/tests/native-runtime-browser.e2e.mjs:19:75) {
     name: 'TimeoutError',
     log: [ "  - waiting for getByRole('region', { name: 'Contexte canonique privé', exact: true }).getByRole('button', { name: 'Créer un nouveau fil', exact: true })", '    - locator resolved to <button disabled id="native-new-thread">Créer un nouveau fil</button>', '  - attempting click action', '    2 × waiting for element to be visible, enabled and stable', '      - element is not enabled', '    - retrying click action', '    - waiting 20ms', '    - waiting for element to be visible, enabled and stable', '    - element is not enabled', '  2 × retrying click action', '      - waiting 100ms', '      - waiting for element to be visible, enabled and stable', '      - element is visible, enabled and stable', '      - scrolling into view if needed', '      - done scrolling', '      - <div class="clara-page-content min-w-0 w-full">…</div> from <main tabindex="-1" id="main-workspace" class="clara-workspace-scroll relative flex min-h-0 flex-1 overflow-x-hidden overflow-y-auto">…</main> subtree intercepts pointer events', '  56 × retrying click action', '       - waiting 500ms', '       - waiting for element to be visible, enabled and stable', '       - element is visible, enabled and stable', '       - scrolling into view if needed', '       - done scrolling', '       - <div class="clara-page-content min-w-0 w-full">…</div> from <main tabindex="-1" id="main-workspace" class="clara-workspace-scroll relative flex min-h-0 flex-1 overflow-x-hidden overflow-y-auto">…</main> subtree intercepts pointer events', '  - retrying click action', '    - waiting 500ms' ]

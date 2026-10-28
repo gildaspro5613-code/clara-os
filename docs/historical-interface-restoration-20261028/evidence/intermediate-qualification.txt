@@ -27,10 +27,10 @@ test at src/tests/interface-finalization-browser.e2e.mjs:15:1
 ✖ interface receipt: explicit business flow, responsive navigation, five languages, honest provider states and persistence (231340.235912ms)
   AssertionError [ERR_ASSERTION]: No global loader or unscoped fallback
   + actual - expected
-  
+
   + 'GLOBAL_LOADER_ATTEMPT\n'
   - ''
-  
+
       at TestContext.<anonymous> (file:///workspace/clara-os-historical-interface/src/tests/interface-finalization-browser.e2e.mjs:107:10)
       at async Test.run (node:internal/test_runner/test:1389:7)
       at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
@@ -46,13 +46,13 @@ test at src/tests/native-commercial-browser.e2e.mjs:11:1
 ✖ commercial browser E2E: authenticated canonical selection → contact → mission → dialogue → journal → draft → cockpit → reload and fresh authenticated session (32613.781609ms)
   locator.waitFor: Timeout 30000ms exceeded.
   Call log:
-  [2m  - waiting for locator('[data-native-business-context]') to be visible[22m
-  [2m    4 × locator resolved to hidden <details open="" hidden="" data-native-business-context="true">…</details>[22m
-  [2m    - waiting for "https://127.0.0.1:3060/clara" navigation to finish...[22m
-  [2m    - navigated to "https://127.0.0.1:3060/clara"[22m
-  [2m    2 × locator resolved to hidden <details open="" hidden="" data-native-business-context="true">…</details>[22m
-  [2m    55 × locator resolved to hidden <details open="" data-native-business-context="true">…</details>[22m
-  
+    - waiting for locator('[data-native-business-context]') to be visible
+      4 × locator resolved to hidden <details open="" hidden="" data-native-business-context="true">…</details>
+      - waiting for "https://127.0.0.1:3060/clara" navigation to finish...
+      - navigated to "https://127.0.0.1:3060/clara"
+      2 × locator resolved to hidden <details open="" hidden="" data-native-business-context="true">…</details>
+      55 × locator resolved to hidden <details open="" data-native-business-context="true">…</details>
+
       at revealBusinessContext (/workspace/clara-os-historical-interface/src/tests/helpers/native-ui-disclosures.mjs:24:15)
       at async TestContext.<anonymous> (/workspace/clara-os-historical-interface/src/tests/native-commercial-browser.e2e.mjs:20:87) {
     name: 'TimeoutError',
@@ -63,13 +63,13 @@ test at src/tests/native-runtime-browser.e2e.mjs:9:1
 ✖ native browser: explicit selection, positive persisted mission/chat and cross-user/project refusals (33319.51989ms)
   locator.waitFor: Timeout 30000ms exceeded.
   Call log:
-  [2m  - waiting for locator('[data-native-business-context]') to be visible[22m
-  [2m    4 × locator resolved to hidden <details open="" hidden="" data-native-business-context="true">…</details>[22m
-  [2m    - waiting for "https://127.0.0.1:3060/clara" navigation to finish...[22m
-  [2m    - navigated to "https://127.0.0.1:3060/clara"[22m
-  [2m    2 × locator resolved to hidden <details open="" hidden="" data-native-business-context="true">…</details>[22m
-  [2m    56 × locator resolved to hidden <details open="" data-native-business-context="true">…</details>[22m
-  
+    - waiting for locator('[data-native-business-context]') to be visible
+      4 × locator resolved to hidden <details open="" hidden="" data-native-business-context="true">…</details>
+      - waiting for "https://127.0.0.1:3060/clara" navigation to finish...
+      - navigated to "https://127.0.0.1:3060/clara"
+      2 × locator resolved to hidden <details open="" hidden="" data-native-business-context="true">…</details>
+      56 × locator resolved to hidden <details open="" data-native-business-context="true">…</details>
+
       at revealBusinessContext (/workspace/clara-os-historical-interface/src/tests/helpers/native-ui-disclosures.mjs:24:15)
       at async revealMissionCreation (/workspace/clara-os-historical-interface/src/tests/helpers/native-ui-disclosures.mjs:7:3)
       at async TestContext.<anonymous> (/workspace/clara-os-historical-interface/src/tests/native-runtime-browser.e2e.mjs:19:83) {

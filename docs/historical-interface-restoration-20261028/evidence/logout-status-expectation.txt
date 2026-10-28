@@ -22,9 +22,9 @@ UI_LOCALE_PASS it
 test at src/tests/interface-finalization-browser.e2e.mjs:16:1
 ✖ interface receipt: explicit business flow, responsive navigation, five languages, honest provider states and persistence (227882.572897ms)
   AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
-  
+
   403 !== 401
-  
+
       at TestContext.<anonymous> (file:///workspace/clara-os-historical-interface/src/tests/interface-finalization-browser.e2e.mjs:144:10)
       at async Test.run (node:internal/test_runner/test:1389:7)
       at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {

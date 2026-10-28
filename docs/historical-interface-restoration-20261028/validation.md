@@ -37,3 +37,5 @@ Le workflow existant conserve ses contrôles, et ajoute la réception Microsoft 
 - Progression : repro avant correctif conservée (`evidence/progress-before.txt`), puis 29% enregistré affiché dans les trois vues sans changer le compte 3/8 ni les données.
 
 Les journaux intermédiaires sont conservés séparément. Aucun timeout augmenté, retry d’opération ajouté ou test d’autorité supprimé pour obtenir du vert.
+
+Les copies de journaux du dossier sont normalisées en LF, sans couleurs terminal ni espaces de fin de ligne; les résultats et messages sont conservés. Les originaux de campagne restent dans les fichiers de travail ayant produit ces preuves.
