@@ -30,6 +30,8 @@ on:
       - 'src/tests/operational-delivery*'
       - 'src/tests/google-native-hub*'
       - 'src/tests/interface-finalization*'
+      - 'src/tests/historical-interface*'
+      - 'src/tests/helpers/historical-hero-layout.mjs'
       - 'src/tests/helpers/native-ui-disclosures.mjs'
       - 'src/components/layout/**'
       - 'src/app/globals.css'

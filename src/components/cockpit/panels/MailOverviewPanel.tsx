@@ -20,7 +20,7 @@ export default function MailOverviewPanel(){
  const [snapshot,setSnapshot]=useState<Snapshot|null>(null),[error,setError]=useState(false);
  useEffect(()=>{const controller=new AbortController();fetch('/api/native/mail?action=overview',{cache:'no-store',signal:controller.signal,credentials:'same-origin'}).then(async response=>{if(!response.ok)throw Error('mail overview');return response.json() as Promise<Snapshot>;}).then(data=>{if(!controller.signal.aborted){if(!data.success||!Array.isArray(data.overview))setError(true);else setSnapshot(data);}}).catch(()=>{if(!controller.signal.aborted)setError(true);});return()=>controller.abort();},[]);
  const boxes=snapshot?.overview??[];const partial=!!snapshot&&(!snapshot.complete||boxes.some(box=>box.partial||box.status!=='cached'));
- return <GlassPanel className="max-h-[17rem] overflow-auto p-4 text-sm text-white" >
+ return <GlassPanel className="!h-auto shrink-0 max-h-[17rem] overflow-auto p-4 text-sm text-white" >
   <h2 className="font-semibold">{t.title}</h2>
   {error?<p role="status" className="mt-2 text-white/70">{t.error}</p>:<>
    <p className="mt-2 text-xs text-amber-100/80">{t.stale}</p>

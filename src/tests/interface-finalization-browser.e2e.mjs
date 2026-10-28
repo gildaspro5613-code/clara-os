@@ -1,3 +1,4 @@
+import {assertHeroFlow} from './helpers/historical-hero-layout.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {X509Certificate,createHash} from 'node:crypto';
@@ -84,6 +85,7 @@ test('interface receipt: explicit business flow, responsive navigation, five lan
     assert.equal(await page.locator('[data-native-authority="locked"]').count(),0,path);
     assert.equal(await page.locator('#clara-navigation nav a[aria-current="page"]').getAttribute('href'),'/'+path);
     assert.ok(await page.locator('#main-workspace').evaluate(e=>e.scrollWidth<=e.clientWidth+1),device+' '+path+' overflows');
+    if(path==='')await assertHeroFlow(page);
     if(path==='clara')await page.getByRole('log').getByText(message,{exact:true}).waitFor();
     if(path==='documents'){
      assert.equal(await page.locator('[data-document-authority-settings]').evaluate(e=>e.open),false);

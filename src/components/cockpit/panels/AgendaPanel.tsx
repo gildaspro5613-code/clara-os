@@ -67,7 +67,7 @@ export default function AgendaPanel() {
   }, [t]);
 
   return (
-    <GlassPanel className="!h-auto w-full px-5 py-4 bg-black/25 border-white/[0.08] shadow-[0_2px_16px_rgba(0,0,0,0.16)]">
+    <GlassPanel className="!h-auto shrink-0 w-full px-5 py-4 bg-black/25 border-white/[0.08] shadow-[0_2px_16px_rgba(0,0,0,0.16)]">
       <h3 className="mb-3 text-sm font-medium tracking-[0.08em] uppercase text-white/74">
         {t("today")}
       </h3>

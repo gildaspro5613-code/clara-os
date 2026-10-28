@@ -22,7 +22,7 @@ export default async function MissionWidget({
   const ui = await getTranslations("ui");
 
   const t = await getTranslations("cockpitUi");
-  if (missions) return <GlassPanel title={t("openMissions")}>
+  if (missions) return <GlassPanel className="!h-auto shrink-0" title={t("openMissions")}>
     <ul className="max-h-80 space-y-3 overflow-y-auto">
       {missions.map(item=><li key={item.id} className="rounded-xl border border-white/10 p-3">
         <Link href={`/missions?mission=${encodeURIComponent(item.id)}`} className="block font-medium text-cyan-100">{item.title}</Link>

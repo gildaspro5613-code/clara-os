@@ -13,7 +13,7 @@ interface HeroProps {
 
 export default function Hero({ session, acquisition, nativeScope,nativeMissions }: HeroProps) {
   return (
-    <section className="relative h-auto min-h-0 overflow-hidden bg-[#020914] lg:h-full lg:min-h-[720px]">
+    <section data-cockpit-hero className="relative h-auto min-h-0 overflow-hidden bg-[#020914] lg:h-full lg:min-h-[720px]">
       {/*
         Clara OS is an operational workspace. The Hero borrows the website's
         architectural language — grid, cyan geometry and depth — without

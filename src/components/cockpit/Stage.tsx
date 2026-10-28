@@ -47,19 +47,16 @@ export default async function Stage({ session, acquisition, nativeScope = false,
   const mission = session.mission;
   const native = nativeScope;
   const ui = await getTranslations("ui");
-  const voiceStatus = <GlassPanel><Link href="/telephonie" className="text-cyan-200">{ui("uiVoiceStatus")}</Link></GlassPanel>;
+  const voiceStatus = <GlassPanel className="!h-auto shrink-0"><Link href="/telephonie" className="text-cyan-200">{ui("uiVoiceStatus")}</Link></GlassPanel>;
 
   return (
     <>
-      <div className="pointer-events-auto absolute left-[5%] top-[12%] z-20 hidden w-[25%] max-w-[360px] lg:block">
+      <div data-hero-column className="pointer-events-auto absolute bottom-[7%] left-[5%] top-[12%] z-20 hidden w-[25%] max-w-[360px] flex-col gap-4 overflow-y-auto lg:flex">
         <BriefPanel session={session} acquisition={acquisition} />
-      </div>
-
-      <div className="pointer-events-auto absolute left-[6%] top-[61%] z-20 hidden w-[23%] max-w-[330px] lg:block">
         {native ? voiceStatus : <ClaraVoiceWidget />}
       </div>
 
-      <div className="pointer-events-auto absolute bottom-[7%] right-[5%] top-[7%] z-20 hidden w-[28%] max-w-[420px] flex-col gap-4 overflow-y-auto lg:flex">
+      <div data-hero-column className="pointer-events-auto absolute bottom-[7%] right-[5%] top-[7%] z-20 hidden w-[28%] max-w-[420px] flex-col gap-4 overflow-y-auto lg:flex">
         <AgendaPanel />
         {native&&<MailOverviewPanel />}
         <MissionPanel mission={mission} missions={nativeMissions} />
