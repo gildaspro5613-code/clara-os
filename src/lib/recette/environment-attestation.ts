@@ -9,7 +9,7 @@ const slug='clara-os-recette';
 const keys=['DATABASE_URL','CLARA_RECETTE_NEON_HOST','CLARA_RECETTE_NEON_BRANCH_ID','CLARA_RECETTE_MODE'] as const;
 class Unavailable extends Error {}
 class Refused extends Error {}
-export type RecetteAttestationStage = 'CREDENTIALS'|'VERCEL_PROJECT'|'CUSTOM_ENVIRONMENT'|'ENV_LIST'|'ENV_BINDINGS'|'DATABASE_BINDING'|'NEON_ENDPOINT'|'SQL_IDENTITY'|'SQL_PERMISSIONS';
+export type RecetteAttestationStage = 'CREDENTIALS'|'VERCEL_PROJECT'|'CUSTOM_ENVIRONMENT'|'ENV_LIST'|'ENV_BINDINGS'|'ENV_BINDING_DATABASE_URL'|'ENV_BINDING_NEON_HOST'|'ENV_BINDING_BRANCH_ID'|'ENV_BINDING_MODE'|'DATABASE_BINDING'|'NEON_ENDPOINT'|'SQL_IDENTITY'|'SQL_PERMISSIONS';
 
 /** Operator/Actions only. No route, files, subprocesses, GITHUB_ENV or raw error output.
  * Attests the current configuration for a future deployment, NOT an existing deployment.
@@ -42,6 +42,7 @@ export async function attestRecetteEnvironment(input:{vercelToken?:string;neonKe
   const env:NodeJS.ProcessEnv={NODE_ENV:'production',VERCEL_PROJECT_ID:project,VERCEL_TARGET_ENV:slug,VERCEL_ENV:'preview'};
   setStage('ENV_BINDINGS');
   for(const key of keys){
+   setStage(({DATABASE_URL:'ENV_BINDING_DATABASE_URL',CLARA_RECETTE_NEON_HOST:'ENV_BINDING_NEON_HOST',CLARA_RECETTE_NEON_BRANCH_ID:'ENV_BINDING_BRANCH_ID',CLARA_RECETTE_MODE:'ENV_BINDING_MODE'} as const)[key]);
    const candidates=rows.filter((e:{key?:string})=>e.key===key);
    if(candidates.length!==1)throw new Unavailable();
    const e=candidates[0];
