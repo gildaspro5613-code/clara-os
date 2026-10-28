@@ -38,3 +38,46 @@ La levée du blocage exige **une attestation depuis un contexte autorisé ayant 
 ## Capacités attendues, non reçues sur une nouvelle URL
 
 La réception visuelle concerne les 13 pages restaurées, les GlassPanels, la navigation et FR/EN/ES/DE/IT. Les preuves navigateur antérieures sont conservées, mais aucune recette distante nouvelle n'est annoncée. Google/IONOS, génération réelle et voix restent soumis aux gardes et autorisations; aucune certification fournisseur n'est déduite des simulations.
+
+## Complément — attestation du custom Environment avant publication
+
+Le propriétaire a confirmé un précontrôle `verify_only=true` réussi après remplacement du jeton dédié. Cette preuve porte sur les métadonnées précédemment contrôlées; elle ne remplace pas la nouvelle attestation SQL.
+
+Le workflow existant exécute maintenant `src/scripts/attest-recette-environment.mts` avant toute étape de déploiement. Le contrôleur est récupéré séparément depuis **le SHA du workflow exécuté** (`github.sha`), avec vérification Git; le checkout applicatif reste épinglé au SHA approuvé `e1d89bb…`. Les dépendances verrouillées sont installées avec `--ignore-scripts`. Aucun contrôle de provenance, d'autorité ou d'identité n'est retiré.
+
+Le script réutilise `validateRecetteDatabaseBinding` et le contrôle SQL d'identité extrait sans changement de logique de `runtime-attestation.ts`. Ce dernier conserve sa vérification d'un déploiement existant : le nouveau contrôle prépublication ne lui attribue pas artificiellement un SHA ou un identifiant de déploiement.
+
+Séquence exécutée par le nouveau contrôle :
+
+1. Vérifier l'équipe, le projet indépendant et le custom Environment exacts par GET Vercel.
+2. Lister les variables filtrées par cet Environment avec `decrypt=false`, puis obtenir par leur ID **seulement les quatre valeurs ciblées** via GET `/v1/projects/{project}/env/{id}`. Les réponses restent en mémoire : aucun fichier de valeurs, `GITHUB_ENV`, artefact ou journal de réponse. Les endpoints et paramètres sont confirmés dans le SDK officiel `@vercel/sdk` 1.28.53 (`projectsFilterProjectEnvs`, `projectsGetProjectEnv`), consulté séparément sans ajout de dépendance au dépôt.
+3. Refuser `POSTGRES_URL`, les overrides des identités système et les bindings étrangers. Une valeur absente, non déchiffrable, héritée sans rattachement explicite au custom Environment, dupliquée ou une pagination non résolue produit `NON ATTESTÉ`; aucune priorité de variable n'est inventée.
+4. Valider les valeurs avec le garde existant; vérifier l'endpoint réel auprès du projet Neon autorisé (normalisation explicite du hostname pooler, sans substitution de branche). **Aucune connexion SQL avant cette correspondance.**
+5. Faire deux transactions Neon HTTP `readOnly:true`, contenant exclusivement des SELECT de métadonnées : base et rôle réels, absence de privilèges administratifs/CREATE public et base, absence d'appartenance à des rôles administratifs ou propriétaires des objets Clara; USAGE public, droits ciblés sur les tables et EXECUTE des fonctions natives non SECURITY DEFINER. Aucun GRANT, appel de fonction métier, lecture de contenu ou écriture. La liste des permissions contrôlées est explicite dans `environment-attestation.ts`, y compris Journal et audit. Elle concerne le socle de réception natif; elle ne donne aucune autorisation de provisionner les autorités mail, d'activer le monitoring, les mutations Stage ou les fournisseurs.
+6. Émettre uniquement `PASS`, `FAIL` ou `NON ATTESTÉ` sur stdout, dans le résumé Actions et comme sortie d'étape `status`. Un statut autre que PASS fait échouer l'étape. Une erreur de transport/permission ou une valeur inaccessible ne passe jamais. Les erreurs brutes et les valeurs ne sont jamais affichées.
+
+Les trois verrous d'écriture du workflow restent actifs. Aucune activation ou tentative de déploiement dans ce complément, même si les tests simulés retournent PASS.
+
+### Validation du complément
+
+- 34 contrôles ciblés d'attestation/environnement, attestation de déploiement existante et refus fournisseurs : PASS, zéro échec/ignoré, fournisseurs et SQL simulés.
+- 24 contrôles du transport et de provenance : PASS, zéro échec/ignoré.
+- TypeScript sans émission : PASS. ESLint ciblé : PASS. `git diff --check` : PASS.
+- Exécution locale du nouveau script sans bindings sécurisés : `NON ATTESTÉ`, code 1 attendu; aucun accès distant tenté. Ce résultat ne qualifie pas les variables effectivement disponibles dans GitHub Actions.
+
+### Exécution GitHub Actions encore nécessaire
+
+Ce runtime ne peut pas déclencher ou consulter les Actions : `api.github.com` demeure exclu de la politique réseau appliquée et aucune identité API n'y est disponible. Le remplacement du secret Vercel dans GitHub ne modifie pas cette limite locale. Aucun essai de contournement, nouveau secret ou élargissement de jeton.
+
+Depuis l'accès GitHub déjà autorisé, lancer **une fois, seulement en vérification** :
+
+```sh
+gh workflow run clara-os-independent-recette.yml \
+  --repo gildaspro5613-code/clara-os \
+  --ref fix/clara-os-historical-interface-20261028 \
+  -f verify_only=true
+```
+
+Les seuls secrets attendus sont `VERCEL_RECETTE_TOKEN` et `NEON_API_KEY` dans l'Environment GitHub existant `clara-os-recette`, sans repli. Leur existence/portée n'est pas supposée : s'ils manquent ou si les lectures nécessaires sont interdites, le résultat reste NON ATTESTÉ, sans modification automatique de permissions. Ne pas copier de valeur dans une conversation ou un commentaire.
+
+Après un PASS réel, préparer uniquement l'activation des trois verrous pour l'opération Preview déjà approuvée, en liant la condition d'écriture à `verify_only=false` **et** `steps.binding_attestation.outputs.status == 'PASS'`; conserver l'approbation d'Environment, la tentative unique, le projet/custom Environment exacts, l'absence de retry et les vérifications postpublication. Ce complément ne fait pas cette activation et n'effectue aucun déploiement. Le PASS attendu atteste la configuration courante, pas les bindings d'un déploiement futur : les contrôles après création restent indispensables, et toute modification de configuration entre les deux impose un nouveau précontrôle.

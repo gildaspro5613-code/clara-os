@@ -43,7 +43,6 @@ jobs:
           test "$(git rev-parse e1d89bba1cbef31c3d93ca6a3298bbe87c5c05e8^)" = "652a332852a0302de3d79d95347447dcc21074bf"
           test "$(git rev-parse HEAD^{tree})" = "e3fd0ebe186b4a5a93121a6ee653bd354549aef5"
       - name: Set up deployment controller Node.js
-        if: ${{ false }}
         uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -139,7 +138,7 @@ jobs:
           if (process.argv[1] === '-') {
             try {
               const result = await verifyCustomEnvironment({token:process.env.VERCEL_RECETTE_TOKEN});
-              const message = 'READ_ONLY_PROJECT_ENVIRONMENT_METADATA_PASS ' + JSON.stringify(result) + ' EFFECTIVE_DATABASE_BINDINGS_NON_ATTESTED WRITE_PERMISSIONS_NON_ATTESTED';
+              const message = 'READ_ONLY_PROJECT_ENVIRONMENT_METADATA_PASS ' + JSON.stringify(result) + ' WRITE_PERMISSIONS_NON_ATTESTED';
               console.log('::notice title=Recette read-only Environment::' + message);
               appendFileSync(process.env.GITHUB_STEP_SUMMARY,message + '\n');
             } catch (error) {
@@ -149,6 +148,30 @@ jobs:
             }
           }
           NODE_PREFLIGHT
+      - name: Checkout attestation controller from this workflow revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: .recette-controller
+          persist-credentials: false
+      - name: Verify attestation controller provenance
+        working-directory: .recette-controller
+        env:
+          CONTROLLER_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$CONTROLLER_SHA"
+          test "$(git remote get-url origin)" = "https://github.com/gildaspro5613-code/clara-os"
+      - name: Install locked attestation dependencies without lifecycle scripts
+        working-directory: .recette-controller
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Attest effective custom Environment and Neon permissions (read-only)
+        id: binding_attestation
+        working-directory: .recette-controller
+        env:
+          VERCEL_RECETTE_TOKEN: ${{ secrets.VERCEL_RECETTE_TOKEN }}
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+        run: node --import tsx src/scripts/attest-recette-environment.mts
       - name: Deploy only custom recette environment through official REST API
         if: ${{ false }}
         env:
