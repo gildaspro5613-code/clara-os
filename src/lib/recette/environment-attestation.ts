@@ -43,12 +43,12 @@ export async function attestRecetteEnvironment(input:{vercelToken?:string;neonKe
   setStage('ENV_BINDINGS');
   for(const key of keys){
    setStage(({DATABASE_URL:'ENV_BINDING_DATABASE_URL',CLARA_RECETTE_NEON_HOST:'ENV_BINDING_NEON_HOST',CLARA_RECETTE_NEON_BRANCH_ID:'ENV_BINDING_BRANCH_ID',CLARA_RECETTE_MODE:'ENV_BINDING_MODE'} as const)[key]);
+   setStage('ENV_BINDING_LIST_ENTRY');
    const candidates=rows.filter((e:{key?:string})=>e.key===key);
    if(candidates.length!==1)throw new Unavailable();
    const e=candidates[0];
    if(e.target==='production'||(Array.isArray(e.target)&&e.target.includes('production')))throw new Refused();
    if(!e.id||!Array.isArray(e.customEnvironmentIds)||e.customEnvironmentIds.length!==1||e.customEnvironmentIds[0]!==environment||e.gitBranch)throw new Unavailable();
-   setStage('ENV_BINDING_LIST_ENTRY');
    // Distinguish list metadata problems from the protected single-value API.
    setStage('ENV_BINDING_READ_DENIED');
    const url=new URL(`/v1/projects/${project}/env/${encodeURIComponent(e.id)}`,'https://api.vercel.com');
