@@ -9,11 +9,14 @@ const slug='clara-os-recette';
 const keys=['DATABASE_URL','CLARA_RECETTE_NEON_HOST','CLARA_RECETTE_NEON_BRANCH_ID','CLARA_RECETTE_MODE'] as const;
 class Unavailable extends Error {}
 class Refused extends Error {}
+export type RecetteAttestationStage = 'CREDENTIALS'|'VERCEL_PROJECT'|'CUSTOM_ENVIRONMENT'|'ENV_LIST'|'ENV_BINDINGS'|'DATABASE_BINDING'|'NEON_ENDPOINT'|'SQL_IDENTITY'|'SQL_PERMISSIONS';
 
 /** Operator/Actions only. No route, files, subprocesses, GITHUB_ENV or raw error output.
  * Attests the current configuration for a future deployment, NOT an existing deployment.
  * Requires explicit custom-Environment bindings; inheritance is never guessed. */
-export async function attestRecetteEnvironment(input:{vercelToken?:string;neonKey?:string},http:typeof fetch=fetch):Promise<'PASS'|'FAIL'|'NON ATTESTÉ'>{
+export async function attestRecetteEnvironment(input:{vercelToken?:string;neonKey?:string},http:typeof fetch=fetch,onDiagnostic?:(stage:RecetteAttestationStage)=>void):Promise<'PASS'|'FAIL'|'NON ATTESTÉ'>{
+ let stage:RecetteAttestationStage='CREDENTIALS';
+ const setStage=(next:RecetteAttestationStage)=>{stage=next;};
  try{
   if(!input.vercelToken||!input.neonKey)throw new Unavailable();
   async function read(path:string){
@@ -21,19 +24,23 @@ export async function attestRecetteEnvironment(input:{vercelToken?:string;neonKe
    const r=await http(url,{method:'GET',redirect:'error',signal:AbortSignal.timeout(15000),headers:{Authorization:`Bearer ${input.vercelToken}`}});
    if(!r.ok)throw new Unavailable();return r.json();
   }
+  setStage('VERCEL_PROJECT');
   const p=await read(`/v9/projects/${project}`);
   if(p.id!==project||p.accountId!==team||p.name!==slug||p.link||p.gitRepository)throw new Refused();
+  setStage('CUSTOM_ENVIRONMENT');
   const custom=await read(`/projects/${project}/custom-environments`);
   if(!Array.isArray(custom.environments))throw new Unavailable();
   const matches=custom.environments.filter((e:{id?:string;slug?:string})=>e.id===environment||e.slug===slug);
   if(matches.length!==1||matches[0].id!==environment||matches[0].slug!==slug||
    (matches[0].projectId!==undefined&&matches[0].projectId!==project))throw new Refused();
   // Official API: filter without decryption, then decrypt only the four selected IDs.
+  setStage('ENV_LIST');
   const listing=await read(`/v10/projects/${project}/env?customEnvironmentId=${environment}&decrypt=false`);
   if(!Array.isArray(listing.envs)||listing.pagination?.next)throw new Unavailable();
   const rows=listing.envs;
   if(rows.some((e:{key?:string})=>e.key==='POSTGRES_URL'))throw new Refused();
   const env:NodeJS.ProcessEnv={NODE_ENV:'production',VERCEL_PROJECT_ID:project,VERCEL_TARGET_ENV:slug,VERCEL_ENV:'preview'};
+  setStage('ENV_BINDINGS');
   for(const key of keys){
    const candidates=rows.filter((e:{key?:string})=>e.key===key);
    if(candidates.length!==1)throw new Unavailable();
@@ -51,9 +58,11 @@ export async function attestRecetteEnvironment(input:{vercelToken?:string;neonKe
    if(rows.some((e:{key?:string})=>e.key===key))throw new Refused();
    env[key]=value;
   }
+  setStage('DATABASE_BINDING');
   const binding=validateRecetteDatabaseBinding(env);
   if(binding==='FAIL')throw new Refused();if(binding!=='OK')throw new Unavailable();
   const database=new URL(env.DATABASE_URL!);
+  setStage('NEON_ENDPOINT');
   const response=await http('https://console.neon.tech/api/v2/projects/fragrant-dream-31652403/endpoints',{
    method:'GET',redirect:'error',signal:AbortSignal.timeout(15000),headers:{Authorization:`Bearer ${input.neonKey}`}});
   if(!response.ok)throw new Unavailable();
@@ -62,7 +71,9 @@ export async function attestRecetteEnvironment(input:{vercelToken?:string;neonKe
    (database.hostname.includes('-pooler.')&&e.host===database.hostname.replace('-pooler.','.')));
   if(endpoints.length!==1||endpoints[0].branch_id!=='br-crimson-feather-b2zr00sf')throw new Refused();
   // No SQL is attempted before project, target, URL and endpoint provenance all pass.
+  setStage('SQL_IDENTITY');
   try{await verifyRecetteSqlRole(env.DATABASE_URL!);}catch(e){if(e instanceof RecetteSqlIdentityRefused)throw new Refused();throw new Unavailable();}
+  setStage('SQL_PERMISSIONS');
   const sql=neon(env.DATABASE_URL!,{fetchOptions:{redirect:'error',signal:AbortSignal.timeout(15000)}});
   const [results]=await sql.transaction([sql`SELECT
    NOT EXISTS(SELECT 1 FROM pg_roles r WHERE (r.rolsuper OR r.rolbypassrls OR r.rolcreatedb OR r.rolcreaterole OR r.rolreplication)
@@ -91,5 +102,5 @@ export async function attestRecetteEnvironment(input:{vercelToken?:string;neonKe
      AND has_function_privilege(current_user,p.oid,'EXECUTE') AND NOT p.prosecdef)) AS runtime_function_permissions`],{readOnly:true});
   if(results.length!==1||Object.values(results[0]).some(v=>v!==true)||Object.keys(results[0]).length!==5)throw new Refused();
   return 'PASS';
- }catch(e){return e instanceof Refused?'FAIL':'NON ATTESTÉ';}
+ }catch(e){onDiagnostic?.(stage);return e instanceof Refused?'FAIL':'NON ATTESTÉ';}
 }
