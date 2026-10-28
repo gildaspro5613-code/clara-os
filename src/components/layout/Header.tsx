@@ -2,7 +2,7 @@
 
 import { BookOpen, Search, UserRound } from "lucide-react";
 import Link from "next/link";
-import {useEffect,useRef} from "react";
+import {useEffect,useRef,useState} from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 
@@ -30,12 +30,26 @@ export default function Header() {
 
   const pathname = usePathname();
   const accountMenu=useRef<HTMLDetailsElement>(null);
+  const [loggingOut,setLoggingOut]=useState(false),[accountError,setAccountError]=useState(false);
   useEffect(()=>{if(accountMenu.current)accountMenu.current.open=false;},[pathname]);
   const locale = useLocale() as Locale;
 
   const tn = useTranslations("navigation");
   const tc = useTranslations("common");
 
+
+  async function logout(){
+    if(loggingOut||!window.confirm(ui("uiLogoutConfirm")))return;
+    setLoggingOut(true);setAccountError(false);
+    try{
+      const response=await fetch('/api/auth/session/logout',{method:'POST',credentials:'same-origin'});
+      const result=await response.json();
+      if(!response.ok||result.success!==true)throw Error();
+      if(accountMenu.current)accountMenu.current.open=false;
+      // Clear authenticated in-memory views after the server revokes the session.
+      window.location.replace('/');
+    }catch{setAccountError(true);}finally{setLoggingOut(false);}
+  }
 
   const pageTitleKey = pageTitleKeys[pathname];
   const pageTitle = pageTitleKey
@@ -83,6 +97,7 @@ export default function Header() {
             <div className="flex items-center justify-between gap-4"><h2 className="text-lg font-medium">{tc("profile")}</h2><button type="button" className="text-sm text-cyan-200 underline" onClick={event=>{const menu=event.currentTarget.closest("details");if(menu){menu.open=false;menu.querySelector("summary")?.focus();}}}>{tc("close")}</button></div>
             <p className="mt-2 text-sm text-slate-300">{ui("uiAccountContextHelp")}</p>
             <NativeScopeSelector />
+            <div className="mt-4 border-t border-white/10 pt-4"><button type="button" disabled={loggingOut} onClick={()=>void logout()} className="rounded-xl border border-white/20 px-4 py-2 text-sm text-white disabled:opacity-50">{loggingOut?tc("loading"):tc("logout")}</button>{accountError&&<p role="alert" className="mt-2 text-sm text-amber-100">{ui("uiLogoutError")}</p>}</div>
           </div>
         </details>
       </div>

@@ -370,5 +370,7 @@
   "uiAuthorizedConversations": "Conversaciones del proyecto autorizado",
   "uiGeneralConversation": "Conversación general",
   "uiGoogleAgenda": "Calendario de Google",
-  "uiMicrosoftSetupMissing": "La configuración de Microsoft no está disponible en este entorno. Un administrador debe verificar la configuración de la aplicación y la URL de retorno; no se ha modificado ninguna autorización."
+  "uiMicrosoftSetupMissing": "La configuración de Microsoft no está disponible en este entorno. Un administrador debe verificar la configuración de la aplicación y la URL de retorno; no se ha modificado ninguna autorización.",
+  "uiLogoutConfirm": "¿Cerrar esta sesión de Clara OS? Sus misiones e historiales se conservarán.",
+  "uiLogoutError": "No se ha podido cerrar la sesión. No se ha confirmado el éxito."
 }

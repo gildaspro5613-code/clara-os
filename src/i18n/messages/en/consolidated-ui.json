@@ -370,5 +370,7 @@
   "uiAuthorizedConversations": "Conversations in the authorized project",
   "uiGeneralConversation": "General conversation",
   "uiGoogleAgenda": "Google Calendar",
-  "uiMicrosoftSetupMissing": "Microsoft configuration is unavailable in this environment. An administrator must check the application settings and callback URL; no authorization has been changed."
+  "uiMicrosoftSetupMissing": "Microsoft configuration is unavailable in this environment. An administrator must check the application settings and callback URL; no authorization has been changed.",
+  "uiLogoutConfirm": "Sign out of this Clara OS session? Your missions and history will be preserved.",
+  "uiLogoutError": "The session could not be closed. Success has not been confirmed."
 }

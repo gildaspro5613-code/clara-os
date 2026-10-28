@@ -102,7 +102,7 @@ export default async function CockpitWidgets({ session, acquisition,nativeMissio
         </div>
 
         <div className="mt-5">
-          <ClaraChatWidget nativeThreadReadOnly={nativeMissions!==undefined&&!nativeThreadCertified(session)} key={nativeSessionId} nativeSessionId={nativeSessionId} compact initialMessages={session.conversation} userFirstName={session.user.firstName} />
+          <ClaraChatWidget nativeThreadReadOnly={nativeMissions!==undefined&&!nativeThreadCertified(session)} key={nativeSessionId} nativeSessionId={nativeSessionId} initialMessages={session.conversation} userFirstName={session.user.firstName} />
         </div>
       </div>
     </section>

@@ -37,7 +37,8 @@ test('commercial browser E2E: authenticated canonical selection → contact → 
   const patch=await call('/api/clara/acquisition/commercial-draft','PATCH',{submissionId:'prospect-a',revision:1,subject:'LOT1_DURABLE_SUBJECT',body:'LOT1_DURABLE_BODY'});assert.equal(patch.status,200,await patch.clone().text());
   const stale=await call('/api/clara/acquisition/commercial-draft','PATCH',{submissionId:'prospect-a',revision:1,subject:'STALE',body:'MUST_NOT_PERSIST'});assert.equal(stale.status,409);
   await page.goto(origin+'/');const cockpit=await page.locator('body').innerText();assert.ok(cockpit.includes('prospect-a@example.invalid'));assert.ok(cockpit.includes('LOT1_DURABLE_SUBJECT'));assert.ok(cockpit.includes('LOT1_MISSION_A'),'Cockpit must retain the explicitly created mission title, not rename it after a consultation.');
-  // Compact Cockpit deliberately links to history instead of rendering message bodies.
+  // The authorized Cockpit now renders the real dialogue and retains its history link.
+  await page.getByRole('log').getByText(consultation,{exact:true}).waitFor();
   await page.getByRole('link',{name:'Ouvrir l’historique →',exact:true}).click();
   await page.getByText(consultation,{exact:true}).waitFor();
   await page.goto(origin+'/clara');await page.reload();const restoredDraft=page.locator('#commercial-draft');assert.equal(await restoredDraft.evaluate(e=>e.open),false);await restoredDraft.locator(':scope > summary').click();assert.ok((await page.locator('body').innerText()).includes('LOT1_DURABLE_BODY'));assert.ok((await page.locator('body').innerText()).includes('LOT1_DIALOGUE'));
