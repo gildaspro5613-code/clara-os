@@ -21,9 +21,14 @@ test('historical Hero: two persisted authorized missions, no overlapping panels,
   const page=await context.newPage();const rows=[];
   for(const locale of ['fr','en','es','de','it'])for(const [device,width,height]of [['desktop',1440,1000],['tablet',768,1024],['mobile',390,844]]){
    await context.addCookies([{name:'NEXT_LOCALE',value:locale,url:origin}]);await page.setViewportSize({width,height});
+   const panelResponses=Promise.all(['/api/calendar','/api/native/mail','/api/weather'].map(path=>page.waitForResponse(r=>new URL(r.url()).pathname===path)));
    const response=await page.goto(origin+'/');assert.equal(response.status(),200);assert.equal(await page.locator('html').getAttribute('lang'),locale);
    assert.equal(await page.locator('#main-workspace .native-context').count(),0);assert.equal(await page.locator('#native-account-menu').evaluate(e=>e.open),false);
    assert.ok(await page.locator('#main-workspace').evaluate(e=>e.scrollWidth<=e.clientWidth+1));
+   await Promise.all((await panelResponses).map(r=>r.finished()));
+   const copy=JSON.parse(readFileSync(`src/i18n/messages/${locale}/index.json`,'utf8'));
+   await page.locator('[data-cockpit-hero]').getByText(copy.common.loading,{exact:true}).waitFor({state:'hidden'});
+   await page.getByText(copy.cockpitUi.agendaLoading,{exact:true}).first().waitFor({state:'hidden'});
    await assertHeroFlow(page);
    for(const m of scope.missions)await page.locator('[data-cockpit-hero]').getByRole('link',{name:m.title,exact:true}).waitFor();
    await page.screenshot({path:`${out}/cockpit-${locale}-${device}.png`});rows.push({locale,device,status:'PASS',scope:'two synthetic missions in explicitly selected authorized project; no provider certification'});
