@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "mailHandler": "actual route with provider injection; SQL real",
+  "googleProvider": "simulated HTTP boundary",
+  "sameContextConnection": "1b59d14a-f073-448c-8c03-ca5b2fdb2783",
+  "missionContactDocumentsBrain": true,
+  "recordedApprovalVisible": true,
+  "approvalIsNotExecution": true,
+  "agendaRead": true,
+  "refresh": true,
+  "journal": true,
+  "makeBrevoFenced": true,
+  "smtpAttempts": 0,
+  "googleWrites": 0,
+  "semanticProviderCertified": false
+}

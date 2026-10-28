@@ -1,0 +1,4 @@
+Code et tests reçus : 8bdc396ecafc98f76eb910ad8f5fa7919343a15a
+Le build a été exécuté après bed7725. Aucun fichier applicatif, dépendance, schéma, asset ni vercel.json ne diffère entre bed7725 et ce SHA (seule la recette de révocation précise 401/403).
+Base : adff3190863a9af07645091b740c2dffe202337d
+Les stores/autorités natifs, contrats canoniques, migrations, assets et dépendances ne sont pas modifiés.

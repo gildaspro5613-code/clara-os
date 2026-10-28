@@ -1,0 +1,37 @@
+Native browser fixture initialized; no production connections.
+UI_VIEWPORT_PASS desktop
+UI_VIEWPORT_PASS tablet
+UI_VIEWPORT_PASS mobile
+UI_LOCALE_PASS fr
+UI_LOCALE_PASS en
+UI_LOCALE_PASS es
+UI_LOCALE_PASS de
+UI_LOCALE_PASS it
+✖ interface receipt: explicit business flow, responsive navigation, five languages, honest provider states and persistence (227882.572897ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 228630.057721
+
+✖ failing tests:
+
+test at src/tests/interface-finalization-browser.e2e.mjs:16:1
+✖ interface receipt: explicit business flow, responsive navigation, five languages, honest provider states and persistence (227882.572897ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  403 !== 401
+  
+      at TestContext.<anonymous> (file:///workspace/clara-os-historical-interface/src/tests/interface-finalization-browser.e2e.mjs:144:10)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 403,
+    expected: 401,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

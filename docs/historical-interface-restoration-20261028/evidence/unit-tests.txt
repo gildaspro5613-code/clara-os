@@ -1,0 +1,55 @@
+✔ commercial draft modification persists in and reloads from the acquisition record (2.089563ms)
+✔ Clara revises the same durable draft from a conversational instruction (0.785336ms)
+✔ conversation rewrite persists revision 2 in the acquisition record and survives reload (1.644722ms)
+✔ exact E2E replacement phrase is classified as a durable commercial revision (0.381569ms)
+✔ commercial substitution wording is also classified as a revision (0.237913ms)
+✔ commercial confirmation creates an approval and remains fail-closed without Gmail or Brevo (1.493822ms)
+✔ P0 projection preserves the contextual owner session (0.437874ms)
+✔ CredentialStore encrypts credentials and retrieves them by connectionId (6.192753ms)
+✔ Connection and its public representation never expose credentials (0.490472ms)
+✔ OAuth state is signed, expires, and is bound to the CSRF cookie nonce (2.478858ms)
+✔ credential updates preserve an existing refresh token (0.477326ms)
+✔ GoogleAuth persists refreshed credentials without losing refresh_token (57.70874ms)
+✔ invalid_grant marks the connection for reconnect and raises a stable error (6.539691ms)
+✔ native ACTIVE is registered/selected, never a provider certification or an automatic selection (1.859885ms)
+✔ selected reconnect/pending cannot fall back to another active account (0.307065ms)
+✔ missing selection, missing authority, reconnect and pending are distinct (0.376551ms)
+✔ HTTP refusal dominates an apparently ACTIVE payload and public authority errors are preserved (0.337631ms)
+✔ malformed, duplicate, unknown-status and historical connected flags cannot imply a native connection (0.477291ms)
+Checked 3905 translated messages.
+Checked 795 static translation calls.
+✔ all five locale dictionaries share identical keys (105.939453ms)
+✔ Clara response language covers every supported locale (0.555619ms)
+✔ every dictionary message is nonempty valid ICU with matching parameters and renders in five languages (489.502941ms)
+✔ all static translation calls in pages, components, modules and API resolve to real catalog keys (427.434315ms)
+✔ new Clara responses use selected locale, preserve original quotations and leave Brain/session data untouched (3.778387ms)
+✔ telephony API localizes errors, preserves public identifiers and never echoes provider exceptions or secrets (252.439715ms)
+✔ native chat localizes empty requests and network failures in all five selected locales (128.392316ms)
+✔ native dialogue language is independent of interface locale and preserves all original history (5.957009ms)
+✔ Microsoft session cookie remains opaque and duplicate-safe (1.702731ms)
+✔ Windows 365 read is allowed to a member but connection management is not (1.760162ms)
+✔ Microsoft connection management is restricted to owner/admin membership (0.375348ms)
+✔ Microsoft authorization never accepts the legacy default workspace (0.252804ms)
+✔ missing Microsoft setup returns safe browser guidance, retains JSON refusal and never provisions a connection (113.45608ms)
+✔ Windows 365 connector requires organizational delegated scopes (8.236684ms)
+✔ cockpit email projection preserves metadata and source without bodies, snippets, duplicates or unsafe IDs (3.387404ms)
+✔ five-language cockpit shows authorized conversation excerpts, never email bodies, and retains source links (75.916294ms)
+✔ all active registry missions remain visible and a blocked focus is never labeled active (64.232165ms)
+✔ all native Clara states and conversations title resolve in five locales (5.965292ms)
+✔ new commercial drafts follow declared source locale without changing approval, identity or intake data (51.136501ms)
+✔ server Missions page preserves blocked status without execution metadata and uses the durable thread focus (931.317627ms)
+✔ cockpit with no selected mission distinguishes the current thread from five active registry missions (101.413444ms)
+✔ mission list, card and detail show recorded progress without recomputing a different business value (45.353043ms)
+✔ consultations and ambiguous follow-ups cannot authorize a mission mutation (3.363785ms)
+✔ explicit commands retain the existing mission pipeline (0.208781ms)
+✔ Drive diagnostics only display reviewed public codes, never messages or provider payloads (0.223698ms)
+✔ voice authorization uses existing server-owned workspace and operator permissions, rejects foreign origin before auth (140.830297ms)
+✔ four provider routes deny unauthenticated requests before any provider and localize secret-free failures in five languages (191.833979ms)
+ℹ tests 45
+ℹ suites 0
+ℹ pass 45
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5948.146616
