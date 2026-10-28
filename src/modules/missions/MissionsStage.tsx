@@ -78,11 +78,7 @@ export default function MissionsStage({
   const completedTasks = activeMission
     ? activeMission.tasks.filter((task) => task.completed).length
     : 0;
-  const activeProgress = activeMission
-    ? activeMission.tasks.length > 0
-      ? Math.round((completedTasks / activeMission.tasks.length) * 100)
-      : 0
-    : 0;
+  const activeProgress = activeMission?.progress ?? 0;
   const nextTask = activeMission?.tasks.find((task) => !task.completed);
 
   const activePriorityKey = activeMission

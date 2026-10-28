@@ -12,6 +12,8 @@ import BriefPanel from "../components/cockpit/panels/BriefPanel";
 import SummaryPanel from "../components/cockpit/panels/SummaryPanel";
 import ConversationsPanel from "../components/cockpit/panels/ConversationsPanel";
 import EmailSummaryPanel from "../components/cockpit/panels/EmailSummaryPanel";
+import MissionCard from "../modules/missions/components/MissionCard";
+import MissionDetail from "../modules/missions/components/MissionDetail";
 import MissionsStage from "../modules/missions/MissionsStage";
 import type { Mission } from "../modules/missions/types/Mission";
 
@@ -96,5 +98,15 @@ test("cockpit with no selected mission distinguishes the current thread from fiv
   const widget=await (exports.default as(props:{mission:null;activeCount:number})=>Promise<React.ReactElement>)({mission:null,activeCount:5});
   const html=renderToStaticMarkup(widget),ui=createTranslator({locale,messages:catalog,namespace:'ui'});
   assert.ok(html.includes(ui('noCurrentFocus')));assert.ok(html.includes(ui('registryActiveCount',{count:5})));assert.ok(!html.includes(catalog.cockpitUi.noMission));
+ }
+});
+
+// Regression for the historical 29% / 38% discrepancy: stored business progress
+// and a count of completed actions are distinct; rendering must not rewrite either.
+test("mission list, card and detail show recorded progress without recomputing a different business value",()=>{
+ const mission:Mission={id:'recorded-progress',title:'Progress source',objective:'Original objective',status:'active',priority:'medium',createdAt:new Date('2026-10-28'),progress:29,tasks:Array.from({length:8},(_,i)=>({id:'task-'+i,title:'Action '+i,completed:i<3}))};
+ const before=JSON.stringify(mission);
+ for(const locale of ['fr','en','es','de','it'])for(const component of [<MissionsStage key="list" initialMissions={[mission]} currentMissionId={mission.id}/>,<MissionCard key="card" mission={mission} onSelect={()=>{throw Error('Rendering cannot select');}}/>,<MissionDetail key="detail" mission={mission} onBack={()=>{}} onUpdate={()=>{throw Error('Rendering cannot mutate');}}/>]){
+  const html=renderToStaticMarkup(<NextIntlClientProvider locale={locale} timeZone="UTC" messages={messages(locale)}>{component}</NextIntlClientProvider>);assert.ok(html.includes('29%'),locale+' '+component.key);assert.ok(!html.includes('38%'));assert.equal(JSON.stringify(mission),before);
  }
 });
