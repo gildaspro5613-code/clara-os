@@ -17,6 +17,8 @@ on:
       - 'src/tests/recette-network-provider-denials.test.ts'
       - 'src/tests/recette-attestation-authorization.test.ts'
       - '.github/workflows/clara-os-recette-security.yml'
+      - '.github/workflows/clara-os-independent-recette.yml'
+      - '.github/scripts/recette-deployment-api.test.mjs'
 permissions:
   contents: read
 jobs:
@@ -32,6 +34,8 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --ignore-scripts
+      - name: Independent Recette deployment transport (offline only)
+        run: node --test .github/scripts/recette-deployment-api.test.mjs
       - name: Recette offline denial contracts
         run: node --import tsx --test src/tests/recette-external-execution-guard.test.ts
       - name: Recette authentication and isolation contracts

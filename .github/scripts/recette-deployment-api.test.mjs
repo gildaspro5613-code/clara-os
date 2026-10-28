@@ -15,10 +15,10 @@ writeFileSync(join(temporary,'driver.mjs'),code);
 const {deployRecette,verifyApprovedSource,approvedFiles,expected}=await import(pathToFileURL(join(temporary,'driver.mjs')).href);
 test.after(()=>rmSync(temporary,{recursive:true,force:true}));
 const link={type:'github',repoId:1316164838,org:'gildaspro5613-code',repo:'clara-os'};
-const contents=new Map([['package.json',Buffer.from('{}')],['package-lock.json',Buffer.from('{}')],['vercel.json',Buffer.from('{}')],['public/binary.bin',Buffer.from([0,255,1,0])]]);
+const contents=new Map([['package.json',Buffer.from('{}')],['package-lock.json',Buffer.from('{}')],['vercel.json',execFileSync('git',['show',expected.sha+':vercel.json'])],['public/binary.bin',Buffer.from([0,255,1,0])]]);
 // Transport is simulated; source provenance and Production preservation are tested against Git below.
 function fakeGit(args) {
- if(args[0]==='rev-parse') return Buffer.from((args[1]==='HEAD'?expected.sha:expected.baseSha)+'\n');
+ if(args[0]==='rev-parse') return Buffer.from((args[1]==='HEAD'?expected.sha:args[1].endsWith('^{tree}')?expected.tree:expected.baseSha)+'\n');
  if(args[0]==='remote') return Buffer.from('https://github.com/gildaspro5613-code/clara-os\n');
  if(args[0]==='cat-file') return Buffer.from('commit\n');
  if(args[0]==='show') return args[1]===expected.baseSha+':vercel.json'?Buffer.from('{"crons":[{},{}]}'):contents.get(args[1].slice(expected.sha.length+1));
@@ -77,16 +77,17 @@ test('source SHA, parent, repository and configuration verified without a Git pr
   assert.throws(()=>verifyApprovedSource(args=>args[0]===operation?Buffer.from(value):fakeGit(args)),new RegExp(code));
  }
 });
-test('actual b2a51dd schedules are present and cause refusal before all HTTP, without changing source',async()=>{
- const original=execFileSync('git',['show',expected.baseSha+':vercel.json']);
- assert.equal(JSON.parse(original).crons.length,2);
- const h=harness({git:args=>args[0]==='show'?original:fakeGit(args)});
- await assert.rejects(h.run(),/SOURCE_CRONS_PRESENT_NO_DEPLOYMENT/);assert.equal(h.calls.length,0);
- assert.deepEqual(execFileSync('git',['show',expected.baseSha+':vercel.json']),original);
+test('approved schedules remain tracked; only the isolated artifact removes crons',()=>{
+ const source=execFileSync('git',['show',expected.sha+':vercel.json']);
+ const files=approvedFiles(fakeGit);
+ const artifact=JSON.parse(files.find(f=>f.file==='vercel.json').data);
+ const expectedConfig=JSON.parse(source);assert.equal(expectedConfig.crons.length,2);
+ delete expectedConfig.crons;assert.deepEqual(artifact,expectedConfig);
+ assert.deepEqual(execFileSync('git',['show',expected.sha+':vercel.json']),source);
 });
-test('missing configuration, malformed or nonempty crons cannot use an undocumented override',()=>{
- for(const data of ['bad JSON','{"crons":null}','{"crons":{}}','{"crons":[{"path":"/run"}]}']) assert.throws(()=>verifyApprovedSource(args=>args[0]==='show'&&args[1]===expected.sha+':vercel.json'?Buffer.from(data):fakeGit(args)));
- assert.equal(verifyApprovedSource(args=>args[0]==='show'&&args[1]===expected.sha+':vercel.json'?Buffer.from('{}'):fakeGit(args)),undefined);
+test('malformed, missing or changed approved crons are refused before upload',()=>{
+ for(const data of ['bad JSON','{}','{"crons":null}','{"crons":[{"path":"/run"}]}'])
+  assert.throws(()=>verifyApprovedSource(args=>args[0]==='show'?Buffer.from(data):fakeGit(args)));
 });
 test('synthetic upload transport deduplicates exact bytes then creates once on exact target',async()=>{
  const h=harness();assert.equal((await h.run()).event,'READY');
@@ -194,31 +195,24 @@ test('preflight 401/403 stops immediately without retry or fallback and never re
 });
 
 
-test('real source manifest includes every approved byte; Production schedules remain unchanged',t=>{
+test('real source manifest preserves all source paths and bytes except artifact crons',()=>{
  const git=args=>execFileSync('git',args,{maxBuffer:32*1024*1024,stdio:['ignore','pipe','pipe']});
- assert.equal(String(git(['rev-parse',expected.sha+'^'])).trim(),expected.baseSha);
- assert.equal(String(git(['diff','--name-only',expected.baseSha,expected.sha])).trim(),'vercel.json');
- const base=JSON.parse(git(['show',expected.baseSha+':vercel.json']));
- const recette=JSON.parse(git(['show',expected.sha+':vercel.json']));
- assert.equal(base.crons.length,2);assert.equal(recette.crons,undefined);
- delete base.crons;assert.deepEqual(recette,base);
- const localHead=String(git(['rev-parse','HEAD'])).trim();
- assert.notEqual(localHead,expected.sha);
- assert.deepEqual(git(['show',localHead+':vercel.json']),git(['show',expected.baseSha+':vercel.json']));
- assert.throws(()=>git(['merge-base','--is-ancestor',expected.sha,localHead]));
  const actualGit=args=>args[0]==='remote'?fakeGit(args):args[0]==='rev-parse'&&args[1]==='HEAD'?Buffer.from(expected.sha):git(args);
  assert.equal(verifyApprovedSource(actualGit),undefined);
- const files=approvedFiles(actualGit);assert.equal(files.length,1084);
- assert.equal(files.reduce((n,f)=>n+f.size,0),13199227);
- const unique=new Map(files.map(f=>[f.sha,f]));assert.equal(unique.size,1054);
- assert(files.every(f=>f.data.equals(git(['show',expected.sha+':'+f.file]))));
- const body={name:expected.slug,project:expected.project,customEnvironmentSlugOrId:expected.environment,files:files.map(({file,sha,size})=>({file,sha,size})),meta:{githubCommitSha:expected.sha,recetteSourceSha:expected.sha}};
- t.diagnostic(JSON.stringify({uniqueUploads:unique.size,uniqueBytes:[...unique.values()].reduce((n,f)=>n+f.size,0),creationJsonBytes:Buffer.byteLength(JSON.stringify(body))}));
+ const before=git(['show',expected.sha+':vercel.json']);
+ const files=approvedFiles(actualGit);
+ const paths=String(git(['ls-tree','-r','--name-only',expected.sha])).trim().split('\n');
+ assert.deepEqual(files.map(f=>f.file),paths);
+ for(const f of files){
+  if(f.file==='vercel.json'){
+   const config=JSON.parse(before);delete config.crons;assert.deepEqual(JSON.parse(f.data),config);
+  }else assert(f.data.equals(git(['show',expected.sha+':'+f.file])));
+ }
+ assert.deepEqual(git(['show',expected.sha+':vercel.json']),before);
 });
-test('wrong parent, unrelated business diff or additional configuration changes are refused',()=>{
- assert.throws(()=>verifyApprovedSource(args=>args[0]==='rev-parse'&&args[1]!=='HEAD'?Buffer.from('foreign'):fakeGit(args)),/SOURCE_PARENT_REFUSED/);
- assert.throws(()=>verifyApprovedSource(args=>args[0]==='diff'?Buffer.from('vercel.json\nsrc/business.ts'):fakeGit(args)),/SOURCE_BUSINESS_DIFF_REFUSED/);
- assert.throws(()=>verifyApprovedSource(args=>args[0]==='show'&&args[1]===expected.sha+':vercel.json'?Buffer.from('{"buildCommand":"changed"}'):fakeGit(args)),/SOURCE_CONFIGURATION_DIFF_REFUSED/);
+test('wrong parent and tree are refused',()=>{
+ assert.throws(()=>verifyApprovedSource(args=>args[0]==='rev-parse'&&args[1]===expected.sha+'^'?Buffer.from('foreign'):fakeGit(args)),/SOURCE_PARENT_REFUSED/);
+ assert.throws(()=>verifyApprovedSource(args=>args[0]==='rev-parse'&&args[1].endsWith('^{tree}')?Buffer.from('foreign'):fakeGit(args)),/SOURCE_TREE_REFUSED/);
 });
 test('actual project check accepts only unlinked project and rejects existing Git links',()=>{
  const step=yaml.load(workflow).jobs.deploy.steps.find(s=>s.name==='Resolve and strictly verify independent project');
@@ -258,7 +252,7 @@ test('upload timeout, 408/5xx or unexpected success response is uncertain withou
 test('upload uses exact binary bytes, deduplicates content but preserves every manifest path',async()=>{
  const files=approvedFiles(fakeGit);assert.equal(files.length,4);
  assert.deepEqual([...files.find(f=>f.file==='public/binary.bin').data],[0,255,1,0]);
- const h=harness();await h.run();assert.equal(h.calls.filter(c=>c.path==='/v2/files').length,2);
+ const h=harness();await h.run();assert.equal(h.calls.filter(c=>c.path==='/v2/files').length,3);
  const create=h.calls.find(c=>c.path==='/v13/deployments'&&c.method==='POST');assert.equal(JSON.parse(create.body).files.length,4);
  assert.equal(h.calls.at(-1),create);
 });

@@ -31,17 +31,17 @@ jobs:
       - name: Checkout approved source (never main)
         uses: actions/checkout@v4
         with:
-          ref: 6cfed8f80f9b8451d5698ca1040bcf42d513c4f2
+          ref: e1d89bba1cbef31c3d93ca6a3298bbe87c5c05e8
           persist-credentials: false
           fetch-depth: 2
-      - name: Verify pinned Git source (no local artifact transformation)
+      - name: Verify pinned Git source and exact tree
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "6cfed8f80f9b8451d5698ca1040bcf42d513c4f2"
+          test "$(git rev-parse HEAD)" = "e1d89bba1cbef31c3d93ca6a3298bbe87c5c05e8"
           test "$(git remote get-url origin)" = "https://github.com/gildaspro5613-code/clara-os"
-          test "$(git cat-file -t 6cfed8f80f9b8451d5698ca1040bcf42d513c4f2)" = commit
-          test "$(git rev-parse 6cfed8f80f9b8451d5698ca1040bcf42d513c4f2^)" = "b2a51dd59381daa1e5d3278f3d7104b986015170"
-          test "$(git diff --name-only b2a51dd59381daa1e5d3278f3d7104b986015170 6cfed8f80f9b8451d5698ca1040bcf42d513c4f2)" = vercel.json
+          test "$(git cat-file -t e1d89bba1cbef31c3d93ca6a3298bbe87c5c05e8)" = commit
+          test "$(git rev-parse e1d89bba1cbef31c3d93ca6a3298bbe87c5c05e8^)" = "652a332852a0302de3d79d95347447dcc21074bf"
+          test "$(git rev-parse HEAD^{tree})" = "e3fd0ebe186b4a5a93121a6ee653bd354549aef5"
       - name: Set up deployment controller Node.js
         if: ${{ false }}
         uses: actions/setup-node@v4
@@ -139,7 +139,7 @@ jobs:
           if (process.argv[1] === '-') {
             try {
               const result = await verifyCustomEnvironment({token:process.env.VERCEL_RECETTE_TOKEN});
-              const message = 'READ_ONLY_BINDINGS_PASS ' + JSON.stringify(result) + ' WRITE_PERMISSIONS_NON_ATTESTED';
+              const message = 'READ_ONLY_PROJECT_ENVIRONMENT_METADATA_PASS ' + JSON.stringify(result) + ' EFFECTIVE_DATABASE_BINDINGS_NON_ATTESTED WRITE_PERMISSIONS_NON_ATTESTED';
               console.log('::notice title=Recette read-only Environment::' + message);
               appendFileSync(process.env.GITHUB_STEP_SUMMARY,message + '\n');
             } catch (error) {
@@ -162,8 +162,9 @@ jobs:
           import {createHash} from 'node:crypto';
 
           export const expected = Object.freeze({
-            sha: '6cfed8f80f9b8451d5698ca1040bcf42d513c4f2',
-            baseSha: 'b2a51dd59381daa1e5d3278f3d7104b986015170',
+            sha: 'e1d89bba1cbef31c3d93ca6a3298bbe87c5c05e8',
+            baseSha: '652a332852a0302de3d79d95347447dcc21074bf',
+            tree: 'e3fd0ebe186b4a5a93121a6ee653bd354549aef5',
             project: 'prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz',
             team: 'team_0BeqOAO8t5oDEBdzHHdekcxv',
             environment: 'env_T6nc8Pd4KLG9qTbvTM9ZsOn4T4YM',
@@ -173,25 +174,19 @@ jobs:
           const refuse = code => { throw new Refused(code); };
           const gitRead = args => execFileSync('git', args, {maxBuffer:32 * 1024 * 1024,stdio:['ignore','pipe','pipe']});
 
-          /** Verify the isolated Git descendant; never rewrite tracked bytes or read local secrets. */
+          /** Verify immutable approved source; tracked bytes and Production remain untouched. */
           export function verifyApprovedSource(git = gitRead) {
             if (String(git(['rev-parse','HEAD'])).trim() !== expected.sha) refuse('SOURCE_SHA_REFUSED');
             if (String(git(['remote','get-url','origin'])).trim() !== 'https://github.com/gildaspro5613-code/clara-os') refuse('SOURCE_REPOSITORY_REFUSED');
             if (String(git(['cat-file','-t',expected.sha])).trim() !== 'commit') refuse('SOURCE_COMMIT_REFUSED');
             if (String(git(['rev-parse',expected.sha + '^'])).trim() !== expected.baseSha) refuse('SOURCE_PARENT_REFUSED');
-            if (String(git(['diff','--name-only',expected.baseSha,expected.sha])).trim() !== 'vercel.json') refuse('SOURCE_BUSINESS_DIFF_REFUSED');
-            let config,original;
-            try {
-              config = JSON.parse(git(['show',expected.sha + ':vercel.json']));
-              original = JSON.parse(git(['show',expected.baseSha + ':vercel.json']));
-            }
+            if (String(git(['rev-parse',expected.sha + '^{tree}'])).trim() !== expected.tree) refuse('SOURCE_TREE_REFUSED');
+            let config;
+            try { config = JSON.parse(git(['show',expected.sha + ':vercel.json'])); }
             catch { refuse('CRON_CONFIGURATION_REFUSED'); }
-            // No undocumented API override and no reliance on a missing CRON_SECRET.
-            // Only this isolated Git descendant removes the declarations; PR/Production keep them.
-            if (config.crons !== undefined && (!Array.isArray(config.crons) || config.crons.length !== 0)) refuse('SOURCE_CRONS_PRESENT_NO_DEPLOYMENT');
-            if (!Array.isArray(original.crons) || original.crons.length !== 2) refuse('SOURCE_BASE_CRONS_REFUSED');
-            delete original.crons;
-            if (JSON.stringify(config) !== JSON.stringify(original)) refuse('SOURCE_CONFIGURATION_DIFF_REFUSED');
+            // Approved source retains Production schedules. Only the upload artifact omits them.
+            const approvedCrons = [{path:'/api/internal/document-operations-purge',schedule:'0 3 * * *'},{path:'/api/internal/event-jobs-run',schedule:'* * * * *'}];
+            if (JSON.stringify(config.crons) !== JSON.stringify(approvedCrons)) refuse('SOURCE_BASE_CRONS_REFUSED');
 
           }
 
@@ -203,7 +198,12 @@ jobs:
               if (!match) refuse('SOURCE_FILE_TYPE_REFUSED');
               const file = match[2];
               if (file.startsWith('/') || file.split('/').some(p => p === '..' || p === '.git' || p === '.vercel' || p === '.env' || p.startsWith('.env.') || p === '.npmrc')) refuse('SOURCE_FILE_PATH_REFUSED');
-              const data = Buffer.from(git(['show',expected.sha + ':' + file]));
+              let data = Buffer.from(git(['show',expected.sha + ':' + file]));
+              if (file === 'vercel.json') {
+                const config = JSON.parse(data);
+                delete config.crons;
+                data = Buffer.from(JSON.stringify(config) + '\n');
+              }
               return {file,data,sha:createHash('sha1').update(data).digest('hex'),size:data.length};
             });
             if (!['package.json','package-lock.json','vercel.json'].every(name => files.some(f => f.file === name))) refuse('SOURCE_MANIFEST_REFUSED');
