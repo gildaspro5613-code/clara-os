@@ -91,7 +91,7 @@ export default async function CockpitWidgets({ session, acquisition,nativeMissio
 
         <div className="mt-5 grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-[1.35fr_1fr_1fr]">
           <div className="min-w-0 md:col-span-2 xl:col-span-1">
-            <MissionWidget nativeScope={nativeMissions!==undefined}
+            <MissionWidget missions={missions} nativeScope={nativeMissions!==undefined}
               mission={currentMission}
               activeCount={orchestration.active.length}
               blockedCount={orchestration.blocked.length}

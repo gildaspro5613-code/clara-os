@@ -1,4 +1,3 @@
-import NativeScopeSelector from "@/components/native/NativeScopeSelector";
 /**
  * ============================================
  * CLARA OS
@@ -36,7 +35,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
         {/* Workspace */}
         <main id="main-workspace" tabIndex={-1} className="clara-workspace-scroll relative flex min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
-          <div className="clara-page-content min-w-0 w-full"><NativeScopeSelector />{children}</div>
+          <div className="clara-page-content min-w-0 w-full">{children}</div>
         </main>
       </div>
     </div>

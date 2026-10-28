@@ -363,5 +363,12 @@
   "uiChangeContext": "Cambiar espacio o proyecto",
   "uiTechnicalDetails": "Detalles técnicos",
   "googleHubDescription": "Conexiones de Google autorizadas para documentos y calendario.",
-  "uiMissionContact": "Misión y contacto"
+  "uiMissionContact": "Misión y contacto",
+  "uiBackCockpit": "Volver al Cockpit",
+  "uiAccountContextHelp": "Seleccione explícitamente un espacio, proyecto o conversación. Los cambios conservan los controles de acceso y nunca trasladan el historial.",
+  "uiVoiceStatus": "Voz y telefonía: consultar los accesos disponibles",
+  "uiAuthorizedConversations": "Conversaciones del proyecto autorizado",
+  "uiGeneralConversation": "Conversación general",
+  "uiGoogleAgenda": "Calendario de Google",
+  "uiMicrosoftSetupMissing": "La configuración de Microsoft no está disponible en este entorno. Un administrador debe verificar la configuración de la aplicación y la URL de retorno; no se ha modificado ninguna autorización."
 }

@@ -20,7 +20,8 @@
       "fix/clara-os-operational-recovery-20261027": false,
       "fix/clara-os-operational-delivery-20261027": false,
       "fix/google-native-hub-216": false,
-      "fix/clara-os-interface-finalization-20261027": false
+      "fix/clara-os-interface-finalization-20261027": false,
+      "fix/clara-os-historical-interface-20261028": false
     }
   }
 }

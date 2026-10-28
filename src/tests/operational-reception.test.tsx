@@ -21,7 +21,7 @@ Reflect.set(globalThis, "React", React);
 
 function sourceSession() {
   const session = createSession();
-  session.conversation = [{id:"message-a",role:"clara",content:"PRIVATE_FULL_EMAIL_BODY",createdAt:"2026-10-14T12:00:00Z"}];
+  session.conversation = [{id:"message-a",role:"clara",content:"AUTHORIZED_CONVERSATION_EXCERPT",createdAt:"2026-10-14T12:00:00Z"}];
   session.sources = [{source:"google-gmail",available:true,summary:"PRIVATE_FULL_EMAIL_BODY",data:{messages:[
     {id:"mail123",subject:"Original subject",from:"sender@example.invalid",labelIds:["IMPORTANT"],snippet:"PRIVATE_EMAIL_SNIPPET",body:"PRIVATE_FULL_EMAIL_BODY"},
     {id:"https://evil.invalid",subject:"unsafe",from:"bad"},
@@ -38,11 +38,11 @@ test("cockpit email projection preserves metadata and source without bodies, sni
  session.sources[0].available=false;assert.deepEqual(cockpitEmails(session),[]);
 });
 
-test("five-language populated cockpit never renders full conversation/email bodies and retains actionable source links",()=>{
+test("five-language cockpit shows authorized conversation excerpts, never email bodies, and retains source links",()=>{
  for(const locale of ['fr','en','es','de','it']){
   const session=sourceSession(),before=JSON.stringify(session);
   const html=renderToStaticMarkup(<NextIntlClientProvider locale={locale} timeZone="UTC" messages={messages(locale)}><BriefPanel session={session}/><SummaryPanel session={session}/><ConversationsPanel session={session}/><EmailSummaryPanel session={session}/></NextIntlClientProvider>);
-  assert.ok(!html.includes('PRIVATE_'),locale);assert.ok(html.includes('Original subject'));assert.ok(html.includes('sender@example.invalid'));assert.ok(html.includes('mail123'));assert.ok(html.includes('/conversations'));assert.equal(JSON.stringify(session),before);
+  assert.ok(html.includes('AUTHORIZED_CONVERSATION_EXCERPT'),locale);assert.ok(!html.includes('PRIVATE_'),locale);assert.ok(html.includes('Original subject'));assert.ok(html.includes('sender@example.invalid'));assert.ok(html.includes('mail123'));assert.ok(html.includes('/conversations'));assert.equal(JSON.stringify(session),before);
  }
 });
 

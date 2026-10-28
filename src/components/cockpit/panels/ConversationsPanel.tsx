@@ -32,9 +32,9 @@ export default function ConversationsPanel({
       <div className="space-y-3">
         {recentMessages.length > 0 ? (
           recentMessages.map((message) => (
-            <div
+            <Link href={`/conversations#message-${encodeURIComponent(message.id)}`}
               key={message.id}
-              className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3"
+              className="block rounded-2xl border border-white/10 bg-white/5 px-4 py-3"
             >
               <div className="flex items-center justify-between gap-4">
                 <p className="font-semibold">
@@ -48,13 +48,13 @@ export default function ConversationsPanel({
                 </span>
               </div>
 
-              <p className="mt-1 text-sm text-white/65">
-                {t("openConversationHistory")}
+              <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-relaxed text-white/65">
+                {message.content}
               </p>
-            </div>
+            </Link>
           ))
         ) : (
-          <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+          <div className="block rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
             <p className="text-sm text-white/65">
               {t("noConversationHistory")}
             </p>

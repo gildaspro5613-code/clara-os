@@ -28,11 +28,11 @@ test('delivery UI: official logo, business navigation, private advanced controls
    await page.locator('link[rel="icon"][href^="/icon.svg"]').waitFor({state:'attached'});
    assert.equal(await page.locator('link[rel="icon"][href^="/icon.svg"]').count(),1);
    assert.equal(await page.locator('link[rel="icon"][href^="/favicon.ico"]').count(),0);
-   await page.getByRole('region',{name:'Contexte canonique privé',exact:true}).waitFor();
    await revealContextSelection(page);
+   await page.getByRole('region',{name:'Contexte canonique privé',exact:true}).waitFor();
    await page.getByText('Identifiants du contexte sélectionné',{exact:true}).waitFor();
    await page.getByText(/Espace de travail · w \/ Client c1 \/ Project p1/).waitFor();
-   await page.locator('[data-native-context-switch] > summary').click();
+   await page.locator('[data-native-context-switch] > summary').click();await page.locator('#native-account-menu > summary').click();
    if(path==='documents')await page.getByText(/\[NATIVE_GOOGLE_EXPLICIT_SELECTION_REQUIRED\]/).waitFor();
    assert.equal(await page.locator('[data-native-authority="locked"]').count(),0,path);
    await page.screenshot({path:out+'/'+(path||'cockpit')+'-desktop.png',fullPage:true});
@@ -51,9 +51,9 @@ test('delivery UI: official logo, business navigation, private advanced controls
    assert.equal(await page.locator('[data-document-authority-settings] summary').innerText(),label);
   }
   await context.addCookies([{name:'NEXT_LOCALE',value:'fr',url:origin}]);await page.setViewportSize({width:390,height:844});await page.goto(origin+'/documents');
-  await page.getByRole('button',{name:'Ouvrir le menu',exact:true}).click();const image=page.locator('aside img[src="/brand/clara-os-symbol.svg"]');await image.waitFor();assert.equal(await image.evaluate(e=>e.complete&&e.naturalWidth>0),true);
-  await page.locator('aside').evaluate(async e=>{await new Promise(requestAnimationFrame);await Promise.all(e.getAnimations().map(a=>a.finished));});
-  assert.equal(Math.round((await page.locator('aside').boundingBox()).x),0);
+  await page.getByRole('button',{name:'Ouvrir le menu',exact:true}).click();const image=page.locator('#clara-navigation img[src="/brand/clara-os-symbol.svg"]');await image.waitFor();assert.equal(await image.evaluate(e=>e.complete&&e.naturalWidth>0),true);
+  await page.locator('#clara-navigation').evaluate(async e=>{await new Promise(requestAnimationFrame);await Promise.all(e.getAnimations().map(a=>a.finished));});
+  assert.equal(Math.round((await page.locator('#clara-navigation').boundingBox()).x),0);
   await page.screenshot({path:out+'/navigation-mobile.png',fullPage:true});await page.getByRole('link',{name:'Missions',exact:true}).click();await page.waitForURL(origin+'/missions');
   await page.screenshot({path:out+'/missions-mobile.png',fullPage:true});
   assert.equal(readFileSync('/tmp/native-fixture-global-attempts-'+process.env.NATIVE_TEST_DATABASE,'utf8'),'','No unexpected global loader may execute during the native UI receipt');

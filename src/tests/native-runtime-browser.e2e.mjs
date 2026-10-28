@@ -1,4 +1,4 @@
-import {revealMissionCreation,revealContextSelection} from './helpers/native-ui-disclosures.mjs';
+import {revealAccountSettings,revealMissionCreation,revealContextSelection} from './helpers/native-ui-disclosures.mjs';
 import {X509Certificate,createHash} from 'node:crypto';
 import {readFileSync} from 'node:fs';
 import test from 'node:test';
@@ -10,15 +10,15 @@ test('native browser: explicit selection, positive persisted mission/chat and cr
  const pin=createHash('sha256').update(new X509Certificate(readFileSync('/tmp/native-runtime-cert.pem')).publicKey.export({type:'spki',format:'der'})).digest('base64');
  const browser=await chromium.launch({executablePath:process.env.DOCUMENTS_E2E_CHROMIUM,headless:true,args:['--no-sandbox','--ignore-certificate-errors-spki-list='+pin]});
  try{
- const anonymous=await browser.newContext();await anonymous.addCookies([{name:'NEXT_LOCALE',value:'fr',url:origin}]);const anonymousPage=await anonymous.newPage();await anonymousPage.goto(origin+'/missions');await anonymousPage.getByRole('link',{name:'Connectez-vous pour consulter les projets autorisés.',exact:true}).waitFor();assert.equal(await anonymousPage.locator('a[href="/api/auth/google/start"]').count(),1);assert.equal(await anonymousPage.locator('[data-native-authority="locked"]').count(),1);await anonymous.close();
+ const anonymous=await browser.newContext();await anonymous.addCookies([{name:'NEXT_LOCALE',value:'fr',url:origin}]);const anonymousPage=await anonymous.newPage();await anonymousPage.goto(origin+'/missions');await revealAccountSettings(anonymousPage);await anonymousPage.getByRole('link',{name:'Connectez-vous pour consulter les projets autorisés.',exact:true}).waitFor();assert.equal(await anonymousPage.locator('a[href="/api/auth/google/start"]').count(),1);assert.equal(await anonymousPage.locator('[data-native-authority="locked"]').count(),1);await anonymous.close();
  const context=await browser.newContext();await context.addCookies([{name:'clara_auth_session',value:'A'.repeat(43),url:origin},{name:'NEXT_LOCALE',value:'fr',url:origin}]);
  await context.route('**/*',route=>new URL(route.request().url()).origin===new URL(origin).origin?route.continue():route.abort());
  const page=await context.newPage();await page.goto(origin+'/clara');
  const panel=page.getByRole('region',{name:'Contexte canonique privé',exact:true});
  await revealContextSelection(page);await panel.locator('select').nth(0).selectOption('w');await panel.locator('select').nth(1).selectOption('c1');await panel.locator('select').nth(2).selectOption('p1');
- await panel.getByRole('button',{name:'Créer un nouveau fil',exact:true}).click();await revealMissionCreation(page);await page.getByLabel('Titre de la mission',{exact:true}).waitFor();
+ await Promise.all([page.waitForEvent('load'),panel.getByRole('button',{name:'Créer un nouveau fil',exact:true}).click()]);await revealMissionCreation(page);await page.getByLabel('Titre de la mission',{exact:true}).waitFor();
  await revealMissionCreation(page);await page.getByLabel('Titre de la mission',{exact:true}).fill('PRIVATE_NATIVE_A_P1');await page.getByLabel('Objectif de la mission',{exact:true}).fill('PRIVATE_OBJECTIVE_A');
- await page.getByRole('button',{name:'Créer la mission',exact:true}).click();await page.getByText('PRIVATE_NATIVE_A_P1',{exact:true}).first().waitFor();
+ await Promise.all([page.waitForEvent('load'),page.getByRole('button',{name:'Créer la mission',exact:true}).click()]);await page.locator('#main-workspace').getByText('PRIVATE_NATIVE_A_P1',{exact:true}).first().waitFor();
  const cookies=await context.cookies(),selection=cookies.find(c=>c.name==='clara_native_selection');assert.ok(selection);const scope=JSON.parse(decodeURIComponent(selection.value));assert.equal(scope.projectId,'p1');
  for(const locale of ['fr','en','es','de','it']){await context.addCookies([{name:'NEXT_LOCALE',value:locale,url:origin}]);for(const path of ['/','/clara','/missions','/journal','/conversations','/brain']){
   const response=await page.goto(origin+path);assert.equal(response.status(),200,locale+" "+path);assert.equal(await page.locator('[data-native-authority="locked"]').count(),0,path);assert.ok(!(await response.text()).includes('PRIVATE_LEGACY_HISTORY'));assert.equal(await page.locator('html').getAttribute('lang'),locale);

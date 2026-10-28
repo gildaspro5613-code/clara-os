@@ -134,7 +134,7 @@ async function scopedChat(request:Request) {
 
     // The composer only gives Clara a conversational voice. It receives the
     // already-decided Brain/session state and cannot call Clara capabilities.
-    const composed = await composeClaraResponseWithProposal(message, session, locale);
+    const composed = await composeClaraResponseWithProposal(message, session, locale, "conversation");
     let responseMessage = composed.content;
     if (composed.generation.status !== "completed" && !isCommercialCommand) {
       const native=nativeContext();if(native)native.commitOnFailure=true;

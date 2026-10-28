@@ -1,3 +1,4 @@
+import type { Mission } from "@/modules/missions/types/Mission";
 import type { ClaraSession } from "@/lib/core/session";
 import type { AcquisitionRecord } from "@/lib/acquisition/acquisition-store";
 
@@ -5,11 +6,12 @@ import Stage from "../Stage";
 
 interface HeroProps {
   nativeScope?: boolean;
+  nativeMissions?:Mission[];
   session: ClaraSession;
   acquisition?: AcquisitionRecord | null;
 }
 
-export default function Hero({ session, acquisition, nativeScope }: HeroProps) {
+export default function Hero({ session, acquisition, nativeScope,nativeMissions }: HeroProps) {
   return (
     <section className="relative h-auto min-h-0 overflow-hidden bg-[#020914] lg:h-full lg:min-h-[720px]">
       {/*
@@ -34,7 +36,7 @@ export default function Hero({ session, acquisition, nativeScope }: HeroProps) {
         <div className="absolute bottom-0 left-0 right-0 h-[34%] bg-[linear-gradient(180deg,rgba(2,9,20,0),rgba(1,6,14,0.78))]" />
       </div>
 
-      <Stage nativeScope={nativeScope} session={session} acquisition={acquisition} />
+      <Stage nativeMissions={nativeMissions} nativeScope={nativeScope} session={session} acquisition={acquisition} />
     </section>
   );
 }

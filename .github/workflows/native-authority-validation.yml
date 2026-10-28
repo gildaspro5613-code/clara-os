@@ -126,7 +126,7 @@ jobs:
         run: node --import tsx --test src/tests/native-job-kind-compatibility.test.ts src/tests/v1-mission-identity.test.ts src/tests/native-runtime-proxy.test.mjs
       - name: Native Google hub contract
         run: |
-          node --import tsx --test src/tests/google-native-hub.test.ts src/tests/i18n-consolidation.test.ts
+          node --import tsx --test src/tests/google-native-hub.test.ts src/tests/i18n-consolidation.test.ts src/tests/microsoft-connect-presentation.test.ts
           npx eslint src/components/connections src/tests/google-native-hub*
           npx eslint src/components/layout src/components/native/NativeScopeSelector.tsx src/components/native/NativeDocumentsPanel.tsx src/components/native/NativeMailPanel.tsx src/components/cockpit/widgets/clara/ClaraChatWidget.tsx src/components/automatisations/MakeConnectionStatus.tsx src/components/contacts/ContactsDirectory.tsx src/modules/missions/MissionsStage.tsx src/app/documents/page.tsx src/app/clara/page.tsx src/tests/helpers/native-ui-disclosures.mjs src/tests/interface-finalization-browser.e2e.mjs
       - name: Operational recovery, consultations and scoped provider reads

@@ -64,7 +64,7 @@ export default function ConnectionsHub() {
     <>
       {oauthResult && (
         <div className={`mb-5 rounded-2xl border px-5 py-4 text-sm ${oauthSuccess && !googleReturnReceived ? "border-emerald-400/20 bg-emerald-400/[0.06] text-emerald-200" : "border-amber-400/20 bg-amber-400/[0.06] text-amber-100"}`} role="status">
-          {googleReturnReceived ? ui("googleHub_returnReceived") : oauthSuccess ? ui("oauthConnected",{provider:oauthResult.provider}) : oauthResult.status === "auth_required" ? ui("signInToClaraOSAgainBeforeConnectingMicrosoft") : oauthResult.status === "access_denied" ? ui("oauthCancelled",{provider:oauthResult.provider}) : ui("oauthFailed",{provider:oauthResult.provider})}
+          {oauthResult.status==="not_configured"?ui("uiMicrosoftSetupMissing"):googleReturnReceived ? ui("googleHub_returnReceived") : oauthSuccess ? ui("oauthConnected",{provider:oauthResult.provider}) : oauthResult.status === "auth_required" ? ui("signInToClaraOSAgainBeforeConnectingMicrosoft") : oauthResult.status === "access_denied" ? ui("oauthCancelled",{provider:oauthResult.provider}) : ui("oauthFailed",{provider:oauthResult.provider})}
         </div>
       )}
       <div className="grid gap-4 md:grid-cols-2">
@@ -84,6 +84,7 @@ export default function ConnectionsHub() {
               {!state?.connected && connectUrl && !state?.error?.includes("AUTH_REQUIRED") && (
                 <a href={connectUrl} className="inline-flex items-center gap-2 rounded-xl border border-cyan-400/20 bg-cyan-400/[0.07] px-4 py-2.5 text-sm text-cyan-200 transition hover:bg-cyan-400/[0.12]">{ui("connect")}{" "}<ExternalLink size={14} /></a>
               )}
+              {id === "google" && <Link href="/agenda" className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white/65 hover:border-cyan-400/20">{ui("uiGoogleAgenda")}</Link>}
               {id === "google" && <Link href="/documents" className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white/65 hover:border-cyan-400/20"><ShieldCheck size={14} />{" "}{ui("googleHub_documents")}</Link>}
               {id === "microsoft" && state?.connected && <span className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white/55"><ShieldCheck size={14} />{" "}{ui("windows365Authorized")}</span>}
               {id === "make" && <Link href="/automatisations" className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white/65 hover:border-cyan-400/20"><Settings2 size={14} /> {state?.connected ? ui("manage") : ui("configure")}</Link>}

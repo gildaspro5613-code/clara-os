@@ -6,7 +6,8 @@ import MissionsStage from "@/modules/missions/MissionsStage";
 import { loadMissions } from "@/modules/missions/mission-store";
 import { resolveOperationalContext } from "@/lib/core/operational-context";
 
-export default async function MissionsPage() {
+export default async function MissionsPage({searchParams}:{searchParams?:Promise<{mission?:string}>}={}) {
+  const requestedMission=(await searchParams)?.mission;
   return nativePage(async()=>{
 
   let missions: Awaited<ReturnType<typeof loadMissions>> = [];
@@ -28,7 +29,7 @@ export default async function MissionsPage() {
 
   return (
     <MainLayout>
-      <MissionsStage initialMissions={missions} currentMissionId={currentMissionId} />
+      <MissionsStage initialMissions={missions} currentMissionId={currentMissionId} initialSelectedMissionId={missions.find(m=>m.id===requestedMission)?.id} />
     </MainLayout>
   );
   });

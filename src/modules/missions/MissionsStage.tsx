@@ -21,16 +21,18 @@ import type { Mission } from "./types/Mission";
 interface MissionsStageProps {
   initialMissions?: Mission[];
   currentMissionId?: string | null;
+  initialSelectedMissionId?: string;
 }
 
 export default function MissionsStage({
   initialMissions = [],
   currentMissionId = null,
+  initialSelectedMissionId,
 }: MissionsStageProps) {
   const ui = useTranslations("ui");
   const t = useTranslations("missionsPage");
   const [missions, setMissions] = useState<Mission[]>(initialMissions);
-  const [selectedMissionId, setSelectedMissionId] = useState<string | null>(null);
+  const [selectedMissionId, setSelectedMissionId] = useState<string | null>(initialMissions.some(m=>m.id===initialSelectedMissionId)?initialSelectedMissionId!:null);
 
   const activeMissions = missions.filter((mission) => mission.status === "active");
   const plannedMissions = missions.filter((mission) => mission.status === "planned");
@@ -43,6 +45,8 @@ export default function MissionsStage({
   const selectedMission = missions.find((mission) => mission.id === selectedMissionId);
 
   function openMissionCreation() {
+    const account = document.getElementById("native-account-menu");
+    if (account instanceof HTMLDetailsElement) account.open = true;
     if (currentMissionId) {
       const switcher = document.querySelector('[data-native-context-switch]');
       if (switcher instanceof HTMLDetailsElement) switcher.open = true;

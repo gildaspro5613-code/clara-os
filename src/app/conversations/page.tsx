@@ -1,3 +1,6 @@
+import GlassPanel from "@/components/ui/GlassPanel";
+import {loadNativeConversationNavigation} from "@/components/native/conversation-navigation";
+import NativeConversationList from "@/components/native/NativeConversationList";
 import NativeEarlierMessages from '@/components/native/NativeEarlierMessages';
 import {nativeContext} from '@/lib/native/scoped-context';
 import { nativePage } from "@/lib/native/page-fence";
@@ -12,6 +15,7 @@ export default async function ConversationsPage() {
   return nativePage(async()=>{
 
   const ui = await getTranslations("ui");
+  const conversationNavigation=await loadNativeConversationNavigation();
 
   const [t, locale, session] = await Promise.all([
     getTranslations("pages"),
@@ -38,7 +42,8 @@ export default async function ConversationsPage() {
             </p>
           </div>
 
-          <div className="max-w-5xl">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]"><section className="min-w-0">
+            {conversationNavigation?<NativeConversationList {...conversationNavigation}/>:<p role="status" className="mb-4 text-sm text-white/65">{ui("nativeHistoryUnavailable")}</p>}
             <div className="mb-5 flex items-center justify-between gap-4">
               <p className="text-sm text-white/45">
                 {messages.length > 0
@@ -54,7 +59,7 @@ export default async function ConversationsPage() {
             {messages.length > 0 ? (
               <ol className="space-y-3">
                 {messages.map((message) => (
-                  <li key={message.id} className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
+                  <li id={`message-${message.id}`} key={message.id} className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
                     <div className="flex items-center justify-between gap-4">
                       <span className="text-xs uppercase tracking-[0.18em] text-cyan-300/70">
                         {message.role === "clara" ? "Clara" : session.session.user.firstName ?? ui("user")}
@@ -72,7 +77,7 @@ export default async function ConversationsPage() {
                 {t("conversationHistoryExplanation")}
               </div>
             )}
-          </div>
+          </section><aside className="space-y-4"><GlassPanel title={t("currentMission")}><p className="break-words text-white/80">{session.session.mission?.title??ui("uiGeneralConversation")}</p>{session.session.mission&&<Link className="mt-3 block text-cyan-200" href={`/missions?mission=${encodeURIComponent(session.session.mission.id)}`}>{ui("viewAllMissions")}</Link>}<p className="mt-4 text-sm text-white/60">{t("state")}: {t.has(`states.${session.session.state}`)?t(`states.${session.session.state}`):t("states.UNKNOWN")}</p></GlassPanel></aside></div>
         </div>
       </div>
     </MainLayout>

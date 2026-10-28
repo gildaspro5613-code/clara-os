@@ -15,6 +15,8 @@ export async function GET(request: NextRequest) {
   const workspace = await authenticatedMicrosoftWorkspace(request.headers.get("cookie"), "connections:manage");
   if (!workspace) return NextResponse.json({ error: "MICROSOFT_WORKSPACE_AUTH_REQUIRED" }, { status: 403, headers: { "Cache-Control": "no-store" } });
   if (!microsoftConfig.clientId || !microsoftConfig.clientSecret || !microsoftConfig.redirectUri) {
+    // Keep the existing JSON contract for clients; a browser returns to the hub.
+    if(request.headers.get("accept")?.includes("text/html")) return NextResponse.redirect(new URL("/connexions?microsoft=not_configured",request.url));
     return NextResponse.json({ error: "MICROSOFT_OAUTH_NOT_CONFIGURED" }, { status: 503 });
   }
   const repository = new DatabaseConnectionRepository();

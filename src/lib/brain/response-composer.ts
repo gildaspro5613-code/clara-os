@@ -116,6 +116,7 @@ export async function composeClaraResponseWithProposal(
   message: string,
   session: ClaraSession,
   locale?: Locale,
+  languageMode: "interface" | "conversation" = "interface",
 ): Promise<ComposedClaraResponse> {
   const recommendation = session.recommendation;
   const decision = recommendation?.decision;
@@ -162,7 +163,7 @@ export async function composeClaraResponseWithProposal(
     "- jamais commerciale, jamais service client, jamais interface technique froide.",
     "",
     "RÈGLES DE CONVERSATION",
-    locale ? `- ${responseLanguageInstruction(locale)}` : "- Réponds dans la langue du message utilisateur.",
+    languageMode === "interface" && locale ? `- ${responseLanguageInstruction(locale)}` : "- Réponds dans la langue explicitement demandée par l’utilisateur ; sinon conserve la langue de la conversation et du message utilisateur. La langue de l’interface ne change pas celle du dialogue. Ne traduis pas les historiques ni les citations sources.",
     "- Ne commence pas mécaniquement par la priorité ou par 'Commencer par'.",
     "- Ne récite pas les champs internes du Brain.",
     "- Ne répète pas inutilement la demande utilisateur.",

@@ -363,5 +363,12 @@
   "uiChangeContext": "Change workspace or project",
   "uiTechnicalDetails": "Technical details",
   "googleHubDescription": "Authorized Google connections for documents and calendar.",
-  "uiMissionContact": "Mission and contact"
+  "uiMissionContact": "Mission and contact",
+  "uiBackCockpit": "Back to Cockpit",
+  "uiAccountContextHelp": "Explicitly select a workspace, project or conversation. Changes preserve access controls and never move history.",
+  "uiVoiceStatus": "Voice and telephony: view available access",
+  "uiAuthorizedConversations": "Conversations in the authorized project",
+  "uiGeneralConversation": "General conversation",
+  "uiGoogleAgenda": "Google Calendar",
+  "uiMicrosoftSetupMissing": "Microsoft configuration is unavailable in this environment. An administrator must check the application settings and callback URL; no authorization has been changed."
 }

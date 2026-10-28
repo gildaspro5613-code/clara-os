@@ -138,3 +138,13 @@ test('native chat localizes empty requests and network failures in all five sele
   assert.equal(failed.status,500);assert.equal((await failed.json()).message,ui('chatUnavailable'));
  }
 });
+
+// Contract evidence only: a simulated composer does not certify provider language quality.
+test("native dialogue language is independent of interface locale and preserves all original history",async(t)=>{
+ let prompt='';t.mock.method(OpenAIResponsesEngine.prototype,'generate',async(input)=>{prompt=input.prompt;return {success:true,responseStatus:'completed',content:'SYNTHETIC_CONTINUATION',message:'Synthetic',completedAt:new Date()};});
+ const messages={fr:'Continuons cette préparation.',en:'Let us continue this preparation.',es:'Continuemos esta preparación.',de:'Setzen wir diese Vorbereitung fort.',it:'Continuiamo questa preparazione.'};
+ for(const [language,content]of Object.entries(messages)){
+  const session=createSession();session.conversation=[{id:'original-'+language,role:'user',content,createdAt:'2026-10-28T10:00:00Z'}];const before=JSON.stringify(session);
+  for(const locale of locales){await composeClaraResponseWithProposal(content,session,locale,'conversation');assert.ok(prompt.includes(content));assert.ok(prompt.includes('La langue de l’interface ne change pas celle du dialogue.'));assert.ok(!prompt.includes(responseLanguageInstruction(locale)));assert.equal(JSON.stringify(session),before);}
+ }
+});
