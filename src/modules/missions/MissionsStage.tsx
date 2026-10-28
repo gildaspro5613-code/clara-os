@@ -69,7 +69,7 @@ export default function MissionsStage({
     return (
       <MissionDetail
         mission={selectedMission}
-        onBack={() => setSelectedMissionId(null)}
+        onBack={() => {if(new URL(window.location.href).searchParams.has("mission"))window.location.replace("/missions");else setSelectedMissionId(null);}}
         onUpdate={updateMission}
       />
     );
