@@ -9,7 +9,7 @@ const slug='clara-os-recette';
 const keys=['DATABASE_URL','CLARA_RECETTE_NEON_HOST','CLARA_RECETTE_NEON_BRANCH_ID','CLARA_RECETTE_MODE'] as const;
 class Unavailable extends Error {}
 class Refused extends Error {}
-export type RecetteAttestationStage = 'CREDENTIALS'|'VERCEL_PROJECT'|'CUSTOM_ENVIRONMENT'|'ENV_LIST'|'ENV_BINDINGS'|'ENV_BINDING_DATABASE_URL'|'ENV_BINDING_NEON_HOST'|'ENV_BINDING_BRANCH_ID'|'ENV_BINDING_MODE'|'DATABASE_BINDING'|'NEON_ENDPOINT'|'SQL_IDENTITY'|'SQL_PERMISSIONS';
+export type RecetteAttestationStage = 'CREDENTIALS'|'VERCEL_PROJECT'|'CUSTOM_ENVIRONMENT'|'ENV_LIST'|'ENV_BINDINGS'|'ENV_BINDING_DATABASE_URL'|'ENV_BINDING_LIST_ENTRY'|'ENV_BINDING_READ_DENIED'|'ENV_BINDING_READ_INVALID'|'ENV_BINDING_METADATA'|'ENV_BINDING_NEON_HOST'|'ENV_BINDING_BRANCH_ID'|'ENV_BINDING_MODE'|'DATABASE_BINDING'|'NEON_ENDPOINT'|'SQL_IDENTITY'|'SQL_PERMISSIONS';
 
 /** Operator/Actions only. No route, files, subprocesses, GITHUB_ENV or raw error output.
  * Attests the current configuration for a future deployment, NOT an existing deployment.
@@ -48,8 +48,18 @@ export async function attestRecetteEnvironment(input:{vercelToken?:string;neonKe
    const e=candidates[0];
    if(e.target==='production'||(Array.isArray(e.target)&&e.target.includes('production')))throw new Refused();
    if(!e.id||!Array.isArray(e.customEnvironmentIds)||e.customEnvironmentIds.length!==1||e.customEnvironmentIds[0]!==environment||e.gitBranch)throw new Unavailable();
-   const value=await read(`/v1/projects/${project}/env/${encodeURIComponent(e.id)}`);
-   if(value.id!==e.id||value.key!==key||(value.type!=='plain'&&value.decrypted!==true)||typeof value.value!=='string'||!value.value||
+   setStage('ENV_BINDING_LIST_ENTRY');
+   // Distinguish list metadata problems from the protected single-value API.
+   setStage('ENV_BINDING_READ_DENIED');
+   const url=new URL(`/v1/projects/${project}/env/${encodeURIComponent(e.id)}`,'https://api.vercel.com');
+   url.searchParams.set('teamId',team);
+   const response=await http(url,{method:'GET',redirect:'error',signal:AbortSignal.timeout(15000),headers:{Authorization:`Bearer ${input.vercelToken}`}});
+   if(!response.ok)throw new Unavailable();
+   setStage('ENV_BINDING_READ_INVALID');
+   const value=await response.json();
+   if(!value||typeof value!=='object'||typeof value.value!=='string'||!value.value)throw new Unavailable();
+   setStage('ENV_BINDING_METADATA');
+   if(value.id!==e.id||value.key!==key||(value.type!=='plain'&&value.decrypted!==true)||
     !Array.isArray(value.customEnvironmentIds)||value.customEnvironmentIds.length!==1||value.customEnvironmentIds[0]!==environment||value.gitBranch)throw new Unavailable();
    if(value.target==='production'||(Array.isArray(value.target)&&value.target.includes('production')))throw new Refused();
    env[key]=value.value;
