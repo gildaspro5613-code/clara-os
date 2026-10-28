@@ -135,13 +135,13 @@ test('interface receipt: explicit business flow, responsive navigation, five lan
   assert.equal(readFileSync('/tmp/native-fixture-global-attempts-'+db,'utf8'),'','No global loader or unscoped fallback');
   // Revoke the independent pre-existing E session, leaving A available to the
   // following Google-hub CI recipe that shares this disposable fixture.
-  await context.addCookies([{name:'clara_auth_session',value:'E'.repeat(43),url:origin}]);await page.reload();
+  await context.addCookies([{name:'clara_auth_session',value:'E'.repeat(43),url:origin}]);await page.reload();assert.equal((await context.request.get(origin+'/api/native/runtime')).status(),200);
   await revealAccountSettings(page);page.once('dialog',d=>d.accept());
   const [logout]=await Promise.all([page.waitForResponse(r=>new URL(r.url()).pathname==='/api/auth/session/logout'),page.getByRole('button',{name:'Déconnexion',exact:true}).click()]);assert.equal(logout.status(),200);
   await page.locator('[data-native-authority="locked"]').waitFor();
   assert.equal((await context.request.get(origin+'/api/native/runtime')).status(),401);
   const savedSelection=(await context.cookies()).find(c=>c.name==='clara_native_selection');assert.ok(savedSelection);
-  assert.equal((await context.request.get(origin+'/api/native/runtime',{headers:{cookie:'clara_auth_session='+'E'.repeat(43)+'; '+savedSelection.name+'='+savedSelection.value}})).status(),401);
+  const revoked=await context.request.get(origin+'/api/native/runtime',{headers:{cookie:'clara_auth_session='+'E'.repeat(43)+'; '+savedSelection.name+'='+savedSelection.value}});assert.equal(revoked.status(),403);assert.equal((await revoked.json()).code,'REGISTRY_ACCESS_DENIED');
   const resumed=await context.request.get(origin+'/api/native/runtime',{headers:{cookie:'clara_auth_session='+'A'.repeat(43)+'; '+savedSelection.name+'='+savedSelection.value}});assert.equal(resumed.status(),200);
   assert.equal(readFileSync('/tmp/native-fixture-global-attempts-'+db,'utf8'),'');
   const resumedState=await resumed.json();assert.equal(resumedState.session.mission.id,before.mission.id);assert.ok(resumedState.session.conversation.some(m=>m.content===message));
