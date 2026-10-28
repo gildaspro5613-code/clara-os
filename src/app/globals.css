@@ -76,3 +76,35 @@ body {
 .clara-workspace-scroll::-webkit-scrollbar-thumb:hover {
   background: #22b8d6;
 }
+
+/* Existing dark/cyan identity; consistent controls for the canonical panels. */
+.clara-page-content { overflow-wrap: anywhere; }
+.clara-page-content > :not(.native-context) { min-width: 0; }
+.native-context { padding: 1rem clamp(1rem, 3vw, 2rem); background: #08111f; }
+.native-panel :where(label) { display: inline-flex; flex-direction: column; gap: .4rem; min-width: 0; max-width: 100%; color: #cbd5e1; }
+.native-panel :where(input:not([type=checkbox]):not([type=radio]), select, textarea) {
+  min-height: 2.75rem; max-width: 100%; min-width: 0; border: 1px solid #ffffff24;
+  border-radius: .65rem; background: #0b1524; padding: .6rem .75rem; color: #f1f5f9; font: inherit;
+}
+.native-context :where(label) { flex: 1 1 10rem; }
+.native-context :where(input, select) { width: 100%; }
+.native-panel :where(button) {
+  min-height: 2.75rem; max-width: 100%; align-self: end; border: 1px solid #22d3ee35;
+  border-radius: .65rem; background: #22d3ee0d; padding: .6rem .9rem; color: #cffafe; line-height: 1.5;
+}
+.native-panel :where(button:not(:disabled):hover) { background: #22d3ee1a; border-color: #22d3ee70; }
+.native-panel :where(button:disabled, input:disabled, select:disabled, textarea:disabled) { opacity: .45; cursor: not-allowed; }
+.native-panel :where(details) { border-top: 1px solid #ffffff15; padding-top: .75rem; }
+.native-panel :where(summary) { cursor: pointer; padding: .4rem 0; color: #a5f3fc; min-height: 2.5rem; }
+.native-panel :where([role=alert]) { border: 1px solid #fbbf2440; border-radius: .75rem; background: #fbbf2409; padding: .9rem; color: #fde68a; }
+.native-panel :where(pre) { white-space: pre-wrap; overflow-wrap: anywhere; font-family: inherit; }
+:where(a,button,input,select,textarea,summary,[tabindex]):focus-visible { outline: 2px solid #67e8f9; outline-offset: 3px; }
+@media (max-width: 640px) {
+  .clara-page-content > :not(.native-context) { padding-left: 1rem; padding-right: 1rem; }
+  .clara-page-content h1 { font-size: 1.75rem; }
+  .native-context :where(form,div.flex) { flex-wrap: wrap; }
+  .native-panel :where(input:not([type=checkbox]):not([type=radio]),select,textarea) { font-size: 1rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}

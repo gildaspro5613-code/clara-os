@@ -303,13 +303,11 @@ export default function DocumentsPage() {
             <button type="button" disabled={destinationLoading || (destinationTrail.at(-1)?.id ?? "root") === moveTarget.parentId || working !== null} onClick={() => void confirmMove()} className="mt-4 rounded-lg bg-cyan-800 px-4 py-2 text-sm disabled:opacity-40">{ui("confirmMoveToThisFolder")}</button>
           </section>}
           {selected && <section className="mb-6 rounded-xl border border-cyan-300/20 p-5"><div className="flex justify-between gap-4"><h2 className="font-semibold">{selected.name}</h2><button type="button" onClick={() => setSelected(null)}>{ui("close")}</button></div>{selected.recommendation && <p className="mt-3 text-cyan-200">{selected.recommendation}</p>}<pre className="mt-4 max-h-80 overflow-auto whitespace-pre-wrap text-sm text-white/70">{selected.content}</pre></section>}
-          <NativeDocumentsPanel />
-          <CanonicalArchivesPanel />
           {activeSearch && <p className="mb-3 text-sm text-white/60">{ui("googleDriveSearchResults")}{" "}{activeSearch}</p>}
-          <form onSubmit={handleSubmit} className="mb-6 flex max-w-2xl gap-2">
+          <form id="document-search" onSubmit={handleSubmit} className="mb-6 flex max-w-2xl gap-2">
             <div className="relative flex-1">
               <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-white/35" />
-              <input type="text" disabled={working !== null} value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("searchPlaceholder")} className="h-12 w-full rounded-xl border border-white/10 bg-white/[0.035] pl-11 pr-4 text-sm text-white outline-none placeholder:text-white/25 focus:border-cyan-400/30" />
+              <input type="text" disabled={working !== null} value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("searchPlaceholder")} aria-label={t("searchPlaceholder")} className="h-12 w-full rounded-xl border border-white/10 bg-white/[0.035] pl-11 pr-4 text-sm text-white outline-none placeholder:text-white/25 focus:border-cyan-400/30" />
             </div>
             <button type="submit" disabled={working !== null} className="rounded-xl border border-white/10 bg-white/[0.05] px-5 text-sm text-white/75 transition hover:bg-white/[0.08] hover:text-white">{t("search")}</button>
           </form>
@@ -346,6 +344,8 @@ export default function DocumentsPage() {
             </div>
           )}
           {nextPageToken && <button type="button" disabled={loading} onClick={() => void loadMore()} className="mt-6 rounded-xl border border-white/15 px-5 py-3 text-sm text-cyan-100 disabled:opacity-40">{ui("showMoreFilesAndFolders")}</button>}
+          <NativeDocumentsPanel />
+          <details className="native-panel mt-6 rounded-2xl border border-white/10 p-5"><summary>{ui("uiArchiveAdministration")}</summary><CanonicalArchivesPanel /></details>
         </div>
       </div>
     </MainLayout>

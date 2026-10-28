@@ -1,3 +1,4 @@
+import {revealContextSelection} from './helpers/native-ui-disclosures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {X509Certificate,createHash} from 'node:crypto';
@@ -28,8 +29,10 @@ test('delivery UI: official logo, business navigation, private advanced controls
    assert.equal(await page.locator('link[rel="icon"][href^="/icon.svg"]').count(),1);
    assert.equal(await page.locator('link[rel="icon"][href^="/favicon.ico"]').count(),0);
    await page.getByRole('region',{name:'Contexte canonique privé',exact:true}).waitFor();
+   await revealContextSelection(page);
    await page.getByText('Identifiants du contexte sélectionné',{exact:true}).waitFor();
-   await page.getByText(/Contexte canonique privé · w \/ Client c1 \/ Project p1/).waitFor();
+   await page.getByText(/Espace de travail · w \/ Client c1 \/ Project p1/).waitFor();
+   await page.locator('[data-native-context-switch] > summary').click();
    if(path==='documents')await page.getByText(/\[NATIVE_GOOGLE_EXPLICIT_SELECTION_REQUIRED\]/).waitFor();
    assert.equal(await page.locator('[data-native-authority="locked"]').count(),0,path);
    await page.screenshot({path:out+'/'+(path||'cockpit')+'-desktop.png',fullPage:true});

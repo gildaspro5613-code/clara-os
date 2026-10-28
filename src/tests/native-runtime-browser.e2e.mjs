@@ -1,3 +1,4 @@
+import {revealMissionCreation,revealContextSelection} from './helpers/native-ui-disclosures.mjs';
 import {X509Certificate,createHash} from 'node:crypto';
 import {readFileSync} from 'node:fs';
 import test from 'node:test';
@@ -14,9 +15,9 @@ test('native browser: explicit selection, positive persisted mission/chat and cr
  await context.route('**/*',route=>new URL(route.request().url()).origin===new URL(origin).origin?route.continue():route.abort());
  const page=await context.newPage();await page.goto(origin+'/clara');
  const panel=page.getByRole('region',{name:'Contexte canonique privé',exact:true});
- await panel.locator('select').nth(0).selectOption('w');await panel.locator('select').nth(1).selectOption('c1');await panel.locator('select').nth(2).selectOption('p1');
- await panel.getByRole('button',{name:'Créer un nouveau fil',exact:true}).click();await page.getByLabel('Titre de la mission',{exact:true}).waitFor();
- await page.getByLabel('Titre de la mission',{exact:true}).fill('PRIVATE_NATIVE_A_P1');await page.getByLabel('Objectif de la mission',{exact:true}).fill('PRIVATE_OBJECTIVE_A');
+ await revealContextSelection(page);await panel.locator('select').nth(0).selectOption('w');await panel.locator('select').nth(1).selectOption('c1');await panel.locator('select').nth(2).selectOption('p1');
+ await panel.getByRole('button',{name:'Créer un nouveau fil',exact:true}).click();await revealMissionCreation(page);await page.getByLabel('Titre de la mission',{exact:true}).waitFor();
+ await revealMissionCreation(page);await page.getByLabel('Titre de la mission',{exact:true}).fill('PRIVATE_NATIVE_A_P1');await page.getByLabel('Objectif de la mission',{exact:true}).fill('PRIVATE_OBJECTIVE_A');
  await page.getByRole('button',{name:'Créer la mission',exact:true}).click();await page.getByText('PRIVATE_NATIVE_A_P1',{exact:true}).first().waitFor();
  const cookies=await context.cookies(),selection=cookies.find(c=>c.name==='clara_native_selection');assert.ok(selection);const scope=JSON.parse(decodeURIComponent(selection.value));assert.equal(scope.projectId,'p1');
  for(const locale of ['fr','en','es','de','it']){await context.addCookies([{name:'NEXT_LOCALE',value:locale,url:origin}]);for(const path of ['/','/clara','/missions','/journal','/conversations','/brain']){

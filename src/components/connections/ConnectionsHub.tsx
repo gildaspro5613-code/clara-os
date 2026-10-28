@@ -78,7 +78,7 @@ export default function ConnectionsHub() {
               <span className={`rounded-full border px-3 py-1 text-[11px] ${state?.connected ? "border-emerald-400/20 bg-emerald-400/[0.08] text-emerald-300" : "border-white/10 text-white/45"}`}>{state ? label(ui,state) : ui("checkingConnection")}</span>
             </div>
             <h2 className="mt-5 text-lg font-medium text-white">{title}</h2>
-            <p className="mt-2 text-sm leading-6 text-white/45">{ui(`${id}Description`)}</p>
+            <p className="mt-2 text-sm leading-6 text-white/45">{ui(id==="google"?"googleHubDescription":`${id}Description`)}</p>
             <p className="mt-3 text-xs leading-5 text-white/35">{detail(ui,id, state)}</p>
             <div className="mt-auto flex flex-wrap gap-2 pt-5">
               {!state?.connected && connectUrl && !state?.error?.includes("AUTH_REQUIRED") && (

@@ -11,6 +11,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 
 import MissionCard from "./components/MissionCard";
@@ -40,6 +41,18 @@ export default function MissionsStage({
   const otherPlannedMissions = plannedMissions.filter((mission) => mission.id !== activeMission?.id);
   const otherBlockedMissions = blockedMissions.filter((mission) => mission.id !== activeMission?.id);
   const selectedMission = missions.find((mission) => mission.id === selectedMissionId);
+
+  function openMissionCreation() {
+    if (currentMissionId) {
+      const switcher = document.querySelector('[data-native-context-switch]');
+      if (switcher instanceof HTMLDetailsElement) switcher.open = true;
+      document.getElementById('native-new-thread')?.focus();
+    } else {
+      const form = document.getElementById('native-mission-create');
+      if (form?.parentElement instanceof HTMLDetailsElement) form.parentElement.open = true;
+      form?.querySelector('input')?.focus();
+    }
+  }
 
   function updateMission(updatedMission: Mission) {
     setMissions((currentMissions) => currentMissions.map((mission) =>
@@ -80,6 +93,7 @@ export default function MissionsStage({
               <div>
                 <span className="text-[11px] uppercase tracking-[0.28em] text-cyan-400/70">CLARA OS</span>
                 <h1 className="mt-3 text-4xl font-medium tracking-tight">{t("title")}</h1>
+                <Link href={currentMissionId?"#native-new-thread":"#native-mission-create"} onClick={openMissionCreation} className="mt-4 inline-flex rounded-xl border border-cyan-400/25 bg-cyan-400/10 px-4 py-2.5 text-sm text-cyan-100">{ui("uiNewMission")}</Link>
                 <p className="mt-3 max-w-xl text-sm leading-6 text-white/50">{t("subtitle")}</p>
               </div>
 

@@ -1,3 +1,4 @@
+import {revealBusinessContext,revealMissionCreation,revealContextSelection} from './helpers/native-ui-disclosures.mjs';
 import {firstDayBrowser} from './helpers/first-day-browser.ts';
 import {workScopes} from './helpers/native-google-work-fixture.ts';
 import test from 'node:test';
@@ -21,12 +22,12 @@ test('document continuity browser E2E: canonical selection → mission → pinne
   const page=await context.newPage();
   page.on('response',async r=>{if(new URL(r.url()).pathname==='/api/documents'){try{const b=await r.json();console.info('ISOLATED_DOCUMENT_HTTP',JSON.stringify({method:r.request().method(),action:r.request().method()==='POST'?r.request().postDataJSON()?.action:new URL(r.url()).searchParams.get('action'),status:r.status(),code:b.code??null,success:b.success}));}catch{/* Binary download has no JSON diagnostic. */}}});
   await page.goto(origin+'/clara');const selector=page.getByRole('region',{name:'Contexte canonique privé',exact:true});
-  await selector.locator('select').nth(0).selectOption('w');await selector.locator('select').nth(1).selectOption('c1');await selector.locator('select').nth(2).selectOption('p1');
+  await revealContextSelection(page);await selector.locator('select').nth(0).selectOption('w');await selector.locator('select').nth(1).selectOption('c1');await selector.locator('select').nth(2).selectOption('p1');
   await Promise.all([page.waitForEvent('load'),page.waitForResponse(r=>r.url().includes('/api/native/runtime')&&r.request().method()==='POST'&&r.request().postDataJSON()?.action==='createSession'),selector.getByRole('button',{name:'Créer un nouveau fil'}).click()]);
-  await page.getByRole('textbox',{name:'Titre de la mission',exact:true}).fill('LOT2_DOCUMENTARY_MISSION');await page.getByRole('textbox',{name:'Objectif de la mission',exact:true}).fill('Analyze the project document and preserve commercial continuity');
+  await revealMissionCreation(page);await page.getByRole('textbox',{name:'Titre de la mission',exact:true}).fill('LOT2_DOCUMENTARY_MISSION');await page.getByRole('textbox',{name:'Objectif de la mission',exact:true}).fill('Analyze the project document and preserve commercial continuity');
   await Promise.all([page.waitForEvent('load'),page.waitForResponse(r=>r.url().includes('/api/native/runtime')&&r.request().method()==='POST'&&r.request().postDataJSON()?.action==='createMission'),page.getByRole('button',{name:'Créer la mission',exact:true}).click()]);
-  await page.getByRole('textbox',{name:'Titre de la mission',exact:true}).waitFor();
-  await page.getByLabel('Contact / prospect',{exact:true}).selectOption('prospect-a');page.once('dialog',async dialog=>{assert.match(dialog.message(),/contact|mission/i);await dialog.accept();});await Promise.all([page.waitForEvent('load'),page.getByRole('button',{name:'Sélectionner le contact',exact:true}).click()]);
+  await revealMissionCreation(page);await page.getByRole('textbox',{name:'Titre de la mission',exact:true}).waitFor();
+  await revealBusinessContext(page);await page.getByLabel('Contact / prospect',{exact:true}).selectOption('prospect-a');page.once('dialog',async dialog=>{assert.match(dialog.message(),/contact|mission/i);await dialog.accept();});await Promise.all([page.waitForEvent('load'),page.getByRole('button',{name:'Sélectionner le contact',exact:true}).click()]);
   const cookie=async()=> (await context.cookies()).map(c=>c.name+'='+c.value).join(';');
   const call=async(path,method='GET',body,customCookie)=>fetch(origin+path,{method,redirect:'manual',headers:{cookie:customCookie??await cookie(),origin,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body.action==='read'?{operationId:crypto.randomUUID(),...body}:body)}:{})});
   const begin=async()=>{const r=await page.evaluate(async()=>{const r=await fetch('/api/connections/google/connect',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});return {status:r.status,body:await r.json()};});assert.equal(r.status,200,JSON.stringify(r.body));return new URL(r.body.authorizationUrl);};

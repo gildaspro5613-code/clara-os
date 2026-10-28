@@ -32,7 +32,7 @@ test('native conversation UI: immutable Mission/client, lost acknowledgement + r
   await select(a.cookie);const page=await ctx.newPage();await page.goto(origin+'/clara');
   let acknowledged;const committed=new Promise(r=>{acknowledged=r;});
   await page.route('**/api/clara/chat',async route=>{const req=route.request();const response=await fetch(req.url(),{method:'POST',headers:await req.allHeaders(),body:req.postData()});assert.equal(response.status,200,await response.clone().text());await response.json();await route.abort('failed');acknowledged();});
-  const form=page.locator('form').filter({has:page.locator('input[placeholder]')}).last();await form.locator('input').fill('LOT4BIS_ACK_LOST');await form.locator('button[type="submit"]').click();await committed;
+  const form=page.locator('form').filter({has:page.locator('textarea[placeholder]')}).last();await form.locator('textarea').fill('LOT4BIS_ACK_LOST');await form.locator('button[type="submit"]').click();await committed;
   await page.getByRole('alert').filter({hasText:'Un traitement est en cours'}).waitFor();await page.unroute('**/api/clara/chat');
   const journalBefore=pg(`SELECT count(*) FROM clara_native_journal_scope WHERE session_id='${a.sessionId}'`);
   await page.reload();await page.getByRole('button',{name:'Vérifier la réponse',exact:true}).waitFor();
