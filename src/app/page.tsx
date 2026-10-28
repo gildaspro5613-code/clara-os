@@ -1,3 +1,4 @@
+import {loadNativeConversationNavigation} from "@/components/native/conversation-navigation";
 import {nativeContext} from "@/lib/native/scoped-context";
 import {loadMissions} from "@/modules/missions/mission-store";
 import { nativePage } from "@/lib/native/page-fence";
@@ -11,10 +12,11 @@ export default async function HomePage() {
   return nativePage(async()=>{
 
   const operational = await resolveOperationalContext();
+  const conversationNavigation=await loadNativeConversationNavigation();
 
   return (
     <MainLayout>
-      <Cockpit nativeSessionId={nativeContext()!.scope.sessionId} nativeIntake={operational.acquisition?nativeContext()!.intakes.get(operational.acquisition.submissionId)??null:null} nativeMissions={await loadMissions()} session={operational.session} acquisition={operational.acquisition} />
+      <Cockpit conversationNavigation={conversationNavigation} nativeSessionId={nativeContext()!.scope.sessionId} nativeIntake={operational.acquisition?nativeContext()!.intakes.get(operational.acquisition.submissionId)??null:null} nativeMissions={await loadMissions()} session={operational.session} acquisition={operational.acquisition} />
     </MainLayout>
   );
   });

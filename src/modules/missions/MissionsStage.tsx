@@ -22,12 +22,13 @@ interface MissionsStageProps {
   initialMissions?: Mission[];
   currentMissionId?: string | null;
   initialSelectedMissionId?: string;
+  selectionUnavailable?:boolean;
 }
 
 export default function MissionsStage({
   initialMissions = [],
   currentMissionId = null,
-  initialSelectedMissionId,
+  initialSelectedMissionId,selectionUnavailable=false,
 }: MissionsStageProps) {
   const ui = useTranslations("ui");
   const t = useTranslations("missionsPage");
@@ -91,6 +92,7 @@ export default function MissionsStage({
   return (
     <main className="min-h-full bg-[#05070b] px-6 py-10 text-white lg:px-10">
       <div className="mx-auto max-w-7xl">
+        {selectionUnavailable&&<p role="alert" className="mb-6 rounded-xl border border-amber-300/20 bg-amber-300/5 p-4 text-sm text-amber-100">{ui("uiMissionUnavailable")}</p>}
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
           <div>
             <header className="mb-10 flex flex-col gap-6 border-b border-white/10 pb-8 lg:flex-row lg:items-end lg:justify-between">

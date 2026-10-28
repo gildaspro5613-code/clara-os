@@ -51,6 +51,7 @@ test('interface receipt: explicit business flow, responsive navigation, five lan
   assert.deepEqual((await current()).mission,before.mission);
   await page.goto(origin+'/missions');await page.getByRole('link',{name:dictionary('fr').uiNewMission,exact:true}).click();
   assert.equal(await page.locator('[data-native-context-switch]').evaluate(e=>e.open),true);await page.getByRole('button',{name:'Créer un nouveau fil',exact:true}).waitFor();assert.equal((await current()).mission.id,before.mission.id);
+  await page.goto(origin+'/missions?mission=native:foreign-reference');await page.getByRole('alert').getByText(dictionary('fr').uiMissionUnavailable,{exact:true}).waitFor();assert.equal((await current()).mission.id,before.mission.id);
   await page.goto(origin+'/contacts');const contacts=await(await context.request.get(origin+'/api/contacts')).json();
   const contact=contacts.contacts.find(c=>c.id==='prospect-a');assert.ok(contact);await page.locator('[data-contact-id]').filter({hasText:contact.name}).first().waitFor();await page.locator('input[placeholder]').fill(contact.email);await page.getByRole('button',{name:'Rechercher',exact:true}).click();await page.locator('[data-contact-id]').filter({hasText:contact.name}).first().waitFor();
   await page.goto(origin+'/conversations');await page.getByText(message,{exact:true}).waitFor();
@@ -68,8 +69,8 @@ test('interface receipt: explicit business flow, responsive navigation, five lan
   await Promise.all([page.waitForEvent('load'),page.getByLabel('Langue',{exact:true}).selectOption('en')]);
   await page.getByRole('log').getByText(generalMessage,{exact:true}).waitFor();assert.equal(await page.locator('html').getAttribute('lang'),'en');
   await Promise.all([page.waitForEvent('load'),page.getByLabel('Language',{exact:true}).selectOption('fr')]);
-  await page.goto(origin+'/conversations');
-  await page.getByText(generalMessage,{exact:true}).waitFor();
+  await page.goto(origin+'/');
+  await page.getByRole('log').getByText(generalMessage,{exact:true}).waitFor();
   const [selectionResponse]=await Promise.all([page.waitForResponse(r=>new URL(r.url()).pathname==='/api/native/runtime'&&r.request().method()==='POST'),page.locator('[data-conversation-id="'+originalScope.sessionId+'"]').click()]);
   assert.equal(selectionResponse.status(),200);
   await page.getByText(message,{exact:true}).waitFor();assert.equal(await page.getByText(generalMessage,{exact:true}).count(),0);

@@ -1,3 +1,4 @@
+import type {NativeConversationListProps} from "@/components/native/NativeConversationList";
 import {nativeThreadCertified} from '@/lib/native/scoped-context';
 import type {MdProjectIntake} from "@/types";
 import type {Mission} from "@/modules/missions/types/Mission";
@@ -25,13 +26,14 @@ import { getTranslations } from "next-intl/server";
 
 interface CockpitWidgetsProps {
   nativeSessionId?:string;
+  conversationNavigation?:NativeConversationListProps|null;
   session: ClaraSession;
   nativeMissions?:Mission[];
   nativeIntake?:MdProjectIntake|null;
   acquisition?: AcquisitionRecord | null;
 }
 
-export default async function CockpitWidgets({ session, acquisition,nativeMissions,nativeIntake,nativeSessionId }: CockpitWidgetsProps) {
+export default async function CockpitWidgets({ session, acquisition,nativeMissions,nativeIntake,nativeSessionId,conversationNavigation }: CockpitWidgetsProps) {
   const t = await getTranslations("cockpitUi");
   const workspaceId = process.env.CLARA_MD_WORKSPACE_ID?.trim()
     || process.env.CLARA_WORKSPACE_ID?.trim()
@@ -82,7 +84,7 @@ export default async function CockpitWidgets({ session, acquisition,nativeMissio
 
         <div className="mt-5 grid items-stretch gap-5 lg:grid-cols-[1.35fr_1fr]">
           <div className="min-w-0">
-            <ConversationsPanel session={session} />
+            <ConversationsPanel conversationNavigation={conversationNavigation} session={session} />
           </div>
           <div className="min-w-0">
             <AgendaWidget />

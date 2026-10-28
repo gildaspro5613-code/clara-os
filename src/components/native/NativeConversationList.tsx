@@ -3,12 +3,12 @@
 import {useState} from 'react';
 import {useLocale,useTranslations} from 'next-intl';
 
-interface Props {
+export interface NativeConversationListProps {
   scope:{workspaceId:string;clientId:string;projectId:string;sessionId:string};
   sessions:{sessionId:string;updatedAt:string}[];
 }
 /** Selection uses the existing authenticated command; no history is copied. */
-export default function NativeConversationList({scope,sessions}:Props){
+export default function NativeConversationList({scope,sessions}:NativeConversationListProps){
   const t=useTranslations('ui'),locale=useLocale();
   const [busy,setBusy]=useState(false),[error,setError]=useState(false);
   async function select(sessionId:string){

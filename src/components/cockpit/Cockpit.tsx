@@ -1,3 +1,4 @@
+import type {NativeConversationListProps} from "@/components/native/NativeConversationList";
 import type {MdProjectIntake} from "@/types";
 import type {Mission} from "@/modules/missions/types/Mission";
 import type { ClaraSession } from "@/lib/core/session";
@@ -9,6 +10,7 @@ import CockpitWidgets from "./widgets/CockpitWidgets";
 
 interface CockpitProps {
   nativeSessionId?:string;
+  conversationNavigation?:NativeConversationListProps|null;
   session: ClaraSession;
   nativeMissions?:Mission[];
   nativeIntake?:MdProjectIntake|null;
@@ -20,11 +22,11 @@ export default function Cockpit({
   acquisition,
   nativeMissions,
   nativeIntake,
-  nativeSessionId,
+  nativeSessionId,conversationNavigation,
 }: CockpitProps) {
   return (
     <CockpitLayout hero={<Hero nativeMissions={nativeMissions} nativeScope={nativeMissions!==undefined} session={session} acquisition={acquisition} />}>
-      <CockpitWidgets nativeSessionId={nativeSessionId} nativeIntake={nativeIntake} nativeMissions={nativeMissions} session={session} acquisition={acquisition} />
+      <CockpitWidgets conversationNavigation={conversationNavigation} nativeSessionId={nativeSessionId} nativeIntake={nativeIntake} nativeMissions={nativeMissions} session={session} acquisition={acquisition} />
     </CockpitLayout>
   );
 }

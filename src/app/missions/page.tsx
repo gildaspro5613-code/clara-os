@@ -29,7 +29,7 @@ export default async function MissionsPage({searchParams}:{searchParams?:Promise
 
   return (
     <MainLayout>
-      <MissionsStage initialMissions={missions} currentMissionId={currentMissionId} initialSelectedMissionId={missions.find(m=>m.id===requestedMission)?.id} />
+      <MissionsStage initialMissions={missions} currentMissionId={currentMissionId} initialSelectedMissionId={missions.find(m=>m.id===requestedMission)?.id} selectionUnavailable={!!requestedMission&&!missions.some(m=>m.id===requestedMission)} />
     </MainLayout>
   );
   });

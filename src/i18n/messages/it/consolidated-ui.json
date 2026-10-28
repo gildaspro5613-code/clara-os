@@ -372,5 +372,6 @@
   "uiGoogleAgenda": "Google Calendar",
   "uiMicrosoftSetupMissing": "La configurazione Microsoft non è disponibile in questo ambiente. Un amministratore deve verificare le impostazioni dell’applicazione e l’URL di ritorno; nessuna autorizzazione è stata modificata.",
   "uiLogoutConfirm": "Chiudere questa sessione Clara OS? Le missioni e la cronologia saranno conservate.",
-  "uiLogoutError": "Impossibile chiudere la sessione. L’esito positivo non è stato confermato."
+  "uiLogoutError": "Impossibile chiudere la sessione. L’esito positivo non è stato confermato.",
+  "uiMissionUnavailable": "Questa missione non è disponibile nel progetto selezionato. Apri una missione dall’elenco autorizzato."
 }

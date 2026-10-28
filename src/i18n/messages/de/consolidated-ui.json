@@ -372,5 +372,6 @@
   "uiGoogleAgenda": "Google Kalender",
   "uiMicrosoftSetupMissing": "Die Microsoft-Konfiguration ist in dieser Umgebung nicht verfügbar. Ein Administrator muss die Anwendungseinstellungen und Rückruf-URL prüfen; keine Berechtigung wurde geändert.",
   "uiLogoutConfirm": "Diese Clara OS-Sitzung schließen? Ihre Missionen und Verläufe bleiben erhalten.",
-  "uiLogoutError": "Die Sitzung konnte nicht geschlossen werden. Ein Erfolg wurde nicht bestätigt."
+  "uiLogoutError": "Die Sitzung konnte nicht geschlossen werden. Ein Erfolg wurde nicht bestätigt.",
+  "uiMissionUnavailable": "Diese Mission ist im ausgewählten Projekt nicht verfügbar. Öffnen Sie eine Mission aus der autorisierten Liste."
 }

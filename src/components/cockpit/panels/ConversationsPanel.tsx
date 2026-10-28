@@ -1,3 +1,4 @@
+import NativeConversationList,{type NativeConversationListProps} from "@/components/native/NativeConversationList";
 /**
  * ============================================
  * CLARA OS
@@ -17,10 +18,11 @@ import Link from "next/link";
 
 interface ConversationsPanelProps {
   session: ClaraSession;
+  conversationNavigation?:NativeConversationListProps|null;
 }
 
 export default function ConversationsPanel({
-  session,
+  session,conversationNavigation,
 }: ConversationsPanelProps) {
   const ui = useTranslations("ui");
 
@@ -30,6 +32,8 @@ export default function ConversationsPanel({
   return (
     <GlassPanel title={t("latestConversations")}>
       <div className="space-y-3">
+        {conversationNavigation&&<NativeConversationList {...conversationNavigation}/>}
+        {conversationNavigation===null&&<p role="status" className="text-sm text-white/65">{ui("nativeHistoryUnavailable")}</p>}
         {recentMessages.length > 0 ? (
           recentMessages.map((message) => (
             <Link href={`/conversations#message-${encodeURIComponent(message.id)}`}
