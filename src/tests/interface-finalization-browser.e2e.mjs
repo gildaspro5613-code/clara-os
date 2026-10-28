@@ -133,12 +133,17 @@ test('interface receipt: explicit business flow, responsive navigation, five lan
   await page.getByRole('link',{name:dictionary('fr').uiDocumentSearch,exact:true}).click();await page.waitForURL(origin+'/documents#document-search');
   const logo=await context.request.get(origin+'/brand/clara-os-symbol.svg'),icon=await context.request.get(origin+'/icon.svg');assert.equal(await logo.text(),readFileSync('public/brand/clara-os-symbol.svg','utf8'));assert.equal(await icon.text(),await logo.text());
   assert.equal(readFileSync('/tmp/native-fixture-global-attempts-'+db,'utf8'),'','No global loader or unscoped fallback');
+  // Revoke the independent pre-existing E session, leaving A available to the
+  // following Google-hub CI recipe that shares this disposable fixture.
+  await context.addCookies([{name:'clara_auth_session',value:'E'.repeat(43),url:origin}]);await page.reload();
   await revealAccountSettings(page);page.once('dialog',d=>d.accept());
   const [logout]=await Promise.all([page.waitForResponse(r=>new URL(r.url()).pathname==='/api/auth/session/logout'),page.getByRole('button',{name:'Déconnexion',exact:true}).click()]);assert.equal(logout.status(),200);
   await page.locator('[data-native-authority="locked"]').waitFor();
   assert.equal((await context.request.get(origin+'/api/native/runtime')).status(),401);
   const savedSelection=(await context.cookies()).find(c=>c.name==='clara_native_selection');assert.ok(savedSelection);
-  const resumed=await context.request.get(origin+'/api/native/runtime',{headers:{cookie:'clara_auth_session='+'E'.repeat(43)+'; '+savedSelection.name+'='+savedSelection.value}});assert.equal(resumed.status(),200);
+  assert.equal((await context.request.get(origin+'/api/native/runtime',{headers:{cookie:'clara_auth_session='+'E'.repeat(43)+'; '+savedSelection.name+'='+savedSelection.value}})).status(),401);
+  const resumed=await context.request.get(origin+'/api/native/runtime',{headers:{cookie:'clara_auth_session='+'A'.repeat(43)+'; '+savedSelection.name+'='+savedSelection.value}});assert.equal(resumed.status(),200);
+  assert.equal(readFileSync('/tmp/native-fixture-global-attempts-'+db,'utf8'),'');
   const resumedState=await resumed.json();assert.equal(resumedState.session.mission.id,before.mission.id);assert.ok(resumedState.session.conversation.some(m=>m.content===message));
 
   writeFileSync(out+'/matrix.json',JSON.stringify({status:'PASS',providerCertified:false,matrix,business:{explicitMission:true,contact:true,multilineConversation:true,reload:true,journal:true},mailStates:'HTTP fixtures for empty/refused presentation; actual approval flow received separately'},null,2)+'\n');

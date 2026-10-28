@@ -33,6 +33,13 @@ test('historical Hero: two persisted authorized missions, no overlapping panels,
    for(const m of scope.missions)await page.locator('[data-cockpit-hero]').getByRole('link',{name:m.title,exact:true}).waitFor();
    await page.screenshot({path:`${out}/cockpit-${locale}-${device}.png`});rows.push({locale,device,status:'PASS',scope:'two synthetic missions in explicitly selected authorized project; no provider certification'});
   }
+  await context.addCookies([{name:'NEXT_LOCALE',value:'fr',url:origin}]);await page.goto(origin+'/');
+  const viewed=scope.missions.find(m=>m.title.includes('lumière'));assert.ok(viewed);
+  await page.locator('[data-cockpit-hero]').getByRole('link',{name:viewed.title,exact:true}).click();await page.waitForURL(url=>url.pathname==='/missions'&&url.searchParams.get('mission')===viewed.id);
+  await page.getByRole('heading',{name:viewed.title,exact:true}).waitFor();
+  assert.equal((await(await context.request.get(origin+'/api/native/runtime')).json()).session.mission.id,scope.session.mission.id,'Opening a mission detail must not reassign the active conversation');
+  const labels=JSON.parse(readFileSync('src/i18n/messages/fr/missions.json','utf8'));
+  await page.getByRole('button',{name:labels.back,exact:true}).click();await page.waitForURL(origin+'/missions');await page.reload();assert.equal(new URL(page.url()).search,'');
   assert.equal(readFileSync('/tmp/native-fixture-global-attempts-'+db,'utf8'),'');
   writeFileSync(out+'/matrix.json',JSON.stringify({providerCertified:false,rows},null,2)+'\n');
  }finally{await browser.close();}
