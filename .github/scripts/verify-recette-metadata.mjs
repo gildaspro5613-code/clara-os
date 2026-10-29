@@ -14,13 +14,19 @@ export async function verifyRecetteMetadata({vercelToken,neonKey,http=fetch}){
  if(!Array.isArray(bindings.envs)||bindings.pagination?.next)throw Error('METADATA_REFUSED');
  const rows=bindings.envs;
  if(rows.some(e=>['POSTGRES_URL','VERCEL_ENV','VERCEL_PROJECT_ID','VERCEL_TARGET_ENV'].includes(e.key)))throw Error('METADATA_REFUSED');
- for(const key of ['DATABASE_URL','CLARA_RECETTE_NEON_HOST','CLARA_RECETTE_NEON_BRANCH_ID','CLARA_RECETTE_MODE']){
+ for(const key of ['DATABASE_URL','CLARA_RECETTE_NEON_HOST','CLARA_RECETTE_NEON_BRANCH_ID','CLARA_RECETTE_MODE','GOOGLE_CLIENT_ID','GOOGLE_CLIENT_SECRET','CLARA_AUTH_GOOGLE_REDIRECT_URI','CLARA_AUTH_APP_ORIGIN']){
   const entries=rows.filter(e=>e.key===key);
   if(entries.length!==1||entries[0].gitBranch||!Array.isArray(entries[0].customEnvironmentIds)||entries[0].customEnvironmentIds.length!==1||entries[0].customEnvironmentIds[0]!==environment||
     entries[0].target==='production'||entries[0].target?.includes('production'))throw Error('METADATA_REFUSED');
  }
  const domains=await read('/v9/projects/'+project+'/domains');
  if(!Array.isArray(domains.domains)||domains.pagination?.next||domains.domains.some(d=>!/^clara-os-recette(?:-[a-z0-9-]+)?\.vercel\.app$/.test(d.name??'')))throw Error('PROJECT_DOMAINS_REFUSED');
+ // Resolve the one stable origin; no alias or domain is created/reassigned here.
+ const alias=await read('/v4/aliases/clara-os-recette.vercel.app');
+ if(alias.alias!=='clara-os-recette.vercel.app'||(alias.projectId!=null&&alias.projectId!==project)||alias.redirect||!/^dpl_[A-Za-z0-9]+$/.test(alias.deploymentId??''))throw Error('RECEPTION_ALIAS_REFUSED');
+ const current=await read('/v13/deployments/'+alias.deploymentId);
+ if(current.id!==alias.deploymentId||current.projectId!==project||current.ownerId!==team||current.target==='production'||current.readyState!=='READY'||
+   current.customEnvironment?.id!==environment||current.customEnvironment?.slug!=='clara-os-recette')throw Error('RECEPTION_ALIAS_REFUSED');
  const response=await http('https://console.neon.tech/api/v2/projects/fragrant-dream-31652403/endpoints',{method:'GET',redirect:'error',signal:AbortSignal.timeout(15000),headers:{Authorization:'Bearer '+neonKey}});
  if(!response.ok)throw Error('METADATA_ACCESS_UNAVAILABLE');const neon=await response.json();
  const endpoints=Array.isArray(neon.endpoints)?neon.endpoints.filter(e=>e.host==='ep-aged-forest-b2wayach.c-6.eu-central-1.aws.neon.tech'):[];
@@ -29,5 +35,5 @@ export async function verifyRecetteMetadata({vercelToken,neonKey,http=fetch}){
 }
 if(process.argv[1]?.endsWith('/verify-recette-metadata.mjs')){
  try{console.log(await verifyRecetteMetadata({vercelToken:process.env.VERCEL_RECETTE_TOKEN,neonKey:process.env.NEON_API_KEY}));}
- catch(e){console.log(['METADATA_ACCESS_UNAVAILABLE','METADATA_REFUSED','PROJECT_DOMAINS_REFUSED','NEON_ENDPOINT_REFUSED'].includes(e?.message)?e.message:'METADATA_REFUSED');process.exitCode=1;}
+ catch(e){console.log(['METADATA_ACCESS_UNAVAILABLE','METADATA_REFUSED','PROJECT_DOMAINS_REFUSED','NEON_ENDPOINT_REFUSED','RECEPTION_ALIAS_REFUSED'].includes(e?.message)?e.message:'METADATA_REFUSED');process.exitCode=1;}
 }
