@@ -79,8 +79,8 @@ test('effective Environment attestation: fail closed before SQL; real SDK with s
 test('workflow attaches readonly attestation to dedicated Environment before still-disabled deployment',()=>{
  const workflow=readFileSync('.github/workflows/clara-os-independent-recette.yml','utf8');
  assert.match(workflow,/environment: clara-os-recette/);assert.match(workflow,/secrets.VERCEL_RECETTE_TOKEN/);assert.match(workflow,/secrets.NEON_API_KEY/);
- assert(workflow.indexOf('id: binding_attestation')<workflow.indexOf('name: Deploy only custom'));
+ assert(workflow.indexOf('id: metadata_preflight')<workflow.indexOf('name: Deploy only custom'));
  assert.match(workflow,/path: .recette-controller/);assert.match(workflow,/ref: \$\{\{ github.sha \}\}/);
- assert.match(workflow,/writesAuthorized:false/);assert.match(workflow,/REST_WRITES_DISABLED/);
+ assert.match(workflow,/writesAuthorized:true/);assert.match(workflow,/inputs.verify_only == false/);assert.match(workflow,/verify-recette-ci.mjs/);
  const script=readFileSync('src/scripts/attest-recette-environment.mts','utf8');assert(!script.includes('console.error'));assert(!script.includes('DATABASE_URL'));
 });

@@ -99,3 +99,26 @@ L'artefact resterait fondé sur `e1d89bb…`, avec retrait des deux crons, et aj
 **Aucune activation, création, upload ou modification Vercel effectuée.** Les trois verrous REST sont conservés. Les tests isolés valident le composant; ils ne certifient pas un build Vercel réel. L'accès à `api.github.com` reste bloqué dans ce runtime : la publication Git est possible, le déclenchement Actions ne l'est pas. Décision actuelle : NO-GO Preview prête; attente de l'autorisation de cette unique tentative avec attestation au build, sans changement de secret, de fournisseur, de base ou d'infrastructure.
 
 Validation de ce correctif : 19 tests ciblés PASS, zéro échec/ignoré (SQL et plans de contrôle simulés); TypeScript sans émission PASS; ESLint ciblé PASS; `git diff --check` PASS. Le paramètre de création `projectSettings.buildCommand` a été vérifié dans le modèle officiel `CreateDeploymentRequest` du SDK Vercel 1.28.53. Aucun résultat Vercel réel nouveau n'est annoncé.
+
+## 29 octobre — unique tentative autorisée par le propriétaire
+
+L'autorisation de créer une tentative avant l'attestation SQL au build a été reçue. Le workflow existant est raccordé, sans déclenchement automatique : `verify_only=true` reste le défaut. Pour `false`, il exige les cinq contrôles CI terminés avec succès sur le SHA exact du contrôleur, la branche toujours à ce SHA, le projet/custom Environment exacts, les quatre rattachements sans lecture de valeurs, l'absence de fallback/override Production, les domaines hors Production et la correspondance Neon de l'endpoint attendu. Les permissions GitHub supplémentaires sont uniquement `checks:read` et `statuses:read` pour ce contrôle.
+
+L'artefact est formé du SHA applicatif `e1d89bba1cbef31c3d93ca6a3298bbe87c5c05e8`, avec uniquement les quatre fichiers d'attestation figés à `18ea12305b28e7a617c96f34b2a937b4726af5a1`, la suppression des crons et la commande de build bloquante dans sa copie de `vercel.json`. **Pas de `projectSettings.buildCommand` dans la requête** : le SDK indique que les projectSettings peuvent être conservés pour les déploiements ultérieurs. Aucun paramètre permanent Vercel, fichier métier, secret ou dépendance n'est modifié.
+
+Le contrôleur conserve le refus des reruns (`run_attempt != 1`), enregistre l'autorisation `pr219-20261029-one-build-attestation` dans les métadonnées de création et refuse une tentative déjà enregistrée. Une liste antérieure incomplète est refusée. Les uploads sont séquentiels; une seule création est possible dans l'exécution, sans retry des POST. Après READY, il revérifie projet, équipe, custom Environment, SHA applicatif, SHA d'attestation, empreinte de l'artefact et alias autorisés; il ne certifie rien si ces lectures échouent. Un résultat incertain n'autorise jamais un autre lancement.
+
+Validation locale : 29 contrôles du transport/prérequis PASS; 19 contrôles des bindings/SQL PASS, tous avec transports et SQL simulés; TypeScript, lint TS ciblé et `git diff --check` PASS. Test réel du shell bloquant dans le contexte local sans variables Vercel : statut FAIL/code 1 attendu; la commande suivante n'est pas exécutée (marqueur absent). Ce n'est pas une attestation distante.
+
+Le runtime Cloud reste sans accès à `api.github.com` et `api.vercel.com`, ni identité API configurée. Aucun workflow manuel, upload ou POST Vercel n'est exécuté ici; l'autorisation de création n'a donc pas été consommée. La CI distante du nouveau contrôleur n'est pas attestée localement. Depuis l'accès GitHub existant, après les cinq contrôles verts, l'unique opération autorisée est :
+
+```sh
+gh workflow run clara-os-independent-recette.yml \
+  --repo gildaspro5613-code/clara-os \
+  --ref fix/clara-os-historical-interface-20261028 \
+  -f verify_only=false
+```
+
+Ne pas relancer après erreur, timeout ou résultat incertain. Conserver le run et son résumé : ID/URL/état/SHA si READY, sinon cause fixe sans secrets. Aucune URL Preview READY n'est annoncée dans cette mise à jour.
+
+Le contrôle au build réutilise les trois étapes bornées DATABASE_BINDING / SQL_IDENTITY / SQL_PERMISSIONS en cas de refus, afin de qualifier un échec sans valeur sensible. Aucun nouveau mécanisme de diagnostic ni réessai.

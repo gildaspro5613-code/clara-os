@@ -12,8 +12,9 @@ assert.equal(workflow.split(marker).length,2);
 const code=workflow.split(marker)[1].split('\n          NODE_API')[0].split('\n').map(line=>line.slice(10)).join('\n');
 const temporary=mkdtempSync(join(tmpdir(),'recette-git-api-offline-'));
 writeFileSync(join(temporary,'driver.mjs'),code);
-const {deployRecette,verifyApprovedSource,approvedFiles,expected}=await import(pathToFileURL(join(temporary,'driver.mjs')).href);
+const {deployRecette,verifyApprovedSource,approvedFiles,expected,gatePaths}=await import(pathToFileURL(join(temporary,'driver.mjs')).href);
 test.after(()=>rmSync(temporary,{recursive:true,force:true}));
+const gateGit=args=>execFileSync('git',args,{maxBuffer:32*1024*1024,stdio:['ignore','pipe','pipe']});
 const link={type:'github',repoId:1316164838,org:'gildaspro5613-code',repo:'clara-os'};
 const contents=new Map([['package.json',Buffer.from('{}')],['package-lock.json',Buffer.from('{}')],['vercel.json',execFileSync('git',['show',expected.sha+':vercel.json'])],['public/binary.bin',Buffer.from([0,255,1,0])]]);
 // Transport is simulated; source provenance and Production preservation are tested against Git below.
@@ -26,8 +27,8 @@ function fakeGit(args) {
  if(args[0]==='diff') return Buffer.from('vercel.json\n');
  throw Error('UNEXPECTED_GIT_OPERATION');
 }
-function harness({project,environment,create,poll,failPath,failStatus=403,timeout=false,git=fakeGit,failUploadAt=1,uploadStatus=200,createMalformed=false}={}) {
- const calls=[],events=[];
+function harness({project,environment,create,poll,failPath,failStatus=403,timeout=false,git=fakeGit,failUploadAt=1,uploadStatus=200,createMalformed=false,previous=[],aliases=[]}={}) {
+ const calls=[],events=[];let createdMeta;
  const ready={id:'dpl_synthetic',url:'clara-os-recette-synthetic-melodie-digital.vercel.app',ownerId:expected.team,projectId:expected.project,
   customEnvironment:{id:expected.environment,slug:expected.slug},meta:{githubCommitSha:expected.sha},readyState:'READY'};
  const http=async(url,init)=>{
@@ -37,6 +38,8 @@ function harness({project,environment,create,poll,failPath,failStatus=403,timeou
   if(url.pathname===failPath && (failPath!=='/v2/files'||calls.filter(c=>c.path==='/v2/files').length===failUploadAt)) {if(timeout) throw Error('synthetic-restricted sensitive provider detail');return new Response('sensitive provider detail',{status:failStatus});}
   if(url.pathname==='/v9/projects/'+expected.project) return Response.json(project??{id:expected.project,name:expected.slug,accountId:expected.team});
   if(url.pathname==='/projects/'+expected.project+'/custom-environments') return Response.json({environments:environment??[{id:expected.environment,slug:expected.slug}]});
+  if(url.pathname==='/v6/deployments')return Response.json({deployments:previous});
+  if(url.pathname.endsWith('/aliases'))return Response.json({aliases});
   if(url.pathname==='/v2/files') {
    assert.equal(init.method,'POST');assert.ok(Buffer.isBuffer(init.body));
    assert.equal(init.headers['Content-Length'],String(init.body.length));assert.equal(init.headers['x-now-size'],String(init.body.length));
@@ -46,16 +49,17 @@ function harness({project,environment,create,poll,failPath,failStatus=403,timeou
   if(url.pathname==='/v13/deployments') {
    assert.equal(init.method,'POST');const body=JSON.parse(init.body);
    for(const file of body.files){const upload=calls.find(c=>c.path==='/v2/files'&&createHash('sha1').update(c.body).digest('hex')===file.sha);assert.ok(upload);assert.equal(upload.body.length,file.size);}
-   assert.deepEqual(body,{name:expected.slug,project:expected.project,customEnvironmentSlugOrId:expected.environment,files:approvedFiles(git).map(({file,sha,size})=>({file,sha,size})),meta:{githubCommitSha:expected.sha,recetteSourceSha:expected.sha}});
+   assert.deepEqual(body,{name:expected.slug,project:expected.project,customEnvironmentSlugOrId:expected.environment,files:approvedFiles(git,gateGit).map(({file,sha,size})=>({file,sha,size})),meta:{githubCommitSha:expected.sha,recetteSourceSha:expected.sha,recetteGateSha:expected.gateSha,recetteAttempt:expected.attempt,recetteArtifactSha256:createHash('sha256').update(JSON.stringify(approvedFiles(git,gateGit).map(f=>[f.file,createHash('sha256').update(f.data).digest('hex')]).sort())).digest('hex')}});
+   createdMeta=body.meta;
    if(createMalformed)return new Response('sensitive provider detail',{status:200});
-   return Response.json({...ready,...create});
+   return Response.json({...ready,meta:createdMeta,...create});
   }
-  if(url.pathname==='/v13/deployments/dpl_synthetic') return Response.json({...ready,...poll});
+  if(url.pathname==='/v13/deployments/dpl_synthetic') return Response.json({...ready,meta:createdMeta,...poll});
   throw Error('Upload, user lookup, fallback or unexpected transport');
  };
- return {calls,events,run:()=>deployRecette({token:'synthetic-restricted',http,git,wait:async()=>{},emit:e=>events.push(e),writesAuthorized:true})};
+ return {calls,events,run:()=>deployRecette({token:'synthetic-restricted',http,git,wait:async()=>{},emit:e=>events.push(e),writesAuthorized:true,gateGit})};
 }
-test('workflow has three write locks and default read-only verification; exact source and secret preserved',()=>{
+test('workflow activates only the approved attempt after metadata and CI; verification is the default',()=>{
  const config=yaml.load(workflow);
  assert.equal(config.on.workflow_dispatch.inputs.verify_only.default,true);
  assert.equal(config.jobs.deploy.environment,expected.slug);
@@ -63,9 +67,9 @@ test('workflow has three write locks and default read-only verification; exact s
  assert.match(workflow,/secrets.VERCEL_RECETTE_TOKEN/);assert(!workflow.includes('secrets.VERCEL_TOKEN'));
  assert(workflow.includes('test "${{ github.run_attempt }}" = "1"'));
  const deployStep=config.jobs.deploy.steps.find(s=>s.name.startsWith('Deploy only custom'));
- assert.equal(deployStep.if,'${{ false }}');assert.match(deployStep.run,/writesAuthorized:false/);
- const gate=config.jobs.deploy.steps.find(s=>s.name==='Refuse write requests during transport preparation');
- assert.equal(gate.if,'${{ inputs.verify_only != true }}');assert.match(gate.run,/exit 1/);
+ assert.equal(deployStep.if,"${{ inputs.verify_only == false && steps.metadata_preflight.outcome == 'success' }}");assert.match(deployStep.run,/writesAuthorized:true/);
+ assert(workflow.includes('verify-recette-ci.mjs'));assert(workflow.includes('verify-recette-metadata.mjs'));
+ assert.equal(config.permissions.checks,'read');assert.equal(config.permissions.statuses,'read');
  assert(workflow.includes('/v2/files'));assert(!workflow.includes('config.crons = []'));
  assert(!workflow.includes('gitSource'));assert(!workflow.includes('gitAccessToken'));assert(!workflow.includes('vercel deploy'));
 });
@@ -79,10 +83,10 @@ test('source SHA, parent, repository and configuration verified without a Git pr
 });
 test('approved schedules remain tracked; only the isolated artifact removes crons',()=>{
  const source=execFileSync('git',['show',expected.sha+':vercel.json']);
- const files=approvedFiles(fakeGit);
+ const files=approvedFiles(fakeGit,gateGit);
  const artifact=JSON.parse(files.find(f=>f.file==='vercel.json').data);
  const expectedConfig=JSON.parse(source);assert.equal(expectedConfig.crons.length,2);
- delete expectedConfig.crons;assert.deepEqual(artifact,expectedConfig);
+ delete expectedConfig.crons;expectedConfig.buildCommand="node --import tsx src/scripts/attest-recette-build.mts && npm run build";assert.deepEqual(artifact,expectedConfig);
  assert.deepEqual(execFileSync('git',['show',expected.sha+':vercel.json']),source);
 });
 test('malformed, missing or changed approved crons are refused before upload',()=>{
@@ -200,13 +204,13 @@ test('real source manifest preserves all source paths and bytes except artifact 
  const actualGit=args=>args[0]==='remote'?fakeGit(args):args[0]==='rev-parse'&&args[1]==='HEAD'?Buffer.from(expected.sha):git(args);
  assert.equal(verifyApprovedSource(actualGit),undefined);
  const before=git(['show',expected.sha+':vercel.json']);
- const files=approvedFiles(actualGit);
+ const files=approvedFiles(actualGit,gateGit);
  const paths=String(git(['ls-tree','-r','--name-only',expected.sha])).trim().split('\n');
- assert.deepEqual(files.map(f=>f.file),paths);
+ assert.deepEqual([...new Set(files.map(f=>f.file))].sort(),[...new Set([...paths,...gatePaths])].sort());
  for(const f of files){
   if(f.file==='vercel.json'){
-   const config=JSON.parse(before);delete config.crons;assert.deepEqual(JSON.parse(f.data),config);
-  }else assert(f.data.equals(git(['show',expected.sha+':'+f.file])));
+   const config=JSON.parse(before);delete config.crons;config.buildCommand="node --import tsx src/scripts/attest-recette-build.mts && npm run build";assert.deepEqual(JSON.parse(f.data),config);
+  }else assert(f.data.equals(git(['show',(gatePaths.includes(f.file)?expected.gateSha:expected.sha)+':'+f.file])));
  }
  assert.deepEqual(git(['show',expected.sha+':vercel.json']),before);
 });
@@ -250,11 +254,11 @@ test('upload timeout, 408/5xx or unexpected success response is uncertain withou
  }
 });
 test('upload uses exact binary bytes, deduplicates content but preserves every manifest path',async()=>{
- const files=approvedFiles(fakeGit);assert.equal(files.length,4);
+ const files=approvedFiles(fakeGit,gateGit);assert.equal(files.length,8);
  assert.deepEqual([...files.find(f=>f.file==='public/binary.bin').data],[0,255,1,0]);
- const h=harness();await h.run();assert.equal(h.calls.filter(c=>c.path==='/v2/files').length,3);
- const create=h.calls.find(c=>c.path==='/v13/deployments'&&c.method==='POST');assert.equal(JSON.parse(create.body).files.length,4);
- assert.equal(h.calls.at(-1),create);
+ const h=harness();await h.run();assert.equal(h.calls.filter(c=>c.path==='/v2/files').length,7);
+ const create=h.calls.find(c=>c.path==='/v13/deployments'&&c.method==='POST');assert.equal(JSON.parse(create.body).files.length,8);
+ assert.equal(h.calls.at(-1).path,'/v2/deployments/dpl_synthetic/aliases');
 });
 test('unsafe or unsupported source paths are refused before all HTTP',async()=>{
  for(const file of ['.env.local','.vercel/project.json','../outside','.npmrc']) {
@@ -267,4 +271,22 @@ test('unsafe or unsupported source paths are refused before all HTTP',async()=>{
 test('creation with unreadable acknowledgement remains uncertain; no second creation or false receipt',async()=>{
  const h=harness({createMalformed:true});await assert.rejects(h.run(),/CREATE_OUTCOME_UNCERTAIN_NO_RETRY/);
  assert.equal(h.calls.filter(c=>c.path==='/v13/deployments'&&c.method==='POST').length,1);assert.equal(h.events.length,0);
+});
+
+test('approved attempt already recorded prevents every upload and creation',async()=>{
+ const h=harness({previous:[{meta:{recetteAttempt:expected.attempt}}]});
+ await assert.rejects(h.run(),/AUTHORIZED_ATTEMPT_ALREADY_CONSUMED/);assert(h.calls.every(c=>c.method==='GET'));
+});
+test('foreign alias or artifact metadata prevents READY without repeating creation',async()=>{
+ for(const options of [{aliases:[{alias:'os.melodie.digital'}]},{create:{meta:{githubCommitSha:expected.sha,recetteGateSha:'foreign'}}}]){
+  const h=harness(options);await assert.rejects(h.run());assert(!h.events.some(e=>e.event==='READY'));
+  assert.equal(h.calls.filter(c=>c.path==='/v13/deployments'&&c.method==='POST').length,1);
+ }
+});
+test('gate files come only from the pinned reviewed commit and build command is artifact-local',()=>{
+ const files=approvedFiles(fakeGit,gateGit);
+ for(const file of gatePaths)assert(files.find(f=>f.file===file).data.equals(gateGit(['show',expected.gateSha+':'+file])));
+ assert.equal(JSON.parse(files.find(f=>f.file==='vercel.json').data).buildCommand,'node --import tsx src/scripts/attest-recette-build.mts && npm run build');
+ assert.equal(JSON.parse(contents.get('vercel.json')).buildCommand,undefined);
+ assert.throws(()=>approvedFiles(fakeGit,()=>Buffer.from('blob')),/GATE_SOURCE_REFUSED/);
 });
