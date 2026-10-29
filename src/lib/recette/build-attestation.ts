@@ -7,13 +7,17 @@ import {hasRecetteRuntimePermissions} from './environment-attestation';
  * PASS covers effective binding and readonly SQL, not control-plane provenance.
  * The controller must independently verify project/custom Environment and Neon
  * endpoint metadata BEFORE creating the build, then verify the resulting deployment.
- * Dormant until the changed ordering (create before SQL attestation) is approved. */
-export async function attestRecetteBuildBindings(env:NodeJS.ProcessEnv):Promise<'PASS'|'FAIL'|'NON ATTESTÉ'>{
+ * The owner approved the changed ordering for one independent Recette attempt. */
+export async function attestRecetteBuildBindings(env:NodeJS.ProcessEnv,onDiagnostic?:(stage:'DATABASE_BINDING'|'SQL_IDENTITY'|'SQL_PERMISSIONS')=>void):Promise<'PASS'|'FAIL'|'NON ATTESTÉ'>{
+ let stage:'DATABASE_BINDING'|'SQL_IDENTITY'|'SQL_PERMISSIONS'='DATABASE_BINDING';
+ const finish=(status:'PASS'|'FAIL'|'NON ATTESTÉ')=>{if(status!=='PASS')onDiagnostic?.(stage);return status;};
  const binding=validateRecetteDatabaseBinding(env);
- if(binding==='FAIL')return 'FAIL';
- if(binding!=='OK')return 'NON ATTESTÉ';
+ if(binding==='FAIL')return finish('FAIL');
+ if(binding!=='OK')return finish('NON ATTESTÉ');
  try{
+  stage='SQL_IDENTITY';
   await verifyRecetteSqlRole(env.DATABASE_URL!);
-  return await hasRecetteRuntimePermissions(env.DATABASE_URL!)?'PASS':'FAIL';
- }catch(e){return e instanceof RecetteSqlIdentityRefused?'FAIL':'NON ATTESTÉ';}
+  stage='SQL_PERMISSIONS';
+  return finish(await hasRecetteRuntimePermissions(env.DATABASE_URL!)?'PASS':'FAIL');
+ }catch(e){return finish(e instanceof RecetteSqlIdentityRefused?'FAIL':'NON ATTESTÉ');}
 }

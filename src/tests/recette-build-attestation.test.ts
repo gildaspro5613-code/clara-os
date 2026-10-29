@@ -27,8 +27,9 @@ test('Vercel injected-binding component: readonly, no credential export and no d
  });
  await t.test('effective values and SQL privileges required, not just metadata',async()=>{
   assert.equal(await attestRecetteBuildBindings(env),'PASS');assert.equal(calls,2);
-  mode='owner';assert.equal(await attestRecetteBuildBindings(env),'FAIL');
-  mode='permissions';assert.equal(await attestRecetteBuildBindings(env),'FAIL');
+  const stages:string[]=[];
+  mode='owner';assert.equal(await attestRecetteBuildBindings(env,s=>stages.push(s)),'FAIL');assert.equal(stages.at(-1),'SQL_IDENTITY');
+  mode='permissions';assert.equal(await attestRecetteBuildBindings(env,s=>stages.push(s)),'FAIL');assert.equal(stages.at(-1),'SQL_PERMISSIONS');
   mode='network';assert.equal(await attestRecetteBuildBindings(env),'NON ATTESTÉ');
  });
 });
