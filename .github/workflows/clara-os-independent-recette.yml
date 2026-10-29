@@ -26,6 +26,11 @@ jobs:
           test "${{ github.event_name }}" = workflow_dispatch
           test "${{ github.repository }}" = gildaspro5613-code/clara-os
           test "${{ github.ref }}" = refs/heads/fix/clara-os-historical-interface-20261028
+      - name: Refuse writes until interrupted run has been reviewed and execution reauthorized
+        if: ${{ inputs.verify_only != true }}
+        run: |
+          echo "::error::INTERRUPTED_RUN_REVIEW_REQUIRED"
+          exit 1
       - name: Refuse reruns of the authorized deployment operation
         if: ${{ inputs.verify_only == false }}
         run: |
@@ -179,7 +184,7 @@ jobs:
           NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
         run: node .github/scripts/verify-recette-metadata.mjs
       - name: Deploy only custom recette environment through official REST API
-        if: ${{ inputs.verify_only == false && steps.metadata_preflight.outcome == 'success' }}
+        if: ${{ false }}
         env:
           VERCEL_RECETTE_TOKEN: ${{ secrets.VERCEL_RECETTE_TOKEN }}
         run: |
@@ -357,7 +362,7 @@ jobs:
           // Imported by offline tests. Owner-approved single c203cd7 operation, including the dedicated Recette alias.
           if (process.argv[1] === '-') {
             try {
-              await deployRecette({writesAuthorized:true,assignStableAlias:true,token:process.env.VERCEL_RECETTE_TOKEN,emit:result => {
+              await deployRecette({writesAuthorized:false,assignStableAlias:true,token:process.env.VERCEL_RECETTE_TOKEN,emit:result => {
                 const line = JSON.stringify(result);
                 console.log('::notice title=Recette deployment::' + line);
                 if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY,line + '\n');

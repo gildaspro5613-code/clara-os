@@ -66,7 +66,7 @@ function harness({project,environment,create,poll,failPath,failStatus=403,failMe
  };
  return {calls,events,run:()=>deployRecette({token:'synthetic-restricted',http,git,wait:async()=>{},emit:e=>events.push(e),writesAuthorized:true,gateGit,assignStableAlias})};
 }
-test('updated source and stable alias activate only after manual request, CI and metadata',()=>{
+test('interrupted operation remains write-locked pending review and new authorization',()=>{
  const config=yaml.load(workflow);
  assert.equal(config.on.workflow_dispatch.inputs.verify_only.default,true);
  assert.equal(config.jobs.deploy.environment,expected.slug);
@@ -74,7 +74,7 @@ test('updated source and stable alias activate only after manual request, CI and
  assert.match(workflow,/secrets.VERCEL_RECETTE_TOKEN/);assert(!workflow.includes('secrets.VERCEL_TOKEN'));
  assert(workflow.includes('test "${{ github.run_attempt }}" = "1"'));
  const deployStep=config.jobs.deploy.steps.find(s=>s.name.startsWith('Deploy only custom'));
- assert.equal(deployStep.if,"${{ inputs.verify_only == false && steps.metadata_preflight.outcome == 'success' }}");assert.match(deployStep.run,/writesAuthorized:true/);assert.match(deployStep.run,/assignStableAlias:true/);
+ assert.equal(deployStep.if,'${{ false }}');assert.match(deployStep.run,/writesAuthorized:false/);assert.match(workflow,/INTERRUPTED_RUN_REVIEW_REQUIRED/);assert.match(deployStep.run,/assignStableAlias:true/);
  assert(workflow.includes('verify-recette-ci.mjs'));assert(workflow.includes('verify-recette-metadata.mjs'));
  assert.equal(config.permissions.checks,'read');assert.equal(config.permissions.statuses,'read');
  assert(workflow.includes('/v2/files'));assert(!workflow.includes('config.crons = []'));
