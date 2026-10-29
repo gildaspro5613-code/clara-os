@@ -31,6 +31,7 @@ test('effective Environment attestation: fail closed before SQL; real SDK with s
    if(mode==='duplicate')envs.push({...envs[0]});
    if(mode==='missing')envs.splice(0,1);
    if(mode==='production-target')Object.assign(envs[0],{target:['production']});
+   if(mode==='sensitive')envs[0].type='sensitive';
    if(mode==='inherited')envs[0].customEnvironmentIds=[];
    return Response.json({envs,pagination:mode==='pagination'?{next:1}:undefined});
   }
@@ -66,6 +67,9 @@ test('effective Environment attestation: fail closed before SQL; real SDK with s
  });
  await t.test('owner/admin, inherited administration, ownership, missing table or EXECUTE rights refused',async()=>{
   for(const m of ['owner','admin','membership','ownership','table','function'])assert.equal(await run(m),'FAIL',m);
+ });
+ await t.test('sensitive binding uses no decryption request and requires Vercel execution',async()=>{
+  assert.equal(await run('sensitive'),'NON ATTESTÉ');assert.equal(secretReads,0);assert.equal(sqlCalls,0);
  });
  await t.test('SQL unavailable is not attested; output has no details or secrets',async()=>{
   assert.equal(await run('sql-network'),'NON ATTESTÉ');

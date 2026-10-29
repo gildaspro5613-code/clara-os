@@ -9,6 +9,7 @@ const slug='clara-os-recette';
 const keys=['DATABASE_URL','CLARA_RECETTE_NEON_HOST','CLARA_RECETTE_NEON_BRANCH_ID','CLARA_RECETTE_MODE'] as const;
 class Unavailable extends Error {}
 class Refused extends Error {}
+class VercelRuntimeRequired extends Unavailable {}
 export type RecetteAttestationStage = 'CREDENTIALS'|'VERCEL_PROJECT'|'CUSTOM_ENVIRONMENT'|'ENV_LIST'|'ENV_BINDINGS'|'ENV_BINDING_DATABASE_URL'|'ENV_BINDING_LIST_ENTRY'|'ENV_BINDING_READ_DENIED'|'ENV_BINDING_READ_INVALID'|'ENV_BINDING_METADATA'|'ENV_BINDING_NEON_HOST'|'ENV_BINDING_BRANCH_ID'|'ENV_BINDING_MODE'|'DATABASE_BINDING'|'NEON_ENDPOINT'|'SQL_IDENTITY'|'SQL_PERMISSIONS';
 
 /** Operator/Actions only. No route, files, subprocesses, GITHUB_ENV or raw error output.
@@ -47,6 +48,9 @@ export async function attestRecetteEnvironment(input:{vercelToken?:string;neonKe
    const candidates=rows.filter((e:{key?:string})=>e.key===key);
    if(candidates.length!==1)throw new Unavailable();
    const e=candidates[0];
+   // Secret values may intentionally be absent from read/pull APIs. Never retry
+   // their decryption or suggest changing visibility/token scope to export them.
+   if(e.type==='sensitive'||e.visibility==='secret')throw new VercelRuntimeRequired();
    if(e.target==='production'||(Array.isArray(e.target)&&e.target.includes('production')))throw new Refused();
    if(!e.id||!Array.isArray(e.customEnvironmentIds)||e.customEnvironmentIds.length!==1||e.customEnvironmentIds[0]!==environment||e.gitBranch)throw new Unavailable();
    // Distinguish list metadata problems from the protected single-value API.
@@ -85,7 +89,14 @@ export async function attestRecetteEnvironment(input:{vercelToken?:string;neonKe
   setStage('SQL_IDENTITY');
   try{await verifyRecetteSqlRole(env.DATABASE_URL!);}catch(e){if(e instanceof RecetteSqlIdentityRefused)throw new Refused();throw new Unavailable();}
   setStage('SQL_PERMISSIONS');
-  const sql=neon(env.DATABASE_URL!,{fetchOptions:{redirect:'error',signal:AbortSignal.timeout(15000)}});
+  if(!await hasRecetteRuntimePermissions(env.DATABASE_URL!))throw new Refused();
+  return 'PASS';
+ }catch(e){if(!(e instanceof VercelRuntimeRequired))onDiagnostic?.(stage);return e instanceof Refused?'FAIL':'NON ATTESTÉ';}
+}
+
+/** Read-only SQL permission component, shared with the Vercel build gate. */
+export async function hasRecetteRuntimePermissions(databaseUrl:string):Promise<boolean>{
+  const sql=neon(databaseUrl,{fetchOptions:{redirect:'error',signal:AbortSignal.timeout(15000)}});
   const [results]=await sql.transaction([sql`SELECT
    NOT EXISTS(SELECT 1 FROM pg_roles r WHERE (r.rolsuper OR r.rolbypassrls OR r.rolcreatedb OR r.rolcreaterole OR r.rolreplication)
     AND pg_has_role(current_user,r.oid,'MEMBER')) AS no_admin_membership,
@@ -111,7 +122,5 @@ export async function attestRecetteEnvironment(input:{vercelToken?:string;neonKe
     ('clara_native_document_command'),('clara_native_google_command'),('clara_native_mail_command'),('clara_native_history')) AS required(name)
     WHERE NOT EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public' AND p.proname=name
      AND has_function_privilege(current_user,p.oid,'EXECUTE') AND NOT p.prosecdef)) AS runtime_function_permissions`],{readOnly:true});
-  if(results.length!==1||Object.values(results[0]).some(v=>v!==true)||Object.keys(results[0]).length!==5)throw new Refused();
-  return 'PASS';
- }catch(e){onDiagnostic?.(stage);return e instanceof Refused?'FAIL':'NON ATTESTÉ';}
+  return results.length===1&&Object.keys(results[0]).length===5&&Object.values(results[0]).every(v=>v===true);
 }

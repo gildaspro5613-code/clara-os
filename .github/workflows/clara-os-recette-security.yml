@@ -18,6 +18,8 @@ on:
       - 'src/tests/recette-attestation-authorization.test.ts'
       - 'src/tests/recette-environment-attestation.test.ts'
       - 'src/scripts/attest-recette-environment.mts'
+      - 'src/scripts/attest-recette-build.mts'
+      - 'src/tests/recette-build-attestation.test.ts'
       - '.github/workflows/clara-os-recette-security.yml'
       - '.github/workflows/clara-os-independent-recette.yml'
       - '.github/scripts/recette-deployment-api.test.mjs'
@@ -40,7 +42,7 @@ jobs:
       - name: Independent Recette deployment transport (offline only)
         run: node --test .github/scripts/recette-deployment-api.test.mjs
       - name: Effective custom Environment attestation (offline only)
-        run: node --import tsx --test src/tests/recette-environment-attestation.test.ts src/tests/recette-runtime-attestation.test.ts
+        run: node --import tsx --test src/tests/recette-environment-attestation.test.ts src/tests/recette-runtime-attestation.test.ts src/tests/recette-build-attestation.test.ts
       - name: Recette offline denial contracts
         run: node --import tsx --test src/tests/recette-external-execution-guard.test.ts
       - name: Recette authentication and isolation contracts
