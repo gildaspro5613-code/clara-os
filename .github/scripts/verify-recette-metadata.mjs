@@ -1,4 +1,4 @@
-const stages=new Set(['VERCEL_RECETTE_TOKEN','NEON_API_KEY','VERCEL_PROJECT','VERCEL_CUSTOM_ENVIRONMENT','VERCEL_BINDINGS','VERCEL_DOMAINS','VERCEL_ALIAS','VERCEL_ALIAS_DEPLOYMENT','NEON_ENDPOINTS']);
+const stages=new Set(['VERCEL_RECETTE_TOKEN','NEON_API_KEY','VERCEL_PROJECT','VERCEL_CUSTOM_ENVIRONMENT','VERCEL_BINDINGS','VERCEL_DOMAINS','VERCEL_PROJECT_DOMAIN','NEON_ENDPOINTS']);
 const kinds=new Set(['MISSING_SECRET','HTTP','TIMEOUT','TRANSPORT','INVALID_JSON']);
 export class MetadataAccessUnavailable extends Error {
  constructor(stage,kind,status){super('METADATA_ACCESS_UNAVAILABLE');this.stage=stage;this.kind=kind;this.status=status;}
@@ -42,14 +42,11 @@ export async function verifyRecetteMetadata({vercelToken,neonKey,http=fetch}){
  }
  const domains=await read('/v9/projects/'+project+'/domains','VERCEL_DOMAINS');
  if(!Array.isArray(domains.domains)||domains.pagination?.next||domains.domains.some(d=>!/^clara-os-recette(?:-[a-z0-9-]+)?\.vercel\.app$/.test(d.name??'')))throw Error('PROJECT_DOMAINS_REFUSED');
- // Resolve only within the independently verified project (official optional projectId filter).
- // A 404 remains a refusal; never retry with a broader/global lookup.
- // No alias or domain is created/reassigned here.
- const alias=await read('/v4/aliases/clara-os-recette.vercel.app?projectId='+project,'VERCEL_ALIAS');
- if(alias.alias!=='clara-os-recette.vercel.app'||(alias.projectId!=null&&alias.projectId!==project)||alias.redirect||!/^dpl_[A-Za-z0-9]+$/.test(alias.deploymentId??''))throw Error('RECEPTION_ALIAS_REFUSED');
- const current=await read('/v13/deployments/'+alias.deploymentId,'VERCEL_ALIAS_DEPLOYMENT');
- if(current.id!==alias.deploymentId||current.projectId!==project||current.ownerId!==team||current.target==='production'||current.readyState!=='READY'||
-   current.customEnvironment?.id!==environment||current.customEnvironment?.slug!=='clara-os-recette')throw Error('RECEPTION_ALIAS_REFUSED');
+ // Domain ownership is a Project Domain property, not a pre-existing Deployment Alias.
+ // A failing Project Domain read remains blocking; no 404 is ignored.
+ const domain=await read('/v9/projects/'+project+'/domains/clara-os-recette.vercel.app','VERCEL_PROJECT_DOMAIN');
+ if(domain.name!=='clara-os-recette.vercel.app'||domain.projectId!==project||domain.verified!==true||domain.redirect||
+   (domain.customEnvironmentId!=null&&domain.customEnvironmentId!==environment))throw Error('PROJECT_DOMAINS_REFUSED');
  const neon=await readJSON('https://console.neon.tech/api/v2/projects/fragrant-dream-31652403/endpoints',neonKey,'NEON_ENDPOINTS');
  const endpoints=Array.isArray(neon.endpoints)?neon.endpoints.filter(e=>e.host==='ep-aged-forest-b2wayach.c-6.eu-central-1.aws.neon.tech'):[];
  if(endpoints.length!==1||endpoints[0].branch_id!=='br-crimson-feather-b2zr00sf')throw Error('NEON_ENDPOINT_REFUSED');

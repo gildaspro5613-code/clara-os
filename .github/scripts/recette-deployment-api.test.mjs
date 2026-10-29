@@ -27,8 +27,8 @@ function fakeGit(args) {
  if(args[0]==='diff') return Buffer.from('vercel.json\n');
  throw Error('UNEXPECTED_GIT_OPERATION');
 }
-function harness({project,environment,create,poll,failPath,failStatus=403,failMethod,timeout=false,git=fakeGit,failUploadAt=1,uploadStatus=200,createMalformed=false,previous=[],aliases=[],assignStableAlias=false,aliasRace=false,aliasProject=expected.project}={}) {
- const calls=[],events=[];let createdMeta,mappedAlias='dpl_previous',aliasReads=0;
+function harness({project,environment,create,poll,failPath,failStatus=403,failMethod,timeout=false,git=fakeGit,failUploadAt=1,uploadStatus=200,createMalformed=false,previous=[],aliases=[],assignStableAlias=false,domainRace=false,aliasProject=expected.project,domain={},aliasInitiallyAbsent=false,aliasStillMissing=false}={}) {
+ const calls=[],events=[];let createdMeta,mappedAlias=aliasInitiallyAbsent?null:'dpl_previous',domainReads=0;
  const ready={id:'dpl_synthetic',url:'clara-os-recette-synthetic-melodie-digital.vercel.app',ownerId:expected.team,projectId:expected.project,
   customEnvironment:{id:expected.environment,slug:expected.slug},meta:{githubCommitSha:expected.sha},readyState:'READY'};
  const http=async(url,init)=>{
@@ -39,9 +39,13 @@ function harness({project,environment,create,poll,failPath,failStatus=403,failMe
   if(url.pathname==='/v9/projects/'+expected.project) return Response.json(project??{id:expected.project,name:expected.slug,accountId:expected.team});
   if(url.pathname==='/projects/'+expected.project+'/custom-environments') return Response.json({environments:environment??[{id:expected.environment,slug:expected.slug}]});
   if(url.pathname==='/v6/deployments')return Response.json({deployments:previous});
+  if(url.pathname==='/v9/projects/'+expected.project+'/domains/clara-os-recette.vercel.app'){
+   domainReads++;return Response.json({name:'clara-os-recette.vercel.app',projectId:expected.project,verified:true,customEnvironmentId:expected.environment,gitBranch:domainRace&&domainReads>1?'changed':null,...domain});
+  }
   if(url.pathname==='/v4/aliases/clara-os-recette.vercel.app'){
    assert.equal(url.searchParams.get('projectId'),expected.project);
-   aliasReads++;return Response.json({alias:'clara-os-recette.vercel.app',projectId:aliasProject,deploymentId:aliasRace&&aliasReads>1?'dpl_other':mappedAlias});
+   if(!mappedAlias||aliasStillMissing)return new Response('',{status:404});
+   return Response.json({alias:'clara-os-recette.vercel.app',projectId:aliasProject,deploymentId:mappedAlias});
   }
   if(url.pathname.endsWith('/aliases')&&init.method==='POST'){
    assert.deepEqual(JSON.parse(init.body),{alias:'clara-os-recette.vercel.app'});mappedAlias='dpl_synthetic';return Response.json({uid:'synthetic'});
@@ -299,21 +303,24 @@ test('gate files come only from the pinned reviewed commit and build command is 
  assert.throws(()=>approvedFiles(fakeGit,()=>Buffer.from('blob')),/GATE_SOURCE_REFUSED/);
 });
 
-test('prepared stable alias switches only the dedicated Recette name after READY and records previous deployment',async()=>{
+test('prepared stable alias is assigned only after READY and actually verified afterwards',async()=>{
  const h=harness({assignStableAlias:true});const result=await h.run();
  assert.equal(result.stableUrl,'https://clara-os-recette.vercel.app');
  assert.equal(h.calls.filter(c=>c.method==='POST'&&c.path==='/v2/deployments/dpl_synthetic/aliases').length,1);
- assert(h.events.some(e=>e.event==='PREVIOUS_RECETTE_ALIAS'&&e.deploymentId==='dpl_previous'));
+ assert(h.events.some(e=>e.event==='RECETTE_PROJECT_DOMAIN_VERIFIED'));
+ assert(!h.events.some(e=>e.event==='PREVIOUS_RECETTE_ALIAS'));
+ const assigned=h.calls.findIndex(c=>c.method==='POST'&&c.path==='/v2/deployments/dpl_synthetic/aliases');
+ assert(h.calls.findIndex(c=>c.path==='/v4/aliases/clara-os-recette.vercel.app')>assigned);
  assert(h.calls.filter(c=>c.method==='POST').every(c=>!String(c.body).includes('os.melodie.digital')));
 });
-test('foreign alias owner, concurrent reassignment and alias 403 stop without retry or certified reception',async()=>{
- for(const options of [{aliasProject:'foreign'},{aliasRace:true},{failPath:'/v2/deployments/dpl_synthetic/aliases',failMethod:'POST',failStatus:403}]){
+test('foreign alias result, concurrent domain change and alias 403 stop without retry or certified reception',async()=>{
+ for(const options of [{aliasProject:'foreign'},{domainRace:true},{failPath:'/v2/deployments/dpl_synthetic/aliases',failMethod:'POST',failStatus:403}]){
   const h=harness({assignStableAlias:true,...options});await assert.rejects(h.run());assert(!h.events.some(e=>e.event==='READY'));
   assert(h.calls.filter(c=>c.method==='POST'&&c.path==='/v2/deployments/dpl_synthetic/aliases').length<=1);
  }
 });
 
-test('nullable alias project ID is resolved through its verified deployment, never assumed',async()=>{const h=harness({assignStableAlias:true,aliasProject:null});assert.equal((await h.run()).stableUrl,'https://clara-os-recette.vercel.app');assert(h.calls.some(c=>c.path==='/v13/deployments/dpl_previous'));});
+test('nullable alias project ID still requires the exact new verified deployment',async()=>{const h=harness({assignStableAlias:true,aliasProject:null});assert.equal((await h.run()).stableUrl,'https://clara-os-recette.vercel.app');assert(!h.calls.some(c=>c.path==='/v13/deployments/dpl_previous'));});
 
 test('previous authorization must have a known terminal result before the new source attempt',async()=>{
  const old=state=>[{meta:{recetteAttempt:'pr219-20261029-one-build-attestation'},state}];
@@ -321,4 +328,23 @@ test('previous authorization must have a known terminal result before the new so
   const h=harness({previous:old(state)});await assert.rejects(h.run(),/PREVIOUS_ATTEMPT_NOT_TERMINAL_NO_RETRY/);assert(h.calls.every(c=>c.method==='GET'));
  }
  const h=harness({previous:old('READY')});assert.equal((await h.run()).event,'READY');
+});
+
+test('verified domain with no existing deployment alias reaches assignment then required post-READY alias check',async()=>{
+ const h=harness({assignStableAlias:true,aliasInitiallyAbsent:true});assert.equal((await h.run()).stableUrl,'https://clara-os-recette.vercel.app');
+ const create=h.calls.findIndex(c=>c.method==='POST'&&c.path==='/v13/deployments');
+ const assign=h.calls.findIndex(c=>c.method==='POST'&&c.path==='/v2/deployments/dpl_synthetic/aliases');
+ const lookup=h.calls.findIndex(c=>c.path==='/v4/aliases/clara-os-recette.vercel.app');
+ assert(create<assign&&assign<lookup);assert.equal(h.calls.filter(c=>c.path==='/v4/aliases/clara-os-recette.vercel.app').length,1);
+});
+test('invalid Project Domain blocks before uploads; build failure never assigns an alias',async()=>{
+ for(const domain of [{projectId:'foreign'},{name:'os.melodie.digital'},{verified:false},{redirect:'https://os.melodie.digital'},{customEnvironmentId:'foreign'}]){
+  const h=harness({assignStableAlias:true,domain});await assert.rejects(h.run(),/STABLE_DOMAIN_IDENTITY_REFUSED/);assert(h.calls.every(c=>c.method==='GET'));
+ }
+ const h=harness({assignStableAlias:true,create:{readyState:'ERROR'}});await assert.rejects(h.run(),/DEPLOYMENT_ERROR_NO_RETRY/);assert(!h.calls.some(c=>c.path==='/v2/deployments/dpl_synthetic/aliases'&&c.method==='POST'));
+});
+test('alias still returning 404 after assignment prevents READY, without retry or invented mapping',async()=>{
+ const h=harness({assignStableAlias:true,aliasInitiallyAbsent:true,aliasStillMissing:true});await assert.rejects(h.run(),/METADATA_HTTP_404/);
+ assert(!h.events.some(e=>e.event==='READY'));assert.equal(h.calls.filter(c=>c.path==='/v4/aliases/clara-os-recette.vercel.app').length,1);
+ assert.equal(h.calls.filter(c=>c.path==='/v2/deployments/dpl_synthetic/aliases'&&c.method==='POST').length,1);
 });

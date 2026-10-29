@@ -19,16 +19,17 @@ test('CI requires five successful completed controls and exact current branch; n
  }
 });
 test('metadata: exact project, target, all four scoped variables and authorized Neon host before any build',async()=>{
- for(const mode of ['ok','ok-null','project','target','missing','fallback','override','scope','domain','branch','network','alias-project','alias-redirect','alias-target','google-missing']){
+ for(const mode of ['ok','ok-null','project','target','missing','fallback','override','scope','domain','branch','network','project-domain-foreign','project-domain-redirect','project-domain-unverified','project-domain-name','project-domain-environment','google-missing']){
   const http=async(url,init)=>{
    assert.equal(init.method,'GET');assert.equal(init.redirect,'error');assert(!String(url).includes('/v1/projects/'));assert(!String(url).includes('decrypt=true'));
    if(mode==='network')throw Error('synthetic-secret');
    const path=new URL(String(url)).pathname;
-   if(path.startsWith('/v4/aliases/'))return Response.json({alias:'clara-os-recette.vercel.app',projectId:mode==='ok-null'?null:mode==='alias-project'?'foreign':'prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz',deploymentId:'dpl_existing',redirect:mode==='alias-redirect'?'https://os.melodie.digital':null});
-   if(path==='/v13/deployments/dpl_existing')return Response.json({id:'dpl_existing',projectId:'prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz',ownerId:'team_0BeqOAO8t5oDEBdzHHdekcxv',target:mode==='alias-target'?'production':'preview',readyState:'READY',customEnvironment:{id:env,slug:'clara-os-recette'}});
+   if(path.startsWith('/v4/aliases/')||path.startsWith('/v13/deployments/'))assert.fail('No Deployment Alias prerequisite is allowed');
+   if(path.includes('/domains/'))return Response.json({name:mode==='project-domain-name'?'os.melodie.digital':'clara-os-recette.vercel.app',projectId:mode==='project-domain-foreign'?'foreign':'prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz',verified:mode!=='project-domain-unverified',redirect:mode==='project-domain-redirect'?'https://os.melodie.digital':null,customEnvironmentId:mode==='ok-null'?null:mode==='project-domain-environment'?'foreign':env});
    if(path.includes('/endpoints'))return Response.json({endpoints:[{host:'ep-aged-forest-b2wayach.c-6.eu-central-1.aws.neon.tech',branch_id:mode==='branch'?'main':'br-crimson-feather-b2zr00sf'}]});
    if(path.endsWith('/custom-environments'))return Response.json({environments:[{id:mode==='target'?'foreign':env,slug:'clara-os-recette'}]});
-   if(path.endsWith('/domains'))return Response.json({domains:[{name:mode==='domain'?'os.melodie.digital':'clara-os-recette.vercel.app'}]});
+   if(path.includes('/domains/'))return {name:'clara-os-recette.vercel.app',projectId:'prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz',verified:true,customEnvironmentId:env};
+ if(path.endsWith('/domains'))return Response.json({domains:[{name:mode==='domain'?'os.melodie.digital':'clara-os-recette.vercel.app'}]});
    if(path.endsWith('/env')){
     const envs=['DATABASE_URL','CLARA_RECETTE_NEON_HOST','CLARA_RECETTE_NEON_BRANCH_ID','CLARA_RECETTE_MODE','GOOGLE_CLIENT_ID','GOOGLE_CLIENT_SECRET','CLARA_AUTH_GOOGLE_REDIRECT_URI','CLARA_AUTH_APP_ORIGIN'].map(key=>({key,type:'sensitive',customEnvironmentIds:[mode==='scope'?'foreign':env]}));
     if(mode==='google-missing')envs.splice(envs.findIndex(e=>e.key==='GOOGLE_CLIENT_ID'),1);
@@ -42,19 +43,19 @@ test('metadata: exact project, target, all four scoped variables and authorized 
  }
 });
 
-// Seven read endpoints intentionally remain unchanged. Only the error loses its ambiguity.
+// Preflight uses the verified Project Domain; Deployment Alias is checked after READY.
 const metadataPaths=new Map([
  ['/v9/projects/prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz','VERCEL_PROJECT'],
  ['/projects/prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz/custom-environments','VERCEL_CUSTOM_ENVIRONMENT'],
  ['/v10/projects/prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz/env','VERCEL_BINDINGS'],
  ['/v9/projects/prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz/domains','VERCEL_DOMAINS'],
- ['/v4/aliases/clara-os-recette.vercel.app','VERCEL_ALIAS'],
- ['/v13/deployments/dpl_existing','VERCEL_ALIAS_DEPLOYMENT'],
+ ['/v9/projects/prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz/domains/clara-os-recette.vercel.app','VERCEL_PROJECT_DOMAIN'],
  ['/api/v2/projects/fragrant-dream-31652403/endpoints','NEON_ENDPOINTS'],
 ]);
 function metadataBody(path){
  if(path.endsWith('/endpoints'))return {endpoints:[{host:'ep-aged-forest-b2wayach.c-6.eu-central-1.aws.neon.tech',branch_id:'br-crimson-feather-b2zr00sf'}]};
  if(path.endsWith('/custom-environments'))return {environments:[{id:env,slug:'clara-os-recette'}]};
+ if(path.includes('/domains/'))return {name:'clara-os-recette.vercel.app',projectId:'prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz',verified:true,customEnvironmentId:env};
  if(path.endsWith('/domains'))return {domains:[{name:'clara-os-recette.vercel.app'}]};
  if(path.startsWith('/v4/aliases/'))return {alias:'clara-os-recette.vercel.app',projectId:'prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz',deploymentId:'dpl_existing'};
  if(path.startsWith('/v13/deployments/'))return {id:'dpl_existing',projectId:'prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz',ownerId:'team_0BeqOAO8t5oDEBdzHHdekcxv',target:'preview',readyState:'READY',customEnvironment:{id:env,slug:'clara-os-recette'}};
@@ -104,30 +105,19 @@ test('transport, timeout and invalid JSON do not reflect errors or trigger retri
  assert.equal(formatMetadataFailure(Error('synthetic-secret')),'METADATA_REFUSED');
 });
 
-test('alias lookup explicitly carries the verified project and team, without broader retry',async()=>{
- const project='prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz',team='team_0BeqOAO8t5oDEBdzHHdekcxv';
- const baseline=execFileSync('git',['show','d251d58f87ddadbbf379c3cad3cf8d314527954c:.github/scripts/verify-recette-metadata.mjs'],{encoding:'utf8'});
+test('verified Project Domain does not require a Deployment Alias; baseline wrongly fails on alias 404',async()=>{
+ const baseline=execFileSync('git',['show','e042ebf62ecf2ef7ae5e0fa7e3d1b86f41ae9adf:.github/scripts/verify-recette-metadata.mjs'],{encoding:'utf8'});
  const old=await import('data:text/javascript;base64,'+Buffer.from(baseline).toString('base64'));
- // Server fixture: no assertion is made that Vercel actually requires this
- // optional filter for all project-scoped tokens. The real run was not repeated.
- const makeServer=({still404=false,foreign=false}={})=>{
-  const aliasRequests=[];
-  const http=async(input,init)=>{
-   assert.equal(init.method,'GET');assert.equal(init.redirect,'error');
-   const url=new URL(input);assert.equal(url.hostname==='api.vercel.com'?url.searchParams.get('teamId'):team,team);
-   if(url.pathname.startsWith('/v4/aliases/')){
-    aliasRequests.push(url);
-    if(still404||url.searchParams.get('projectId')!==project)return new Response('',{status:404});
-    const result=metadataBody(url.pathname);if(foreign)result.projectId='foreign';return Response.json(result);
-   }
-   return Response.json(metadataBody(url.pathname));
-  };
-  return {http,aliasRequests};
+ const calls=[];
+ const http=async(input,init)=>{
+  const url=new URL(input);calls.push(url.pathname);assert.equal(init.method,'GET');assert.equal(init.redirect,'error');
+  if(url.hostname==='api.vercel.com')assert.equal(url.searchParams.get('teamId'),'team_0BeqOAO8t5oDEBdzHHdekcxv');
+  if(url.pathname.startsWith('/v4/aliases/'))return new Response('',{status:404});
+  return Response.json(metadataBody(url.pathname));
  };
- const prior=makeServer();await assert.rejects(old.verifyRecetteMetadata({vercelToken:'synthetic',neonKey:'synthetic',http:prior.http}),e=>e.message==='METADATA_ACCESS_UNAVAILABLE'&&e.stage==='VERCEL_ALIAS'&&e.kind==='HTTP'&&e.status===404);
- assert.equal(prior.aliasRequests.length,1);assert.equal(prior.aliasRequests[0].searchParams.has('projectId'),false);
- const scoped=makeServer();assert.equal(await verifyRecetteMetadata({vercelToken:'synthetic',neonKey:'synthetic',http:scoped.http}),'PASS');
- assert.equal(scoped.aliasRequests.length,1);assert.equal(scoped.aliasRequests[0].searchParams.get('projectId'),project);
- const unavailable=makeServer({still404:true});await assert.rejects(verifyRecetteMetadata({vercelToken:'synthetic',neonKey:'synthetic',http:unavailable.http}),e=>formatMetadataFailure(e)==='METADATA_ACCESS_UNAVAILABLE stage=VERCEL_ALIAS kind=HTTP http=404');assert.equal(unavailable.aliasRequests.length,1);
- const foreign=makeServer({foreign:true});await assert.rejects(verifyRecetteMetadata({vercelToken:'synthetic',neonKey:'synthetic',http:foreign.http}),/RECEPTION_ALIAS_REFUSED/);
+ await assert.rejects(old.verifyRecetteMetadata({vercelToken:'synthetic',neonKey:'synthetic',http}),e=>e.stage==='VERCEL_ALIAS'&&e.status===404);
+ calls.length=0;
+ assert.equal(await verifyRecetteMetadata({vercelToken:'synthetic',neonKey:'synthetic',http}),'PASS');
+ assert(calls.some(p=>p==='/v9/projects/prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz/domains/clara-os-recette.vercel.app'));
+ assert(!calls.some(p=>p.startsWith('/v4/aliases/')||p.startsWith('/v13/deployments/')));
 });
