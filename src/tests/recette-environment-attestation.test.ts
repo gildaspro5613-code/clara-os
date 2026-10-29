@@ -76,11 +76,11 @@ test('effective Environment attestation: fail closed before SQL; real SDK with s
   for(const m of ['ok','owner','403']){const result=await run(m);assert(['PASS','FAIL','NON ATTESTÉ'].includes(result));for(const v of [...Object.values(values),...Object.values(credentials)])assert(!result.includes(v));}
  });
 });
-test('workflow attaches readonly attestation to dedicated Environment before still-disabled deployment',()=>{
+test('workflow attaches readonly checks to dedicated Environment before conditional deployment',()=>{
  const workflow=readFileSync('.github/workflows/clara-os-independent-recette.yml','utf8');
  assert.match(workflow,/environment: clara-os-recette/);assert.match(workflow,/secrets.VERCEL_RECETTE_TOKEN/);assert.match(workflow,/secrets.NEON_API_KEY/);
  assert(workflow.indexOf('id: metadata_preflight')<workflow.indexOf('name: Deploy only custom'));
  assert.match(workflow,/path: .recette-controller/);assert.match(workflow,/ref: \$\{\{ github.sha \}\}/);
- assert.match(workflow,/writesAuthorized:false/);assert.match(workflow,/if: \$\{\{ false \}\}/);assert.match(workflow,/verify-recette-ci.mjs/);
+ assert.match(workflow,/writesAuthorized:true/);assert.match(workflow,/inputs.verify_only == false/);assert.match(workflow,/verify-recette-ci.mjs/);
  const script=readFileSync('src/scripts/attest-recette-environment.mts','utf8');assert(!script.includes('console.error'));assert(!script.includes('DATABASE_URL'));
 });

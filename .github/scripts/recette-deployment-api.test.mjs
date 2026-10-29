@@ -66,7 +66,7 @@ function harness({project,environment,create,poll,failPath,failStatus=403,failMe
  };
  return {calls,events,run:()=>deployRecette({token:'synthetic-restricted',http,git,wait:async()=>{},emit:e=>events.push(e),writesAuthorized:true,gateGit,assignStableAlias})};
 }
-test('updated source and stable alias remain write-locked; verification is the default',()=>{
+test('updated source and stable alias activate only after manual request, CI and metadata',()=>{
  const config=yaml.load(workflow);
  assert.equal(config.on.workflow_dispatch.inputs.verify_only.default,true);
  assert.equal(config.jobs.deploy.environment,expected.slug);
@@ -74,7 +74,7 @@ test('updated source and stable alias remain write-locked; verification is the d
  assert.match(workflow,/secrets.VERCEL_RECETTE_TOKEN/);assert(!workflow.includes('secrets.VERCEL_TOKEN'));
  assert(workflow.includes('test "${{ github.run_attempt }}" = "1"'));
  const deployStep=config.jobs.deploy.steps.find(s=>s.name.startsWith('Deploy only custom'));
- assert.equal(deployStep.if,'${{ false }}');assert.match(deployStep.run,/writesAuthorized:false/);
+ assert.equal(deployStep.if,"${{ inputs.verify_only == false && steps.metadata_preflight.outcome == 'success' }}");assert.match(deployStep.run,/writesAuthorized:true/);assert.match(deployStep.run,/assignStableAlias:true/);
  assert(workflow.includes('verify-recette-ci.mjs'));assert(workflow.includes('verify-recette-metadata.mjs'));
  assert.equal(config.permissions.checks,'read');assert.equal(config.permissions.statuses,'read');
  assert(workflow.includes('/v2/files'));assert(!workflow.includes('config.crons = []'));
@@ -313,3 +313,11 @@ test('foreign alias owner, concurrent reassignment and alias 403 stop without re
 });
 
 test('nullable alias project ID is resolved through its verified deployment, never assumed',async()=>{const h=harness({assignStableAlias:true,aliasProject:null});assert.equal((await h.run()).stableUrl,'https://clara-os-recette.vercel.app');assert(h.calls.some(c=>c.path==='/v13/deployments/dpl_previous'));});
+
+test('previous authorization must have a known terminal result before the new source attempt',async()=>{
+ const old=state=>[{meta:{recetteAttempt:'pr219-20261029-one-build-attestation'},state}];
+ for(const state of ['BUILDING','QUEUED',undefined]){
+  const h=harness({previous:old(state)});await assert.rejects(h.run(),/PREVIOUS_ATTEMPT_NOT_TERMINAL_NO_RETRY/);assert(h.calls.every(c=>c.method==='GET'));
+ }
+ const h=harness({previous:old('READY')});assert.equal((await h.run()).event,'READY');
+});
