@@ -40,6 +40,7 @@ function harness({project,environment,create,poll,failPath,failStatus=403,failMe
   if(url.pathname==='/projects/'+expected.project+'/custom-environments') return Response.json({environments:environment??[{id:expected.environment,slug:expected.slug}]});
   if(url.pathname==='/v6/deployments')return Response.json({deployments:previous});
   if(url.pathname==='/v4/aliases/clara-os-recette.vercel.app'){
+   assert.equal(url.searchParams.get('projectId'),expected.project);
    aliasReads++;return Response.json({alias:'clara-os-recette.vercel.app',projectId:aliasProject,deploymentId:aliasRace&&aliasReads>1?'dpl_other':mappedAlias});
   }
   if(url.pathname.endsWith('/aliases')&&init.method==='POST'){

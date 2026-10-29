@@ -42,8 +42,10 @@ export async function verifyRecetteMetadata({vercelToken,neonKey,http=fetch}){
  }
  const domains=await read('/v9/projects/'+project+'/domains','VERCEL_DOMAINS');
  if(!Array.isArray(domains.domains)||domains.pagination?.next||domains.domains.some(d=>!/^clara-os-recette(?:-[a-z0-9-]+)?\.vercel\.app$/.test(d.name??'')))throw Error('PROJECT_DOMAINS_REFUSED');
- // Resolve the one stable origin; no alias or domain is created/reassigned here.
- const alias=await read('/v4/aliases/clara-os-recette.vercel.app','VERCEL_ALIAS');
+ // Resolve only within the independently verified project (official optional projectId filter).
+ // A 404 remains a refusal; never retry with a broader/global lookup.
+ // No alias or domain is created/reassigned here.
+ const alias=await read('/v4/aliases/clara-os-recette.vercel.app?projectId='+project,'VERCEL_ALIAS');
  if(alias.alias!=='clara-os-recette.vercel.app'||(alias.projectId!=null&&alias.projectId!==project)||alias.redirect||!/^dpl_[A-Za-z0-9]+$/.test(alias.deploymentId??''))throw Error('RECEPTION_ALIAS_REFUSED');
  const current=await read('/v13/deployments/'+alias.deploymentId,'VERCEL_ALIAS_DEPLOYMENT');
  if(current.id!==alias.deploymentId||current.projectId!==project||current.ownerId!==team||current.target==='production'||current.readyState!=='READY'||

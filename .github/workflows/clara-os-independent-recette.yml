@@ -305,7 +305,7 @@ jobs:
 
             let oldAlias;
             if (assignStableAlias) {
-              oldAlias = await call('/v4/aliases/clara-os-recette.vercel.app');
+              oldAlias = await call('/v4/aliases/clara-os-recette.vercel.app?projectId=' + expected.project);
               if (oldAlias.alias !== 'clara-os-recette.vercel.app' || (oldAlias.projectId != null && oldAlias.projectId !== expected.project) || oldAlias.redirect || !/^dpl_[A-Za-z0-9]+$/.test(oldAlias.deploymentId ?? '')) refuse('STABLE_ALIAS_IDENTITY_REFUSED');
               const oldTarget = await call('/v13/deployments/' + oldAlias.deploymentId);
               if (oldTarget.id !== oldAlias.deploymentId || oldTarget.projectId !== expected.project || oldTarget.ownerId !== expected.team || oldTarget.target === 'production' || oldTarget.readyState !== 'READY' || oldTarget.customEnvironment?.id !== expected.environment || oldTarget.customEnvironment?.slug !== expected.slug) refuse('STABLE_ALIAS_IDENTITY_REFUSED');
@@ -344,10 +344,10 @@ jobs:
                 const aliases = await call('/v2/deployments/' + identity.id + '/aliases');
                 if (!Array.isArray(aliases.aliases) || aliases.pagination?.next || aliases.aliases.some(a => !/^clara-os-recette(?:-[a-z0-9-]+)?\.vercel\.app$/.test(a.alias ?? ''))) refuse('DEPLOYMENT_ALIASES_REFUSED_NO_RETRY');
                 if (assignStableAlias) {
-                  const before = await call('/v4/aliases/clara-os-recette.vercel.app');
+                  const before = await call('/v4/aliases/clara-os-recette.vercel.app?projectId=' + expected.project);
                   if ((before.projectId != null && before.projectId !== expected.project) || before.deploymentId !== oldAlias.deploymentId || before.redirect) refuse('STABLE_ALIAS_CHANGED_NO_RETRY');
                   await call('/v2/deployments/' + identity.id + '/aliases',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({alias:'clara-os-recette.vercel.app'})});
-                  const after = await call('/v4/aliases/clara-os-recette.vercel.app');
+                  const after = await call('/v4/aliases/clara-os-recette.vercel.app?projectId=' + expected.project);
                   if ((after.projectId != null && after.projectId !== expected.project) || after.deploymentId !== identity.id || after.alias !== 'clara-os-recette.vercel.app' || after.redirect) refuse('STABLE_ALIAS_OUTCOME_UNCERTAIN_NO_RETRY');
                 }
                 const result = {event:'READY',...identity,environment:expected.slug,...(assignStableAlias?{stableUrl:'https://clara-os-recette.vercel.app'}:{})};emit(result);return result;

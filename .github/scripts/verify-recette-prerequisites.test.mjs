@@ -103,3 +103,31 @@ test('transport, timeout and invalid JSON do not reflect errors or trigger retri
  assert.equal(formatMetadataFailure(untrusted),'METADATA_ACCESS_UNAVAILABLE stage=UNKNOWN kind=UNKNOWN');
  assert.equal(formatMetadataFailure(Error('synthetic-secret')),'METADATA_REFUSED');
 });
+
+test('alias lookup explicitly carries the verified project and team, without broader retry',async()=>{
+ const project='prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz',team='team_0BeqOAO8t5oDEBdzHHdekcxv';
+ const baseline=execFileSync('git',['show','d251d58f87ddadbbf379c3cad3cf8d314527954c:.github/scripts/verify-recette-metadata.mjs'],{encoding:'utf8'});
+ const old=await import('data:text/javascript;base64,'+Buffer.from(baseline).toString('base64'));
+ // Server fixture: no assertion is made that Vercel actually requires this
+ // optional filter for all project-scoped tokens. The real run was not repeated.
+ const makeServer=({still404=false,foreign=false}={})=>{
+  const aliasRequests=[];
+  const http=async(input,init)=>{
+   assert.equal(init.method,'GET');assert.equal(init.redirect,'error');
+   const url=new URL(input);assert.equal(url.hostname==='api.vercel.com'?url.searchParams.get('teamId'):team,team);
+   if(url.pathname.startsWith('/v4/aliases/')){
+    aliasRequests.push(url);
+    if(still404||url.searchParams.get('projectId')!==project)return new Response('',{status:404});
+    const result=metadataBody(url.pathname);if(foreign)result.projectId='foreign';return Response.json(result);
+   }
+   return Response.json(metadataBody(url.pathname));
+  };
+  return {http,aliasRequests};
+ };
+ const prior=makeServer();await assert.rejects(old.verifyRecetteMetadata({vercelToken:'synthetic',neonKey:'synthetic',http:prior.http}),e=>e.message==='METADATA_ACCESS_UNAVAILABLE'&&e.stage==='VERCEL_ALIAS'&&e.kind==='HTTP'&&e.status===404);
+ assert.equal(prior.aliasRequests.length,1);assert.equal(prior.aliasRequests[0].searchParams.has('projectId'),false);
+ const scoped=makeServer();assert.equal(await verifyRecetteMetadata({vercelToken:'synthetic',neonKey:'synthetic',http:scoped.http}),'PASS');
+ assert.equal(scoped.aliasRequests.length,1);assert.equal(scoped.aliasRequests[0].searchParams.get('projectId'),project);
+ const unavailable=makeServer({still404:true});await assert.rejects(verifyRecetteMetadata({vercelToken:'synthetic',neonKey:'synthetic',http:unavailable.http}),e=>formatMetadataFailure(e)==='METADATA_ACCESS_UNAVAILABLE stage=VERCEL_ALIAS kind=HTTP http=404');assert.equal(unavailable.aliasRequests.length,1);
+ const foreign=makeServer({foreign:true});await assert.rejects(verifyRecetteMetadata({vercelToken:'synthetic',neonKey:'synthetic',http:foreign.http}),/RECEPTION_ALIAS_REFUSED/);
+});
