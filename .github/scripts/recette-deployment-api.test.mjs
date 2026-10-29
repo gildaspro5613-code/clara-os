@@ -15,6 +15,7 @@ writeFileSync(join(temporary,'driver.mjs'),code);
 const {deployRecette,verifyApprovedSource,approvedFiles,expected,gatePaths}=await import(pathToFileURL(join(temporary,'driver.mjs')).href);
 test.after(()=>rmSync(temporary,{recursive:true,force:true}));
 const gateGit=args=>execFileSync('git',args,{maxBuffer:32*1024*1024,stdio:['ignore','pipe','pipe']});
+const reviewedBaseline={uid:expected.reviewedDeployment,state:'READY',meta:{githubCommitSha:expected.reviewedSourceSha}};
 const link={type:'github',repoId:1316164838,org:'gildaspro5613-code',repo:'clara-os'};
 const contents=new Map([['package.json',Buffer.from('{}')],['package-lock.json',Buffer.from('{}')],['vercel.json',execFileSync('git',['show',expected.sha+':vercel.json'])],['public/binary.bin',Buffer.from([0,255,1,0])]]);
 // Transport is simulated; source provenance and Production preservation are tested against Git below.
@@ -27,7 +28,7 @@ function fakeGit(args) {
  if(args[0]==='diff') return Buffer.from('vercel.json\n');
  throw Error('UNEXPECTED_GIT_OPERATION');
 }
-function harness({project,environment,create,poll,failPath,failStatus=403,failMethod,timeout=false,git=fakeGit,failUploadAt=1,uploadStatus=200,createMalformed=false,previous=[],aliases=[],assignStableAlias=false,domainRace=false,aliasProject=expected.project,domain={},aliasInitiallyAbsent=false,aliasStillMissing=false}={}) {
+function harness({project,environment,create,poll,failPath,failStatus=403,failMethod,timeout=false,git=fakeGit,failUploadAt=1,uploadStatus=200,createMalformed=false,previous=[reviewedBaseline],aliases=[],assignStableAlias=false,domainRace=false,aliasProject=expected.project,domain={},aliasInitiallyAbsent=false,aliasStillMissing=false}={}) {
  const calls=[],events=[];let createdMeta,mappedAlias=aliasInitiallyAbsent?null:'dpl_previous',domainReads=0;
  const ready={id:'dpl_synthetic',url:'clara-os-recette-synthetic-melodie-digital.vercel.app',ownerId:expected.team,projectId:expected.project,
   customEnvironment:{id:expected.environment,slug:expected.slug},meta:{githubCommitSha:expected.sha},readyState:'READY'};
@@ -71,7 +72,7 @@ function harness({project,environment,create,poll,failPath,failStatus=403,failMe
  };
  return {calls,events,run:()=>deployRecette({token:'synthetic-restricted',http,git,wait:async()=>{},emit:e=>events.push(e),writesAuthorized:true,gateGit,assignStableAlias})};
 }
-test('interrupted operation remains write-locked pending review and new authorization',()=>{
+test('reviewed activation requires exact authorization, controller SHA, CI and metadata',()=>{
  const config=yaml.load(workflow);
  assert.equal(config.on.workflow_dispatch.inputs.verify_only.default,true);
  assert.equal(config.jobs.deploy.environment,expected.slug);
@@ -79,11 +80,13 @@ test('interrupted operation remains write-locked pending review and new authoriz
  assert.match(workflow,/secrets.VERCEL_RECETTE_TOKEN/);assert(!workflow.includes('secrets.VERCEL_TOKEN'));
  assert(workflow.includes('test "${{ github.run_attempt }}" = "1"'));
  const deployStep=config.jobs.deploy.steps.find(s=>s.name.startsWith('Deploy only custom'));
- assert.equal(deployStep.if,'${{ false }}');assert.match(deployStep.run,/writesAuthorized:false/);assert.match(workflow,/INTERRUPTED_RUN_REVIEW_REQUIRED/);assert.match(deployStep.run,/assignStableAlias:true/);
+ assert.equal(deployStep.if,"${{ inputs.verify_only == false && steps.release_authorization.outcome == 'success' && steps.metadata_preflight.outcome == 'success' }}");assert.match(deployStep.run,/writesAuthorized:true/);
+ const gate=config.jobs.deploy.steps.find(s=>s.id==='release_authorization');assert.match(gate.run,/APPROVED_CONTROLLER_SHA_MISMATCH/);assert(gate.run.includes(expected.attempt));
+ assert.equal(config.on.workflow_dispatch.inputs.release_authorization.default,'');assert.equal(config.on.workflow_dispatch.inputs.controller_sha.default,'');assert.match(deployStep.run,/assignStableAlias:true/);
  assert(workflow.includes('verify-recette-ci.mjs'));assert(workflow.includes('verify-recette-metadata.mjs'));
  assert.equal(config.permissions.checks,'read');assert.equal(config.permissions.statuses,'read');
  assert(workflow.includes('/v2/files'));assert(!workflow.includes('config.crons = []'));
- assert(!workflow.includes('gitSource'));assert(!workflow.includes('gitAccessToken'));assert(!workflow.includes('vercel deploy'));
+ assert(!workflow.includes('gitAccessToken'));assert(!workflow.includes('vercel deploy'));
 });
 // YAML parsing does not execute workflow steps.
 import yaml from 'js-yaml';
@@ -323,7 +326,7 @@ test('foreign alias result, concurrent domain change and alias 403 stop without 
 test('nullable alias project ID still requires the exact new verified deployment',async()=>{const h=harness({assignStableAlias:true,aliasProject:null});assert.equal((await h.run()).stableUrl,'https://clara-os-recette.vercel.app');assert(!h.calls.some(c=>c.path==='/v13/deployments/dpl_previous'));});
 
 test('previous authorization must have a known terminal result before the new source attempt',async()=>{
- const old=state=>[{meta:{recetteAttempt:'pr219-20261029-one-build-attestation'},state}];
+ const old=state=>[reviewedBaseline,{meta:{recetteAttempt:'pr219-20261029-one-build-attestation'},state}];
  for(const state of ['BUILDING','QUEUED',undefined]){
   const h=harness({previous:old(state)});await assert.rejects(h.run(),/PREVIOUS_ATTEMPT_NOT_TERMINAL_NO_RETRY/);assert(h.calls.every(c=>c.method==='GET'));
  }
@@ -347,4 +350,17 @@ test('alias still returning 404 after assignment prevents READY, without retry o
  const h=harness({assignStableAlias:true,aliasInitiallyAbsent:true,aliasStillMissing:true});await assert.rejects(h.run(),/METADATA_HTTP_404/);
  assert(!h.events.some(e=>e.event==='READY'));assert.equal(h.calls.filter(c=>c.path==='/v4/aliases/clara-os-recette.vercel.app').length,1);
  assert.equal(h.calls.filter(c=>c.path==='/v2/deployments/dpl_synthetic/aliases'&&c.method==='POST').length,1);
+});
+
+test('reviewed baseline changes, missing source or already-delivered application stop before every POST',async()=>{
+ for(const previous of [[],[{...reviewedBaseline,uid:'dpl_other'}],[{...reviewedBaseline,state:'BUILDING'}],[{...reviewedBaseline,meta:{}}],[{...reviewedBaseline,meta:{githubCommitSha:'f'.repeat(40)}}],[reviewedBaseline,{meta:{githubCommitSha:expected.sha}}],[reviewedBaseline,{meta:{recetteAttempt:'pr219-c203cd7-stable-oauth-once'}}]]){
+  const h=harness({previous});await assert.rejects(h.run());assert(h.calls.every(c=>c.method==='GET'));
+ }
+});
+test('public operation selector alone never replaces the approved immutable workflow revision',()=>{
+ const gate=yaml.load(workflow).jobs.deploy.steps.find(s=>s.id==='release_authorization');
+ for(const [REQUESTED_RELEASE,APPROVED_CONTROLLER_SHA,ACTUAL_CONTROLLER_SHA,success] of [[expected.attempt,'a'.repeat(40),'a'.repeat(40),true],['','a'.repeat(40),'a'.repeat(40),false],[expected.attempt,'a'.repeat(40),'b'.repeat(40),false],[expected.attempt,'','a'.repeat(40),false]]){
+  const run=()=>execFileSync('bash',['-c',gate.run],{encoding:'utf8',env:{PATH:process.env.PATH,REQUESTED_RELEASE,APPROVED_CONTROLLER_SHA,ACTUAL_CONTROLLER_SHA}});
+  if(success)assert.doesNotThrow(run);else assert.throws(run);
+ }
 });
