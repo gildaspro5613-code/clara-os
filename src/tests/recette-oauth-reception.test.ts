@@ -14,7 +14,7 @@ test('OAuth reception: actual injected configuration and pre-existing identity o
   return Response.json({results:[{fields:[{name:'enrolled_google_member',dataTypeID:16},{name:'sign_in_permissions',dataTypeID:16}],rows:[[mode==='no-identity'?'f':'t',mode==='permissions'?'f':'t']]}]});
  };
  await t.test('wrong target/database, Production and mismatching OAuth origin fail before SQL',async()=>{
-  for(const change of [{VERCEL_ENV:'production'},{CLARA_RECETTE_NEON_BRANCH_ID:'main'},{POSTGRES_URL:''},{CLARA_AUTH_APP_ORIGIN:'https://os.melodie.digital'},{CLARA_AUTH_GOOGLE_REDIRECT_URI:'https://os.melodie.digital/api/auth/google/callback'},{CLARA_AUTH_APP_ORIGIN:recetteOAuthOrigin+'/'}])assert.equal(await attestRecetteOAuthReception({...env,...change}),'FAIL');
+  for(const change of [{VERCEL_ENV:'production'},{CLARA_RECETTE_NEON_BRANCH_ID:'main'},{POSTGRES_URL:''},{CLARA_AUTH_APP_ORIGIN:'https://os.melodie.digital'},{CLARA_AUTH_GOOGLE_REDIRECT_URI:'https://os.melodie.digital/api/auth/google/callback'},{CLARA_AUTH_APP_ORIGIN:recetteOAuthOrigin+'/?unsafe=1'}])assert.equal(await attestRecetteOAuthReception({...env,...change}),'FAIL');
   assert.equal(calls,0);
  });
  await t.test('missing client reference or secret is not attested and never falls back',async()=>{
@@ -22,6 +22,7 @@ test('OAuth reception: actual injected configuration and pre-existing identity o
  });
  await t.test('positive membership, absent/revoked membership and missing permissions are distinguished without identifiers',async()=>{
   assert.equal(await attestRecetteOAuthReception(env),'PASS');
+  assert.equal(await attestRecetteOAuthReception({...env,CLARA_AUTH_APP_ORIGIN:recetteOAuthOrigin+'/'}),'PASS');
   mode='no-identity';assert.equal(await attestRecetteOAuthReception(env),'FAIL');
   mode='permissions';assert.equal(await attestRecetteOAuthReception(env),'FAIL');
   mode='network';assert.equal(await attestRecetteOAuthReception(env),'NON ATTESTÉ');

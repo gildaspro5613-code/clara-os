@@ -12,7 +12,9 @@ export async function attestRecetteOAuthReception(env:NodeJS.ProcessEnv,onDiagno
  if(binding==='FAIL')return result('FAIL');if(binding!=='OK')return result('NON ATTESTÉ');
  stage='GOOGLE_CONFIGURATION';
  if(!env.GOOGLE_CLIENT_ID?.trim()||!env.GOOGLE_CLIENT_SECRET?.trim())return result('NON ATTESTÉ');
- if(env.CLARA_AUTH_APP_ORIGIN!==recetteOAuthOrigin||env.CLARA_AUTH_GOOGLE_REDIRECT_URI!==recetteOAuthOrigin+'/api/auth/google/callback')return result('FAIL');
+ try{
+  if(new URL(env.CLARA_AUTH_APP_ORIGIN??'').href!==recetteOAuthOrigin+'/'||new URL(env.CLARA_AUTH_GOOGLE_REDIRECT_URI??'').href!==recetteOAuthOrigin+'/api/auth/google/callback')return result('FAIL');
+ }catch{return result('FAIL');}
  stage='EXISTING_GOOGLE_MEMBERSHIP';
  try{
   const sql=neon(env.DATABASE_URL!,{fetchOptions:{redirect:'error',signal:AbortSignal.timeout(15000)}});
