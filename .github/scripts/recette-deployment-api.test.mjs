@@ -15,7 +15,7 @@ writeFileSync(join(temporary,'driver.mjs'),code);
 const {deployRecette,verifyApprovedSource,approvedFiles,expected,gatePaths}=await import(pathToFileURL(join(temporary,'driver.mjs')).href);
 test.after(()=>rmSync(temporary,{recursive:true,force:true}));
 const gateGit=args=>execFileSync('git',args,{maxBuffer:32*1024*1024,stdio:['ignore','pipe','pipe']});
-const reviewedBaseline={uid:expected.reviewedDeployment,state:'READY',meta:{githubCommitSha:expected.reviewedSourceSha}};
+const reviewedBaseline={uid:expected.reviewedDeployment,state:expected.reviewedState,meta:{githubCommitSha:expected.reviewedSourceSha,recetteAttempt:expected.reviewedAttempt}};
 const link={type:'github',repoId:1316164838,org:'gildaspro5613-code',repo:'clara-os'};
 const contents=new Map([['package.json',Buffer.from('{}')],['package-lock.json',Buffer.from('{}')],['vercel.json',execFileSync('git',['show',expected.sha+':vercel.json'])],['public/binary.bin',Buffer.from([0,255,1,0])]]);
 // Transport is simulated; source provenance and Production preservation are tested against Git below.
@@ -362,5 +362,23 @@ test('public operation selector alone never replaces the approved immutable work
  for(const [REQUESTED_RELEASE,APPROVED_CONTROLLER_SHA,ACTUAL_CONTROLLER_SHA,success] of [[expected.attempt,'a'.repeat(40),'a'.repeat(40),true],['','a'.repeat(40),'a'.repeat(40),false],[expected.attempt,'a'.repeat(40),'b'.repeat(40),false],[expected.attempt,'','a'.repeat(40),false]]){
   const run=()=>execFileSync('bash',['-c',gate.run],{encoding:'utf8',env:{PATH:process.env.PATH,REQUESTED_RELEASE,APPROVED_CONTROLLER_SHA,ACTUAL_CONTROLLER_SHA}});
   if(success)assert.doesNotThrow(run);else assert.throws(run);
+ }
+});
+test('invitation release pins the reviewed application and never overlays its enrollment attestation with the old gate',()=>{
+ assert.equal(expected.sha,'d8d151516f213f1cb80ff0815745651190bb88df');assert.equal(expected.gateSha,expected.sha);
+ const git=args=>execFileSync('git',args,{maxBuffer:32*1024*1024,stdio:['ignore','pipe','pipe']});
+ const files=approvedFiles(args=>args[0]==='remote'?fakeGit(args):args[0]==='rev-parse'&&args[1]==='HEAD'?Buffer.from(expected.sha):git(args),git);
+ for(const path of ['src/lib/auth/recette-google-enrollment.ts','src/app/api/auth/google/enroll/route.ts','src/app/auth/recette-enrollment/page.tsx','src/app/api/auth/google/callback/route.ts','src/scripts/attest-recette-auth.mts']){
+  assert(files.find(f=>f.file===path)?.data.equals(git(['show',expected.sha+':'+path])));
+ }
+ assert(files.find(f=>f.file==='src/scripts/attest-recette-auth.mts').data.toString().includes('ATTESTATION_MODE=ONE_TIME_GOOGLE_ENROLLMENT'));
+});
+test('previous consumed authorization is historical only for the exact reviewed ERROR; the new one is never reusable',async()=>{
+ for(const previous of [
+  [reviewedBaseline,{uid:'dpl_foreign',state:'ERROR',meta:{recetteAttempt:expected.reviewedAttempt}}],
+  [{...reviewedBaseline,state:'READY'}],
+  [reviewedBaseline,{meta:{recetteAttempt:expected.attempt}}],
+ ]){
+  const h=harness({previous});await assert.rejects(h.run());assert(h.calls.every(c=>c.method==='GET'));
  }
 });

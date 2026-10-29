@@ -1,6 +1,42 @@
 # Enrôlement Google Recette — opération administrative unique
 
-Préparation logicielle seulement. Aucune invitation réelle activée, aucune écriture distante, aucun déploiement. L'autorisation de livraison précédente reste consommée. Le workflow de livraison conserve ses références et verrous : il n'est ni lancé ni réarmé par ce correctif.
+Préparation logicielle seulement. Aucune invitation réelle activée, aucune écriture distante, aucun déploiement. L'autorisation de livraison précédente reste consommée. Les références de la prochaine livraison sont préparées ci-dessous, sans lancement et sans réutilisation de l'ancienne autorisation.
+
+## Séquence finale préparée — aucune exécution autorisée par ce document
+
+Application et fichiers d'attestation épinglés ensemble : `d8d151516f213f1cb80ff0815745651190bb88df` (cinq CI vertes confirmées par le propriétaire). Parent `7ad1008ef34b46fb65d2f7261705f1d5dffba9c9`, arbre `d090aa5eabc37c7c66e3abeb2291b439a15ec2dc`. L'ancien script d'attestation figé n'est plus superposé à cette application. Le contrôleur de livraison constitue une révision distincte, dont le SHA exact et les cinq CI doivent aussi être approuvés.
+
+1. **Préparer hors ligne** l'invitation avec la commande ci-dessous, sur le poste administratif, à partir du fichier privé contenant l'adresse Google primaire explicitement autorisée. Conserver les deux fichiers hors GitHub. Aucune variable fournisseur supplémentaire : les quatre variables Google, les bindings Vercel/Neon et les deux secrets GitHub existants restent inchangés.
+2. **Après GO administratif distinct**, sélectionner dans le connecteur Neon `fragrant-dream-31652403` → `br-crimson-feather-b2zr00sf` → `neondb`, vérifier cette sélection et exécuter une seule fois le fichier généré `authorize.sql`. Il insère uniquement l'autorisation privée, pas l'utilisateur. Ne jamais coller `invitation.txt` dans le connecteur, les logs ou une conversation. Le ticket est remis directement au propriétaire par le canal privé.
+3. **Après GO distinct pour une seule livraison**, lancer le workflow existant sur `fix/clara-os-historical-interface-20261028` avec les entrées ci-dessous, puis approuver l'Environment protégé sans délai. Activer l'invitation et lancer/approuver la livraison dans une même fenêtre opérationnelle : durée totale maximale 30 minutes, connexion du propriétaire comprise. Les cinq CI du contrôleur exact doivent être vertes **avant activation SQL**.
+
+```text
+verify_only=false
+release_authorization=pr219-d8d1515-google-invitation-once
+controller_sha=<SHA complet de la révision de préparation approuvée>
+```
+
+Équivalent CLI, à exécuter seulement après ce GO (remplacer le SHA, ne pas calculer automatiquement un autre HEAD) :
+
+```bash
+CONTROLLER_SHA_APPROUVE='REMPLACER_PAR_LE_SHA_COMPLET_APPROUVE'
+gh workflow run clara-os-independent-recette.yml \
+  --repo gildaspro5613-code/clara-os \
+  --ref fix/clara-os-historical-interface-20261028 \
+  -f verify_only=false \
+  -f release_authorization=pr219-d8d1515-google-invitation-once \
+  -f controller_sha="$CONTROLLER_SHA_APPROUVE"
+```
+
+Le domaine est uniquement `clara-os-recette.vercel.app`, projet `prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz`, équipe `team_0BeqOAO8t5oDEBdzHHdekcxv`, custom Environment `env_T6nc8Pd4KLG9qTbvTM9ZsOn4T4YM`. Les crons restent retirés seulement de l'artefact. Les attestations réelles avant Next.js et la lecture de l'affectation de l'alias après READY restent obligatoires.
+
+Le point de référence de la revue est le déploiement **ERROR** `dpl_7M8cFWgwFXV56dS9u4YrWpw1pAtD`, application c203cd7 (preuve fournie par le propriétaire). Son ancien marqueur `pr219-c203cd7-after-run24-once` reste consommé ; il n'est accepté comme historique que pour cet ID et cet état exacts. Toute autre occurrence de cette ancienne autorisation, un nouvel état de référence, une livraison d8d1515 déjà présente ou le nouveau marqueur déjà consommé bloque avant tout upload. Aucune lecture distante nouvelle n'est prétendue ici : le workflow relira lui-même l'état effectif.
+
+4. **Après READY, SHA et alias attestés**, le propriétaire ouvre la page d'invitation indiquée plus bas, saisit l'invitation privée et choisit son compte habituel. Le callback crée alors atomiquement le workspace, l'utilisateur réel, l'identité vérifiée et le rôle `member`. Le SELECT post-opération ci-dessous doit ensuite retourner trois booléens vrais. La connexion Google ordinaire sert aux visites suivantes.
+
+Tout échec, timeout, invitation expirée ou résultat incertain impose l'arrêt. Ne relancer aucun run et ne supprimer/réinitialiser ni l'ancienne autorisation de livraison ni l'invitation. Les opérations SQL et Vercel décrites restent soumises aux GO distincts ; aucune n'a été exécutée lors de cette préparation.
+
+Validation de cette actualisation des références : 75 contrôles transport/métadonnées et 9 contrôles d'attestation PASS, zéro échec/ignoré ; `git diff --check` PASS. Les tests lisent les vrais fichiers du SHA approuvé et simulent les transports distants. Aucun code applicatif d8d1515 modifié, aucune campagne métier rejouée. Les cinq CI du contrôleur de préparation restent à confirmer après publication, indépendamment des cinq CI d8d1515 déjà confirmées par le propriétaire.
 
 ## Parcours préparé
 
@@ -27,7 +63,7 @@ Ce préparateur n'utilise aucune connexion SQL ni aucun fournisseur. Il produit 
 ## Deux opérations nécessitant un nouveau GO
 
 1. **Activation administrative** : vérifier dans les métadonnées du connecteur existant la cible `fragrant-dream-31652403` / `br-crimson-feather-b2zr00sf` / `neondb`, puis exécuter une fois `authorize.sql` sous autorisation explicite. Un nom SQL `neondb` ne prouve pas la branche. L'opération insère uniquement une autorisation d'authentification ; aucun utilisateur, workspace ou droit SQL n'est provisionné à ce stade. Aucune extension automatique de privilèges : un refus impose l'arrêt. Avant activation, qualifier les privilèges SELECT/INSERT des tables auth et UPDATE de la table de transactions, USAGE PL/pgSQL et EXECUTE du verrou. Une éventuelle insuffisance est rapportée, sans GRANT.
-2. **Livraison volontaire unique** : approuver le nouveau SHA applicatif et le contrôleur exact après CI ; adapter sous cette autorisation les références de source et d'artefact du workflow existant (c203cd7 et les fichiers d'attestation figés ne contiennent pas ce correctif). Ne pas réutiliser l'ancien marqueur consommé. Les contrôles Vercel/Neon avant Next.js restent bloquants. L'attestation d'identité existante reste inchangée ; en son absence, le build n'est admissible que si une invitation unique, non consommée et encore valide ainsi que tous les droits nécessaires sont effectivement lus. Le log distingue alors `ATTESTATION_MODE=ONE_TIME_GOOGLE_ENROLLMENT` : cela n'atteste **pas** une identité déjà enrôlée. Erreur de lecture/configuration/binding : arrêt. Une invitation expirée ne permet plus cette exception.
+2. **Livraison volontaire unique** : approuver le SHA applicatif d8d1515 et le contrôleur exact après CI. Les références de source et d'attestation sont désormais actualisées ensemble dans le workflow existant ; aucune autre adaptation logicielle n'est requise pour utiliser ce correctif. Ne pas réutiliser l'ancien marqueur consommé. Les contrôles Vercel/Neon avant Next.js restent bloquants. L'attestation d'identité existante reste inchangée ; en son absence, le build n'est admissible que si une invitation unique, non consommée et encore valide ainsi que tous les droits nécessaires sont effectivement lus. Le log distingue alors `ATTESTATION_MODE=ONE_TIME_GOOGLE_ENROLLMENT` : cela n'atteste **pas** une identité déjà enrôlée. Erreur de lecture/configuration/binding : arrêt. Une invitation expirée ne permet plus cette exception.
 
 Planifier activation et livraison ensemble pour terminer dans les 30 minutes. Si ce délai est dépassé ou si le résultat est incertain : arrêt, lecture de l'état réel et nouvelle décision administrative explicite, sans suppression/réinitialisation automatique de l'autorisation ni nouvel essai de livraison.
 
