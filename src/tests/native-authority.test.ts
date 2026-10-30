@@ -10,6 +10,7 @@ import {createNativeAuthority,nativeOperationFence,nativeFailure} from "../lib/n
 import {nativeRequest,nativeContext,nativeCommand,withNativeScope} from "../lib/native/scoped-context";
 import {fields,registryBody,sameOrigin} from "../lib/canonical/http";
 import {RegistryError,registryContext,opaque} from "../lib/canonical/registry";
+import {cockpitLanding} from '../lib/native/cockpit-landing';
 
 function compiled(file:string,modules:Record<string,unknown>){
  const exports:Record<string,unknown>={},require=createRequire(resolve(file));
@@ -67,9 +68,47 @@ test('all six native server pages return before invoking any global data loader'
   const modules:Record<string,unknown>={};let legacyCalls=0;
   for(const match of readFileSync(file,'utf8').matchAll(/from\s+["']([^"']+)["']/g))modules[match[1]]=new Proxy({},{get:()=>()=>{legacyCalls++;throw Error('Global loader reached');}});
   const locked={locked:true};modules['@/lib/native/page-fence']={nativePageFence:async()=>locked,nativePage:async()=>locked};
+  // Authentication prerequisites are not business loaders. Execute the real
+  // landing classifier with no cookie; even its workspace resolver must not run.
+  let cookieReads=0,authorityReads=0;
+  modules['next/headers']={cookies:async()=>{cookieReads++;return {toString:()=>''};}};
+  modules['@/lib/native/cockpit-landing']={cockpitLanding:(request:Request)=>cockpitLanding(request,async()=>{authorityReads++;throw Error('Anonymous authority lookup forbidden');})};
   const page=compiled(file,modules).default as(props:{searchParams:Promise<Record<string,string>>})=>Promise<unknown>;assert.equal(await page({searchParams:Promise.resolve({})}),locked);assert.equal(legacyCalls,0,file);checked++;
+  assert.equal(cookieReads,file==='src/app/page.tsx'?1:0,file);assert.equal(authorityReads,0,file);
  }
  assert.equal(checked,6);
+});
+
+test('Cockpit landing permits only authenticated presentation and never treats an invalid selected scope as a welcome',async()=>{
+ const file='src/app/page.tsx',token='A'.repeat(43),validCookie='clara_auth_session='+token;
+ for(const scenario of [
+  {name:'active member',cookie:validCookie,principal:true,welcome:true,scoped:false},
+  {name:'expired session',cookie:validCookie,principal:false,welcome:false,scoped:false},
+  {name:'revoked session',cookie:validCookie,principal:false,welcome:false,scoped:false},
+  {name:'revoked membership',cookie:validCookie,principal:false,welcome:false,scoped:false},
+  {name:'ambiguous memberships',cookie:validCookie,principal:false,welcome:false,scoped:false},
+  {name:'authority unavailable',cookie:validCookie,principal:false,welcome:false,scoped:false,unavailable:true},
+  {name:'malformed authentication',cookie:'clara_auth_session=bad',principal:false,welcome:false,scoped:false},
+  {name:'duplicate authentication',cookie:validCookie+'; '+validCookie,principal:false,welcome:false,scoped:false},
+  {name:'malformed selected scope',cookie:validCookie+'; clara_native_selection=malformed',principal:false,welcome:false,scoped:true},
+  {name:'foreign selected scope',cookie:validCookie+'; clara_native_selection='+encodeURIComponent(JSON.stringify({workspaceId:'foreign'})),principal:false,welcome:false,scoped:true},
+ ]){
+  const modules:Record<string,unknown>={};let businessCalls=0,authorityReads=0,scopeChecks=0;
+  for(const match of readFileSync(file,'utf8').matchAll(/from\s+["']([^"']+)["']/g))modules[match[1]]=new Proxy({},{get:()=>()=>{businessCalls++;throw Error('Business loader forbidden');}});
+  const locked={locked:true},Welcome=()=>{throw Error('Presentation rendering is covered by the isolated browser test');};
+  modules['next/headers']={cookies:async()=>({toString:()=>scenario.cookie})};
+  modules['@/lib/native/cockpit-landing']={cockpitLanding:(request:Request)=>cockpitLanding(request,async(received,permission)=>{
+   authorityReads++;assert.equal(received,token);assert.equal(permission,'connections:read');
+   if(scenario.unavailable)throw Error('Private authority detail');
+   return scenario.principal?{userId:'synthetic-member',workspaceId:'synthetic-workspace'}:null;
+  })};
+  modules['@/components/cockpit/WorkspaceWelcome']={default:Welcome,__esModule:true};
+  modules['@/lib/native/page-fence']={nativePageFence:async()=>locked,nativePage:async()=>{scopeChecks++;return locked;}};
+  const page=compiled(file,modules).default as()=>Promise<unknown>,result=await page();
+  if(scenario.welcome)assert.equal((result as {type:unknown}).type,Welcome,scenario.name);else assert.equal(result,locked,scenario.name);
+  assert.equal(businessCalls,0,scenario.name);assert.equal(scopeChecks,scenario.scoped?1:0,scenario.name);
+  assert.equal(authorityReads,scenario.scoped||scenario.cookie!==validCookie?0:1,scenario.name);
+ }
 });
 
 test('reopened chat and native runtime/document handlers still refuse invalid authentication before business code',async()=>{
