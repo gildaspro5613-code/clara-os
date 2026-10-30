@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import {chromium} from 'playwright';
 import {execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
-import {readFileSync} from 'node:fs';
+import {readFileSync,mkdirSync} from 'node:fs';
+import {join} from 'node:path';
 const origin=process.env.DOCUMENTS_E2E_ORIGIN,db=process.env.NATIVE_TEST_DATABASE;
 if(!origin||new URL(origin).hostname!=='127.0.0.1'||!/^native_browser_[a-f0-9]{32}$/.test(db??''))throw Error('Existing disposable native browser fixture required');
 const pg=sql=>execFileSync('docker',['exec','clara-canonical-test-postgres','psql','-U','postgres','-d',db,'-qAt','-v','ON_ERROR_STOP=1','-c',sql],{encoding:'utf8',stdio:['pipe','pipe','pipe']});
@@ -13,13 +14,19 @@ test('authenticated workspace-only Cockpit: historical shell, no business traffi
  pg(`INSERT INTO clara_auth_sessions(token_hash,user_id,expires_at) VALUES('${digest('F'.repeat(43))}','welcome-member',NOW()+INTERVAL '1 hour');INSERT INTO clara_auth_sessions(token_hash,user_id,created_at,expires_at) VALUES('${digest('G'.repeat(43))}','welcome-member',NOW()-INTERVAL '2 hours',NOW()-INTERVAL '1 hour');INSERT INTO clara_auth_sessions(token_hash,user_id,expires_at,revoked_at) VALUES('${digest('H'.repeat(43))}','welcome-member',NOW()+INTERVAL '1 hour',NOW());`);
  const browser=await chromium.launch({executablePath:process.env.DOCUMENTS_E2E_CHROMIUM,headless:true,args:['--no-sandbox']});
  try{
-  const context=await browser.newContext({ignoreHTTPSErrors:true});await context.addCookies([{name:'clara_auth_session',value:'F'.repeat(43),url:origin},{name:'NEXT_LOCALE',value:'fr',url:origin}]);
+  const context=await browser.newContext({ignoreHTTPSErrors:true,reducedMotion:'reduce'});await context.addCookies([{name:'clara_auth_session',value:'F'.repeat(43),url:origin},{name:'NEXT_LOCALE',value:'fr',url:origin}]);
   const page=await context.newPage(),requests=[];
   page.on('request',r=>{if(new URL(r.url()).pathname.startsWith('/api/'))requests.push(new URL(r.url()).pathname);});
   await page.goto(origin);await page.locator('[data-cockpit-state="no-project"]').waitFor();
   assert.equal(await page.getByRole('heading',{name:'Aucun projet sélectionné',exact:true}).count(),1);
   assert.equal(await page.locator('[data-cockpit-hero]').count(),1);assert.equal(await page.locator('[data-cockpit-state="no-project"] button, [data-cockpit-state="no-project"] input').count(),0);
   assert(!(await page.locator('body').innerText()).includes('PRIVATE_LEGACY_HISTORY'));
+  await page.locator('[data-workspace-widgets]').waitFor();
+  assert.equal(await page.locator('[data-workspace-widgets] textarea:disabled').count(),1);
+  assert.equal(await page.locator('[data-workspace-widgets] button, [data-workspace-widgets] form').count(),0);
+  for(const href of ['/missions','/conversations','/agenda','/documents','/brain','/journal'])assert.ok(await page.locator('[data-workspace-widgets] a[href="'+href+'"]').count()>0);
+  assert.equal(await page.locator('[data-workspace-widgets] a[href="/clara?intent=new-mission"]').count(),0);
+  assert.equal(await page.locator('[data-workspace-widgets] [aria-disabled="true"]').count(),2);
   await page.locator('#native-account-menu > summary').click();
   await page.getByRole('region',{name:'Contexte canonique privé',exact:true}).locator('select').nth(0).selectOption('welcome-empty');
   await page.getByRole('status').filter({hasText:'Aucun client autorisé dans cet espace.'}).waitFor();
@@ -39,9 +46,20 @@ test('authenticated workspace-only Cockpit: historical shell, no business traffi
    await context.addCookies([{name:'NEXT_LOCALE',value:locale,url:origin}]);await page.goto(origin);
    await page.getByRole('heading',{name:translations.cockpitNoProjectSelected,exact:true}).waitFor();
    assert.equal(await page.locator('[data-cockpit-state="no-project"] button, [data-cockpit-state="no-project"] input').count(),0);
+   for(const [device,width,height] of [['desktop',1440,1000],['tablet',820,1180],['mobile',390,844]]){
+    await page.setViewportSize({width,height});
+    await page.goto(origin);await page.getByRole('heading',{name:translations.cockpitNoProjectSelected,exact:true}).waitFor();
+    await page.evaluate(()=>document.fonts.ready);
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,locale+' '+device+' horizontal overflow');
+    assert.equal(await page.locator('[data-workspace-widgets] textarea').isDisabled(),true);
+    const hero=page.locator('[data-cockpit-hero]');await hero.waitFor();assert(await hero.isVisible());
+    if(process.env.COCKPIT_VISUAL_DIR){mkdirSync(process.env.COCKPIT_VISUAL_DIR,{recursive:true});await page.screenshot({animations:'disabled',path:join(process.env.COCKPIT_VISUAL_DIR,`after-${locale}-${device}.png`)});if(locale==='fr'){await page.locator('[data-workspace-widgets]').scrollIntoViewIfNeeded();await page.screenshot({animations:'disabled',path:join(process.env.COCKPIT_VISUAL_DIR,`after-fr-${device}-panels.png`)});await page.evaluate(()=>document.getElementById('main-workspace').scrollTop=0);}}
+   }
   }
   assert(requests.every(path=>path==='/api/canonical/registry'));
   await page.reload();await page.locator('[data-cockpit-state="no-project"]').waitFor();
+  await page.locator('[data-workspace-widgets] a[href="/conversations"]').click();await page.waitForURL(origin+'/conversations');await page.locator('[data-native-authority="locked"]').waitFor();
+  await page.goto(origin);await page.locator('[data-cockpit-state="no-project"]').waitFor();
   await context.addCookies([{name:'clara_native_selection',value:'malformed',url:origin}]);await page.reload();await page.locator('[data-native-authority="locked"]').waitFor();assert.equal(await page.locator('[data-cockpit-state="no-project"]').count(),0);
   for(const token of ['','G'.repeat(43),'H'.repeat(43)]){
    await context.clearCookies();if(token)await context.addCookies([{name:'clara_auth_session',value:token,url:origin}]);await page.goto(origin);await page.locator('[data-native-authority="locked"]').waitFor();

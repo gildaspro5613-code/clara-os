@@ -14,7 +14,7 @@ import { useTranslations } from "next-intl";
 
 import GlassPanel from "@/components/ui/GlassPanel";
 
-export default function QuickActionsPanel() {
+export default function QuickActionsPanel({workspaceOnly=false}:{workspaceOnly?:boolean}) {
   const t = useTranslations("cockpitUi");
   const actions = [
     {
@@ -53,9 +53,12 @@ export default function QuickActionsPanel() {
     <GlassPanel title={t("quickActions")}>
       <div className="grid grid-cols-2 gap-3">
 
-        {actions.map((action) => (
+        {actions.map((action) => workspaceOnly&&["new-mission","call"].includes(action.id)?(
+          <span key={action.id} aria-disabled="true" className="flex min-h-16 items-center justify-center rounded-2xl border border-white/10 bg-white/5 p-3 text-center text-sm text-white/40">{action.label}</span>
+        ):(
           <Link
             key={action.id}
+            prefetch={workspaceOnly?false:undefined}
             href={action.href}
             className="
               min-w-0

@@ -1,3 +1,4 @@
+import ContextRequiredPanel from "./panels/ContextRequiredPanel";
 import MissionWidget from "@/components/cockpit/widgets/missions/MissionWidget";
 import type {Mission} from "@/modules/missions/types/Mission";
 import Link from "next/link";
@@ -15,7 +16,8 @@ import { getTranslations } from "next-intl/server";
 interface StageProps {
   nativeScope?: boolean;
   nativeMissions?:Mission[];
-  session: ClaraSession;
+  session?: ClaraSession;
+  workspaceOnly?:boolean;
   acquisition?: AcquisitionRecord | null;
 }
 
@@ -43,7 +45,24 @@ async function MissionPanel({ mission,missions }: MissionPanelProps) {
   return mission ? <TasksPanel mission={mission} /> : <EmptyMissionPanel />;
 }
 
-export default async function Stage({ session, acquisition, nativeScope = false,nativeMissions }: StageProps) {
+export default async function Stage({ session, acquisition, nativeScope = false,nativeMissions,workspaceOnly=false }: StageProps) {
+  if(workspaceOnly){
+    const ui=await getTranslations('ui'),t=await getTranslations('cockpitUi');
+    const introduction=<GlassPanel className="!h-auto shrink-0 bg-[#07111f]/55 backdrop-blur-[18px]">
+      <p className="text-xs uppercase tracking-[0.2em] text-cyan-200">Clara OS</p>
+      <h2 className="mt-3 text-3xl font-light text-white">{t('greeting')}</h2>
+      <h1 className="mt-4 text-xl font-medium">{ui('cockpitNoProjectSelected')}</h1>
+      <p className="mt-3 text-sm leading-relaxed text-white/65">{ui('cockpitNoProjectHelp')}</p>
+      <Link prefetch={false} href="/clara" className="mt-4 inline-block text-cyan-200 underline">Clara →</Link>
+    </GlassPanel>;
+    const panels=<><ContextRequiredPanel className="!h-auto shrink-0" title={t('agenda')} href="/agenda"/><ContextRequiredPanel className="!h-auto shrink-0" title={ui('mailTitle')} href="/messagerie"/><ContextRequiredPanel className="!h-auto shrink-0" title={t('currentMission')} href="/missions"/></>;
+    return <>
+      <div data-hero-column className="absolute bottom-[7%] left-[5%] top-[12%] z-20 hidden w-[29%] max-w-[360px] flex-col gap-4 overflow-y-auto lg:flex">{introduction}<ContextRequiredPanel className="!h-auto shrink-0" title={ui('uiVoiceStatus')} href="/telephonie"/></div>
+      <div data-hero-column className="absolute bottom-[7%] right-[5%] top-[7%] z-20 hidden w-[29%] max-w-[420px] flex-col gap-4 overflow-y-auto lg:flex">{panels}</div>
+      <div className="relative z-20 flex min-w-0 flex-col gap-4 px-4 py-6 sm:px-6 lg:hidden">{introduction}{panels}</div>
+    </>;
+  }
+  if(!session)return null;
   const mission = session.mission;
   const native = nativeScope;
   const ui = await getTranslations("ui");

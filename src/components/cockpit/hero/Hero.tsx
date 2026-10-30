@@ -8,13 +8,14 @@ import Stage from "../Stage";
 interface HeroProps {
   nativeScope?: boolean;
   nativeMissions?:Mission[];
-  session: ClaraSession;
+  session?: ClaraSession;
+  workspaceOnly?:boolean;
   acquisition?: AcquisitionRecord | null;
 }
 
-export default function Hero({ session, acquisition, nativeScope,nativeMissions }: HeroProps) {
+export default function Hero({ session, acquisition, nativeScope,nativeMissions,workspaceOnly=false }: HeroProps) {
   return (
-    <section data-cockpit-hero className="relative h-auto min-h-0 overflow-hidden bg-[#020914] lg:h-full lg:min-h-[720px]">
+    <section data-cockpit-state={workspaceOnly?"no-project":undefined} data-cockpit-hero className="relative h-auto min-h-0 overflow-hidden bg-[#020914] lg:h-full lg:min-h-[720px]">
       {/*
         Clara OS is an operational workspace. The Hero borrows the website's
         architectural language — grid, cyan geometry and depth — without
@@ -22,7 +23,7 @@ export default function Hero({ session, acquisition, nativeScope,nativeMissions 
       */}
       <HeroBackdrop/>
 
-      <Stage nativeMissions={nativeMissions} nativeScope={nativeScope} session={session} acquisition={acquisition} />
+      <Stage workspaceOnly={workspaceOnly} nativeMissions={nativeMissions} nativeScope={nativeScope} session={session} acquisition={acquisition} />
     </section>
   );
 }

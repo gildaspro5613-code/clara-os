@@ -337,3 +337,65 @@ Validation de la préparation : 78 tests contrôleur/métadonnées et 14 tests
 d’attestation PASS, 0 FAIL, 0 SKIP ; lint ciblé, YAML/syntaxe shell et
 git diff --check PASS. Les appels Vercel sont simulés dans ces tests ;
 la provenance et les octets du SHA approuvé sont lus dans Git réel.
+
+### Raccordement du véritable Cockpit à l’accueil sans projet — 30/10/2026
+
+Base : `82fffb390bd8bc996920b687504b546e9ce35dd7` ; branche/PR #219 conservées.
+Audit limité aux composants et conditions de rendu du Cockpit :
+
+| Élément | Recette refusée (WorkspaceWelcome) | Composant historique / raccord retenu |
+|---|---|---|
+| Composition | Quatre GlassPanels isolés | Cockpit → CockpitLayout → Hero/Stage + CockpitWidgets |
+| Hero | Fond seul, sans Stage | Même Hero architectural sans portrait et HeroBackdrop ; colonnes Stage desktop, flux mobile/tablette |
+| Présentation Clara | Titre sans projet seul | Accueil Clara, salutation traduite, état sans projet et lien vers la page existante |
+| Panneaux Hero | Absents | Présentation, voix, agenda, messagerie et mission ; états sans contexte et liens internes |
+| Grille | Absente | Résumé, attention, raccourcis, conversations, agenda, missions, navigation et météo |
+| Commandes | Aucun parcours depuis les panneaux | Liens réels ; création/appel désactivés sans contexte ; saisie Clara désactivée |
+| Chargements métier | Absents | Toujours absents : sortie workspaceOnly avant tout chargement / orchestration, aucun widget actif monté |
+| Parcours avec contexte | Cockpit complet uniquement après nativePage | Inchangé ; nativePage et certification du fil continuent de protéger dialogue et données |
+
+WorkspaceWelcome ne dessine plus de Cockpit séparé : il assemble MainLayout
+et le composant Cockpit existant en mode workspaceOnly, sans fabriquer de
+ClaraSession. Hero et Stage gardent leur rendu avec contexte existant.
+CockpitWidgets utilise un état vide explicite avant les variables de workspace,
+les stores et l’orchestrateur. ContextRequiredPanel est uniquement une
+présentation GlassPanel partagée, sans store, effet ou identité. Les liens
+ajoutés ne préchargent pas leurs destinations. Aucun client/projet/fil créé.
+L’accueil sans contexte reste accessible uniquement après la résolution
+canonique de la session et de l’appartenance ; les sélections invalides ne
+bénéficient d’aucun repli. Aucun changement aux ACL ou à nativePage.
+
+Preuves visuelles synthétiques, sans données privées : dossier `cockpit-visual/`.
+- before-desktop/tablet/mobile : build antérieur, même compte synthétique membre.
+- after-{fr,en,es,de,it}-{desktop,tablet,mobile} : rendu après raccord.
+- after-fr-*-panels : grille historique sous le Hero.
+Ces captures locales ne prétendent pas attester un déploiement ni une
+acceptation visuelle du propriétaire. Aucun déploiement effectué.
+
+La recette conserve l’assertion stricte zéro tentative de chargeur SQL global,
+les refus session absente/expirée/révoquée, appartenance révoquée et sélection
+invalide, ainsi que les différences liste vide / 401 / 403 / 503. Elle ajoute les
+liens, commandes désactivées, quinze combinaisons langue/viewport et l’accès
+à Conversations qui reste verrouillé sans contexte natif. Les captures sont
+prises après rechargement dans chaque viewport et chargement des polices.
+
+Limites techniques locales : le build Turbopack avec la fixture de polices
+locale échoue (résolution interne de next/font) ; le build optimisé Webpack est
+utilisé pour la recette, sans modifier les scripts ou les polices applicatives.
+Le lint étendu relève des erreurs préexistantes dans TodayPanel.tsx ; ce fichier
+n’est pas modifié. Le lint ciblé s’applique aux seuls fichiers du raccord.
+Les fournisseurs, l’OAuth, Neon distant et le contrôleur de livraison restent
+inchangés ; aucun nouvel épinglage de déploiement dans cette intervention.
+
+Validation finale du raccord : 21 tests ciblés PASS, 0 FAIL/ignoré ; recette
+HTTPS accueil sans contexte PASS (15 combinaisons de rendu et refus effectifs,
+zéro tentative globale) ; recette HTTPS Cockpit avec contexte PASS (navigation,
+refus services natifs et reprise durable après perte d’acquittement). Build
+optimisé Webpack et TypeScript PASS ; lint ciblé et git diff --check PASS.
+21 captures PNG conservées (3 avant, 15 après, 3 vues des panneaux). Captures
+FR desktop, tablette et mobile examinées visuellement ; aucune acceptation
+utilisateur ou certification fournisseur n’est déduite de ces tests isolés.
+Les premiers essais des nouvelles assertions de navigation ont distingué la
+page Documents client de la garde serveur nativePage ; le test final cible
+Conversations, lien unique protégé par cette garde, sans changer ces pages.
+Les cinq CI du nouveau SHA doivent encore être confirmées après publication.
