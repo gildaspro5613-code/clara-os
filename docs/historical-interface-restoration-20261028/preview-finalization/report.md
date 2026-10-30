@@ -235,3 +235,37 @@ Le workflow natif existant inclut les deux nouveaux tests et n’ajoute aucun d�
 Correction exclusivement dans le test : next/headers dispose d’un faux cookie explicite ; le vrai classificateur cockpitLanding est exécuté, avec un résolveur d’autorité contrôlé. Les lectures de cookie/d’autorité sont comptées séparément et les proxys métier restent interdits. L’assertion zéro loader métier reste inchangée pour les six pages. Un test complémentaire du vrai handler HomePage couvre membre actif, sessions expirée/révoquée, appartenance révoquée, ambiguïté, erreur d’autorité, cookies malformé/dupliqué et sélections malformée/étrangère : aucune de ces branches ne lance de loader métier ; toute sélection fournie reste déléguée à nativePage.
 
 Commande : node --import tsx --test src/tests/native-authority.test.ts src/tests/cockpit-landing.test.ts src/tests/recette-auth-isolation.test.ts src/tests/authenticated-workspace-session.test.ts. Résultat : 21 PASS, 0 FAIL, 0 SKIP, dont 38 refus de handlers natifs contrôlés. ESLint du fichier modifié et git diff --check PASS. Cookies, résolveurs et transports simulés ; aucune session réelle consultée. Code applicatif, ACL, SQL, workflow et rendu Cockpit strictement inchangés ; pas de nouvelle campagne navigateur/build sur ces octets déjà reçus. CI distante à constater sur le nouveau SHA après publication. Aucun merge, déploiement ou accès fournisseur.
+
+
+### Isolation du journal SQL de la recette Cockpit — 30/10/2026
+
+Base examinée : `3d8e913907601e16b7af6cc16d4897a6f8d930fc`.
+L’accueil seul passe. L’enchaînement navigation Cockpit puis accueil reproduit
+exactement l’échec ligne 50 : `GLOBAL_LOADER_ATTEMPT` au lieu de la chaîne vide.
+La requête rejetée est `CREATE TABLE IF NOT EXISTS clara_connections`, émise par
+le statut Microsoft lors de la visite préalable de Connexions :
+`ConnectionsHub` → `/api/connections/microsoft` → `DatabaseConnectionRepository.initialize`.
+Ce marqueur préexiste à l’accueil sans projet ; il ne provient pas de cet accueil.
+Le harnais bloque cette requête et ne permet aucune lecture globale effective.
+
+Correction limitée au workflow natif : après la recette de navigation, arrêt du
+serveur, nouvelle base PostgreSQL jetable avec le provisionnement existant,
+puis redémarrage avant la recette sans projet. Le précédent journal reste
+conservé sous son identifiant de base ; aucun effacement, filtrage ou
+élargissement de l’allowlist SQL. Le test ligne 50 et le préchargement sont
+strictement inchangés. La fixture distincte du hub reste également conservée.
+Aucun changement applicatif, identité, ACL, enrôlement, connexion ou Production.
+
+Validation locale sur le même build optimisé :
+- Navigation Cockpit, refus natifs et reprise durable : 1/1 PASS.
+- Enchaînement sans isolation : FAIL exact reproduit ligne 50.
+- Accueil avec fixture neuve : 1/1 PASS, zéro tentative SQL globale, cinq langues,
+  rechargement, sélection invalide, sessions absentes/expirées/révoquées et
+  appartenance révoquée refusées ; listes vides distinctes des 401/403/503.
+- Tests native-authority, cockpit-landing, recette-auth-isolation et
+  authenticated-workspace-session : 21 PASS, 0 FAIL, 0 SKIP.
+- TypeScript, lint ciblé, YAML et syntaxe shell du workflow : PASS.
+- Aucun fournisseur réel, migration distante, merge ou déploiement.
+
+Les cinq CI distantes doivent être vérifiées sur le nouveau SHA ; les résultats
+locaux ne constituent pas une attestation de leur réussite.

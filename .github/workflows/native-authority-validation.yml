@@ -198,6 +198,20 @@ jobs:
           test "$ready" = true
           NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node src/tests/helpers/native-browser-diagnostics.mjs core --import tsx --test src/tests/native-google-work-restart-browser.e2e.mjs src/tests/native-mission-contact-restart-browser.e2e.mjs
           NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node src/tests/helpers/native-browser-diagnostics.mjs cockpit --import tsx --test src/tests/cockpit-availability-browser.e2e.mjs
+          # The zero-global-loader receipt needs its own complete SQL attempt
+          # journal. Earlier navigation includes connection-status probes; never
+          # erase their journal or attribute it to this workspace-only landing.
+          kill "$native_app_pid"
+          wait "$native_app_pid" || true
+          export NATIVE_TEST_DATABASE="native_browser_$(node -e 'process.stdout.write(require("crypto").randomUUID().replaceAll("-",""))')"
+          node --import tsx src/tests/helpers/native-runtime-browser-fixture.mts "$NATIVE_TEST_DATABASE"
+          start_native_app
+          ready=false
+          for attempt in $(seq 1 60); do
+            if curl --cacert /tmp/native-runtime-cert.pem --fail --silent https://127.0.0.1:3060/clara > /dev/null; then ready=true; break; fi
+            sleep 1
+          done
+          test "$ready" = true
           NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node --test src/tests/cockpit-landing-browser.e2e.mjs
           # The hub receipt has its own disposable data, using the existing fixture
           # and server, so previous recipes cannot supply a stale authority/session.
