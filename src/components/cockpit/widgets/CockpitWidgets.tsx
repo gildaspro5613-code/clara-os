@@ -1,6 +1,8 @@
 import {nativeThreadCertified} from '@/lib/native/scoped-context';
 import type {MdProjectIntake} from "@/types";
 import type {Mission} from "@/modules/missions/types/Mission";
+import CockpitActionBar from "./CockpitActionBar";
+import MailOverviewPanel from "../panels/MailOverviewPanel";
 import AgendaWidget from "./agenda/AgendaWidget";
 import MissionWidget from "./missions/MissionWidget";
 import ClaraChatWidget from "./clara/ClaraChatWidget";
@@ -54,7 +56,8 @@ export default async function CockpitWidgets({ session, acquisition,nativeMissio
     : acquisitionQualifications;
 
   return (
-    <section aria-label={t("widgets")} className="w-full overflow-hidden bg-[#070B12]">
+    <section data-cockpit-widgets aria-label={t("widgets")} className="w-full overflow-hidden bg-[#070B12]">
+      <CockpitActionBar/>
       <div className="mx-auto w-full max-w-[1600px] px-4 py-8 sm:px-6 sm:py-10 xl:px-8 xl:py-14">
         <div className="grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-3">
           <div className="min-w-0 md:col-span-2 xl:col-span-1">
@@ -67,6 +70,8 @@ export default async function CockpitWidgets({ session, acquisition,nativeMissio
             <QuickActionsPanel />
           </div>
         </div>
+
+        {nativeMissions!==undefined&&<div className="mt-5"><MailOverviewPanel/></div>}
 
         {orderedQualifications.length > 0 && (
           <div id="acquisition" className="mt-5 scroll-mt-6">

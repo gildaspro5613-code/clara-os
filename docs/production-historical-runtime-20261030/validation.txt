@@ -1,0 +1,81 @@
+Authority and recovery
+Checked 19 real PostgreSQL authority reads; no historical backfill.
+✔ native authority: actual PostgreSQL owner/workspace/client/project ACL, revisions, revocation and historical preservation (9625.432709ms)
+Checked 38 native handler refusals.
+[CLARA] instrumentation ready; business runtime is request-scoped
+✔ native session handler rejects missing, malformed and duplicate cookies before storage or global runtime (150.957076ms)
+✔ default, external and absent explicit selectors cannot resume a global/native fallback (2.033593ms)
+✔ every fenced native HTTP handler refuses anonymous/invalid cookies without entering legacy business logic (386.223956ms)
+✔ unavailable authority never leaks storage details or resumes the legacy runtime (5.857905ms)
+✔ even an explicitly authorized snapshot cannot unlock legacy native mutations (20.590868ms)
+✔ all six native server pages return before invoking any global data loader (123.221208ms)
+✔ reopened chat and native runtime/document handlers still refuse invalid authentication before business code (66.902635ms)
+✔ server instrumentation never imports or starts a global business runtime (6.271477ms)
+✔ Uncertified Google/Brevo/Make connection routes reject invalid OS sessions before storage or provider I/O (290.08604ms)
+✔ a verified native session cannot unlock Google credentials or Make configuration before connector certification (104.952538ms)
+▶ operational recovery through scoped runtime and real PostgreSQL persistence
+  ✔ consultation in empty thread does not create a mission (808.617066ms)
+  ✔ historical unproven thread cannot be certified by a forged marker (676.795391ms)
+  ✔ explicit command creates an authorized mission (394.595599ms)
+  ✔ consultation cannot replan/reactivate/execute or alter a blocked mission; history remains durable (1009.67237ms)
+  ✔ unselected Google connection has precise HTTP diagnostic and no provider access (164.356834ms)
+  ✔ native calendar missing binding and mailbox missing authority are explicit, no global fallback (342.049407ms)
+  ✔ selected-calendar cognition reuses real scoped authority and no mutation transport (5142.019241ms)
+  ✔ Google reauthentication response does not leak a provider message (679.715034ms)
+  ✔ mail cognition reads the authorized encrypted cache only; no SMTP/IMAP and revocation fences commit (2493.929131ms)
+  ✔ 030 reapplication preserves runtime ACL, data and wrapper identities (572.874695ms)
+  ✔ foreign project and revoked session cannot use these paths (283.028373ms)
+✔ operational recovery through scoped runtime and real PostgreSQL persistence (17736.904018ms)
+✔ consultations and ambiguous follow-ups cannot authorize a mission mutation (5.214084ms)
+✔ explicit commands retain the existing mission pipeline (0.333553ms)
+✔ Drive diagnostics only display reviewed public codes, never messages or provider payloads (0.276948ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 26
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 23315.673797
+
+Components
+✔ historical Tasks uses the authorized mission rather than the old 82 percent fixture (11.675269ms)
+✔ native historical microphone stays disabled and honest in all five languages (10.442191ms)
+✔ the historical action bar navigates existing pages instead of decorative buttons (4.639109ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 458.60117
+
+Historical HTTPS browser
+✔ historical portrait Cockpit: actual native mission, five languages and responsive navigation without provider activation (44114.756209ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 44550.304788
+
+Existing Cockpit browser
+✔ cockpit: real header navigation, native service refusals and durable chat recovery (18830.947272ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 19352.449161
+
+TypeScript: PASS
+Targeted ESLint: PASS
+Optimized webpack build: PASS (local font fixture, no configuration change)
+Workflow YAML/shell and git diff --check: PASS
+GlassPanel: identical main bytes
+No protected backend, auth, API or migration changed.
