@@ -121,3 +121,20 @@ test('verified Project Domain does not require a Deployment Alias; baseline wron
  assert(calls.some(p=>p==='/v9/projects/prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz/domains/clara-os-recette.vercel.app'));
  assert(!calls.some(p=>p.startsWith('/v4/aliases/')||p.startsWith('/v13/deployments/')));
 });
+
+test('application CI checks pinned source without substituting controller head',async()=>{
+ const applicationSha='b'.repeat(40);
+ for(const green of [true,false]){
+  const paths=[];
+  const http=async(url,init)=>{
+   assert.equal(init.method,'GET');paths.push(url);
+   if(url.includes('/git/ref/'))return Response.json({object:{sha}});
+   assert(url.includes('/commits/'+applicationSha+'/'));
+   if(url.includes('check-runs'))return Response.json({total_count:5,check_runs:Array.from({length:5},()=>({status:'completed',conclusion:green?'success':'failure'}))});
+   return Response.json({total_count:0});
+  };
+  const result=verifyRecetteCI({token:'synthetic',sha,applicationSha,runId:'123',http});
+  if(green)assert.equal(await result,'PASS');else await assert.rejects(result,/CI_NOT_GREEN/);
+  assert.equal(paths.filter(p=>p.includes('/git/ref/')).length,1);
+ }
+});

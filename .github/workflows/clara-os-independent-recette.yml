@@ -18,6 +18,11 @@ on:
         type: string
         default: ''
         required: false
+      reviewed_ready_deployment:
+        description: Exact existing READY Recette deployment ID reviewed before this delivery
+        type: string
+        default: ''
+        required: false
 permissions:
   contents: read
   checks: read
@@ -43,9 +48,11 @@ jobs:
           REQUESTED_RELEASE: ${{ inputs.release_authorization }}
           APPROVED_CONTROLLER_SHA: ${{ inputs.controller_sha }}
           ACTUAL_CONTROLLER_SHA: ${{ github.sha }}
+          REVIEWED_READY_DEPLOYMENT: ${{ inputs.reviewed_ready_deployment }}
         run: |
           set -euo pipefail
-          test "$REQUESTED_RELEASE" = "pr219-d8d1515-google-invitation-once" || { echo "::error::RELEASE_AUTHORIZATION_REQUIRED"; exit 1; }
+          test "$REQUESTED_RELEASE" = "pr219-d8942685-cockpit-existing-member-once" || { echo "::error::RELEASE_AUTHORIZATION_REQUIRED"; exit 1; }
+          [[ "$REVIEWED_READY_DEPLOYMENT" =~ ^dpl_[A-Za-z0-9]+$ ]] || { echo "::error::REVIEWED_READY_DEPLOYMENT_REQUIRED"; exit 1; }
           [[ "$APPROVED_CONTROLLER_SHA" =~ ^[a-f0-9]{40}$ ]] && test "$APPROVED_CONTROLLER_SHA" = "$ACTUAL_CONTROLLER_SHA" || { echo "::error::APPROVED_CONTROLLER_SHA_MISMATCH"; exit 1; }
       - name: Refuse reruns of the authorized deployment operation
         if: ${{ inputs.verify_only == false }}
@@ -54,17 +61,17 @@ jobs:
       - name: Checkout approved source (never main)
         uses: actions/checkout@v4
         with:
-          ref: d8d151516f213f1cb80ff0815745651190bb88df
+          ref: d8942685c9c9aad16c00110d2c86de15b667a477
           persist-credentials: false
           fetch-depth: 2
       - name: Verify pinned Git source and exact tree
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "d8d151516f213f1cb80ff0815745651190bb88df"
+          test "$(git rev-parse HEAD)" = "d8942685c9c9aad16c00110d2c86de15b667a477"
           test "$(git remote get-url origin)" = "https://github.com/gildaspro5613-code/clara-os"
-          test "$(git cat-file -t d8d151516f213f1cb80ff0815745651190bb88df)" = commit
-          test "$(git rev-parse d8d151516f213f1cb80ff0815745651190bb88df^)" = "7ad1008ef34b46fb65d2f7261705f1d5dffba9c9"
-          test "$(git rev-parse HEAD^{tree})" = "d090aa5eabc37c7c66e3abeb2291b439a15ec2dc"
+          test "$(git cat-file -t d8942685c9c9aad16c00110d2c86de15b667a477)" = commit
+          test "$(git rev-parse d8942685c9c9aad16c00110d2c86de15b667a477^)" = "904a74fda05af86ea3cdd19d4ba6c42af50592a4"
+          test "$(git rev-parse HEAD^{tree})" = "8c8cb296cc5a9640a25acf2df55cec7c383f8f07"
       - name: Set up deployment controller Node.js
         uses: actions/setup-node@v4
         with:
@@ -192,6 +199,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           CONTROLLER_SHA: ${{ github.sha }}
         run: node .github/scripts/verify-recette-ci.mjs
+      - name: Require all five CI controls green on the exact approved application
+        working-directory: .recette-controller
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CONTROLLER_SHA: ${{ github.sha }}
+          APPLICATION_SHA: d8942685c9c9aad16c00110d2c86de15b667a477
+        run: node .github/scripts/verify-recette-ci.mjs
       - name: Verify scoped binding metadata and Neon endpoint before any upload
         id: metadata_preflight
         working-directory: .recette-controller
@@ -203,6 +217,7 @@ jobs:
         if: ${{ inputs.verify_only == false && steps.release_authorization.outcome == 'success' && steps.metadata_preflight.outcome == 'success' }}
         env:
           VERCEL_RECETTE_TOKEN: ${{ secrets.VERCEL_RECETTE_TOKEN }}
+          REVIEWED_READY_DEPLOYMENT: ${{ inputs.reviewed_ready_deployment }}
         run: |
           set -euo pipefail
           test "${{ github.run_attempt }}" = "1" || { echo "::error::Deployment rerun refused; inspect previous outcome and obtain new authorization"; exit 1; }
@@ -212,15 +227,16 @@ jobs:
           import {createHash} from 'node:crypto';
 
           export const expected = Object.freeze({
-            sha: 'd8d151516f213f1cb80ff0815745651190bb88df',
-            baseSha: '7ad1008ef34b46fb65d2f7261705f1d5dffba9c9',
-            tree: 'd090aa5eabc37c7c66e3abeb2291b439a15ec2dc',
-            gateSha: 'd8d151516f213f1cb80ff0815745651190bb88df',
-            attempt: 'pr219-d8d1515-google-invitation-once',
-            reviewedDeployment: 'dpl_7M8cFWgwFXV56dS9u4YrWpw1pAtD',
-            reviewedState: 'ERROR',
+            sha: 'd8942685c9c9aad16c00110d2c86de15b667a477',
+            baseSha: '904a74fda05af86ea3cdd19d4ba6c42af50592a4',
+            tree: '8c8cb296cc5a9640a25acf2df55cec7c383f8f07',
+            gateSha: 'd8942685c9c9aad16c00110d2c86de15b667a477',
+            attempt: 'pr219-d8942685-cockpit-existing-member-once',
+            reviewedDeployment: process.env.REVIEWED_READY_DEPLOYMENT,
+            reviewedState: 'READY',
+            baselineAttempt: 'pr219-d8d1515-google-invitation-once',
             reviewedAttempt: 'pr219-c203cd7-after-run24-once',
-            reviewedSourceSha: 'c203cd7229bc544e73b9537102dbf735476e166a',
+            reviewedSourceSha: 'd8d151516f213f1cb80ff0815745651190bb88df',
             project: 'prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz',
             team: 'team_0BeqOAO8t5oDEBdzHHdekcxv',
             environment: 'env_T6nc8Pd4KLG9qTbvTM9ZsOn4T4YM',
@@ -284,6 +300,7 @@ jobs:
           export async function deployRecette({token,http = fetch,git = gitRead,wait = () => new Promise(r => setTimeout(r,5000)),emit = () => {},writesAuthorized = false,gateGit = gateGitRead,assignStableAlias = false}) {
             if (writesAuthorized !== true) refuse('REST_WRITES_DISABLED');
             if (!token) refuse('DEDICATED_RECETTE_TOKEN_REQUIRED');
+            if (!/^dpl_[A-Za-z0-9]+$/.test(expected.reviewedDeployment ?? '')) refuse('REVIEWED_READY_DEPLOYMENT_REQUIRED');
             const files = approvedFiles(git,gateGit);
             const artifactDigest = createHash('sha256').update(JSON.stringify(files.map(f => [f.file,createHash('sha256').update(f.data).digest('hex')]).sort())).digest('hex');
             async function call(path,{method = 'GET',body,headers = {},json = true} = {}) {
@@ -325,14 +342,22 @@ jobs:
             // The old authorization stays consumed. Only its specifically reviewed
             // ERROR deployment may be historical evidence for this distinct operation.
             if (previous.deployments.some(d => d.meta?.recetteAttempt === expected.reviewedAttempt &&
-                ((d.id ?? d.uid) !== expected.reviewedDeployment || (d.readyState ?? d.state) !== expected.reviewedState))) refuse('PREVIOUS_AUTHORIZATION_REVIEW_MISMATCH');
+                ((d.id ?? d.uid) !== 'dpl_7M8cFWgwFXV56dS9u4YrWpw1pAtD' || (d.readyState ?? d.state) !== 'ERROR'))) refuse('PREVIOUS_AUTHORIZATION_REVIEW_MISMATCH');
             if (previous.deployments.some(d => d.meta?.recetteAttempt === 'pr219-20261029-one-build-attestation' && !['READY','ERROR','CANCELED'].includes(d.readyState ?? d.state))) refuse('PREVIOUS_ATTEMPT_NOT_TERMINAL_NO_RETRY');
 
             const sourceReferences = d => [d.meta?.githubCommitSha,d.meta?.recetteSourceSha,d.gitSource?.sha].filter(v => v !== undefined);
             if (previous.deployments.some(d => sourceReferences(d).includes(expected.sha))) refuse('APPLICATION_ALREADY_DEPLOYED_REVIEW_REQUIRED');
+            if (previous.deployments.some(d => d.meta?.recetteAttempt === expected.baselineAttempt &&
+                ((d.id ?? d.uid) !== expected.reviewedDeployment || (d.readyState ?? d.state) !== 'READY'))) refuse('GOOGLE_AUTHORIZATION_ALREADY_CONSUMED');
             const latest = previous.deployments[0];
             if (!latest || (latest.id ?? latest.uid) !== expected.reviewedDeployment || (latest.readyState ?? latest.state) !== expected.reviewedState ||
-                sourceReferences(latest).length === 0 || sourceReferences(latest).some(sha => sha !== expected.reviewedSourceSha)) refuse('REVIEWED_BASELINE_CHANGED_OR_UNATTESTED');
+                latest.meta?.recetteAttempt !== expected.baselineAttempt || sourceReferences(latest).length === 0 || sourceReferences(latest).some(sha => sha !== expected.reviewedSourceSha)) refuse('REVIEWED_BASELINE_CHANGED_OR_UNATTESTED');
+
+            const baseline = await call('/v13/deployments/' + expected.reviewedDeployment);
+            if (baseline.id !== expected.reviewedDeployment || baseline.projectId !== expected.project || baseline.ownerId !== expected.team ||
+                baseline.readyState !== 'READY' || baseline.target === 'production' || baseline.customEnvironment?.id !== expected.environment ||
+                baseline.customEnvironment?.slug !== expected.slug || baseline.meta?.recetteAttempt !== expected.baselineAttempt ||
+                sourceReferences(baseline).length === 0 || sourceReferences(baseline).some(sha => sha !== expected.reviewedSourceSha)) refuse('READY_BASELINE_BINDING_REFUSED');
 
             const domainPath = '/v9/projects/' + expected.project + '/domains/clara-os-recette.vercel.app';
             const verifiedDomain = d => {
@@ -393,7 +418,7 @@ jobs:
             refuse('DEPLOYMENT_NOT_READY_NO_RETRY');
           }
 
-          // Imported by offline tests. Separately approvable single d8d1515 operation, including the dedicated Recette alias.
+          // Imported by offline tests. Separately approvable single Cockpit delivery, including the dedicated Recette alias.
           if (process.argv[1] === '-') {
             try {
               await deployRecette({writesAuthorized:true,assignStableAlias:true,token:process.env.VERCEL_RECETTE_TOKEN,emit:result => {

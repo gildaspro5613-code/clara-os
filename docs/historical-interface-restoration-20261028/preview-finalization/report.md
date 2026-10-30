@@ -291,3 +291,49 @@ Lint ciblé, YAML/syntaxe shell du workflow et git diff --check : PASS.
 Le build existant est réutilisé, aucun fichier applicatif n’étant modifié.
 Les cinq CI distantes restent à attester sur le SHA publié.
 Aucun merge, migration distante, déploiement ou appel fournisseur réel.
+
+### Livraison Cockpit existant — nouvelle autorisation, sans exécution
+
+Source applicative : `d8942685c9c9aad16c00110d2c86de15b667a477`.
+Parent : `904a74fda05af86ea3cdd19d4ba6c42af50592a4`.
+Arbre : `8c8cb296cc5a9640a25acf2df55cec7c383f8f07`.
+Cinq CI applicatives officiellement vertes selon le propriétaire. Le workflow
+recontrôle les CI de cette application ET celles de son contrôleur exact.
+Aucun changement applicatif/ACL/Neon/enrôlement dans cette préparation.
+
+Nouvel identifiant public : `pr219-d8942685-cockpit-existing-member-once`.
+L’ancienne autorisation Google reste consommée et ne peut autoriser cette
+livraison. Le seul état initial admissible est le déploiement READY existant,
+application d8d1515, projet et custom Environment indépendants exacts.
+Son ID doit être revu et fourni explicitement : aucune valeur n’est inventée.
+Avant tout POST : liste des déploiements sans pagination, unicité des marqueurs,
+source exacte et dernier déploiement identique à l’ID approuvé, puis lecture
+individuelle de cet ID et contrôle projet/équipe/custom Environment/READY/SHA.
+Tout écart bloque ; aucun retry automatique. L’ancien ERROR c203 reste seulement
+une exception historique portant sur son ID exact, jamais une base READY.
+
+Paramètres du futur workflow manuel, uniquement après GO distinct :
+- Workflow : `.github/workflows/clara-os-independent-recette.yml`.
+- Branche : `fix/clara-os-historical-interface-20261028`.
+- `verify_only=false` (défaut conservé à true).
+- `controller_sha` : SHA exact de cette révision publiée, cinq CI vertes requises.
+- `release_authorization=pr219-d8942685-cockpit-existing-member-once`.
+- `reviewed_ready_deployment` : ID Vercel réel READY d8d1515 revu avant lancement.
+- Approbation GitHub Environment `clara-os-recette` conservée ; run_attempt=1.
+
+Destination : projet `prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz`, équipe
+`team_0BeqOAO8t5oDEBdzHHdekcxv`, custom Environment
+`env_T6nc8Pd4KLG9qTbvTM9ZsOn4T4YM`, alias `clara-os-recette.vercel.app`.
+Attestations effectives Vercel/Neon en lecture seule au build avant Next.js,
+retrait des deux crons seulement de l’artefact et vérification alias après READY
+conservés. Aucune réinvitation Google, aucune écriture SQL préparée ou exécutée.
+
+Limite : pas d’accès Vercel dans ce runtime ; identité et état READY effectifs
+non inspectés aujourd’hui. Leur vérification reste bloquante dans le contrôleur.
+Il manque uniquement l’ID READY existant à faire confirmer par lecture Vercel,
+puis les cinq CI du contrôleur et le GO de lancement. Aucun workflow lancé.
+
+Validation de la préparation : 78 tests contrôleur/métadonnées et 14 tests
+d’attestation PASS, 0 FAIL, 0 SKIP ; lint ciblé, YAML/syntaxe shell et
+git diff --check PASS. Les appels Vercel sont simulés dans ces tests ;
+la provenance et les octets du SHA approuvé sont lus dans Git réel.

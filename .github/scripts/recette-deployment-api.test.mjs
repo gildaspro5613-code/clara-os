@@ -12,10 +12,11 @@ assert.equal(workflow.split(marker).length,2);
 const code=workflow.split(marker)[1].split('\n          NODE_API')[0].split('\n').map(line=>line.slice(10)).join('\n');
 const temporary=mkdtempSync(join(tmpdir(),'recette-git-api-offline-'));
 writeFileSync(join(temporary,'driver.mjs'),code);
+process.env.REVIEWED_READY_DEPLOYMENT='dpl_syntheticReviewedReady';
 const {deployRecette,verifyApprovedSource,approvedFiles,expected,gatePaths}=await import(pathToFileURL(join(temporary,'driver.mjs')).href);
 test.after(()=>rmSync(temporary,{recursive:true,force:true}));
 const gateGit=args=>execFileSync('git',args,{maxBuffer:32*1024*1024,stdio:['ignore','pipe','pipe']});
-const reviewedBaseline={uid:expected.reviewedDeployment,state:expected.reviewedState,meta:{githubCommitSha:expected.reviewedSourceSha,recetteAttempt:expected.reviewedAttempt}};
+const reviewedBaseline={uid:expected.reviewedDeployment,state:expected.reviewedState,meta:{githubCommitSha:expected.reviewedSourceSha,recetteAttempt:expected.baselineAttempt}};
 const link={type:'github',repoId:1316164838,org:'gildaspro5613-code',repo:'clara-os'};
 const contents=new Map([['package.json',Buffer.from('{}')],['package-lock.json',Buffer.from('{}')],['vercel.json',execFileSync('git',['show',expected.sha+':vercel.json'])],['public/binary.bin',Buffer.from([0,255,1,0])]]);
 // Transport is simulated; source provenance and Production preservation are tested against Git below.
@@ -28,7 +29,7 @@ function fakeGit(args) {
  if(args[0]==='diff') return Buffer.from('vercel.json\n');
  throw Error('UNEXPECTED_GIT_OPERATION');
 }
-function harness({project,environment,create,poll,failPath,failStatus=403,failMethod,timeout=false,git=fakeGit,failUploadAt=1,uploadStatus=200,createMalformed=false,previous=[reviewedBaseline],aliases=[],assignStableAlias=false,domainRace=false,aliasProject=expected.project,domain={},aliasInitiallyAbsent=false,aliasStillMissing=false}={}) {
+function harness({project,environment,create,poll,failPath,failStatus=403,failMethod,timeout=false,git=fakeGit,failUploadAt=1,uploadStatus=200,createMalformed=false,previous=[reviewedBaseline],aliases=[],assignStableAlias=false,domainRace=false,aliasProject=expected.project,domain={},aliasInitiallyAbsent=false,aliasStillMissing=false,baselineOverride={}}={}) {
  const calls=[],events=[];let createdMeta,mappedAlias=aliasInitiallyAbsent?null:'dpl_previous',domainReads=0;
  const ready={id:'dpl_synthetic',url:'clara-os-recette-synthetic-melodie-digital.vercel.app',ownerId:expected.team,projectId:expected.project,
   customEnvironment:{id:expected.environment,slug:expected.slug},meta:{githubCommitSha:expected.sha},readyState:'READY'};
@@ -40,6 +41,7 @@ function harness({project,environment,create,poll,failPath,failStatus=403,failMe
   if(url.pathname==='/v9/projects/'+expected.project) return Response.json(project??{id:expected.project,name:expected.slug,accountId:expected.team});
   if(url.pathname==='/projects/'+expected.project+'/custom-environments') return Response.json({environments:environment??[{id:expected.environment,slug:expected.slug}]});
   if(url.pathname==='/v6/deployments')return Response.json({deployments:previous});
+  if(url.pathname==='/v13/deployments/'+expected.reviewedDeployment)return Response.json({id:expected.reviewedDeployment,projectId:expected.project,ownerId:expected.team,readyState:'READY',customEnvironment:{id:expected.environment,slug:expected.slug},meta:reviewedBaseline.meta,...baselineOverride});
   if(url.pathname==='/v9/projects/'+expected.project+'/domains/clara-os-recette.vercel.app'){
    domainReads++;return Response.json({name:'clara-os-recette.vercel.app',projectId:expected.project,verified:true,customEnvironmentId:expected.environment,gitBranch:domainRace&&domainReads>1?'changed':null,...domain});
   }
@@ -360,12 +362,12 @@ test('reviewed baseline changes, missing source or already-delivered application
 test('public operation selector alone never replaces the approved immutable workflow revision',()=>{
  const gate=yaml.load(workflow).jobs.deploy.steps.find(s=>s.id==='release_authorization');
  for(const [REQUESTED_RELEASE,APPROVED_CONTROLLER_SHA,ACTUAL_CONTROLLER_SHA,success] of [[expected.attempt,'a'.repeat(40),'a'.repeat(40),true],['','a'.repeat(40),'a'.repeat(40),false],[expected.attempt,'a'.repeat(40),'b'.repeat(40),false],[expected.attempt,'','a'.repeat(40),false]]){
-  const run=()=>execFileSync('bash',['-c',gate.run],{encoding:'utf8',env:{PATH:process.env.PATH,REQUESTED_RELEASE,APPROVED_CONTROLLER_SHA,ACTUAL_CONTROLLER_SHA}});
+  const run=()=>execFileSync('bash',['-c',gate.run],{encoding:'utf8',env:{PATH:process.env.PATH,REVIEWED_READY_DEPLOYMENT:expected.reviewedDeployment,REQUESTED_RELEASE,APPROVED_CONTROLLER_SHA,ACTUAL_CONTROLLER_SHA}});
   if(success)assert.doesNotThrow(run);else assert.throws(run);
  }
 });
-test('invitation release pins the reviewed application and never overlays its enrollment attestation with the old gate',()=>{
- assert.equal(expected.sha,'d8d151516f213f1cb80ff0815745651190bb88df');assert.equal(expected.gateSha,expected.sha);
+test('Cockpit release pins the reviewed application and never overlays its enrollment attestation with the old gate',()=>{
+ assert.equal(expected.sha,'d8942685c9c9aad16c00110d2c86de15b667a477');assert.equal(expected.gateSha,expected.sha);
  const git=args=>execFileSync('git',args,{maxBuffer:32*1024*1024,stdio:['ignore','pipe','pipe']});
  const files=approvedFiles(args=>args[0]==='remote'?fakeGit(args):args[0]==='rev-parse'&&args[1]==='HEAD'?Buffer.from(expected.sha):git(args),git);
  for(const path of ['src/lib/auth/recette-google-enrollment.ts','src/app/api/auth/google/enroll/route.ts','src/app/auth/recette-enrollment/page.tsx','src/app/api/auth/google/callback/route.ts','src/scripts/attest-recette-auth.mts']){
@@ -376,9 +378,21 @@ test('invitation release pins the reviewed application and never overlays its en
 test('previous consumed authorization is historical only for the exact reviewed ERROR; the new one is never reusable',async()=>{
  for(const previous of [
   [reviewedBaseline,{uid:'dpl_foreign',state:'ERROR',meta:{recetteAttempt:expected.reviewedAttempt}}],
-  [{...reviewedBaseline,state:'READY'}],
+  [{...reviewedBaseline,state:'ERROR'}],
   [reviewedBaseline,{meta:{recetteAttempt:expected.attempt}}],
  ]){
   const h=harness({previous});await assert.rejects(h.run());assert(h.calls.every(c=>c.method==='GET'));
+ }
+});
+
+test('Cockpit delivery refuses foreign or non READY baseline before any upload',async()=>{
+ for(const baselineOverride of [{projectId:'foreign'},{ownerId:'foreign'},{target:'production'},{readyState:'ERROR'},{customEnvironment:{id:'foreign',slug:expected.slug}},{meta:{githubCommitSha:expected.sha}}]){
+  const h=harness({baselineOverride});await assert.rejects(h.run(),/READY_BASELINE_BINDING_REFUSED/);assert(h.calls.every(c=>c.method==='GET'));
+ }
+});
+test('new delivery cannot use the consumed Google authorization or an absent reviewed ID',()=>{
+ const gate=yaml.load(workflow).jobs.deploy.steps.find(s=>s.id==='release_authorization');
+ for(const [REQUESTED_RELEASE,REVIEWED_READY_DEPLOYMENT] of [['pr219-d8d1515-google-invitation-once',expected.reviewedDeployment],[expected.attempt,'']]){
+  assert.throws(()=>execFileSync('bash',['-c',gate.run],{env:{PATH:process.env.PATH,REQUESTED_RELEASE,REVIEWED_READY_DEPLOYMENT,APPROVED_CONTROLLER_SHA:'a'.repeat(40),ACTUAL_CONTROLLER_SHA:'a'.repeat(40)},stdio:'pipe'}));
  }
 });
