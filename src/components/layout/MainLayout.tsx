@@ -20,9 +20,10 @@ import Sidebar from "./Sidebar";
 
 interface MainLayoutProps {
   children: ReactNode;
+  nativeContextAvailable?:boolean;
 }
 
-export default function MainLayout({ children }: MainLayoutProps) {
+export default function MainLayout({ children,nativeContextAvailable=true }: MainLayoutProps) {
   return (
     <div className="min-h-screen bg-[#0B1120] text-white">
       {/* Sidebar */}
@@ -31,7 +32,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
       {/* Main content */}
       <div className="flex h-dvh flex-col overflow-hidden lg:ml-64 xl:ml-72">
         {/* Top header */}
-        <Header />
+        <Header nativeContextAvailable={nativeContextAvailable}/>
 
         {/* Workspace */}
         <main id="main-workspace" tabIndex={-1} className="clara-workspace-scroll relative flex min-h-0 flex-1 overflow-x-hidden overflow-y-auto">

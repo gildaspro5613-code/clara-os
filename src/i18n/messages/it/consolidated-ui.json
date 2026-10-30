@@ -373,5 +373,11 @@
   "uiMicrosoftSetupMissing": "La configurazione Microsoft non è disponibile in questo ambiente. Un amministratore deve verificare le impostazioni dell’applicazione e l’URL di ritorno; nessuna autorizzazione è stata modificata.",
   "uiLogoutConfirm": "Chiudere questa sessione Clara OS? Le missioni e la cronologia saranno conservate.",
   "uiLogoutError": "Impossibile chiudere la sessione. L’esito positivo non è stato confermato.",
-  "uiMissionUnavailable": "Questa missione non è disponibile nel progetto selezionato. Apri una missione dall’elenco autorizzato."
+  "uiMissionUnavailable": "Questa missione non è disponibile nel progetto selezionato. Apri una missione dall’elenco autorizzato.",
+  "cockpitNoProjectSelected": "Nessun progetto selezionato",
+  "cockpitNoProjectHelp": "Hai effettuato l’accesso al tuo spazio. Apri il Profilo per scegliere un contesto autorizzato. Nessun dato operativo è stato ancora caricato.",
+  "cockpitProjectRequired": "Seleziona un progetto e una conversazione autorizzati per visualizzare queste informazioni.",
+  "nativeNoAuthorizedClients": "Nessun cliente autorizzato in questo spazio.",
+  "nativeContextForbidden": "Accesso a questo spazio negato.",
+  "nativeContextUnavailable": "Il contesto è temporaneamente non disponibile. Riprova più tardi."
 }

@@ -373,5 +373,11 @@
   "uiMicrosoftSetupMissing": "Microsoft configuration is unavailable in this environment. An administrator must check the application settings and callback URL; no authorization has been changed.",
   "uiLogoutConfirm": "Sign out of this Clara OS session? Your missions and history will be preserved.",
   "uiLogoutError": "The session could not be closed. Success has not been confirmed.",
-  "uiMissionUnavailable": "This mission is unavailable in the selected project. Open a mission from the authorized list."
+  "uiMissionUnavailable": "This mission is unavailable in the selected project. Open a mission from the authorized list.",
+  "cockpitNoProjectSelected": "No project selected",
+  "cockpitNoProjectHelp": "You are signed in to your workspace. Open Profile to choose an authorized context. No business data is loaded yet.",
+  "cockpitProjectRequired": "Select an authorized project and thread to display this information.",
+  "nativeNoAuthorizedClients": "No authorized clients in this workspace.",
+  "nativeContextForbidden": "Access to this workspace was denied.",
+  "nativeContextUnavailable": "The context is temporarily unavailable. Try again later."
 }

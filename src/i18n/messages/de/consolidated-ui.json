@@ -373,5 +373,11 @@
   "uiMicrosoftSetupMissing": "Die Microsoft-Konfiguration ist in dieser Umgebung nicht verfügbar. Ein Administrator muss die Anwendungseinstellungen und Rückruf-URL prüfen; keine Berechtigung wurde geändert.",
   "uiLogoutConfirm": "Diese Clara OS-Sitzung schließen? Ihre Missionen und Verläufe bleiben erhalten.",
   "uiLogoutError": "Die Sitzung konnte nicht geschlossen werden. Ein Erfolg wurde nicht bestätigt.",
-  "uiMissionUnavailable": "Diese Mission ist im ausgewählten Projekt nicht verfügbar. Öffnen Sie eine Mission aus der autorisierten Liste."
+  "uiMissionUnavailable": "Diese Mission ist im ausgewählten Projekt nicht verfügbar. Öffnen Sie eine Mission aus der autorisierten Liste.",
+  "cockpitNoProjectSelected": "Kein Projekt ausgewählt",
+  "cockpitNoProjectHelp": "Sie sind in Ihrem Arbeitsbereich angemeldet. Öffnen Sie das Profil, um einen autorisierten Kontext auszuwählen. Es werden noch keine Geschäftsdaten geladen.",
+  "cockpitProjectRequired": "Wählen Sie ein autorisiertes Projekt und einen Gesprächsfaden, um diese Informationen anzuzeigen.",
+  "nativeNoAuthorizedClients": "Keine autorisierten Kunden in diesem Arbeitsbereich.",
+  "nativeContextForbidden": "Zugriff auf diesen Arbeitsbereich verweigert.",
+  "nativeContextUnavailable": "Der Kontext ist vorübergehend nicht verfügbar. Versuchen Sie es später erneut."
 }
