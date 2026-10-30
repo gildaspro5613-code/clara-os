@@ -65,11 +65,14 @@ jobs:
           set -euo pipefail
           docker run -d --name clara-recette-enrollment-test -e POSTGRES_HOST_AUTH_METHOD=trust postgres:17-alpine
           trap 'docker rm -f clara-recette-enrollment-test >/dev/null' EXIT
+          # The image's temporary initialization server accepts Unix sockets,
+          # then stops. TCP is available only on the final server.
+          ready=false
           for attempt in $(seq 1 30); do
-            if docker exec clara-recette-enrollment-test pg_isready -U postgres; then break; fi
+            if docker exec clara-recette-enrollment-test pg_isready -h 127.0.0.1 -U postgres; then ready=true; break; fi
             sleep 1
           done
-          docker exec clara-recette-enrollment-test pg_isready -U postgres
+          test "$ready" = true
           node --import tsx --test src/tests/recette-google-enrollment-postgres.test.ts
       - name: Recette attestation owner/admin authorization tests
         run: node --import tsx --test src/tests/recette-attestation-authorization.test.ts

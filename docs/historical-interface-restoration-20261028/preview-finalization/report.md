@@ -269,3 +269,25 @@ Validation locale sur le même build optimisé :
 
 Les cinq CI distantes doivent être vérifiées sur le nouveau SHA ; les résultats
 locaux ne constituent pas une attestation de leur réussite.
+
+
+### Deux corrections de harnais CI sur 904a74fd — 30/10/2026
+
+Aucun changement applicatif, ACL ou enrôlement Google.
+- Navigateur : les messages 401/403/503 sont ciblés dans la région
+  « Contexte canonique privé », avec leur texte attendu et une unicité vérifiée.
+  Le sélecteur global ambigu de l’alerte 401 est supprimé ; toutes les assertions
+  de refus, de liste vide et de zéro chargeur global restent conservées.
+- PostgreSQL jetable : attente bornée sur TCP 127.0.0.1 au lieu du socket Unix.
+  Les logs locaux confirment que le serveur temporaire accepte les connexions
+  puis s’arrête avant le serveur final. Le serveur temporaire n’écoute pas TCP.
+  Le drapeau ready doit être vrai avant les tests ; aucun retry des tests,
+  aucun changement de transaction, privilège ou logique d’enrôlement.
+
+Résultats : recette HTTPS Cockpit 1 PASS ; atomicité PostgreSQL réelle 1 PASS
+(rollback, concurrence, rôle limité et reçu durable) ; contrats HTTP/préparation
+et tests native-authority/cockpit-landing 16 PASS, 0 FAIL, 0 SKIP.
+Lint ciblé, YAML/syntaxe shell du workflow et git diff --check : PASS.
+Le build existant est réutilisé, aucun fichier applicatif n’étant modifié.
+Les cinq CI distantes restent à attester sur le SHA publié.
+Aucun merge, migration distante, déploiement ou appel fournisseur réel.

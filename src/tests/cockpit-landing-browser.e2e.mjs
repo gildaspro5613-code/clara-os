@@ -23,13 +23,14 @@ test('authenticated workspace-only Cockpit: historical shell, no business traffi
   await page.locator('#native-account-menu > summary').click();
   await page.getByRole('region',{name:'Contexte canonique privé',exact:true}).locator('select').nth(0).selectOption('welcome-empty');
   await page.getByRole('status').filter({hasText:'Aucun client autorisé dans cet espace.'}).waitFor();
-  for(const [status,text] of [[401,'Connectez-vous'],[403,'Accès à cet espace refusé.'],[503,'Le contexte est temporairement indisponible.']]){
+  for(const [status,text] of [[401,'Connectez-vous pour consulter les projets autorisés.'],[403,'Accès à cet espace refusé.'],[503,'Le contexte est temporairement indisponible.']]){
    await page.route('**/api/canonical/registry',async route=>{
     if(route.request().method()==='POST')return route.fulfill({status,contentType:'application/json',body:JSON.stringify({success:false,data:[]})});
     return route.continue();
    });
    const workspace=page.getByRole('region',{name:'Contexte canonique privé',exact:true}).locator('select').nth(0);await workspace.selectOption('');await workspace.selectOption('welcome-empty');
-   if(status===401)await page.getByRole('alert').waitFor();else await page.getByRole('alert').filter({hasText:text}).waitFor();
+   const alert=page.getByRole('region',{name:'Contexte canonique privé',exact:true}).getByRole('alert').filter({hasText:text});
+   await alert.waitFor();assert.equal(await alert.count(),1);
    assert.equal(await page.getByRole('status').filter({hasText:'Aucun client autorisé'}).count(),0);await page.unroute('**/api/canonical/registry');
   }
   assert(requests.every(path=>path==='/api/canonical/registry'));
