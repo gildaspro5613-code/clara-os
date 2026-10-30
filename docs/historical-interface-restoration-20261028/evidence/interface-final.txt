@@ -1,0 +1,18 @@
+Native browser fixture initialized; no production connections.
+UI_VIEWPORT_PASS desktop
+UI_VIEWPORT_PASS tablet
+UI_VIEWPORT_PASS mobile
+UI_LOCALE_PASS fr
+UI_LOCALE_PASS en
+UI_LOCALE_PASS es
+UI_LOCALE_PASS de
+UI_LOCALE_PASS it
+✔ interface receipt: explicit business flow, responsive navigation, five languages, honest provider states and persistence (238873.757913ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 240054.823814

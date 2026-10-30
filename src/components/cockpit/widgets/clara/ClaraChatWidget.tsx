@@ -135,7 +135,7 @@ export default function ClaraChatWidget({
     await submitOperation(operation);
   }
   async function submitOperation(operation:{operationId:string;message:string;sessionId?:string}){
-    setLoading(true);setChatError('');
+    setLoading(true);setChatError('');window.dispatchEvent(new CustomEvent("clara:dialogue-availability",{detail:{ready:false}}));
     try{
       const response=await fetch('/api/clara/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(operation)});
       const data=await response.json();
@@ -148,6 +148,7 @@ export default function ClaraChatWidget({
       }else if(Array.isArray(data.conversation))setMessages(data.conversation);
       if(pendingKey)try{sessionStorage.removeItem(pendingKey);}catch{/* acknowledged receipt remains server-owned */}setPending(null);
       if(!response.ok||!data.success){setChatError(['NATIVE_THREAD_MISSION_BOUND','NATIVE_NEW_SESSION_REQUIRED'].includes(data.code)?ui('nativeThreadMissionBound'):data.code==='NATIVE_CONSULTATION_MIGRATION_REQUIRED'?`${ui('nativeChatFailed')} [NATIVE_CONSULTATION_MIGRATION_REQUIRED]`:data.message??ui('nativeChatFailed'));router.refresh();return;}
+      window.dispatchEvent(new CustomEvent("clara:dialogue-availability",{detail:{ready:true}}));
       setApprovals(current=>[...current,...(data.approvals??[])]);setPhysicalActions(data.physicalActions??[]);router.refresh();
     }catch{setChatError(ui('nativeChatPending'));}
     finally{setLoading(false);}

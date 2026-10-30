@@ -1,0 +1,58 @@
+unit
+✔ session digest rejects untrusted and malformed tokens (1.063071ms)
+✔ session digest is deterministic and never stores raw bearer token (0.412571ms)
+✔ workspace welcome uses existing authenticated resolver, no business query; absent/revoked/expired/ambiguous access denied (42.884676ms)
+✔ authorized empty registry list differs from 401/403/503 and malformed responses (2.402028ms)
+Checked 38 native handler refusals.
+[CLARA] instrumentation ready; business runtime is request-scoped
+✔ native session handler rejects missing, malformed and duplicate cookies before storage or global runtime (88.639556ms)
+✔ default, external and absent explicit selectors cannot resume a global/native fallback (1.888975ms)
+✔ every fenced native HTTP handler refuses anonymous/invalid cookies without entering legacy business logic (206.589271ms)
+✔ unavailable authority never leaks storage details or resumes the legacy runtime (4.840952ms)
+✔ even an explicitly authorized snapshot cannot unlock legacy native mutations (15.896794ms)
+✔ all six native server pages return before invoking any global data loader (76.607452ms)
+✔ Cockpit landing permits only authenticated presentation and never treats an invalid selected scope as a welcome (50.393186ms)
+✔ reopened chat and native runtime/document handlers still refuse invalid authentication before business code (53.970554ms)
+✔ server instrumentation never imports or starts a global business runtime (2.981371ms)
+✔ Uncertified Google/Brevo/Make connection routes reject invalid OS sessions before storage or provider I/O (146.979201ms)
+✔ a verified native session cannot unlock Google credentials or Make configuration before connector certification (68.761414ms)
+✔ AUTH-01/02: missing, malformed and duplicated canonical cookie are denied (26.829077ms)
+✔ AUTH-04/SCOPE-01: membership and role authorization cannot cross workspaces (1.649595ms)
+✔ SCOPE-02/03: incomplete, duplicated and malformed native selectors are denied before SQL (2.01098ms)
+✔ SCOPE-01/04: SQL native authority denies foreign or unrelated sessions, never falling back (0.494505ms)
+✔ AUTH-03/04: expired or revoked session and revoked membership are denied (0.43795ms)
+✔ AUTH-04: active membership respects role; foreign workspace and invalid token never authorize (0.36492ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 21
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1504.510639
+
+browser
+✔ authenticated workspace-only Cockpit: historical shell, no business traffic; empty list, errors and revoked access distinguished (14572.297996ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 14987.584471
+
+scoped-browser
+✔ cockpit: real header navigation, native service refusals and durable chat recovery (22981.491172ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 23576.802791
+
+Build: npm run build -- --webpack PASS (local font response fixture).
+TypeScript and targeted ESLint PASS.
+No real provider; synthetic database and identities only.

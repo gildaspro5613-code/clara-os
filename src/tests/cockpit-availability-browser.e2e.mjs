@@ -34,7 +34,9 @@ test('cockpit: real header navigation, native service refusals and durable chat 
   assert.deepEqual(talkButtons,[],`Unexpected native voice control: ${JSON.stringify(talkButtons)}`);
   // Voice is always blocked in native scope. Agenda may be legitimately available
   // when the selected native session has an attested Google connection/calendar.
-  assert.ok(await page.getByText('Ce service externe reste indisponible dans le contexte natif tant que ses autorisations ne sont pas certifiées.',{exact:true}).count()>=1);
+  assert.equal(await page.getByRole('link',{name:ui.uiVoiceStatus,exact:true}).count(),1);
+  assert.equal(await page.locator('#main-workspace .native-context').count(),0);
+  assert.equal(await page.locator('#main-workspace #native-google-document-authority').count(),0);
   // The authorized Agenda can legitimately call /api/calendar in this fixture;
   // native voice must never initiate an ElevenLabs session.
   assert.equal(calls.filter(p=>p==='/api/elevenlabs/session').length,0);
@@ -56,7 +58,7 @@ test('cockpit: real header navigation, native service refusals and durable chat 
   await page.getByRole('link',{name:'Clara →',exact:true}).first().click();await page.waitForURL(origin+'/clara');
   await assertHeaderNavigation(page);
   for(const path of ['/missions','/conversations','/contacts','/connexions','/telephonie','/automatisations','/agenda','/documents','/journal','/brain','/clara','/']){
-   await page.locator('aside a[href="'+path+'"]').click();await page.waitForURL(origin+path);assert.equal(new URL(page.url()).pathname,path);
+   await page.locator('#clara-navigation nav a[href="'+path+'"]').click();await page.waitForURL(origin+path);assert.equal(new URL(page.url()).pathname,path);
   }
   await assertHeaderNavigation(page);
   const form=page.locator('form').filter({has:page.locator('textarea[placeholder]')}).last();let release;const committed=new Promise(resolve=>{release=resolve;});let operationId;

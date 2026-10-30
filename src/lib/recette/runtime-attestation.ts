@@ -6,6 +6,7 @@ const branchId='br-crimson-feather-b2zr00sf';
 const neonProject='fragrant-dream-31652403';
 class Refused extends Error {}
 class Unavailable extends Error {}
+export class RecetteSqlIdentityRefused extends Error {}
 /** Operator-only read check in a trusted context with effective runtime bindings.
  * Never expose this as an HTTP route or inject control-plane keys into the app.
  * Reports contain fixed labels only, never identifiers, URLs, hashes or errors. */
@@ -49,7 +50,15 @@ export async function attestRecetteRuntime(env:NodeJS.ProcessEnv,approvedSha:str
   const endpoints=metadata.endpoints.filter((e:{host?:string})=>e.host===database.hostname);
   if(endpoints.length!==1||endpoints[0].branch_id!==branchId)throw new Refused();
   checks.push('NEON_ENDPOINT_BRANCH'); // only now is any SQL connection attempted
-  const sql=neon(env.DATABASE_URL!,{fetchOptions:{redirect:'error',signal:AbortSignal.timeout(15000)}});
+  await verifyRecetteSqlRole(env.DATABASE_URL!);
+  checks.push('SQL_DATABASE_LIMITED_ROLE_NO_ADMIN');
+  return {status:'PASS',checks,writesRequested:false} as const;
+ }catch(error){return {status:error instanceof Refused||error instanceof RecetteSqlIdentityRefused?'FAIL':'NON ATTESTÉ',checks,writesRequested:false} as const;}
+}
+
+/** Shared read-only SQL identity check; called only after independent endpoint verification. */
+export async function verifyRecetteSqlRole(databaseUrl:string){
+  const sql=neon(databaseUrl,{fetchOptions:{redirect:'error',signal:AbortSignal.timeout(15000)}});
   const [rows]=await sql.transaction([sql`SELECT current_database() AS db,current_user AS role,
    rolsuper,rolbypassrls,rolcreatedb,rolcreaterole,rolreplication,
    has_schema_privilege(current_user,'public','CREATE') AS schema_create,
@@ -57,8 +66,5 @@ export async function attestRecetteRuntime(env:NodeJS.ProcessEnv,approvedSha:str
    FROM pg_roles WHERE rolname=current_user`],{readOnly:true});
   const role=rows[0];
   if(rows.length!==1||role.db!=='neondb'||role.role!=='clara_os_recette_limited'||
-   ['rolsuper','rolbypassrls','rolcreatedb','rolcreaterole','rolreplication','schema_create','database_create'].some(k=>role[k]!==false))throw new Refused();
-  checks.push('SQL_DATABASE_LIMITED_ROLE_NO_ADMIN');
-  return {status:'PASS',checks,writesRequested:false} as const;
- }catch(error){return {status:error instanceof Refused?'FAIL':'NON ATTESTÉ',checks,writesRequested:false} as const;}
+   ['rolsuper','rolbypassrls','rolcreatedb','rolcreaterole','rolreplication','schema_create','database_create'].some(k=>role[k]!==false))throw new RecetteSqlIdentityRefused();
 }

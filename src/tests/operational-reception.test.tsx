@@ -12,6 +12,8 @@ import BriefPanel from "../components/cockpit/panels/BriefPanel";
 import SummaryPanel from "../components/cockpit/panels/SummaryPanel";
 import ConversationsPanel from "../components/cockpit/panels/ConversationsPanel";
 import EmailSummaryPanel from "../components/cockpit/panels/EmailSummaryPanel";
+import MissionCard from "../modules/missions/components/MissionCard";
+import MissionDetail from "../modules/missions/components/MissionDetail";
 import MissionsStage from "../modules/missions/MissionsStage";
 import type { Mission } from "../modules/missions/types/Mission";
 
@@ -21,7 +23,7 @@ Reflect.set(globalThis, "React", React);
 
 function sourceSession() {
   const session = createSession();
-  session.conversation = [{id:"message-a",role:"clara",content:"PRIVATE_FULL_EMAIL_BODY",createdAt:"2026-10-14T12:00:00Z"}];
+  session.conversation = [{id:"message-a",role:"clara",content:"AUTHORIZED_CONVERSATION_EXCERPT",createdAt:"2026-10-14T12:00:00Z"}];
   session.sources = [{source:"google-gmail",available:true,summary:"PRIVATE_FULL_EMAIL_BODY",data:{messages:[
     {id:"mail123",subject:"Original subject",from:"sender@example.invalid",labelIds:["IMPORTANT"],snippet:"PRIVATE_EMAIL_SNIPPET",body:"PRIVATE_FULL_EMAIL_BODY"},
     {id:"https://evil.invalid",subject:"unsafe",from:"bad"},
@@ -38,11 +40,11 @@ test("cockpit email projection preserves metadata and source without bodies, sni
  session.sources[0].available=false;assert.deepEqual(cockpitEmails(session),[]);
 });
 
-test("five-language populated cockpit never renders full conversation/email bodies and retains actionable source links",()=>{
+test("five-language cockpit shows authorized conversation excerpts, never email bodies, and retains source links",()=>{
  for(const locale of ['fr','en','es','de','it']){
   const session=sourceSession(),before=JSON.stringify(session);
   const html=renderToStaticMarkup(<NextIntlClientProvider locale={locale} timeZone="UTC" messages={messages(locale)}><BriefPanel session={session}/><SummaryPanel session={session}/><ConversationsPanel session={session}/><EmailSummaryPanel session={session}/></NextIntlClientProvider>);
-  assert.ok(!html.includes('PRIVATE_'),locale);assert.ok(html.includes('Original subject'));assert.ok(html.includes('sender@example.invalid'));assert.ok(html.includes('mail123'));assert.ok(html.includes('/conversations'));assert.equal(JSON.stringify(session),before);
+  assert.ok(html.includes('AUTHORIZED_CONVERSATION_EXCERPT'),locale);assert.ok(!html.includes('PRIVATE_'),locale);assert.ok(html.includes('Original subject'));assert.ok(html.includes('sender@example.invalid'));assert.ok(html.includes('mail123'));assert.ok(html.includes('/conversations'));assert.equal(JSON.stringify(session),before);
  }
 });
 
@@ -96,5 +98,15 @@ test("cockpit with no selected mission distinguishes the current thread from fiv
   const widget=await (exports.default as(props:{mission:null;activeCount:number})=>Promise<React.ReactElement>)({mission:null,activeCount:5});
   const html=renderToStaticMarkup(widget),ui=createTranslator({locale,messages:catalog,namespace:'ui'});
   assert.ok(html.includes(ui('noCurrentFocus')));assert.ok(html.includes(ui('registryActiveCount',{count:5})));assert.ok(!html.includes(catalog.cockpitUi.noMission));
+ }
+});
+
+// Regression for the historical 29% / 38% discrepancy: stored business progress
+// and a count of completed actions are distinct; rendering must not rewrite either.
+test("mission list, card and detail show recorded progress without recomputing a different business value",()=>{
+ const mission:Mission={id:'recorded-progress',title:'Progress source',objective:'Original objective',status:'active',priority:'medium',createdAt:new Date('2026-10-28'),progress:29,tasks:Array.from({length:8},(_,i)=>({id:'task-'+i,title:'Action '+i,completed:i<3}))};
+ const before=JSON.stringify(mission);
+ for(const locale of ['fr','en','es','de','it'])for(const component of [<MissionsStage key="list" initialMissions={[mission]} currentMissionId={mission.id}/>,<MissionCard key="card" mission={mission} onSelect={()=>{throw Error('Rendering cannot select');}}/>,<MissionDetail key="detail" mission={mission} onBack={()=>{}} onUpdate={()=>{throw Error('Rendering cannot mutate');}}/>]){
+  const html=renderToStaticMarkup(<NextIntlClientProvider locale={locale} timeZone="UTC" messages={messages(locale)}>{component}</NextIntlClientProvider>);assert.ok(html.includes('29%'),locale+' '+component.key);assert.ok(!html.includes('38%'));assert.equal(JSON.stringify(mission),before);
  }
 });

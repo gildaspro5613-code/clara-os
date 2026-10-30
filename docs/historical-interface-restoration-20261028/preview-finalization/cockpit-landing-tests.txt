@@ -1,0 +1,30 @@
+cockpit-219-unit-final.log
+✔ session digest rejects untrusted and malformed tokens (1.113367ms)
+✔ session digest is deterministic and never stores raw bearer token (0.502257ms)
+✔ workspace welcome uses existing authenticated resolver, no business query; absent/revoked/expired/ambiguous access denied (26.646006ms)
+✔ authorized empty registry list differs from 401/403/503 and malformed responses (2.377231ms)
+✔ AUTH-01/02: missing, malformed and duplicated canonical cookie are denied (21.413627ms)
+✔ AUTH-04/SCOPE-01: membership and role authorization cannot cross workspaces (0.932405ms)
+✔ SCOPE-02/03: incomplete, duplicated and malformed native selectors are denied before SQL (1.312237ms)
+✔ SCOPE-01/04: SQL native authority denies foreign or unrelated sessions, never falling back (0.40504ms)
+✔ AUTH-03/04: expired or revoked session and revoked membership are denied (0.438791ms)
+✔ AUTH-04: active membership respects role; foreign workspace and invalid token never authorize (0.308265ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 202.417387
+
+cockpit-219-browser.log
+✔ authenticated workspace-only Cockpit: historical shell, no business traffic; empty list, errors and revoked access distinguished (5099.675087ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5437.865597

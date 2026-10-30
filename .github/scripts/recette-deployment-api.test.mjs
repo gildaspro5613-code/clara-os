@@ -12,13 +12,16 @@ assert.equal(workflow.split(marker).length,2);
 const code=workflow.split(marker)[1].split('\n          NODE_API')[0].split('\n').map(line=>line.slice(10)).join('\n');
 const temporary=mkdtempSync(join(tmpdir(),'recette-git-api-offline-'));
 writeFileSync(join(temporary,'driver.mjs'),code);
-const {deployRecette,verifyApprovedSource,approvedFiles,expected}=await import(pathToFileURL(join(temporary,'driver.mjs')).href);
+process.env.REVIEWED_READY_DEPLOYMENT='dpl_syntheticReviewedReady';
+const {deployRecette,verifyApprovedSource,approvedFiles,expected,gatePaths}=await import(pathToFileURL(join(temporary,'driver.mjs')).href);
 test.after(()=>rmSync(temporary,{recursive:true,force:true}));
+const gateGit=args=>execFileSync('git',args,{maxBuffer:32*1024*1024,stdio:['ignore','pipe','pipe']});
+const reviewedBaseline={uid:expected.reviewedDeployment,state:expected.reviewedState,meta:{githubCommitSha:expected.reviewedSourceSha,recetteAttempt:expected.baselineAttempt}};
 const link={type:'github',repoId:1316164838,org:'gildaspro5613-code',repo:'clara-os'};
-const contents=new Map([['package.json',Buffer.from('{}')],['package-lock.json',Buffer.from('{}')],['vercel.json',Buffer.from('{}')],['public/binary.bin',Buffer.from([0,255,1,0])]]);
+const contents=new Map([['package.json',Buffer.from('{}')],['package-lock.json',Buffer.from('{}')],['vercel.json',execFileSync('git',['show',expected.sha+':vercel.json'])],['public/binary.bin',Buffer.from([0,255,1,0])]]);
 // Transport is simulated; source provenance and Production preservation are tested against Git below.
 function fakeGit(args) {
- if(args[0]==='rev-parse') return Buffer.from((args[1]==='HEAD'?expected.sha:expected.baseSha)+'\n');
+ if(args[0]==='rev-parse') return Buffer.from((args[1]==='HEAD'?expected.sha:args[1].endsWith('^{tree}')?expected.tree:expected.baseSha)+'\n');
  if(args[0]==='remote') return Buffer.from('https://github.com/gildaspro5613-code/clara-os\n');
  if(args[0]==='cat-file') return Buffer.from('commit\n');
  if(args[0]==='show') return args[1]===expected.baseSha+':vercel.json'?Buffer.from('{"crons":[{},{}]}'):contents.get(args[1].slice(expected.sha.length+1));
@@ -26,17 +29,31 @@ function fakeGit(args) {
  if(args[0]==='diff') return Buffer.from('vercel.json\n');
  throw Error('UNEXPECTED_GIT_OPERATION');
 }
-function harness({project,environment,create,poll,failPath,failStatus=403,timeout=false,git=fakeGit,failUploadAt=1,uploadStatus=200,createMalformed=false}={}) {
- const calls=[],events=[];
+function harness({project,environment,create,poll,failPath,failStatus=403,failMethod,timeout=false,git=fakeGit,failUploadAt=1,uploadStatus=200,createMalformed=false,previous=[reviewedBaseline],aliases=[],assignStableAlias=false,domainRace=false,aliasProject=expected.project,domain={},aliasInitiallyAbsent=false,aliasStillMissing=false,baselineOverride={}}={}) {
+ const calls=[],events=[];let createdMeta,mappedAlias=aliasInitiallyAbsent?null:'dpl_previous',domainReads=0;
  const ready={id:'dpl_synthetic',url:'clara-os-recette-synthetic-melodie-digital.vercel.app',ownerId:expected.team,projectId:expected.project,
   customEnvironment:{id:expected.environment,slug:expected.slug},meta:{githubCommitSha:expected.sha},readyState:'READY'};
  const http=async(url,init)=>{
   assert.equal(url.origin,'https://api.vercel.com');assert.equal(url.searchParams.get('teamId'),expected.team);
   assert.equal(init.headers.Authorization,'Bearer synthetic-restricted');assert.equal(init.redirect,'error');assert.ok(init.signal);
   calls.push({path:url.pathname,method:init.method,body:init.body});
-  if(url.pathname===failPath && (failPath!=='/v2/files'||calls.filter(c=>c.path==='/v2/files').length===failUploadAt)) {if(timeout) throw Error('synthetic-restricted sensitive provider detail');return new Response('sensitive provider detail',{status:failStatus});}
+  if(url.pathname===failPath && (!failMethod||init.method===failMethod) && (failPath!=='/v2/files'||calls.filter(c=>c.path==='/v2/files').length===failUploadAt)) {if(timeout) throw Error('synthetic-restricted sensitive provider detail');return new Response('sensitive provider detail',{status:failStatus});}
   if(url.pathname==='/v9/projects/'+expected.project) return Response.json(project??{id:expected.project,name:expected.slug,accountId:expected.team});
   if(url.pathname==='/projects/'+expected.project+'/custom-environments') return Response.json({environments:environment??[{id:expected.environment,slug:expected.slug}]});
+  if(url.pathname==='/v6/deployments')return Response.json({deployments:previous});
+  if(url.pathname==='/v13/deployments/'+expected.reviewedDeployment)return Response.json({id:expected.reviewedDeployment,projectId:expected.project,ownerId:expected.team,readyState:'READY',customEnvironment:{id:expected.environment,slug:expected.slug},meta:reviewedBaseline.meta,...baselineOverride});
+  if(url.pathname==='/v9/projects/'+expected.project+'/domains/clara-os-recette.vercel.app'){
+   domainReads++;return Response.json({name:'clara-os-recette.vercel.app',projectId:expected.project,verified:true,customEnvironmentId:expected.environment,gitBranch:domainRace&&domainReads>1?'changed':null,...domain});
+  }
+  if(url.pathname==='/v4/aliases/clara-os-recette.vercel.app'){
+   assert.equal(url.searchParams.get('projectId'),expected.project);
+   if(!mappedAlias||aliasStillMissing)return new Response('',{status:404});
+   return Response.json({alias:'clara-os-recette.vercel.app',projectId:aliasProject,deploymentId:mappedAlias});
+  }
+  if(url.pathname.endsWith('/aliases')&&init.method==='POST'){
+   assert.deepEqual(JSON.parse(init.body),{alias:'clara-os-recette.vercel.app'});mappedAlias='dpl_synthetic';return Response.json({uid:'synthetic'});
+  }
+  if(url.pathname.endsWith('/aliases'))return Response.json({aliases});
   if(url.pathname==='/v2/files') {
    assert.equal(init.method,'POST');assert.ok(Buffer.isBuffer(init.body));
    assert.equal(init.headers['Content-Length'],String(init.body.length));assert.equal(init.headers['x-now-size'],String(init.body.length));
@@ -46,16 +63,18 @@ function harness({project,environment,create,poll,failPath,failStatus=403,timeou
   if(url.pathname==='/v13/deployments') {
    assert.equal(init.method,'POST');const body=JSON.parse(init.body);
    for(const file of body.files){const upload=calls.find(c=>c.path==='/v2/files'&&createHash('sha1').update(c.body).digest('hex')===file.sha);assert.ok(upload);assert.equal(upload.body.length,file.size);}
-   assert.deepEqual(body,{name:expected.slug,project:expected.project,customEnvironmentSlugOrId:expected.environment,files:approvedFiles(git).map(({file,sha,size})=>({file,sha,size})),meta:{githubCommitSha:expected.sha,recetteSourceSha:expected.sha}});
+   assert.deepEqual(body,{name:expected.slug,project:expected.project,customEnvironmentSlugOrId:expected.environment,files:approvedFiles(git,gateGit).map(({file,sha,size})=>({file,sha,size})),meta:{githubCommitSha:expected.sha,recetteSourceSha:expected.sha,recetteGateSha:expected.gateSha,recetteAttempt:expected.attempt,recetteArtifactSha256:createHash('sha256').update(JSON.stringify(approvedFiles(git,gateGit).map(f=>[f.file,createHash('sha256').update(f.data).digest('hex')]).sort())).digest('hex')}});
+   createdMeta=body.meta;
    if(createMalformed)return new Response('sensitive provider detail',{status:200});
-   return Response.json({...ready,...create});
+   return Response.json({...ready,meta:createdMeta,...create});
   }
-  if(url.pathname==='/v13/deployments/dpl_synthetic') return Response.json({...ready,...poll});
+  if(url.pathname==='/v13/deployments/dpl_previous')return Response.json({...ready,id:'dpl_previous'});
+  if(url.pathname==='/v13/deployments/dpl_synthetic') return Response.json({...ready,meta:createdMeta,...poll});
   throw Error('Upload, user lookup, fallback or unexpected transport');
  };
- return {calls,events,run:()=>deployRecette({token:'synthetic-restricted',http,git,wait:async()=>{},emit:e=>events.push(e),writesAuthorized:true})};
+ return {calls,events,run:()=>deployRecette({token:'synthetic-restricted',http,git,wait:async()=>{},emit:e=>events.push(e),writesAuthorized:true,gateGit,assignStableAlias})};
 }
-test('workflow has three write locks and default read-only verification; exact source and secret preserved',()=>{
+test('reviewed activation requires exact authorization, controller SHA, CI and metadata',()=>{
  const config=yaml.load(workflow);
  assert.equal(config.on.workflow_dispatch.inputs.verify_only.default,true);
  assert.equal(config.jobs.deploy.environment,expected.slug);
@@ -63,11 +82,13 @@ test('workflow has three write locks and default read-only verification; exact s
  assert.match(workflow,/secrets.VERCEL_RECETTE_TOKEN/);assert(!workflow.includes('secrets.VERCEL_TOKEN'));
  assert(workflow.includes('test "${{ github.run_attempt }}" = "1"'));
  const deployStep=config.jobs.deploy.steps.find(s=>s.name.startsWith('Deploy only custom'));
- assert.equal(deployStep.if,'${{ false }}');assert.match(deployStep.run,/writesAuthorized:false/);
- const gate=config.jobs.deploy.steps.find(s=>s.name==='Refuse write requests during transport preparation');
- assert.equal(gate.if,'${{ inputs.verify_only != true }}');assert.match(gate.run,/exit 1/);
+ assert.equal(deployStep.if,"${{ inputs.verify_only == false && steps.release_authorization.outcome == 'success' && steps.metadata_preflight.outcome == 'success' }}");assert.match(deployStep.run,/writesAuthorized:true/);
+ const gate=config.jobs.deploy.steps.find(s=>s.id==='release_authorization');assert.match(gate.run,/APPROVED_CONTROLLER_SHA_MISMATCH/);assert(gate.run.includes(expected.attempt));
+ assert.equal(config.on.workflow_dispatch.inputs.release_authorization.default,'');assert.equal(config.on.workflow_dispatch.inputs.controller_sha.default,'');assert.match(deployStep.run,/assignStableAlias:true/);
+ assert(workflow.includes('verify-recette-ci.mjs'));assert(workflow.includes('verify-recette-metadata.mjs'));
+ assert.equal(config.permissions.checks,'read');assert.equal(config.permissions.statuses,'read');
  assert(workflow.includes('/v2/files'));assert(!workflow.includes('config.crons = []'));
- assert(!workflow.includes('gitSource'));assert(!workflow.includes('gitAccessToken'));assert(!workflow.includes('vercel deploy'));
+ assert(!workflow.includes('gitAccessToken'));assert(!workflow.includes('vercel deploy'));
 });
 // YAML parsing does not execute workflow steps.
 import yaml from 'js-yaml';
@@ -77,16 +98,17 @@ test('source SHA, parent, repository and configuration verified without a Git pr
   assert.throws(()=>verifyApprovedSource(args=>args[0]===operation?Buffer.from(value):fakeGit(args)),new RegExp(code));
  }
 });
-test('actual b2a51dd schedules are present and cause refusal before all HTTP, without changing source',async()=>{
- const original=execFileSync('git',['show',expected.baseSha+':vercel.json']);
- assert.equal(JSON.parse(original).crons.length,2);
- const h=harness({git:args=>args[0]==='show'?original:fakeGit(args)});
- await assert.rejects(h.run(),/SOURCE_CRONS_PRESENT_NO_DEPLOYMENT/);assert.equal(h.calls.length,0);
- assert.deepEqual(execFileSync('git',['show',expected.baseSha+':vercel.json']),original);
+test('approved schedules remain tracked; only the isolated artifact removes crons',()=>{
+ const source=execFileSync('git',['show',expected.sha+':vercel.json']);
+ const files=approvedFiles(fakeGit,gateGit);
+ const artifact=JSON.parse(files.find(f=>f.file==='vercel.json').data);
+ const expectedConfig=JSON.parse(source);assert.equal(expectedConfig.crons.length,2);
+ delete expectedConfig.crons;expectedConfig.buildCommand="node --import tsx src/scripts/attest-recette-build.mts && node --import tsx src/scripts/attest-recette-auth.mts && npm run build";assert.deepEqual(artifact,expectedConfig);
+ assert.deepEqual(execFileSync('git',['show',expected.sha+':vercel.json']),source);
 });
-test('missing configuration, malformed or nonempty crons cannot use an undocumented override',()=>{
- for(const data of ['bad JSON','{"crons":null}','{"crons":{}}','{"crons":[{"path":"/run"}]}']) assert.throws(()=>verifyApprovedSource(args=>args[0]==='show'&&args[1]===expected.sha+':vercel.json'?Buffer.from(data):fakeGit(args)));
- assert.equal(verifyApprovedSource(args=>args[0]==='show'&&args[1]===expected.sha+':vercel.json'?Buffer.from('{}'):fakeGit(args)),undefined);
+test('malformed, missing or changed approved crons are refused before upload',()=>{
+ for(const data of ['bad JSON','{}','{"crons":null}','{"crons":[{"path":"/run"}]}'])
+  assert.throws(()=>verifyApprovedSource(args=>args[0]==='show'?Buffer.from(data):fakeGit(args)));
 });
 test('synthetic upload transport deduplicates exact bytes then creates once on exact target',async()=>{
  const h=harness();assert.equal((await h.run()).event,'READY');
@@ -194,31 +216,24 @@ test('preflight 401/403 stops immediately without retry or fallback and never re
 });
 
 
-test('real source manifest includes every approved byte; Production schedules remain unchanged',t=>{
+test('real source manifest preserves all source paths and bytes except artifact crons',()=>{
  const git=args=>execFileSync('git',args,{maxBuffer:32*1024*1024,stdio:['ignore','pipe','pipe']});
- assert.equal(String(git(['rev-parse',expected.sha+'^'])).trim(),expected.baseSha);
- assert.equal(String(git(['diff','--name-only',expected.baseSha,expected.sha])).trim(),'vercel.json');
- const base=JSON.parse(git(['show',expected.baseSha+':vercel.json']));
- const recette=JSON.parse(git(['show',expected.sha+':vercel.json']));
- assert.equal(base.crons.length,2);assert.equal(recette.crons,undefined);
- delete base.crons;assert.deepEqual(recette,base);
- const localHead=String(git(['rev-parse','HEAD'])).trim();
- assert.notEqual(localHead,expected.sha);
- assert.deepEqual(git(['show',localHead+':vercel.json']),git(['show',expected.baseSha+':vercel.json']));
- assert.throws(()=>git(['merge-base','--is-ancestor',expected.sha,localHead]));
  const actualGit=args=>args[0]==='remote'?fakeGit(args):args[0]==='rev-parse'&&args[1]==='HEAD'?Buffer.from(expected.sha):git(args);
  assert.equal(verifyApprovedSource(actualGit),undefined);
- const files=approvedFiles(actualGit);assert.equal(files.length,1084);
- assert.equal(files.reduce((n,f)=>n+f.size,0),13199227);
- const unique=new Map(files.map(f=>[f.sha,f]));assert.equal(unique.size,1054);
- assert(files.every(f=>f.data.equals(git(['show',expected.sha+':'+f.file]))));
- const body={name:expected.slug,project:expected.project,customEnvironmentSlugOrId:expected.environment,files:files.map(({file,sha,size})=>({file,sha,size})),meta:{githubCommitSha:expected.sha,recetteSourceSha:expected.sha}};
- t.diagnostic(JSON.stringify({uniqueUploads:unique.size,uniqueBytes:[...unique.values()].reduce((n,f)=>n+f.size,0),creationJsonBytes:Buffer.byteLength(JSON.stringify(body))}));
+ const before=git(['show',expected.sha+':vercel.json']);
+ const files=approvedFiles(actualGit,gateGit);
+ const paths=String(git(['ls-tree','-r','--name-only',expected.sha])).trim().split('\n');
+ assert.deepEqual([...new Set(files.map(f=>f.file))].sort(),[...new Set([...paths,...gatePaths])].sort());
+ for(const f of files){
+  if(f.file==='vercel.json'){
+   const config=JSON.parse(before);delete config.crons;config.buildCommand="node --import tsx src/scripts/attest-recette-build.mts && node --import tsx src/scripts/attest-recette-auth.mts && npm run build";assert.deepEqual(JSON.parse(f.data),config);
+  }else assert(f.data.equals(git(['show',(gatePaths.includes(f.file)?expected.gateSha:expected.sha)+':'+f.file])));
+ }
+ assert.deepEqual(git(['show',expected.sha+':vercel.json']),before);
 });
-test('wrong parent, unrelated business diff or additional configuration changes are refused',()=>{
- assert.throws(()=>verifyApprovedSource(args=>args[0]==='rev-parse'&&args[1]!=='HEAD'?Buffer.from('foreign'):fakeGit(args)),/SOURCE_PARENT_REFUSED/);
- assert.throws(()=>verifyApprovedSource(args=>args[0]==='diff'?Buffer.from('vercel.json\nsrc/business.ts'):fakeGit(args)),/SOURCE_BUSINESS_DIFF_REFUSED/);
- assert.throws(()=>verifyApprovedSource(args=>args[0]==='show'&&args[1]===expected.sha+':vercel.json'?Buffer.from('{"buildCommand":"changed"}'):fakeGit(args)),/SOURCE_CONFIGURATION_DIFF_REFUSED/);
+test('wrong parent and tree are refused',()=>{
+ assert.throws(()=>verifyApprovedSource(args=>args[0]==='rev-parse'&&args[1]===expected.sha+'^'?Buffer.from('foreign'):fakeGit(args)),/SOURCE_PARENT_REFUSED/);
+ assert.throws(()=>verifyApprovedSource(args=>args[0]==='rev-parse'&&args[1].endsWith('^{tree}')?Buffer.from('foreign'):fakeGit(args)),/SOURCE_TREE_REFUSED/);
 });
 test('actual project check accepts only unlinked project and rejects existing Git links',()=>{
  const step=yaml.load(workflow).jobs.deploy.steps.find(s=>s.name==='Resolve and strictly verify independent project');
@@ -256,11 +271,11 @@ test('upload timeout, 408/5xx or unexpected success response is uncertain withou
  }
 });
 test('upload uses exact binary bytes, deduplicates content but preserves every manifest path',async()=>{
- const files=approvedFiles(fakeGit);assert.equal(files.length,4);
+ const files=approvedFiles(fakeGit,gateGit);assert.equal(files.length,10);
  assert.deepEqual([...files.find(f=>f.file==='public/binary.bin').data],[0,255,1,0]);
- const h=harness();await h.run();assert.equal(h.calls.filter(c=>c.path==='/v2/files').length,2);
- const create=h.calls.find(c=>c.path==='/v13/deployments'&&c.method==='POST');assert.equal(JSON.parse(create.body).files.length,4);
- assert.equal(h.calls.at(-1),create);
+ const h=harness();await h.run();assert.equal(h.calls.filter(c=>c.path==='/v2/files').length,9);
+ const create=h.calls.find(c=>c.path==='/v13/deployments'&&c.method==='POST');assert.equal(JSON.parse(create.body).files.length,10);
+ assert.equal(h.calls.at(-1).path,'/v2/deployments/dpl_synthetic/aliases');
 });
 test('unsafe or unsupported source paths are refused before all HTTP',async()=>{
  for(const file of ['.env.local','.vercel/project.json','../outside','.npmrc']) {
@@ -273,4 +288,111 @@ test('unsafe or unsupported source paths are refused before all HTTP',async()=>{
 test('creation with unreadable acknowledgement remains uncertain; no second creation or false receipt',async()=>{
  const h=harness({createMalformed:true});await assert.rejects(h.run(),/CREATE_OUTCOME_UNCERTAIN_NO_RETRY/);
  assert.equal(h.calls.filter(c=>c.path==='/v13/deployments'&&c.method==='POST').length,1);assert.equal(h.events.length,0);
+});
+
+test('approved attempt already recorded prevents every upload and creation',async()=>{
+ const h=harness({previous:[{meta:{recetteAttempt:expected.attempt}}]});
+ await assert.rejects(h.run(),/AUTHORIZED_ATTEMPT_ALREADY_CONSUMED/);assert(h.calls.every(c=>c.method==='GET'));
+});
+test('foreign alias or artifact metadata prevents READY without repeating creation',async()=>{
+ for(const options of [{aliases:[{alias:'os.melodie.digital'}]},{create:{meta:{githubCommitSha:expected.sha,recetteGateSha:'foreign'}}}]){
+  const h=harness(options);await assert.rejects(h.run());assert(!h.events.some(e=>e.event==='READY'));
+  assert.equal(h.calls.filter(c=>c.path==='/v13/deployments'&&c.method==='POST').length,1);
+ }
+});
+test('gate files come only from the pinned reviewed commit and build command is artifact-local',()=>{
+ const files=approvedFiles(fakeGit,gateGit);
+ for(const file of gatePaths)assert(files.find(f=>f.file===file).data.equals(gateGit(['show',expected.gateSha+':'+file])));
+ assert.equal(JSON.parse(files.find(f=>f.file==='vercel.json').data).buildCommand,'node --import tsx src/scripts/attest-recette-build.mts && node --import tsx src/scripts/attest-recette-auth.mts && npm run build');
+ assert.equal(JSON.parse(contents.get('vercel.json')).buildCommand,undefined);
+ assert.throws(()=>approvedFiles(fakeGit,()=>Buffer.from('blob')),/GATE_SOURCE_REFUSED/);
+});
+
+test('prepared stable alias is assigned only after READY and actually verified afterwards',async()=>{
+ const h=harness({assignStableAlias:true});const result=await h.run();
+ assert.equal(result.stableUrl,'https://clara-os-recette.vercel.app');
+ assert.equal(h.calls.filter(c=>c.method==='POST'&&c.path==='/v2/deployments/dpl_synthetic/aliases').length,1);
+ assert(h.events.some(e=>e.event==='RECETTE_PROJECT_DOMAIN_VERIFIED'));
+ assert(!h.events.some(e=>e.event==='PREVIOUS_RECETTE_ALIAS'));
+ const assigned=h.calls.findIndex(c=>c.method==='POST'&&c.path==='/v2/deployments/dpl_synthetic/aliases');
+ assert(h.calls.findIndex(c=>c.path==='/v4/aliases/clara-os-recette.vercel.app')>assigned);
+ assert(h.calls.filter(c=>c.method==='POST').every(c=>!String(c.body).includes('os.melodie.digital')));
+});
+test('foreign alias result, concurrent domain change and alias 403 stop without retry or certified reception',async()=>{
+ for(const options of [{aliasProject:'foreign'},{domainRace:true},{failPath:'/v2/deployments/dpl_synthetic/aliases',failMethod:'POST',failStatus:403}]){
+  const h=harness({assignStableAlias:true,...options});await assert.rejects(h.run());assert(!h.events.some(e=>e.event==='READY'));
+  assert(h.calls.filter(c=>c.method==='POST'&&c.path==='/v2/deployments/dpl_synthetic/aliases').length<=1);
+ }
+});
+
+test('nullable alias project ID still requires the exact new verified deployment',async()=>{const h=harness({assignStableAlias:true,aliasProject:null});assert.equal((await h.run()).stableUrl,'https://clara-os-recette.vercel.app');assert(!h.calls.some(c=>c.path==='/v13/deployments/dpl_previous'));});
+
+test('previous authorization must have a known terminal result before the new source attempt',async()=>{
+ const old=state=>[reviewedBaseline,{meta:{recetteAttempt:'pr219-20261029-one-build-attestation'},state}];
+ for(const state of ['BUILDING','QUEUED',undefined]){
+  const h=harness({previous:old(state)});await assert.rejects(h.run(),/PREVIOUS_ATTEMPT_NOT_TERMINAL_NO_RETRY/);assert(h.calls.every(c=>c.method==='GET'));
+ }
+ const h=harness({previous:old('READY')});assert.equal((await h.run()).event,'READY');
+});
+
+test('verified domain with no existing deployment alias reaches assignment then required post-READY alias check',async()=>{
+ const h=harness({assignStableAlias:true,aliasInitiallyAbsent:true});assert.equal((await h.run()).stableUrl,'https://clara-os-recette.vercel.app');
+ const create=h.calls.findIndex(c=>c.method==='POST'&&c.path==='/v13/deployments');
+ const assign=h.calls.findIndex(c=>c.method==='POST'&&c.path==='/v2/deployments/dpl_synthetic/aliases');
+ const lookup=h.calls.findIndex(c=>c.path==='/v4/aliases/clara-os-recette.vercel.app');
+ assert(create<assign&&assign<lookup);assert.equal(h.calls.filter(c=>c.path==='/v4/aliases/clara-os-recette.vercel.app').length,1);
+});
+test('invalid Project Domain blocks before uploads; build failure never assigns an alias',async()=>{
+ for(const domain of [{projectId:'foreign'},{name:'os.melodie.digital'},{verified:false},{redirect:'https://os.melodie.digital'},{customEnvironmentId:'foreign'}]){
+  const h=harness({assignStableAlias:true,domain});await assert.rejects(h.run(),/STABLE_DOMAIN_IDENTITY_REFUSED/);assert(h.calls.every(c=>c.method==='GET'));
+ }
+ const h=harness({assignStableAlias:true,create:{readyState:'ERROR'}});await assert.rejects(h.run(),/DEPLOYMENT_ERROR_NO_RETRY/);assert(!h.calls.some(c=>c.path==='/v2/deployments/dpl_synthetic/aliases'&&c.method==='POST'));
+});
+test('alias still returning 404 after assignment prevents READY, without retry or invented mapping',async()=>{
+ const h=harness({assignStableAlias:true,aliasInitiallyAbsent:true,aliasStillMissing:true});await assert.rejects(h.run(),/METADATA_HTTP_404/);
+ assert(!h.events.some(e=>e.event==='READY'));assert.equal(h.calls.filter(c=>c.path==='/v4/aliases/clara-os-recette.vercel.app').length,1);
+ assert.equal(h.calls.filter(c=>c.path==='/v2/deployments/dpl_synthetic/aliases'&&c.method==='POST').length,1);
+});
+
+test('reviewed baseline changes, missing source or already-delivered application stop before every POST',async()=>{
+ for(const previous of [[],[{...reviewedBaseline,uid:'dpl_other'}],[{...reviewedBaseline,state:'BUILDING'}],[{...reviewedBaseline,meta:{}}],[{...reviewedBaseline,meta:{githubCommitSha:'f'.repeat(40)}}],[reviewedBaseline,{meta:{githubCommitSha:expected.sha}}],[reviewedBaseline,{meta:{recetteAttempt:'pr219-c203cd7-stable-oauth-once'}}]]){
+  const h=harness({previous});await assert.rejects(h.run());assert(h.calls.every(c=>c.method==='GET'));
+ }
+});
+test('public operation selector alone never replaces the approved immutable workflow revision',()=>{
+ const gate=yaml.load(workflow).jobs.deploy.steps.find(s=>s.id==='release_authorization');
+ for(const [REQUESTED_RELEASE,APPROVED_CONTROLLER_SHA,ACTUAL_CONTROLLER_SHA,success] of [[expected.attempt,'a'.repeat(40),'a'.repeat(40),true],['','a'.repeat(40),'a'.repeat(40),false],[expected.attempt,'a'.repeat(40),'b'.repeat(40),false],[expected.attempt,'','a'.repeat(40),false]]){
+  const run=()=>execFileSync('bash',['-c',gate.run],{encoding:'utf8',env:{PATH:process.env.PATH,REVIEWED_READY_DEPLOYMENT:expected.reviewedDeployment,REQUESTED_RELEASE,APPROVED_CONTROLLER_SHA,ACTUAL_CONTROLLER_SHA}});
+  if(success)assert.doesNotThrow(run);else assert.throws(run);
+ }
+});
+test('Cockpit release pins the reviewed application and never overlays its enrollment attestation with the old gate',()=>{
+ assert.equal(expected.sha,'d8942685c9c9aad16c00110d2c86de15b667a477');assert.equal(expected.gateSha,expected.sha);
+ const git=args=>execFileSync('git',args,{maxBuffer:32*1024*1024,stdio:['ignore','pipe','pipe']});
+ const files=approvedFiles(args=>args[0]==='remote'?fakeGit(args):args[0]==='rev-parse'&&args[1]==='HEAD'?Buffer.from(expected.sha):git(args),git);
+ for(const path of ['src/lib/auth/recette-google-enrollment.ts','src/app/api/auth/google/enroll/route.ts','src/app/auth/recette-enrollment/page.tsx','src/app/api/auth/google/callback/route.ts','src/scripts/attest-recette-auth.mts']){
+  assert(files.find(f=>f.file===path)?.data.equals(git(['show',expected.sha+':'+path])));
+ }
+ assert(files.find(f=>f.file==='src/scripts/attest-recette-auth.mts').data.toString().includes('ATTESTATION_MODE=ONE_TIME_GOOGLE_ENROLLMENT'));
+});
+test('previous consumed authorization is historical only for the exact reviewed ERROR; the new one is never reusable',async()=>{
+ for(const previous of [
+  [reviewedBaseline,{uid:'dpl_foreign',state:'ERROR',meta:{recetteAttempt:expected.reviewedAttempt}}],
+  [{...reviewedBaseline,state:'ERROR'}],
+  [reviewedBaseline,{meta:{recetteAttempt:expected.attempt}}],
+ ]){
+  const h=harness({previous});await assert.rejects(h.run());assert(h.calls.every(c=>c.method==='GET'));
+ }
+});
+
+test('Cockpit delivery refuses foreign or non READY baseline before any upload',async()=>{
+ for(const baselineOverride of [{projectId:'foreign'},{ownerId:'foreign'},{target:'production'},{readyState:'ERROR'},{customEnvironment:{id:'foreign',slug:expected.slug}},{meta:{githubCommitSha:expected.sha}}]){
+  const h=harness({baselineOverride});await assert.rejects(h.run(),/READY_BASELINE_BINDING_REFUSED/);assert(h.calls.every(c=>c.method==='GET'));
+ }
+});
+test('new delivery cannot use the consumed Google authorization or an absent reviewed ID',()=>{
+ const gate=yaml.load(workflow).jobs.deploy.steps.find(s=>s.id==='release_authorization');
+ for(const [REQUESTED_RELEASE,REVIEWED_READY_DEPLOYMENT] of [['pr219-d8d1515-google-invitation-once',expected.reviewedDeployment],[expected.attempt,'']]){
+  assert.throws(()=>execFileSync('bash',['-c',gate.run],{env:{PATH:process.env.PATH,REQUESTED_RELEASE,REVIEWED_READY_DEPLOYMENT,APPROVED_CONTROLLER_SHA:'a'.repeat(40),ACTUAL_CONTROLLER_SHA:'a'.repeat(40)},stdio:'pipe'}));
+ }
 });

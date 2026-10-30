@@ -17,7 +17,7 @@ test('commercial browser E2E: authenticated canonical selection → contact → 
   const page=await context.newPage();await page.goto(origin+'/clara');
   const selector=page.getByRole('region',{name:'Contexte canonique privé',exact:true});
   await revealContextSelection(page);await selector.locator('select').nth(0).selectOption('w');await selector.locator('select').nth(1).selectOption('c1');await selector.locator('select').nth(2).selectOption('p1');
-  await selector.getByRole('button',{name:'Créer un nouveau fil',exact:true}).click();await revealBusinessContext(page);await page.getByLabel('Contact / prospect',{exact:true}).selectOption('prospect-a');
+  await Promise.all([page.waitForEvent('load'),selector.getByRole('button',{name:'Créer un nouveau fil',exact:true}).click()]);await revealBusinessContext(page);await page.getByLabel('Contact / prospect',{exact:true}).selectOption('prospect-a');
   await revealBusinessContext(page);assert.equal(await page.getByLabel('Contact / prospect',{exact:true}).locator('option').count(),2);
   await Promise.all([page.waitForEvent('framenavigated'),page.getByRole('button',{name:'Sélectionner le contact',exact:true}).click()]);await revealBusinessContext(page);await page.getByLabel('Contact / prospect',{exact:true}).waitFor();
   await revealMissionCreation(page);await page.getByLabel('Titre de la mission',{exact:true}).fill('LOT1_MISSION_A');await page.getByLabel('Objectif de la mission',{exact:true}).fill('Préparer une communication sans envoi');
@@ -37,7 +37,8 @@ test('commercial browser E2E: authenticated canonical selection → contact → 
   const patch=await call('/api/clara/acquisition/commercial-draft','PATCH',{submissionId:'prospect-a',revision:1,subject:'LOT1_DURABLE_SUBJECT',body:'LOT1_DURABLE_BODY'});assert.equal(patch.status,200,await patch.clone().text());
   const stale=await call('/api/clara/acquisition/commercial-draft','PATCH',{submissionId:'prospect-a',revision:1,subject:'STALE',body:'MUST_NOT_PERSIST'});assert.equal(stale.status,409);
   await page.goto(origin+'/');const cockpit=await page.locator('body').innerText();assert.ok(cockpit.includes('prospect-a@example.invalid'));assert.ok(cockpit.includes('LOT1_DURABLE_SUBJECT'));assert.ok(cockpit.includes('LOT1_MISSION_A'),'Cockpit must retain the explicitly created mission title, not rename it after a consultation.');
-  // Compact Cockpit deliberately links to history instead of rendering message bodies.
+  // The authorized Cockpit now renders the real dialogue and retains its history link.
+  await page.getByRole('log').getByText(consultation,{exact:true}).waitFor();
   await page.getByRole('link',{name:'Ouvrir l’historique →',exact:true}).click();
   await page.getByText(consultation,{exact:true}).waitFor();
   await page.goto(origin+'/clara');await page.reload();const restoredDraft=page.locator('#commercial-draft');assert.equal(await restoredDraft.evaluate(e=>e.open),false);await restoredDraft.locator(':scope > summary').click();assert.ok((await page.locator('body').innerText()).includes('LOT1_DURABLE_BODY'));assert.ok((await page.locator('body').innerText()).includes('LOT1_DIALOGUE'));

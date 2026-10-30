@@ -46,7 +46,7 @@ test('real Google verifier and completion: signed identity only, one-time state,
  configure(t);
  const {privateKey,publicKey}=generateKeyPairSync('rsa',{modulusLength:2048});
  const jwk={...publicKey.export({format:'jwk'}),kid:'synthetic-key',use:'sig'};
- const nonce='n'.repeat(43),state='s'.repeat(43);let consumed=false,enrolled=true,issued=0,grants=0,exchange=0,jwks=0;
+ const nonce='n'.repeat(43),state='s'.repeat(43);let consumed=false,enrolled=true,issued=0,grants=0,exchange=0,jwks=0,enrollmentCalls=0;
  const claims={iss:'https://accounts.google.com',aud:'synthetic-client',sub:'enrolled-subject',exp:Math.floor(Date.now()/1000)+300,nonce,email:'synthetic@example.test',email_verified:true};
  const jwt=(changes:Record<string,unknown>={})=>{const h=Buffer.from(JSON.stringify({alg:'RS256',kid:jwk.kid})).toString('base64url'),p=Buffer.from(JSON.stringify({...claims,...changes})).toString('base64url');return h+'.'+p+'.'+sign('RSA-SHA256',Buffer.from(h+'.'+p),privateKey).toString('base64url');};
  let token=jwt();
@@ -62,6 +62,9 @@ test('real Google verifier and completion: signed identity only, one-time state,
   '@/lib/recette/external-execution-guard':guard,'./google-sign-in-policy':{assertGoogleSignInAllowed},
   '@/lib/core/store/database':{sql:()=>{grants++;throw Error('UNEXPECTED_WRITE');}},
   './verified-identity':{findVerifiedUser:async()=>enrolled?'canonical-user':null,enrollVerifiedIdentity:async()=>{grants++;throw Error('UNEXPECTED_ENROLLMENT');}},
+  './recette-google-enrollment':{completeRecetteEnrollment:async(ticket:string,verified:typeof claims)=>{
+   enrollmentCalls++;assert.equal(ticket,'t'.repeat(43));assert.equal(verified.sub,claims.sub);assert.equal(verified.email_verified,true);enrolled=true;
+  }},
   './sign-in-transaction':{consumeSignInTransaction:async(provider:string,s:string,n:string)=>{assert.equal(provider,'google');if(consumed||s!==state||n!==nonce)return false;consumed=true;return true;}},
   './verified-sign-in':{completeVerifiedSignIn:async(identity:{subject:string})=>{assert.equal(identity.subject,'enrolled-subject');issued++;return 'synthetic-session';}},
  },http);
@@ -73,8 +76,11 @@ test('real Google verifier and completion: signed identity only, one-time state,
  }
  token=jwt();const parts=token.split('.');parts[2]=(parts[2][0]==='A'?'B':'A')+parts[2].slice(1);token=parts.join('.');
  await assert.rejects(auth.completeGoogleSignIn('code',state,nonce),/SIGNATURE/);
+ await assert.rejects(auth.completeGoogleSignIn('code',state,nonce,'t'.repeat(43)),/SIGNATURE/);assert.equal(enrollmentCalls,0);
  consumed=false;enrolled=false;token=jwt();await assert.rejects(auth.completeGoogleSignIn('code',state,nonce),/IDENTITY_NOT_ENROLLED/);
  assert.equal(grants,0);assert.equal(issued,1);assert.ok(exchange>0&&jwks>0);
+ consumed=false;await auth.completeGoogleSignIn('code',state,nonce,'t'.repeat(43));assert.equal(issued,2);
+ await assert.rejects(auth.completeGoogleSignIn('code',state,nonce,'t'.repeat(43)),/REPLAYED/);assert.equal(issued,2);assert.equal(enrollmentCalls,1);
  const before=exchange;process.env.VERCEL_ENV='production';await assert.rejects(auth.completeGoogleSignIn('code',state,nonce),/DENIED/);assert.equal(exchange,before);
 });
 

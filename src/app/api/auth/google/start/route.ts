@@ -3,6 +3,7 @@ import { beginSignInTransaction } from "@/lib/auth/sign-in-transaction";
 import { googleSignInAuthorizationUrl } from "@/lib/auth/google-sign-in";
 
 import { assertGoogleSignInAllowed } from "@/lib/auth/google-sign-in-policy";
+import { enrollmentCookie } from "@/lib/auth/recette-google-enrollment";
 
 const NONCE_COOKIE = "clara_auth_google_nonce";
 export const dynamic = "force-dynamic";
@@ -20,6 +21,7 @@ export async function GET() {
       maxAge: transaction.expiresIn,
     });
     response.headers.set("Cache-Control", "no-store");
+    response.cookies.set(enrollmentCookie, "", {httpOnly:true,secure:true,sameSite:"lax",path:"/api/auth/google/callback",maxAge:0});
     return response;
   } catch (error) {
     console.error("[Clara auth Google start]", error);

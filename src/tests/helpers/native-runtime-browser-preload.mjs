@@ -17,7 +17,8 @@ globalThis.fetch=async(input,init)=>{
   const body=JSON.parse(String(init?.body));
   const normalized=body.query.replace(/\s+/g,' ').trim();
   const logout=normalized==='UPDATE clara_auth_sessions SET revoked_at = NOW() WHERE token_hash = $1 AND revoked_at IS NULL';
-  if(!logout&&!/^SELECT clara_(native_|registry_)/.test(body.query)&&!/^SELECT m.workspace_id FROM clara_auth_sessions s JOIN clara_workspace_memberships/.test(body.query)){appendFileSync(attemptsFile,'GLOBAL_LOADER_ATTEMPT\n');throw Error('Global SQL loader forbidden in native browser fixture');}
+  const workspaceLanding=normalized==="SELECT s.user_id, m.workspace_id, m.role FROM clara_auth_sessions s JOIN clara_workspace_memberships m ON m.user_id = s.user_id WHERE s.token_hash = $1 AND s.revoked_at IS NULL AND s.expires_at > NOW() AND m.revoked_at IS NULL AND m.workspace_id <> 'default' LIMIT 2";
+  if(!logout&&!workspaceLanding&&!/^SELECT clara_(native_|registry_)/.test(body.query)&&!/^SELECT m.workspace_id FROM clara_auth_sessions s JOIN clara_workspace_memberships/.test(body.query)){appendFileSync(attemptsFile,'GLOBAL_LOADER_ATTEMPT\n');throw Error('Global SQL loader forbidden in native browser fixture');}
   const statement=body.query.replace(/\$(\d+)/g,(_,n)=>literal(body.params[Number(n)-1]));
   try{
    if(logout){execFileSync('docker',['exec','clara-canonical-test-postgres','psql','-U','postgres','-d',process.env.NATIVE_TEST_DATABASE,'-q','-v','ON_ERROR_STOP=1','-c',statement],{stdio:['pipe','pipe','pipe']});return Response.json({fields:[],rows:[],rowCount:1,command:'UPDATE',rowAsArray:true});}

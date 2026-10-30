@@ -7,6 +7,7 @@ import { getTranslations } from "next-intl/server";
 interface MissionWidgetProps {
   mission: Mission | null;
   nativeScope?:boolean;
+  missions?:Mission[];
   activeCount?: number;
   blockedCount?: number;
 }
@@ -14,12 +15,23 @@ interface MissionWidgetProps {
 export default async function MissionWidget({
   mission,
   nativeScope=false,
+  missions,
   activeCount = 0,
   blockedCount = 0,
 }: MissionWidgetProps) {
   const ui = await getTranslations("ui");
 
   const t = await getTranslations("cockpitUi");
+  if (missions) return <GlassPanel className="!h-auto shrink-0" title={t("openMissions")}>
+    <ul className="max-h-80 space-y-3 overflow-y-auto">
+      {missions.map(item=><li key={item.id} className="rounded-xl border border-white/10 p-3">
+        <Link href={`/missions?mission=${encodeURIComponent(item.id)}`} className="block font-medium text-cyan-100">{item.title}</Link>
+        <div className="mt-2 flex flex-wrap justify-between gap-2 text-sm text-white/65"><span>{t(`missionStatus.${item.status}`)}</span><span>{item.progress} %</span></div>
+      </li>)}
+    </ul>
+    {!missions.length&&<p className="text-sm text-white/60">{ui("noCurrentFocus")}</p>}
+    <Link href="/missions" className="mt-4 inline-block text-sm text-cyan-300">{ui("viewAllMissions")}</Link>
+  </GlassPanel>;
   if (!mission) {
     return (
       <GlassPanel title={t("mission")}>

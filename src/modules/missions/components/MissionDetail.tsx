@@ -26,7 +26,7 @@ export default function MissionDetail({ mission, onBack, onUpdate }: MissionDeta
   const [executingTaskId, setExecutingTaskId] = useState<string | null>(null);
 
   const completedTasks = tasks.filter((task) => task.completed).length;
-  const progress = tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0;
+  const progress = mission.progress;
   const nextTask = tasks.find((task) => !task.completed);
 
   const context = useMemo(() => {

@@ -62,6 +62,12 @@ const sections = [
 export default function Sidebar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [dialogueReady,setDialogueReady]=useState(false);
+  useEffect(()=>{
+    const update=(event:Event)=>setDialogueReady((event as CustomEvent<{ready:boolean}>).detail?.ready===true);
+    window.addEventListener('clara:dialogue-availability',update);
+    return()=>window.removeEventListener('clara:dialogue-availability',update);
+  },[]);
   const [desktop, setDesktop] = useState(true);
   useEffect(() => {
     const media = window.matchMedia("(min-width: 1024px)");
@@ -71,7 +77,6 @@ export default function Sidebar() {
   }, []);
   const t = useTranslations("navigation");
   const tCommon = useTranslations("common");
-  const ui = useTranslations("ui");
   const menuButton = useRef<HTMLButtonElement>(null);
   const drawer = useRef<HTMLElement>(null);
   useEffect(() => {
@@ -90,6 +95,7 @@ export default function Sidebar() {
   }, [open]);
   const mailLabel: Record<string,string> = {fr:"Messagerie",en:"Mail",es:"Correo",de:"E-Mail",it:"Posta"};
   const locale = useLocale();
+  const clara=useTranslations("clara");
 
   return (
     <>
@@ -193,10 +199,10 @@ export default function Sidebar() {
       {/* Footer */}
       <div className="border-t border-white/10 px-5 py-4">
         <div className="mb-4 flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full bg-cyan-400" />
+          <span aria-hidden="true" className={`h-2.5 w-2.5 rounded-full ${dialogueReady?"bg-emerald-400":"bg-slate-500"}`} />
 
           <span className="text-sm text-slate-300">
-            {ui("uiWorkspace")}
+            <Link href="/clara">{dialogueReady?clara("ready"):t("clara")}</Link>
           </span>
         </div>
 

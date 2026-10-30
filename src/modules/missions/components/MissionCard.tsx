@@ -21,9 +21,7 @@ export default function MissionCard({ mission, onSelect }: MissionCardProps) {
   const ui = useTranslations("ui");
   const t = useTranslations("missionsPage");
   const completedTasks = mission.tasks.filter((task) => task.completed).length;
-  const progress = mission.tasks.length > 0
-    ? Math.round((completedTasks / mission.tasks.length) * 100)
-    : 0;
+  const progress = mission.progress;
 
   const statusKey = `status.${mission.status}` as const;
   const priorityKey = `priority.${

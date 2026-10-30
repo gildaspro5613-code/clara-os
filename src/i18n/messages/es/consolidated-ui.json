@@ -363,5 +363,21 @@
   "uiChangeContext": "Cambiar espacio o proyecto",
   "uiTechnicalDetails": "Detalles técnicos",
   "googleHubDescription": "Conexiones de Google autorizadas para documentos y calendario.",
-  "uiMissionContact": "Misión y contacto"
+  "uiMissionContact": "Misión y contacto",
+  "uiBackCockpit": "Volver al Cockpit",
+  "uiAccountContextHelp": "Seleccione explícitamente un espacio, proyecto o conversación. Los cambios conservan los controles de acceso y nunca trasladan el historial.",
+  "uiVoiceStatus": "Voz y telefonía: consultar los accesos disponibles",
+  "uiAuthorizedConversations": "Conversaciones del proyecto autorizado",
+  "uiGeneralConversation": "Conversación general",
+  "uiGoogleAgenda": "Calendario de Google",
+  "uiMicrosoftSetupMissing": "La configuración de Microsoft no está disponible en este entorno. Un administrador debe verificar la configuración de la aplicación y la URL de retorno; no se ha modificado ninguna autorización.",
+  "uiLogoutConfirm": "¿Cerrar esta sesión de Clara OS? Sus misiones e historiales se conservarán.",
+  "uiLogoutError": "No se ha podido cerrar la sesión. No se ha confirmado el éxito.",
+  "uiMissionUnavailable": "Esta misión no está disponible en el proyecto seleccionado. Abra una misión de la lista autorizada.",
+  "cockpitNoProjectSelected": "Ningún proyecto seleccionado",
+  "cockpitNoProjectHelp": "Has iniciado sesión en tu espacio. Abre el Perfil para elegir un contexto autorizado. Todavía no se cargan datos de trabajo.",
+  "cockpitProjectRequired": "Selecciona un proyecto y un hilo autorizados para mostrar esta información.",
+  "nativeNoAuthorizedClients": "No hay clientes autorizados en este espacio.",
+  "nativeContextForbidden": "Acceso a este espacio denegado.",
+  "nativeContextUnavailable": "El contexto no está disponible temporalmente. Inténtalo más tarde."
 }

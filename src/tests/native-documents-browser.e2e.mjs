@@ -15,9 +15,9 @@ test('documentary browser E2E: canonical selection → mission → pinned OAuth 
   const context=await browser.newContext();await context.addCookies([{name:'clara_auth_session',value:'A'.repeat(43),url:origin},{name:'NEXT_LOCALE',value:'fr',url:origin}]);await context.route('**/*',r=>new URL(r.request().url()).origin===new URL(origin).origin?r.continue():r.abort());
   const page=await context.newPage();await page.goto(origin+'/clara');const selector=page.getByRole('region',{name:'Contexte canonique privé',exact:true});
   await revealContextSelection(page);await selector.locator('select').nth(0).selectOption('w');await selector.locator('select').nth(1).selectOption('c1');await selector.locator('select').nth(2).selectOption('p1');
-  await Promise.all([page.waitForResponse(r=>r.url().includes('/api/native/runtime')&&r.request().method()==='POST'),selector.getByRole('button',{name:'Créer un nouveau fil'}).click()]);
+  await Promise.all([page.waitForEvent('load'),page.waitForResponse(r=>r.url().includes('/api/native/runtime')&&r.request().method()==='POST'),selector.getByRole('button',{name:'Créer un nouveau fil'}).click()]);
   await revealMissionCreation(page);await page.getByRole('textbox',{name:'Titre de la mission',exact:true}).fill('LOT2_DOCUMENTARY_MISSION');await page.getByRole('textbox',{name:'Objectif de la mission',exact:true}).fill('Analyze the project document and preserve commercial continuity');
-  await Promise.all([page.waitForResponse(r=>r.url().includes('/api/native/runtime')&&r.request().method()==='POST'),page.getByRole('button',{name:'Créer la mission',exact:true}).click()]);
+  await Promise.all([page.waitForEvent('load'),page.waitForResponse(r=>r.url().includes('/api/native/runtime')&&r.request().method()==='POST'),page.getByRole('button',{name:'Créer la mission',exact:true}).click()]);
   await revealMissionCreation(page);await page.getByRole('textbox',{name:'Titre de la mission',exact:true}).waitFor();
   const cookie=async()=> (await context.cookies()).map(c=>c.name+'='+c.value).join(';');
   const call=async(path,method='GET',body,customCookie)=>fetch(origin+path,{method,redirect:'manual',headers:{cookie:customCookie??await cookie(),origin,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body.action==='read'?{operationId:crypto.randomUUID(),...body}:body)}:{})});
@@ -51,7 +51,7 @@ test('documentary browser E2E: canonical selection → mission → pinned OAuth 
   const verified=await call('/api/native/documents/authorization?fileId=document-a');assert.equal(verified.status,200);assert.equal((await verified.json()).verification.readAllowed,true);
   const download=await call('/api/documents?action=download&fileId=document-a');assert.equal(download.status,200);assert.ok((await download.arrayBuffer()).byteLength>100);
   const persisted=await (await call('/api/documents?action=references')).json();assert.equal(persisted.references[0].available,true);assert.ok(persisted.references[0].analysis.answer);
-  for(const path of ['/journal','/','/clara']){await page.goto(origin+path);assert.equal(await page.locator('[data-native-authority="locked"]').count(),0);if(path==='/journal')assert.ok((await page.locator('body').innerText()).includes('DOCUMENT_RECEIVED'));else await page.locator('[data-native-document="document-a"]').waitFor();}
+  for(const path of ['/journal','/','/clara']){await page.goto(origin+path);assert.equal(await page.locator('[data-native-authority="locked"]').count(),0);if(path==='/journal')assert.ok((await page.locator('body').innerText()).includes('DOCUMENT_RECEIVED'));else if(path==='/clara')await page.locator('[data-native-document="document-a"]').waitFor();else assert.ok((await page.locator('body').innerText()).includes('Cockpit'),'Cockpit remains usable without re-exposing mission documents');}
   await page.reload();await page.locator('[data-native-document="document-a"]').waitFor();
   const current=await (await call('/api/native/runtime')).json(),fresh=await newThread('A','c1','p1');
   assert.equal((await call('/api/native/runtime','POST',{action:'selectMission',missionId:current.session.mission.id},fresh.cookie)).status,200);

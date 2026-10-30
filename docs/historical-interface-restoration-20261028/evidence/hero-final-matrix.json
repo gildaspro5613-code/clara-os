@@ -1,0 +1,95 @@
+{
+  "providerCertified": false,
+  "rows": [
+    {
+      "locale": "fr",
+      "device": "desktop",
+      "status": "PASS",
+      "scope": "two synthetic missions in explicitly selected authorized project; no provider certification"
+    },
+    {
+      "locale": "fr",
+      "device": "tablet",
+      "status": "PASS",
+      "scope": "two synthetic missions in explicitly selected authorized project; no provider certification"
+    },
+    {
+      "locale": "fr",
+      "device": "mobile",
+      "status": "PASS",
+      "scope": "two synthetic missions in explicitly selected authorized project; no provider certification"
+    },
+    {
+      "locale": "en",
+      "device": "desktop",
+      "status": "PASS",
+      "scope": "two synthetic missions in explicitly selected authorized project; no provider certification"
+    },
+    {
+      "locale": "en",
+      "device": "tablet",
+      "status": "PASS",
+      "scope": "two synthetic missions in explicitly selected authorized project; no provider certification"
+    },
+    {
+      "locale": "en",
+      "device": "mobile",
+      "status": "PASS",
+      "scope": "two synthetic missions in explicitly selected authorized project; no provider certification"
+    },
+    {
+      "locale": "es",
+      "device": "desktop",
+      "status": "PASS",
+      "scope": "two synthetic missions in explicitly selected authorized project; no provider certification"
+    },
+    {
+      "locale": "es",
+      "device": "tablet",
+      "status": "PASS",
+      "scope": "two synthetic missions in explicitly selected authorized project; no provider certification"
+    },
+    {
+      "locale": "es",
+      "device": "mobile",
+      "status": "PASS",
+      "scope": "two synthetic missions in explicitly selected authorized project; no provider certification"
+    },
+    {
+      "locale": "de",
+      "device": "desktop",
+      "status": "PASS",
+      "scope": "two synthetic missions in explicitly selected authorized project; no provider certification"
+    },
+    {
+      "locale": "de",
+      "device": "tablet",
+      "status": "PASS",
+      "scope": "two synthetic missions in explicitly selected authorized project; no provider certification"
+    },
+    {
+      "locale": "de",
+      "device": "mobile",
+      "status": "PASS",
+      "scope": "two synthetic missions in explicitly selected authorized project; no provider certification"
+    },
+    {
+      "locale": "it",
+      "device": "desktop",
+      "status": "PASS",
+      "scope": "two synthetic missions in explicitly selected authorized project; no provider certification"
+    },
+    {
+      "locale": "it",
+      "device": "tablet",
+      "status": "PASS",
+      "scope": "two synthetic missions in explicitly selected authorized project; no provider certification"
+    },
+    {
+      "locale": "it",
+      "device": "mobile",
+      "status": "PASS",
+      "scope": "two synthetic missions in explicitly selected authorized project; no provider certification"
+    }
+  ]
+}

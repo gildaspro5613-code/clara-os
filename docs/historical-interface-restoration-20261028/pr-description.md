@@ -1,0 +1,9 @@
+Le sélecteur canonique global occupait les pages métier, les conversations du Cockpit masquaient les vrais échanges et plusieurs navigations ne permettaient pas de reprendre précisément le travail. Cette PR restaure le Hero architectural sans portrait confirmé par le propriétaire, garde les GlassPanels historiques et remet les sélections avancées derrière le profil. Elle réutilise les routes natives pour reprendre un fil, consulter une mission, revenir à sa liste et se déconnecter, sans changer les autorités ou les données.
+
+Les progressions Missions affichent désormais la valeur enregistrée par le moteur. Google garde ses accès Documents/Agenda, et une configuration Microsoft manquante renvoie une explication lisible au navigateur tout en conservant le refus JSON. Aucun connecteur, store, migration, package ou asset de marque ajouté/remplacé. Les histoires, permissions, signatures, approbations et contrats OS ↔ Live sont conservés.
+
+Validation locale : 45 tests ciblés; recette de 13 pages, trois formats, cinq langues et reprise du fil depuis le Cockpit; Hero sur 15 combinaisons avec deux missions persistées; continuité documentaire/messagerie et reprise après redémarrage. Fournisseurs simulés, 0 tentative SMTP et 0 écriture Google dans le premier jour. Les SHA et limites de réutilisation sont détaillés dans le dossier.
+
+**Draft — aucune Preview ni certification opérationnelle distante.** Pas de merge, déploiement, modification Production/Live/Studio, migration distante, OAuth ou secret modifié. Branche exclue des déploiements Git automatiques. La proposition de Preview réutilise le projet indépendant existant, sous attestation préalable; le workflow de déploiement n’est pas activé.
+
+Dossier : `docs/historical-interface-restoration-20261028/report.md`, matrices, captures, validation et proposition de Preview. Conserver la PR en Draft jusqu’à CI et réception utilisateur effectives.

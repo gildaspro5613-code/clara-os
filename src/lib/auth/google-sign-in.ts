@@ -5,6 +5,7 @@ import { sql } from "@/lib/core/store/database";
 import { completeVerifiedSignIn } from "./verified-sign-in";
 import { enrollVerifiedIdentity, findVerifiedUser, type VerifiedIdentity } from "./verified-identity";
 import { consumeSignInTransaction } from "./sign-in-transaction";
+import { completeRecetteEnrollment } from "./recette-google-enrollment";
 
 const GOOGLE_AUTHORIZATION_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
@@ -180,7 +181,7 @@ async function bootstrapIfAuthorized(identity: VerifiedIdentity, claims: JwtClai
   `;
 }
 
-export async function completeGoogleSignIn(code: string, state: string, expectedNonce: string): Promise<string> {
+export async function completeGoogleSignIn(code: string, state: string, expectedNonce: string, enrollmentTicket?: string): Promise<string> {
   if (!code.trim()) throw new Error("GOOGLE_AUTHORIZATION_CODE_REQUIRED");
   const idToken = await exchangeCode(code);
   const claims = await verifyGoogleIdToken(idToken, expectedNonce);
@@ -188,6 +189,7 @@ export async function completeGoogleSignIn(code: string, state: string, expected
   if (!consumed) throw new Error("INVALID_OR_REPLAYED_SIGN_IN_TRANSACTION");
 
   const identity: VerifiedIdentity = { issuer: "https://accounts.google.com", subject: claims.sub! };
+  if (enrollmentTicket) await completeRecetteEnrollment(enrollmentTicket, claims);
   await bootstrapIfAuthorized(identity, claims);
   return completeVerifiedSignIn(identity);
 }

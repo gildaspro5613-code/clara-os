@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { authenticatedSessionCookie } from "@/lib/auth/authenticated-session-lifecycle";
 import { completeGoogleSignIn } from "@/lib/auth/google-sign-in";
 import { isOpaqueAuthValue } from "@/lib/auth/sign-in-transaction";
+import { enrollmentCookie } from "@/lib/auth/recette-google-enrollment";
 
 const NONCE_COOKIE = "clara_auth_google_nonce";
 export const dynamic = "force-dynamic";
@@ -28,6 +29,7 @@ function finish(origin: string, status: string): NextResponse {
     maxAge: 0,
   });
   response.headers.set("Cache-Control", "no-store");
+  response.cookies.set(enrollmentCookie, "", {httpOnly:true,secure:true,sameSite:"strict",path:"/api/auth/google/callback",maxAge:0});
   return response;
 }
 
@@ -50,13 +52,17 @@ export async function GET(request: NextRequest) {
   try {
     // Verification order is deliberate: signature/issuer/audience/expiry/nonce,
     // then atomic state+nonce consumption, then enrollment/session issuance.
-    const token = await completeGoogleSignIn(code, state, nonce);
+    const ticket = request.cookies.get(enrollmentCookie)?.value;
+    const token = await completeGoogleSignIn(code, state, nonce, ticket);
     const response = finish(origin, "connected");
     const session = authenticatedSessionCookie(token, process.env.NODE_ENV === "production");
     response.cookies.set(session.name, session.value, session.options);
     return response;
   } catch (error) {
-    console.error("[Clara auth Google callback]", error);
+    // Enrollment errors may originate from a database driver; never log its
+    // detail/query/parameters or a Google subject.
+    void error;
+    console.error("[Clara auth Google callback]", "SIGN_IN_REFUSED");
     return finish(origin, "sign_in_failed");
   }
 }

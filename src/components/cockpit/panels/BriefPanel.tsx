@@ -44,7 +44,7 @@ export default function BriefPanel({ session, acquisition }: BriefPanelProps) {
   const documentEvent = session.brainDashboard?.context.event.type === "DOCUMENT_RECEIVED";
 
   return (
-    <GlassPanel className="max-w-[18rem] px-6 py-5 bg-[#07111f]/55 border-white/[0.08] shadow-[0_2px_18px_rgba(0,0,0,0.18)] backdrop-blur-[18px]">
+    <GlassPanel className="!h-auto shrink-0 max-w-[18rem] px-6 py-5 bg-[#07111f]/55 border-white/[0.08] shadow-[0_2px_18px_rgba(0,0,0,0.18)] backdrop-blur-[18px]">
       <h2 className="mb-3 text-[1.6rem] leading-snug font-light text-white/90">
         {personalizeGreeting(t("greeting"), session.user.firstName)}
       </h2>
@@ -68,7 +68,6 @@ export default function BriefPanel({ session, acquisition }: BriefPanelProps) {
       ) : (
         <p className="text-sm leading-normal text-white/58">{ui("noCurrentFocus")}</p>
       )}
-      <p className="mt-3 text-xs text-white/45">{ui("missionScope")}</p>
 
       <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-white/10 pt-3 text-xs">
         {mission && <Link href="/missions" className="text-cyan-300/80 hover:text-cyan-200">{t("viewMissions")}</Link>}

@@ -1,3 +1,8 @@
+import {loadNativeConversationNavigation} from "@/components/native/conversation-navigation";
+import NativeConversationList from "@/components/native/NativeConversationList";
+import ConversationsPanel from "@/components/cockpit/panels/ConversationsPanel";
+import GlassPanel from "@/components/ui/GlassPanel";
+import Link from "next/link";
 import NativeDocumentsPanel from "@/components/native/NativeDocumentsPanel";
 import {nativeContext,nativeThreadCertified} from "@/lib/native/scoped-context";
 import { nativePage } from "@/lib/native/page-fence";
@@ -25,6 +30,7 @@ export default async function ClaraPage({
 
   const t = await getTranslations("pages");
   const ui = await getTranslations("ui");
+  const conversationNavigation=await loadNativeConversationNavigation();
   const params = await searchParams;
   const { session, acquisition } = await resolveOperationalContext();
   const intake = acquisition && !acquisition.commercialDraft ? await loadProjectIntake(acquisition.workspaceId, acquisition.submissionId).catch(() => null) : null;
@@ -98,7 +104,11 @@ export default async function ClaraPage({
             initialMessages={session.conversation}
             userFirstName={session.user.firstName}
           />
-          {nativeContext()?<p className="text-sm text-white/60">{ui("nativeProviderBlocked")}</p>:<ClaraVoiceWidget />}
+          <aside className="space-y-4">{conversationNavigation?<NativeConversationList {...conversationNavigation}/>:<p role="status" className="mb-4 text-sm text-white/65">{ui("nativeHistoryUnavailable")}</p>}
+            <ConversationsPanel session={session} />
+            <GlassPanel title={t("currentMission")}><p className="break-words text-white/80">{mission?.title??t("noMission")}</p>{mission&&<Link href={`/missions?mission=${encodeURIComponent(mission.id)}`} className="mt-3 block text-cyan-200">{ui("viewAllMissions")}</Link>}</GlassPanel>
+            {nativeContext()?<GlassPanel><Link href="/telephonie" className="text-cyan-200">{ui("uiVoiceStatus")}</Link></GlassPanel>:<ClaraVoiceWidget />}
+          </aside>
         </div>
         <NativeDocumentsPanel referencesOnly />
       </div>

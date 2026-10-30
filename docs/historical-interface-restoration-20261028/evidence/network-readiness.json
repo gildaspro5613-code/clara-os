@@ -1,0 +1,8 @@
+{
+  "observations_current": true,
+  "network_policy": "enforced",
+  "github_api_allowed": false,
+  "vercel_api_allowed": false,
+  "vercel_connector_available": false,
+  "meaning": "Accès non disponible ici; aucune déduction de panne, absence de protection ou invalidité de jeton."
+}

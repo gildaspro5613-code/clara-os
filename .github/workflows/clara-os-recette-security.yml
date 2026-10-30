@@ -5,6 +5,11 @@ on:
     paths:
       - 'src/lib/recette/**'
       - 'src/lib/auth/google-sign-in*'
+      - 'src/lib/auth/recette-google-enrollment.ts'
+      - 'src/app/auth/recette-enrollment/**'
+      - 'src/scripts/prepare-recette-google-enrollment.mts'
+      - 'src/tests/recette-google-enrollment-*.test.ts'
+      - 'src/tests/recette-google-enrollment-browser.e2e.mjs'
       - 'src/app/api/auth/google/**'
       - 'src/lib/core/store/database.ts'
       - 'src/tests/recette-google-sign-in.test.ts'
@@ -16,7 +21,16 @@ on:
       - 'src/tests/recette-auth-isolation.test.ts'
       - 'src/tests/recette-network-provider-denials.test.ts'
       - 'src/tests/recette-attestation-authorization.test.ts'
+      - 'src/tests/recette-environment-attestation.test.ts'
+      - 'src/scripts/attest-recette-environment.mts'
+      - 'src/scripts/attest-recette-build.mts'
+      - 'src/tests/recette-build-attestation.test.ts'
+      - 'src/tests/recette-oauth-reception.test.ts'
+      - 'src/scripts/attest-recette-auth.mts'
       - '.github/workflows/clara-os-recette-security.yml'
+      - '.github/workflows/clara-os-independent-recette.yml'
+      - '.github/scripts/recette-deployment-api.test.mjs'
+      - '.github/scripts/verify-recette-*.mjs'
 permissions:
   contents: read
 jobs:
@@ -27,17 +41,39 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+          fetch-depth: 0 # Required to verify the pinned application commit and its exact Git tree offline
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
       - run: npm ci --ignore-scripts
+      - name: Independent Recette deployment transport (offline only)
+        run: node --test .github/scripts/recette-deployment-api.test.mjs .github/scripts/verify-recette-prerequisites.test.mjs
+      - name: Effective custom Environment attestation (offline only)
+        run: node --import tsx --test src/tests/recette-environment-attestation.test.ts src/tests/recette-runtime-attestation.test.ts src/tests/recette-build-attestation.test.ts src/tests/recette-oauth-reception.test.ts
       - name: Recette offline denial contracts
         run: node --import tsx --test src/tests/recette-external-execution-guard.test.ts
       - name: Recette authentication and isolation contracts
         run: node --import tsx --test src/tests/recette-auth-isolation.test.ts
       - name: Google authentication-only exception and database isolation
         run: node --import tsx --test src/tests/recette-google-sign-in.test.ts
+      - name: Single-use Google enrollment HTTP contracts (no providers)
+        run: node --import tsx --test src/tests/recette-google-enrollment-route.test.ts src/tests/recette-google-enrollment-preparation.test.ts
+      - name: Single-use Google enrollment PostgreSQL atomicity (disposable database only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run -d --name clara-recette-enrollment-test -e POSTGRES_HOST_AUTH_METHOD=trust postgres:17-alpine
+          trap 'docker rm -f clara-recette-enrollment-test >/dev/null' EXIT
+          # The image's temporary initialization server accepts Unix sockets,
+          # then stops. TCP is available only on the final server.
+          ready=false
+          for attempt in $(seq 1 30); do
+            if docker exec clara-recette-enrollment-test pg_isready -h 127.0.0.1 -U postgres; then ready=true; break; fi
+            sleep 1
+          done
+          test "$ready" = true
+          node --import tsx --test src/tests/recette-google-enrollment-postgres.test.ts
       - name: Recette attestation owner/admin authorization tests
         run: node --import tsx --test src/tests/recette-attestation-authorization.test.ts
       - name: Recette provider network denial regressions

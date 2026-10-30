@@ -30,6 +30,8 @@ on:
       - 'src/tests/operational-delivery*'
       - 'src/tests/google-native-hub*'
       - 'src/tests/interface-finalization*'
+      - 'src/tests/historical-interface*'
+      - 'src/tests/helpers/historical-hero-layout.mjs'
       - 'src/tests/helpers/native-ui-disclosures.mjs'
       - 'src/components/layout/**'
       - 'src/app/globals.css'
@@ -126,9 +128,11 @@ jobs:
         run: node --import tsx --test src/tests/native-job-kind-compatibility.test.ts src/tests/v1-mission-identity.test.ts src/tests/native-runtime-proxy.test.mjs
       - name: Native Google hub contract
         run: |
-          node --import tsx --test src/tests/google-native-hub.test.ts src/tests/i18n-consolidation.test.ts
+          node --import tsx --test src/tests/google-native-hub.test.ts src/tests/i18n-consolidation.test.ts src/tests/microsoft-connect-presentation.test.ts
           npx eslint src/components/connections src/tests/google-native-hub*
           npx eslint src/components/layout src/components/native/NativeScopeSelector.tsx src/components/native/NativeDocumentsPanel.tsx src/components/native/NativeMailPanel.tsx src/components/cockpit/widgets/clara/ClaraChatWidget.tsx src/components/automatisations/MakeConnectionStatus.tsx src/components/contacts/ContactsDirectory.tsx src/modules/missions/MissionsStage.tsx src/app/documents/page.tsx src/app/clara/page.tsx src/tests/helpers/native-ui-disclosures.mjs src/tests/interface-finalization-browser.e2e.mjs
+      - name: Authenticated Cockpit without project and registry error distinctions
+        run: node --import tsx --test src/tests/cockpit-landing.test.ts
       - name: Operational recovery, consultations and scoped provider reads
         run: node --import tsx --test src/tests/operational-recovery*.test.ts
       - name: Actual handlers and database isolation, revocation, snapshot and history
@@ -194,6 +198,21 @@ jobs:
           test "$ready" = true
           NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node src/tests/helpers/native-browser-diagnostics.mjs core --import tsx --test src/tests/native-google-work-restart-browser.e2e.mjs src/tests/native-mission-contact-restart-browser.e2e.mjs
           NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node src/tests/helpers/native-browser-diagnostics.mjs cockpit --import tsx --test src/tests/cockpit-availability-browser.e2e.mjs
+          # The zero-global-loader receipt needs its own complete SQL attempt
+          # journal. Earlier navigation includes connection-status probes; never
+          # erase their journal or attribute it to this workspace-only landing.
+          kill "$native_app_pid"
+          wait "$native_app_pid" || true
+          export NATIVE_TEST_DATABASE="native_browser_$(node -e 'process.stdout.write(require("crypto").randomUUID().replaceAll("-",""))')"
+          node --import tsx src/tests/helpers/native-runtime-browser-fixture.mts "$NATIVE_TEST_DATABASE"
+          start_native_app
+          ready=false
+          for attempt in $(seq 1 60); do
+            if curl --cacert /tmp/native-runtime-cert.pem --fail --silent https://127.0.0.1:3060/clara > /dev/null; then ready=true; break; fi
+            sleep 1
+          done
+          test "$ready" = true
+          NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node --test src/tests/cockpit-landing-browser.e2e.mjs
           # The hub receipt has its own disposable data, using the existing fixture
           # and server, so previous recipes cannot supply a stale authority/session.
           kill "$native_app_pid"

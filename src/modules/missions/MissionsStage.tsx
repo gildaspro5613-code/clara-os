@@ -21,16 +21,19 @@ import type { Mission } from "./types/Mission";
 interface MissionsStageProps {
   initialMissions?: Mission[];
   currentMissionId?: string | null;
+  initialSelectedMissionId?: string;
+  selectionUnavailable?:boolean;
 }
 
 export default function MissionsStage({
   initialMissions = [],
   currentMissionId = null,
+  initialSelectedMissionId,selectionUnavailable=false,
 }: MissionsStageProps) {
   const ui = useTranslations("ui");
   const t = useTranslations("missionsPage");
   const [missions, setMissions] = useState<Mission[]>(initialMissions);
-  const [selectedMissionId, setSelectedMissionId] = useState<string | null>(null);
+  const [selectedMissionId, setSelectedMissionId] = useState<string | null>(initialMissions.some(m=>m.id===initialSelectedMissionId)?initialSelectedMissionId!:null);
 
   const activeMissions = missions.filter((mission) => mission.status === "active");
   const plannedMissions = missions.filter((mission) => mission.status === "planned");
@@ -43,6 +46,8 @@ export default function MissionsStage({
   const selectedMission = missions.find((mission) => mission.id === selectedMissionId);
 
   function openMissionCreation() {
+    const account = document.getElementById("native-account-menu");
+    if (account instanceof HTMLDetailsElement) account.open = true;
     if (currentMissionId) {
       const switcher = document.querySelector('[data-native-context-switch]');
       if (switcher instanceof HTMLDetailsElement) switcher.open = true;
@@ -64,7 +69,7 @@ export default function MissionsStage({
     return (
       <MissionDetail
         mission={selectedMission}
-        onBack={() => setSelectedMissionId(null)}
+        onBack={() => {if(new URL(window.location.href).searchParams.has("mission"))window.location.replace("/missions");else setSelectedMissionId(null);}}
         onUpdate={updateMission}
       />
     );
@@ -73,11 +78,7 @@ export default function MissionsStage({
   const completedTasks = activeMission
     ? activeMission.tasks.filter((task) => task.completed).length
     : 0;
-  const activeProgress = activeMission
-    ? activeMission.tasks.length > 0
-      ? Math.round((completedTasks / activeMission.tasks.length) * 100)
-      : 0
-    : 0;
+  const activeProgress = activeMission?.progress ?? 0;
   const nextTask = activeMission?.tasks.find((task) => !task.completed);
 
   const activePriorityKey = activeMission
@@ -87,6 +88,7 @@ export default function MissionsStage({
   return (
     <main className="min-h-full bg-[#05070b] px-6 py-10 text-white lg:px-10">
       <div className="mx-auto max-w-7xl">
+        {selectionUnavailable&&<p role="alert" className="mb-6 rounded-xl border border-amber-300/20 bg-amber-300/5 p-4 text-sm text-amber-100">{ui("uiMissionUnavailable")}</p>}
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
           <div>
             <header className="mb-10 flex flex-col gap-6 border-b border-white/10 pb-8 lg:flex-row lg:items-end lg:justify-between">

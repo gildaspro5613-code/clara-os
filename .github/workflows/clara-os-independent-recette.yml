@@ -1,5 +1,5 @@
 name: Clara OS independent project recette deployment
-run-name: "Isolated recette project — ${{ github.actor }}"
+run-name: "Isolated recette project — verify_only=${{ inputs.verify_only }} — ${{ github.actor }}"
 on:
   workflow_dispatch:
     inputs:
@@ -8,8 +8,25 @@ on:
         type: boolean
         default: true
         required: true
+      release_authorization:
+        description: Public operation ID, required only after the owner grants the single reviewed delivery
+        type: string
+        default: ''
+        required: false
+      controller_sha:
+        description: Exact activation revision approved by the owner; required for writes
+        type: string
+        default: ''
+        required: false
+      reviewed_ready_deployment:
+        description: Exact existing READY Recette deployment ID reviewed before this delivery
+        type: string
+        default: ''
+        required: false
 permissions:
   contents: read
+  checks: read
+  statuses: read
 concurrency:
   group: clara-os-independent-recette
   cancel-in-progress: false
@@ -23,27 +40,39 @@ jobs:
         run: |
           test "${{ github.event_name }}" = workflow_dispatch
           test "${{ github.repository }}" = gildaspro5613-code/clara-os
-      - name: Refuse write requests during transport preparation
-        if: ${{ inputs.verify_only != true }}
+          test "${{ github.ref }}" = refs/heads/fix/clara-os-historical-interface-20261028
+      - name: Enforce reviewed single-delivery authorization
+        id: release_authorization
+        if: ${{ inputs.verify_only == false }}
+        env:
+          REQUESTED_RELEASE: ${{ inputs.release_authorization }}
+          APPROVED_CONTROLLER_SHA: ${{ inputs.controller_sha }}
+          ACTUAL_CONTROLLER_SHA: ${{ github.sha }}
+          REVIEWED_READY_DEPLOYMENT: ${{ inputs.reviewed_ready_deployment }}
         run: |
-          echo "::error::REST_WRITES_DISABLED — separate authorization and reviewed activation required"
-          exit 1
+          set -euo pipefail
+          test "$REQUESTED_RELEASE" = "pr219-d8942685-cockpit-existing-member-once" || { echo "::error::RELEASE_AUTHORIZATION_REQUIRED"; exit 1; }
+          [[ "$REVIEWED_READY_DEPLOYMENT" =~ ^dpl_[A-Za-z0-9]+$ ]] || { echo "::error::REVIEWED_READY_DEPLOYMENT_REQUIRED"; exit 1; }
+          [[ "$APPROVED_CONTROLLER_SHA" =~ ^[a-f0-9]{40}$ ]] && test "$APPROVED_CONTROLLER_SHA" = "$ACTUAL_CONTROLLER_SHA" || { echo "::error::APPROVED_CONTROLLER_SHA_MISMATCH"; exit 1; }
+      - name: Refuse reruns of the authorized deployment operation
+        if: ${{ inputs.verify_only == false }}
+        run: |
+          test "${{ github.run_attempt }}" = "1" || { echo "::error::DEPLOYMENT_RERUN_REFUSED"; exit 1; }
       - name: Checkout approved source (never main)
         uses: actions/checkout@v4
         with:
-          ref: 6cfed8f80f9b8451d5698ca1040bcf42d513c4f2
+          ref: d8942685c9c9aad16c00110d2c86de15b667a477
           persist-credentials: false
           fetch-depth: 2
-      - name: Verify pinned Git source (no local artifact transformation)
+      - name: Verify pinned Git source and exact tree
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "6cfed8f80f9b8451d5698ca1040bcf42d513c4f2"
+          test "$(git rev-parse HEAD)" = "d8942685c9c9aad16c00110d2c86de15b667a477"
           test "$(git remote get-url origin)" = "https://github.com/gildaspro5613-code/clara-os"
-          test "$(git cat-file -t 6cfed8f80f9b8451d5698ca1040bcf42d513c4f2)" = commit
-          test "$(git rev-parse 6cfed8f80f9b8451d5698ca1040bcf42d513c4f2^)" = "b2a51dd59381daa1e5d3278f3d7104b986015170"
-          test "$(git diff --name-only b2a51dd59381daa1e5d3278f3d7104b986015170 6cfed8f80f9b8451d5698ca1040bcf42d513c4f2)" = vercel.json
+          test "$(git cat-file -t d8942685c9c9aad16c00110d2c86de15b667a477)" = commit
+          test "$(git rev-parse d8942685c9c9aad16c00110d2c86de15b667a477^)" = "904a74fda05af86ea3cdd19d4ba6c42af50592a4"
+          test "$(git rev-parse HEAD^{tree})" = "8c8cb296cc5a9640a25acf2df55cec7c383f8f07"
       - name: Set up deployment controller Node.js
-        if: ${{ false }}
         uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -139,7 +168,7 @@ jobs:
           if (process.argv[1] === '-') {
             try {
               const result = await verifyCustomEnvironment({token:process.env.VERCEL_RECETTE_TOKEN});
-              const message = 'READ_ONLY_BINDINGS_PASS ' + JSON.stringify(result) + ' WRITE_PERMISSIONS_NON_ATTESTED';
+              const message = 'READ_ONLY_PROJECT_ENVIRONMENT_METADATA_PASS ' + JSON.stringify(result) + ' WRITE_PERMISSIONS_NON_ATTESTED';
               console.log('::notice title=Recette read-only Environment::' + message);
               appendFileSync(process.env.GITHUB_STEP_SUMMARY,message + '\n');
             } catch (error) {
@@ -149,10 +178,46 @@ jobs:
             }
           }
           NODE_PREFLIGHT
-      - name: Deploy only custom recette environment through official REST API
-        if: ${{ false }}
+      - name: Checkout attestation controller from this workflow revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: .recette-controller
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Verify attestation controller provenance
+        working-directory: .recette-controller
+        env:
+          CONTROLLER_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$CONTROLLER_SHA"
+          test "$(git remote get-url origin)" = "https://github.com/gildaspro5613-code/clara-os"
+      - name: Require all five CI controls green on the exact controller revision
+        working-directory: .recette-controller
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CONTROLLER_SHA: ${{ github.sha }}
+        run: node .github/scripts/verify-recette-ci.mjs
+      - name: Require all five CI controls green on the exact approved application
+        working-directory: .recette-controller
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CONTROLLER_SHA: ${{ github.sha }}
+          APPLICATION_SHA: d8942685c9c9aad16c00110d2c86de15b667a477
+        run: node .github/scripts/verify-recette-ci.mjs
+      - name: Verify scoped binding metadata and Neon endpoint before any upload
+        id: metadata_preflight
+        working-directory: .recette-controller
         env:
           VERCEL_RECETTE_TOKEN: ${{ secrets.VERCEL_RECETTE_TOKEN }}
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+        run: node .github/scripts/verify-recette-metadata.mjs
+      - name: Deploy only custom recette environment through official REST API
+        if: ${{ inputs.verify_only == false && steps.release_authorization.outcome == 'success' && steps.metadata_preflight.outcome == 'success' }}
+        env:
+          VERCEL_RECETTE_TOKEN: ${{ secrets.VERCEL_RECETTE_TOKEN }}
+          REVIEWED_READY_DEPLOYMENT: ${{ inputs.reviewed_ready_deployment }}
         run: |
           set -euo pipefail
           test "${{ github.run_attempt }}" = "1" || { echo "::error::Deployment rerun refused; inspect previous outcome and obtain new authorization"; exit 1; }
@@ -162,8 +227,16 @@ jobs:
           import {createHash} from 'node:crypto';
 
           export const expected = Object.freeze({
-            sha: '6cfed8f80f9b8451d5698ca1040bcf42d513c4f2',
-            baseSha: 'b2a51dd59381daa1e5d3278f3d7104b986015170',
+            sha: 'd8942685c9c9aad16c00110d2c86de15b667a477',
+            baseSha: '904a74fda05af86ea3cdd19d4ba6c42af50592a4',
+            tree: '8c8cb296cc5a9640a25acf2df55cec7c383f8f07',
+            gateSha: 'd8942685c9c9aad16c00110d2c86de15b667a477',
+            attempt: 'pr219-d8942685-cockpit-existing-member-once',
+            reviewedDeployment: process.env.REVIEWED_READY_DEPLOYMENT,
+            reviewedState: 'READY',
+            baselineAttempt: 'pr219-d8d1515-google-invitation-once',
+            reviewedAttempt: 'pr219-c203cd7-after-run24-once',
+            reviewedSourceSha: 'd8d151516f213f1cb80ff0815745651190bb88df',
             project: 'prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz',
             team: 'team_0BeqOAO8t5oDEBdzHHdekcxv',
             environment: 'env_T6nc8Pd4KLG9qTbvTM9ZsOn4T4YM',
@@ -173,29 +246,26 @@ jobs:
           const refuse = code => { throw new Refused(code); };
           const gitRead = args => execFileSync('git', args, {maxBuffer:32 * 1024 * 1024,stdio:['ignore','pipe','pipe']});
 
-          /** Verify the isolated Git descendant; never rewrite tracked bytes or read local secrets. */
+          const gateGitRead = args => execFileSync('git', args, {cwd:'.recette-controller',maxBuffer:32 * 1024 * 1024,stdio:['ignore','pipe','pipe']});
+          export const gatePaths = ['src/lib/recette/build-attestation.ts','src/scripts/attest-recette-build.mts','src/lib/recette/environment-attestation.ts','src/lib/recette/runtime-attestation.ts','src/lib/recette/oauth-reception-attestation.ts','src/scripts/attest-recette-auth.mts'];
+
+          /** Verify immutable approved source; tracked bytes and Production remain untouched. */
           export function verifyApprovedSource(git = gitRead) {
             if (String(git(['rev-parse','HEAD'])).trim() !== expected.sha) refuse('SOURCE_SHA_REFUSED');
             if (String(git(['remote','get-url','origin'])).trim() !== 'https://github.com/gildaspro5613-code/clara-os') refuse('SOURCE_REPOSITORY_REFUSED');
             if (String(git(['cat-file','-t',expected.sha])).trim() !== 'commit') refuse('SOURCE_COMMIT_REFUSED');
             if (String(git(['rev-parse',expected.sha + '^'])).trim() !== expected.baseSha) refuse('SOURCE_PARENT_REFUSED');
-            if (String(git(['diff','--name-only',expected.baseSha,expected.sha])).trim() !== 'vercel.json') refuse('SOURCE_BUSINESS_DIFF_REFUSED');
-            let config,original;
-            try {
-              config = JSON.parse(git(['show',expected.sha + ':vercel.json']));
-              original = JSON.parse(git(['show',expected.baseSha + ':vercel.json']));
-            }
+            if (String(git(['rev-parse',expected.sha + '^{tree}'])).trim() !== expected.tree) refuse('SOURCE_TREE_REFUSED');
+            let config;
+            try { config = JSON.parse(git(['show',expected.sha + ':vercel.json'])); }
             catch { refuse('CRON_CONFIGURATION_REFUSED'); }
-            // No undocumented API override and no reliance on a missing CRON_SECRET.
-            // Only this isolated Git descendant removes the declarations; PR/Production keep them.
-            if (config.crons !== undefined && (!Array.isArray(config.crons) || config.crons.length !== 0)) refuse('SOURCE_CRONS_PRESENT_NO_DEPLOYMENT');
-            if (!Array.isArray(original.crons) || original.crons.length !== 2) refuse('SOURCE_BASE_CRONS_REFUSED');
-            delete original.crons;
-            if (JSON.stringify(config) !== JSON.stringify(original)) refuse('SOURCE_CONFIGURATION_DIFF_REFUSED');
+            // Approved source retains Production schedules. Only the upload artifact omits them.
+            const approvedCrons = [{path:'/api/internal/document-operations-purge',schedule:'0 3 * * *'},{path:'/api/internal/event-jobs-run',schedule:'* * * * *'}];
+            if (JSON.stringify(config.crons) !== JSON.stringify(approvedCrons)) refuse('SOURCE_BASE_CRONS_REFUSED');
 
           }
 
-          export function approvedFiles(git = gitRead) {
+          export function approvedFiles(git = gitRead,gateGit = gateGitRead) {
             verifyApprovedSource(git);
             const entries = String(git(['ls-tree','-r','-z',expected.sha])).split('\0').filter(Boolean);
             const files = entries.map(entry => {
@@ -203,10 +273,23 @@ jobs:
               if (!match) refuse('SOURCE_FILE_TYPE_REFUSED');
               const file = match[2];
               if (file.startsWith('/') || file.split('/').some(p => p === '..' || p === '.git' || p === '.vercel' || p === '.env' || p.startsWith('.env.') || p === '.npmrc')) refuse('SOURCE_FILE_PATH_REFUSED');
-              const data = Buffer.from(git(['show',expected.sha + ':' + file]));
+              let data = Buffer.from(git(['show',expected.sha + ':' + file]));
+              if (file === 'vercel.json') {
+                const config = JSON.parse(data);
+                delete config.crons;
+                config.buildCommand = "node --import tsx src/scripts/attest-recette-build.mts && node --import tsx src/scripts/attest-recette-auth.mts && npm run build";
+                data = Buffer.from(JSON.stringify(config) + '\n');
+              }
               return {file,data,sha:createHash('sha1').update(data).digest('hex'),size:data.length};
             });
             if (!['package.json','package-lock.json','vercel.json'].every(name => files.some(f => f.file === name))) refuse('SOURCE_MANIFEST_REFUSED');
+            if (String(gateGit(['cat-file','-t',expected.gateSha])).trim() !== 'commit') refuse('GATE_SOURCE_REFUSED');
+            for (const file of gatePaths) {
+              const data = Buffer.from(gateGit(['show',expected.gateSha + ':' + file]));
+              const entry = {file,data,sha:createHash('sha1').update(data).digest('hex'),size:data.length};
+              const index = files.findIndex(f => f.file === file);
+              if (index >= 0) files[index] = entry; else files.push(entry);
+            }
             return files;
           }
 
@@ -214,10 +297,12 @@ jobs:
           /** Single-purpose official REST client. No CLI, user lookup, alternate token,
            * project creation, environment mutation, or automatic POST retry.
            */
-          export async function deployRecette({token,http = fetch,git = gitRead,wait = () => new Promise(r => setTimeout(r,5000)),emit = () => {},writesAuthorized = false}) {
+          export async function deployRecette({token,http = fetch,git = gitRead,wait = () => new Promise(r => setTimeout(r,5000)),emit = () => {},writesAuthorized = false,gateGit = gateGitRead,assignStableAlias = false}) {
             if (writesAuthorized !== true) refuse('REST_WRITES_DISABLED');
             if (!token) refuse('DEDICATED_RECETTE_TOKEN_REQUIRED');
-            const files = approvedFiles(git);
+            if (!/^dpl_[A-Za-z0-9]+$/.test(expected.reviewedDeployment ?? '')) refuse('REVIEWED_READY_DEPLOYMENT_REQUIRED');
+            const files = approvedFiles(git,gateGit);
+            const artifactDigest = createHash('sha256').update(JSON.stringify(files.map(f => [f.file,createHash('sha256').update(f.data).digest('hex')]).sort())).digest('hex');
             async function call(path,{method = 'GET',body,headers = {},json = true} = {}) {
               const url = new URL(path,'https://api.vercel.com');
               url.searchParams.set('teamId',expected.team);
@@ -225,10 +310,10 @@ jobs:
               try {
                 response = await http(url,{method,redirect:'error',signal:AbortSignal.timeout(30000),headers:{Authorization:'Bearer ' + token,...headers},body});
               } catch {
-                refuse(method === 'POST' ? (path === '/v2/files' ? 'UPLOAD' : 'CREATE') + '_OUTCOME_UNCERTAIN_NO_RETRY' : 'API_TRANSPORT_REFUSED');
+                refuse(method === 'POST' ? (path === '/v2/files' ? 'UPLOAD' : path === '/v13/deployments' ? 'CREATE' : 'ALIAS') + '_OUTCOME_UNCERTAIN_NO_RETRY' : 'API_TRANSPORT_REFUSED');
               }
               if (!response.ok) {
-                const kind = path === '/v2/files' ? 'UPLOAD' : path === '/v13/deployments' ? 'CREATE' : 'METADATA';
+                const kind = path === '/v2/files' ? 'UPLOAD' : path === '/v13/deployments' ? 'CREATE' : method === 'POST' ? 'ALIAS' : 'METADATA';
                 if (method === 'POST' && (response.status >= 500 || response.status === 408)) refuse(kind + '_HTTP_' + response.status + '_OUTCOME_UNCERTAIN_NO_RETRY');
               refuse(kind + '_HTTP_' + response.status);
               }
@@ -240,7 +325,7 @@ jobs:
                 return await response.json();
               } catch (error) {
                 if (error instanceof Refused) throw error;
-                refuse(method === 'POST' ? (path === '/v2/files' ? 'UPLOAD' : 'CREATE') + '_OUTCOME_UNCERTAIN_NO_RETRY' : 'API_RESPONSE_REFUSED');
+                refuse(method === 'POST' ? (path === '/v2/files' ? 'UPLOAD' : path === '/v13/deployments' ? 'CREATE' : 'ALIAS') + '_OUTCOME_UNCERTAIN_NO_RETRY' : 'API_RESPONSE_REFUSED');
               }
             }
             const project = await call('/v9/projects/' + expected.project);
@@ -250,6 +335,41 @@ jobs:
             const matches = environments.environments.filter(e => e.id === expected.environment || e.slug === expected.slug);
             if (matches.length !== 1 || matches[0].id !== expected.environment || matches[0].slug !== expected.slug || (matches[0].projectId !== undefined && matches[0].projectId !== expected.project)) refuse('CUSTOM_ENVIRONMENT_REFUSED');
 
+            const previous = await call('/v6/deployments?projectId=' + expected.project + '&limit=100');
+            if (!Array.isArray(previous.deployments) || previous.pagination?.next) refuse('PREVIOUS_ATTEMPT_NOT_ATTESTED');
+            const consumed = new Set([expected.attempt,'pr219-c203cd7-stable-oauth-once']);
+            if (previous.deployments.some(d => consumed.has(d.meta?.recetteAttempt))) refuse('AUTHORIZED_ATTEMPT_ALREADY_CONSUMED');
+            // The old authorization stays consumed. Only its specifically reviewed
+            // ERROR deployment may be historical evidence for this distinct operation.
+            if (previous.deployments.some(d => d.meta?.recetteAttempt === expected.reviewedAttempt &&
+                ((d.id ?? d.uid) !== 'dpl_7M8cFWgwFXV56dS9u4YrWpw1pAtD' || (d.readyState ?? d.state) !== 'ERROR'))) refuse('PREVIOUS_AUTHORIZATION_REVIEW_MISMATCH');
+            if (previous.deployments.some(d => d.meta?.recetteAttempt === 'pr219-20261029-one-build-attestation' && !['READY','ERROR','CANCELED'].includes(d.readyState ?? d.state))) refuse('PREVIOUS_ATTEMPT_NOT_TERMINAL_NO_RETRY');
+
+            const sourceReferences = d => [d.meta?.githubCommitSha,d.meta?.recetteSourceSha,d.gitSource?.sha].filter(v => v !== undefined);
+            if (previous.deployments.some(d => sourceReferences(d).includes(expected.sha))) refuse('APPLICATION_ALREADY_DEPLOYED_REVIEW_REQUIRED');
+            if (previous.deployments.some(d => d.meta?.recetteAttempt === expected.baselineAttempt &&
+                ((d.id ?? d.uid) !== expected.reviewedDeployment || (d.readyState ?? d.state) !== 'READY'))) refuse('GOOGLE_AUTHORIZATION_ALREADY_CONSUMED');
+            const latest = previous.deployments[0];
+            if (!latest || (latest.id ?? latest.uid) !== expected.reviewedDeployment || (latest.readyState ?? latest.state) !== expected.reviewedState ||
+                latest.meta?.recetteAttempt !== expected.baselineAttempt || sourceReferences(latest).length === 0 || sourceReferences(latest).some(sha => sha !== expected.reviewedSourceSha)) refuse('REVIEWED_BASELINE_CHANGED_OR_UNATTESTED');
+
+            const baseline = await call('/v13/deployments/' + expected.reviewedDeployment);
+            if (baseline.id !== expected.reviewedDeployment || baseline.projectId !== expected.project || baseline.ownerId !== expected.team ||
+                baseline.readyState !== 'READY' || baseline.target === 'production' || baseline.customEnvironment?.id !== expected.environment ||
+                baseline.customEnvironment?.slug !== expected.slug || baseline.meta?.recetteAttempt !== expected.baselineAttempt ||
+                sourceReferences(baseline).length === 0 || sourceReferences(baseline).some(sha => sha !== expected.reviewedSourceSha)) refuse('READY_BASELINE_BINDING_REFUSED');
+
+            const domainPath = '/v9/projects/' + expected.project + '/domains/clara-os-recette.vercel.app';
+            const verifiedDomain = d => {
+              if (d.name !== 'clara-os-recette.vercel.app' || d.projectId !== expected.project || d.verified !== true || d.redirect ||
+                  (d.customEnvironmentId != null && d.customEnvironmentId !== expected.environment)) refuse('STABLE_DOMAIN_IDENTITY_REFUSED');
+              return JSON.stringify([d.name,d.projectId,d.verified,d.redirect ?? null,d.customEnvironmentId ?? null,d.gitBranch ?? null]);
+            };
+            let domainSnapshot;
+            if (assignStableAlias) {
+              domainSnapshot = verifiedDomain(await call(domainPath));
+              emit({event:'RECETTE_PROJECT_DOMAIN_VERIFIED',domain:'clara-os-recette.vercel.app'});
+            }
             // Sequential uploads: no in-flight writes remain when a refusal occurs.
             const unique = new Map();
             for (const file of files) {
@@ -264,7 +384,7 @@ jobs:
             const deployment = await call('/v13/deployments',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
               name:expected.slug,project:expected.project,customEnvironmentSlugOrId:expected.environment,
               files:files.map(({file,sha,size}) => ({file,sha,size})),
-              meta:{githubCommitSha:expected.sha,recetteSourceSha:expected.sha},
+              meta:{githubCommitSha:expected.sha,recetteSourceSha:expected.sha,recetteGateSha:expected.gateSha,recetteArtifactSha256:artifactDigest,recetteAttempt:expected.attempt},
             })});
             const safeIdentity = d => {
               if (!/^dpl_[A-Za-z0-9]+$/.test(d.id ?? '') || !/^clara-os-recette-[a-z0-9]+-melodie-digital\.vercel\.app$/.test(d.url ?? '')) refuse('CREATED_DEPLOYMENT_IDENTITY_UNCERTAIN_NO_RETRY');
@@ -274,13 +394,22 @@ jobs:
             emit({event:'CREATED_NOT_YET_CERTIFIED',...identity});
             const verify = d => {
               if (d.id !== identity.id || 'https://' + d.url !== identity.url || d.ownerId !== expected.team || d.projectId !== expected.project || d.target === 'production' ||
-                  d.customEnvironment?.id !== expected.environment || d.customEnvironment?.slug !== expected.slug || d.meta?.githubCommitSha !== expected.sha) refuse('DEPLOYMENT_BINDING_UNCERTAIN_NO_RETRY');
+                  d.customEnvironment?.id !== expected.environment || d.customEnvironment?.slug !== expected.slug || d.meta?.githubCommitSha !== expected.sha || d.meta?.recetteGateSha !== expected.gateSha || d.meta?.recetteArtifactSha256 !== artifactDigest || d.meta?.recetteAttempt !== expected.attempt) refuse('DEPLOYMENT_BINDING_UNCERTAIN_NO_RETRY');
             };
             let current = deployment;
             for (let attempt = 0;attempt < 120;attempt++) {
               verify(current);
               if (current.readyState === 'READY') {
-                const result = {event:'READY',...identity,environment:expected.slug};emit(result);return result;
+                const aliases = await call('/v2/deployments/' + identity.id + '/aliases');
+                if (!Array.isArray(aliases.aliases) || aliases.pagination?.next || aliases.aliases.some(a => !/^clara-os-recette(?:-[a-z0-9-]+)?\.vercel\.app$/.test(a.alias ?? ''))) refuse('DEPLOYMENT_ALIASES_REFUSED_NO_RETRY');
+                if (assignStableAlias) {
+                  // Recheck ownership/configuration after READY, before the authorized assignment.
+                  if (verifiedDomain(await call(domainPath)) !== domainSnapshot) refuse('STABLE_DOMAIN_CHANGED_NO_RETRY');
+                  await call('/v2/deployments/' + identity.id + '/aliases',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({alias:'clara-os-recette.vercel.app'})});
+                  const after = await call('/v4/aliases/clara-os-recette.vercel.app?projectId=' + expected.project);
+                  if ((after.projectId != null && after.projectId !== expected.project) || after.deploymentId !== identity.id || after.alias !== 'clara-os-recette.vercel.app' || after.redirect) refuse('STABLE_ALIAS_OUTCOME_UNCERTAIN_NO_RETRY');
+                }
+                const result = {event:'READY',...identity,environment:expected.slug,...(assignStableAlias?{stableUrl:'https://clara-os-recette.vercel.app'}:{})};emit(result);return result;
               }
               if (['ERROR','CANCELED'].includes(current.readyState)) refuse('DEPLOYMENT_' + current.readyState + '_NO_RETRY');
               await wait();
@@ -289,10 +418,10 @@ jobs:
             refuse('DEPLOYMENT_NOT_READY_NO_RETRY');
           }
 
-          // Imported by offline tests. Writes stay disabled here and in the workflow until reviewed activation.
+          // Imported by offline tests. Separately approvable single Cockpit delivery, including the dedicated Recette alias.
           if (process.argv[1] === '-') {
             try {
-              await deployRecette({writesAuthorized:false,token:process.env.VERCEL_RECETTE_TOKEN,emit:result => {
+              await deployRecette({writesAuthorized:true,assignStableAlias:true,token:process.env.VERCEL_RECETTE_TOKEN,emit:result => {
                 const line = JSON.stringify(result);
                 console.log('::notice title=Recette deployment::' + line);
                 if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY,line + '\n');

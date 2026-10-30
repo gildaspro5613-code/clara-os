@@ -1,3 +1,4 @@
+import NativeConversationList,{type NativeConversationListProps} from "@/components/native/NativeConversationList";
 /**
  * ============================================
  * CLARA OS
@@ -17,10 +18,11 @@ import Link from "next/link";
 
 interface ConversationsPanelProps {
   session: ClaraSession;
+  conversationNavigation?:NativeConversationListProps|null;
 }
 
 export default function ConversationsPanel({
-  session,
+  session,conversationNavigation,
 }: ConversationsPanelProps) {
   const ui = useTranslations("ui");
 
@@ -30,11 +32,13 @@ export default function ConversationsPanel({
   return (
     <GlassPanel title={t("latestConversations")}>
       <div className="space-y-3">
+        {conversationNavigation&&<NativeConversationList {...conversationNavigation}/>}
+        {conversationNavigation===null&&<p role="status" className="text-sm text-white/65">{ui("nativeHistoryUnavailable")}</p>}
         {recentMessages.length > 0 ? (
           recentMessages.map((message) => (
-            <div
+            <Link href={`/conversations#message-${encodeURIComponent(message.id)}`}
               key={message.id}
-              className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3"
+              className="block rounded-2xl border border-white/10 bg-white/5 px-4 py-3"
             >
               <div className="flex items-center justify-between gap-4">
                 <p className="font-semibold">
@@ -48,13 +52,13 @@ export default function ConversationsPanel({
                 </span>
               </div>
 
-              <p className="mt-1 text-sm text-white/65">
-                {t("openConversationHistory")}
+              <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-relaxed text-white/65">
+                {message.content}
               </p>
-            </div>
+            </Link>
           ))
         ) : (
-          <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+          <div className="block rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
             <p className="text-sm text-white/65">
               {t("noConversationHistory")}
             </p>
