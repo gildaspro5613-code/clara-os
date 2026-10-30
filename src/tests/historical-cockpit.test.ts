@@ -4,7 +4,7 @@ import {createElement} from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 import {NextIntlClientProvider} from 'next-intl';
 import {readFileSync} from 'node:fs';
-import Voice from '../components/clara/ClaraVoiceWidget';
+import Voice from '../components/cockpit/widgets/voice/ClaraVoiceWidget';
 import Tasks from '../components/cockpit/panels/TasksPanel';
 import Actions from '../components/cockpit/widgets/CockpitActionBar';
 import type {Mission} from '../modules/missions/types/Mission';

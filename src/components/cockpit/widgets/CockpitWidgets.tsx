@@ -28,12 +28,13 @@ import { getTranslations } from "next-intl/server";
 interface CockpitWidgetsProps {
   nativeSessionId?:string;
   session: ClaraSession;
+  displayFirstName?:string|null;
   nativeMissions?:Mission[];
   nativeIntake?:MdProjectIntake|null;
   acquisition?: AcquisitionRecord | null;
 }
 
-export default async function CockpitWidgets({ session, acquisition,nativeMissions,nativeIntake,nativeSessionId }: CockpitWidgetsProps) {
+export default async function CockpitWidgets({ session, acquisition,nativeMissions,nativeIntake,nativeSessionId,displayFirstName=null }: CockpitWidgetsProps) {
   const t = await getTranslations("cockpitUi");
   const workspaceId = process.env.CLARA_MD_WORKSPACE_ID?.trim()
     || process.env.CLARA_WORKSPACE_ID?.trim()
@@ -107,7 +108,7 @@ export default async function CockpitWidgets({ session, acquisition,nativeMissio
         </div>
 
         <div className="mt-5">
-          <ClaraChatWidget nativeThreadReadOnly={nativeMissions!==undefined&&!nativeThreadCertified(session)} key={nativeSessionId} nativeSessionId={nativeSessionId} compact initialMessages={session.conversation} userFirstName={session.user.firstName} />
+          <ClaraChatWidget nativeThreadReadOnly={nativeMissions!==undefined&&!nativeThreadCertified(session)} key={nativeSessionId} nativeSessionId={nativeSessionId} initialMessages={session.conversation} userFirstName={displayFirstName} />
         </div>
       </div>
     </section>

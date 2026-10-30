@@ -1,3 +1,5 @@
+import {cookies} from "next/headers";
+import {readGoogleDisplayName} from "@/lib/auth/google-display-name";
 import {nativeContext} from "@/lib/native/scoped-context";
 import {loadMissions} from "@/modules/missions/mission-store";
 import { nativePage } from "@/lib/native/page-fence";
@@ -14,7 +16,7 @@ export default async function HomePage() {
 
   return (
     <MainLayout>
-      <Cockpit nativeSessionId={nativeContext()!.scope.sessionId} nativeIntake={operational.acquisition?nativeContext()!.intakes.get(operational.acquisition.submissionId)??null:null} nativeMissions={await loadMissions()} session={operational.session} acquisition={operational.acquisition} />
+      <Cockpit displayFirstName={readGoogleDisplayName((await cookies()).toString(),nativeContext()!.scope.digest)} nativeSessionId={nativeContext()!.scope.sessionId} nativeIntake={operational.acquisition?nativeContext()!.intakes.get(operational.acquisition.submissionId)??null:null} nativeMissions={await loadMissions()} session={operational.session} acquisition={operational.acquisition} />
     </MainLayout>
   );
   });

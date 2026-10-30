@@ -18,6 +18,7 @@ import { useTranslations } from "next-intl";
 
 interface BriefPanelProps {
   session: ClaraSession;
+  displayFirstName?:string|null;
   acquisition?: AcquisitionRecord | null;
 }
 
@@ -33,7 +34,7 @@ function personalizeGreeting(
   );
 }
 
-export default function BriefPanel({ session, acquisition }: BriefPanelProps) {
+export default function BriefPanel({ session, acquisition,displayFirstName=null }: BriefPanelProps) {
   const ui = useTranslations("ui");
 
   const t = useTranslations("cockpitUi");
@@ -46,7 +47,7 @@ export default function BriefPanel({ session, acquisition }: BriefPanelProps) {
   return (
     <GlassPanel className="max-w-[18rem] px-6 py-5 bg-[#07111f]/55 border-white/[0.08] shadow-[0_2px_18px_rgba(0,0,0,0.18)] backdrop-blur-[18px]">
       <h2 className="mb-3 text-[1.6rem] leading-snug font-light text-white/90">
-        {personalizeGreeting(t("greeting"), session.user.firstName)}
+        {personalizeGreeting(t("greeting"), displayFirstName)}
       </h2>
 
       {mission ? (

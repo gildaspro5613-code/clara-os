@@ -16,6 +16,7 @@ type JwtClaims = {
   aud?: string;
   azp?: string;
   email?: string;
+  given_name?: string;
   email_verified?: boolean;
   exp?: number;
   hd?: string;
@@ -180,7 +181,7 @@ async function bootstrapIfAuthorized(identity: VerifiedIdentity, claims: JwtClai
   `;
 }
 
-export async function completeGoogleSignIn(code: string, state: string, expectedNonce: string): Promise<string> {
+export async function completeGoogleSignIn(code: string, state: string, expectedNonce: string, verifiedDisplayName?:(givenName:string|null)=>void): Promise<string> {
   if (!code.trim()) throw new Error("GOOGLE_AUTHORIZATION_CODE_REQUIRED");
   const idToken = await exchangeCode(code);
   const claims = await verifyGoogleIdToken(idToken, expectedNonce);
@@ -189,5 +190,7 @@ export async function completeGoogleSignIn(code: string, state: string, expected
 
   const identity: VerifiedIdentity = { issuer: "https://accounts.google.com", subject: claims.sub! };
   await bootstrapIfAuthorized(identity, claims);
-  return completeVerifiedSignIn(identity);
+  const token=await completeVerifiedSignIn(identity);
+  verifiedDisplayName?.(typeof claims.given_name==='string'?claims.given_name:null);
+  return token;
 }

@@ -197,7 +197,7 @@
   "chat": {
     "greeting": "Bonjour. Me voilà. Que faisons-nous aujourd’hui ?",
     "unavailable": "Clara est momentanément indisponible.",
-    "title": "Parler à Clara",
+    "title": "Parler avec Clara",
     "thinking": "Clara réfléchit…",
     "placeholder": "Écrire à Clara…",
     "send": "Envoyer à Clara",

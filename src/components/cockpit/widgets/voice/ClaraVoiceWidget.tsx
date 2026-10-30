@@ -16,8 +16,9 @@ type ConversationSession = {
   endSession: () => Promise<void>;
 };
 
-export default function ClaraVoiceWidget() {
+export default function ClaraVoiceWidget({disabled=false}:{disabled?:boolean}) {
   const t = useTranslations("voice");
+  const ui=useTranslations("ui");
   const [state, setState] = useState<VoiceState>("ready");
   const conversationRef = useRef<ConversationSession | null>(null);
 
@@ -27,6 +28,7 @@ export default function ClaraVoiceWidget() {
     state === "speaking";
 
   async function startConversation() {
+    if(disabled)return;
     if (active) {
       return;
     }
@@ -117,6 +119,7 @@ export default function ClaraVoiceWidget() {
   }
 
   async function handleToggle() {
+    if(disabled)return;
     if (active) {
       await stopConversation();
       return;
@@ -142,7 +145,7 @@ export default function ClaraVoiceWidget() {
             ? t("retry")
             : t("talk");
 
-  const description =
+  const description = disabled?ui("nativeProviderBlocked"):
     state === "connecting"
       ? t("initializing")
       : state === "speaking"
@@ -157,6 +160,7 @@ export default function ClaraVoiceWidget() {
     <button
       type="button"
       onClick={handleToggle}
+      disabled={disabled}
       aria-label={
         active
           ? t("stop")
@@ -260,7 +264,7 @@ export default function ClaraVoiceWidget() {
             transition-all
             duration-300
             ${
-              listening
+              disabled?"bg-slate-500":listening
                 ? "bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.55)]"
                 : state === "error"
                   ? "bg-red-400"

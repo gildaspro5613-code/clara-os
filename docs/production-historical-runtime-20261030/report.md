@@ -1,4 +1,6 @@
-# Cockpit historique raccordé au runtime de livraison
+# Rapport du premier raccord (141648d5) — référence graphique remplacée
+
+**Candidat corrigé : voir [Cockpit V2](cockpit-v2.md) et [captures V2](v2-visual/). Le portrait décrit ci-dessous ne constitue plus la référence de livraison.**
 
 Préparation Production uniquement — aucun merge, déploiement ou accès modifiable distant.
 

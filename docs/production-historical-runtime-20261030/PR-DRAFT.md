@@ -1,11 +1,9 @@
-Le Cockpit de la branche de livraison utilise un fond architectural et sa barre historique de raccourcis ne navigue pas. Cette préparation remet le Hero avec portrait, le GlassPanel original et la composition de main autour du runtime natif déjà consolidé, avec les données autorisées de mission, les liens réels et le dialogue durable existant.
+Le candidat corrige la référence graphique du premier raccord 141648d5 : composition 781976a3 approuvée, sans le portrait initial de main ni reprise globale de #219.
 
-Base runtime : adff3190863a9af07645091b740c2dffe202337d (delivery/clara-os-v1-20261025). Référence visuelle : main a4d865a3d4a307425c057e69ea2132c9e0361f00. Aucune reprise globale de #219. Aucun changement src/lib, API, HomePage ou migration SQL.
+Hero architectural, Brief/voix à gauche, Agenda/mission à droite, GlassPanel source 781976a3, widgets et dialogue existants sous le Hero. Missions réelles, six raccourcis et autorités de 141648d5 conservés. Le dialogue natif affiche les échanges complets, sans mode compact ; voix native désactivée.
 
-Le widget vocal est visible mais reste désactivé dans le contexte natif non certifié. Aucun fournisseur, autorité ou secret modifié. Le panneau courrier existant reste accessible sous le Hero, avec son autorité native.
+Le prénom provient du given_name vérifié du parcours Google existant, après résolution de l’utilisateur inscrit et émission de sa session. Métadonnée de présentation chiffrée, expirante et liée à cette session, avec la primitive et la clé existantes ; aucune migration, aucun nouveau secret ou scope, aucun droit issu du prénom. Sans preuve exploitable : accueil générique, jamais de Gildas par défaut.
 
-Validation : 29 tests composants/autorité/récupération et 2 recettes HTTPS PASS ; 5 langues x 3 formats ; TypeScript, lint ciblé et build optimisé Webpack PASS. Les polices locales de fixture ne constituent pas une validation du build Turbopack distant. Les fournisseurs sont simulés ; aucune certification réelle déduite.
+Rapport courant : docs/production-historical-runtime-20261030/cockpit-v2.md. Captures et résultats V2 versionnés. Les preuves du premier raccord restent conservées et marquées historiques.
 
-Rapport, 21 captures et résultats : docs/production-historical-runtime-20261030/.
-
-Préparation uniquement : aucun merge, déploiement, migration distante ou opération fournisseur. Production NO-GO jusqu’à validation explicite.
+Tests locaux et fournisseurs simulés ne certifient ni Google réel ni les autres fournisseurs. Aucun merge, déploiement, migration, activation de voix ou modification Production.
