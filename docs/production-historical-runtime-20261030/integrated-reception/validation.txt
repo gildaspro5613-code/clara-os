@@ -36,8 +36,8 @@ test at src/tests/native-documents-browser.e2e.mjs:11:1
 ✖ documentary browser E2E: canonical selection → mission → pinned OAuth → explicit Google selection → project attestation → PDF/Core/Brain → Journal/Cockpit → fresh resume and revocation (81962.123798ms)
   locator.waitFor: Timeout 30000ms exceeded.
   Call log:
-  [2m  - waiting for locator('[data-native-document="document-a"]') to be visible[22m
-  
+    - waiting for locator('[data-native-document="document-a"]') to be visible
+
       at TestContext.<anonymous> (/workspace/clara-os-production-prep/src/tests/native-documents-browser.e2e.mjs:54:322) {
     name: 'TimeoutError',
     log: [ `  - waiting for locator('[data-native-document="document-a"]') to be visible` ]
