@@ -379,6 +379,8 @@
     "profileDescription": "Compte utilisateur",
     "connections": "Connexions",
     "connectionsDescription": "Services autorisés",
-    "signOut": "Se déconnecter"
+    "signOut": "Se déconnecter",
+    "logoutConfirm": "Confirmer la déconnexion de Clara OS ?",
+    "logoutError": "Déconnexion impossible. Veuillez réessayer."
   }
 }
