@@ -360,5 +360,27 @@
     "audioRequired": "Eine Audioaufnahme ist erforderlich.",
     "audioTooLarge": "Audioaufnahme zu groß (maximal 15 MB).",
     "noSpeech": "Keine Sprache erkannt."
+  },
+  "account": {
+    "title": "Benutzerkonto",
+    "profile": "Mein Profil",
+    "authenticatedUser": "Angemeldeter Benutzer",
+    "signedOut": "Keine aktive Sitzung",
+    "unverified": "Konto in diesem Kontext nicht bestätigt",
+    "unavailable": "Kontoprüfung nicht verfügbar",
+    "googleAccount": "Google-Konto",
+    "googleLinked": "Bestätigte Google-Identität verknüpft",
+    "googleNotLinked": "Keine Google-Identität verknüpft",
+    "googleUnverified": "Google-Verknüpfung nicht bestätigt",
+    "googleSeparation": "Diese Identität gilt für Clara OS. Berechtigungen für Drive und Kalender sind davon getrennt.",
+    "preferences": "Einstellungen",
+    "signIn": "Bei Clara OS anmelden",
+    "space": "Mein Bereich",
+    "profileDescription": "Benutzerkonto",
+    "connections": "Verbindungen",
+    "connectionsDescription": "Autorisierte Dienste",
+    "signOut": "Abmelden",
+    "logoutConfirm": "Von Clara OS abmelden?",
+    "logoutError": "Abmeldung fehlgeschlagen. Bitte erneut versuchen."
   }
 }

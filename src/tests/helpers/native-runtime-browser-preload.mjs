@@ -17,8 +17,12 @@ globalThis.fetch=async(input,init)=>{
   const body=JSON.parse(String(init?.body));
   const normalized=body.query.replace(/\s+/g,' ').trim();
   const logout=normalized==='UPDATE clara_auth_sessions SET revoked_at = NOW() WHERE token_hash = $1 AND revoked_at IS NULL';
+  // Existing canonical authentication reads for account display only.
+  const accountIdentity=/^SELECT user_id FROM clara_auth_sessions WHERE token_hash = \$1 AND revoked_at IS NULL AND expires_at > NOW\(\) LIMIT 1$/.test(normalized);
+  const accountMembership=/^SELECT workspace_id, role FROM clara_workspace_memberships WHERE user_id = \$1 AND workspace_id = \$2 AND revoked_at IS NULL$/.test(normalized);
+  const accountGoogle=normalized.startsWith("SELECT EXISTS(SELECT 1 FROM clara_auth_identities i WHERE i.user_id=s.user_id AND i.issuer='https://accounts.google.com') AS google_linked FROM clara_auth_sessions s JOIN clara_workspace_memberships m ON m.user_id=s.user_id WHERE s.token_hash=$1 AND s.user_id=$2")&&normalized.endsWith('AND m.workspace_id=$3 AND m.revoked_at IS NULL AND EXISTS(SELECT 1 FROM clara_auth_identities verified WHERE verified.user_id=s.user_id) LIMIT 1');
   const missionFinalize=body.query.trimStart().startsWith('WITH native_mission_finalize_input AS MATERIALIZED')&&body.query.includes('FOR SHARE OF authority, mission');
-  if(!logout&&!missionFinalize&&!/^SELECT clara_(native_|registry_)/.test(body.query)&&!/^SELECT m.workspace_id FROM clara_auth_sessions s JOIN clara_workspace_memberships/.test(body.query)){appendFileSync(attemptsFile,'GLOBAL_LOADER_ATTEMPT\n');throw Error('Global SQL loader forbidden in native browser fixture');}
+  if(!logout&&!missionFinalize&&!accountIdentity&&!accountMembership&&!accountGoogle&&!/^SELECT clara_(native_|registry_)/.test(body.query)&&!/^SELECT m.workspace_id FROM clara_auth_sessions s JOIN clara_workspace_memberships/.test(body.query)){appendFileSync(attemptsFile,'GLOBAL_LOADER_ATTEMPT\n');throw Error('Global SQL loader forbidden in native browser fixture');}
   const statement=body.query.replace(/\$(\d+)/g,(_,n)=>literal(body.params[Number(n)-1]));
   try{
    if(logout){execFileSync('docker',['exec','clara-canonical-test-postgres','psql','-U','postgres','-d',process.env.NATIVE_TEST_DATABASE,'-q','-v','ON_ERROR_STOP=1','-c',statement],{stdio:['pipe','pipe','pipe']});return Response.json({fields:[],rows:[],rowCount:1,command:'UPDATE',rowAsArray:true});}
