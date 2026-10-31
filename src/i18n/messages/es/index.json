@@ -360,5 +360,20 @@
     "audioRequired": "Se requiere una grabación de audio.",
     "audioTooLarge": "Grabación demasiado grande (máximo 15 MB).",
     "noSpeech": "No se ha detectado voz."
+  },
+  "account": {
+    "title": "Cuenta de usuario",
+    "profile": "Mi perfil",
+    "authenticatedUser": "Usuario autenticado",
+    "signedOut": "Ninguna sesión activa",
+    "unverified": "Cuenta no verificada en este contexto",
+    "unavailable": "Verificación de cuenta no disponible",
+    "googleAccount": "Cuenta de Google",
+    "googleLinked": "Identidad de Google verificada y vinculada",
+    "googleNotLinked": "Ninguna identidad de Google vinculada",
+    "googleUnverified": "Vinculación de Google no verificada",
+    "googleSeparation": "Esta identidad corresponde a Clara OS. Los permisos de Drive y Calendar son independientes.",
+    "preferences": "Preferencias",
+    "signIn": "Iniciar sesión en Clara OS"
   }
 }

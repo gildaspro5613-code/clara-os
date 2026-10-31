@@ -1,10 +1,11 @@
 "use client";
 
-import { BookOpen, Search, UserRound } from "lucide-react";
+import { BookOpen, Search } from "lucide-react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 
+import UserAccountMenu from "./UserAccountMenu";
 import LocaleSwitcher from "@/components/ui/LocaleSwitcher";
 import type { Locale } from "@/i18n/types";
 
@@ -30,7 +31,6 @@ export default function Header() {
   const locale = useLocale() as Locale;
 
   const tn = useTranslations("navigation");
-  const tc = useTranslations("common");
 
 
   const pageTitleKey = pageTitleKeys[pathname];
@@ -70,13 +70,7 @@ export default function Header() {
           <BookOpen size={19} />
         </Link>
 
-        <div
-          aria-label={tc("profile")}
-          title={ui("claraOSProfile")}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cyan-500 text-sm font-semibold text-white"
-        >
-          <UserRound size={19} aria-hidden="true" />
-        </div>
+        <UserAccountMenu />
       </div>
     </header>
   );
