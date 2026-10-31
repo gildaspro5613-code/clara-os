@@ -240,6 +240,10 @@ export async function buildBrainSources(
         contexts.push({source:source.id,available:false,data:null,summary:documentDiagnostic(error)});
       }
     }
+    if(event.type==='USER_MESSAGE'){
+      const {missionMutationRequested}=await import('@/lib/core/orchestrator');
+      if(!missionMutationRequested(event)){const {nativeMissionBrainSource}=await import('@/lib/native/cognitive-scope');contexts.push(await nativeMissionBrainSource());}
+    }
     return contexts;
   }
   const projectSource=liveProjectSource(event);

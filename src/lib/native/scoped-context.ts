@@ -21,6 +21,8 @@ export interface ScopedNativeContext {
  googleWorkCommitProof?:Record<string,unknown>;
  mailCommitProof?:Record<string,unknown>;
  chatCommitProof?:Record<string,unknown>;
+ missionReadProof?:string;
+ missionReadRows?:Array<Record<string,unknown>>;
  missionContactProtocolVersion?:number;missionContactWrite?:{missionId:string;submissionId:string};
  contactProtocolVersion?:number;contactWrite?:Record<string,unknown>;
  writable:boolean;runtime?:Clara;dirty:boolean;commitOnFailure?:boolean;
