@@ -44,7 +44,7 @@ test('account display: actual canonical PostgreSQL sessions, member rights, exac
 });
 
 test('only approved account and search slots change; other header elements and locale control are preserved',()=>{
- const before=execFileSync('git',['show','fba152a6d232b7d079d523a3afbfdedf3965160b:src/components/layout/Header.tsx'],{encoding:'utf8'}),after=readFileSync('src/components/layout/Header.tsx','utf8');
+ const before=readFileSync('src/tests/fixtures/header-before-account-search.tsx','utf8'),after=readFileSync('src/components/layout/Header.tsx','utf8');
  const normalizeSearch=(s:string)=>s.replace(/      <div className="mx-5[\s\S]*?(?=\n\n      <div className="flex shrink-0)/,'      <HeaderSearch />');
  const beforeJSX=normalizeSearch(before.slice(before.indexOf('  return ('))).replace(/        <div\n          aria-label=\{tc\("profile"\)\}[\s\S]*?        <\/div>/,'        <UserAccountMenu />');
  assert.equal(after.slice(after.indexOf('  return (')),beforeJSX,'No change outside the approved account and search slots');
