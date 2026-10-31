@@ -1,0 +1,30 @@
+REVIEW_RACE {"status":200,"secondaryMissionRevoked":"1","newMessageIncludesRevokedTitle":true}
+✖ actual chat → Brain → authorized PostgreSQL mission registry → composer → durable history, never mission mutation (7295.095613ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7954.30168
+
+✖ failing tests:
+
+test at src/tests/.review-mission-finish-race.test.ts:2:1933
+✖ actual chat → Brain → authorized PostgreSQL mission registry → composer → durable history, never mission mutation (7295.095613ms)
+  AssertionError [ERR_ASSERTION]: Revocation after the final read but before finish must reject the response
+
+  200 !== 409
+
+      at TestContext.<anonymous> (/workspace/clara-os-mission-context/src/tests/.review-mission-finish-race.test.ts:87:9)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 409,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

@@ -23,7 +23,7 @@ test('actual chat → Brain → authorized PostgreSQL mission registry → compo
  const pg=(s:string)=>execFileSync('docker',['exec',container,'psql','-U','postgres','-d',db,'-qAt','-v','ON_ERROR_STOP=1','-c',s],{encoding:'utf8',stdio:'pipe'}).trim();
  const query:RegistryQuery=async(strings,...values)=>{
   const s=strings.reduce((s,p,i)=>s+p+(i<values.length?"'"+String(values[i]).replaceAll("'","''")+"'":''),'');
-  assert.match(s,/^SELECT clara_native_(runtime|chat)_command\(/,'Only actual scoped SQL primitives are permitted');
+  assert.ok(/^SELECT clara_native_(runtime|chat)_command\(/.test(s)||s.trimStart().startsWith('WITH native_mission_finalize_input AS MATERIALIZED'),'Only actual scoped SQL primitives and their locked finalization are permitted');
   try{const r=await promisify(execFile)('docker',['exec',container,'psql','-U','postgres','-d',db,'-qAt','-v','ON_ERROR_STOP=1','-v','VERBOSITY=verbose','-c',`SELECT row_to_json(r) FROM (${s})r`]);return r.stdout.trim().split('\n').filter(Boolean).map(x=>JSON.parse(x));}
   catch(e){throw {code:String((e as {stderr:unknown}).stderr).match(/ERROR:\s+([A-Z0-9]{5}):/)?.[1]};}
  };
@@ -77,7 +77,9 @@ test('actual chat → Brain → authorized PostgreSQL mission registry → compo
  assert.deepEqual((after.sources.find(s=>s.source==='native-missions')!.data as {missions:unknown[]}).missions.map(m=>(m as {id:string}).id).sort(),cockpit.map(m=>m.id).sort());
  assert.equal(pg('SELECT jsonb_agg(jsonb_build_object(\'id\',id,\'data\',data,\'updated_at\',updated_at) ORDER BY id) FROM clara_missions'),beforeMissions,'Consultation must not update or create a mission');
  const history=await command(scope(sid),'history');assert.equal((history.messages as unknown[]).length,2);assert.ok(JSON.stringify(history).includes('44 %'));
- const calls=modelCalls;const replay=await post(request(sid,body));assert.equal(replay.status,200);assert.equal(replay.headers.get('X-Clara-Operation-Replayed'),'1');assert.deepEqual(await replay.json(),result);assert.equal(modelCalls,calls);
+ const calls=modelCalls;
+ const forged=await post(request(sid,{...body,operationId:randomUUID(),missionReads:[]}));assert.equal(forged.status,400,'The browser cannot supply or clear server-owned mission read proofs');assert.equal(modelCalls,calls);
+ const replay=await post(request(sid,body));assert.equal(replay.status,200);assert.equal(replay.headers.get('X-Clara-Operation-Replayed'),'1');assert.deepEqual(await replay.json(),result);assert.equal(modelCalls,calls);
  for(const r of [request(sid,{...body,operationId:randomUUID()},'B'),request(sid,{...body,operationId:randomUUID()},'A','c1','p2'),request(sid,{...body,operationId:randomUUID()},'A','c2','p3'),request(sid,{...body,operationId:randomUUID()},'D'),request(sid,{...body,operationId:randomUUID()},'A','c1','p1','other-workspace')])assert.equal((await post(r)).status,403);
  assert.equal(modelCalls,calls);
  for(const value of ['', 'clara_auth_session=invalid']){const r=request(sid,{...body,operationId:randomUUID()});r.headers.set('cookie',value);assert.equal((await post(r)).status,401);}

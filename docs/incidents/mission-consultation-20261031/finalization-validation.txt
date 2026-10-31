@@ -1,0 +1,149 @@
+Base: 5bd5687ea2e20ab37dd78d17454782590ba7b475
+Même branche: fix/native-mission-consultation-context-20261031
+Aucun changement de schéma, migration ou privilège; aucun accès SQL distant.
+Commandes finales:
+CANONICAL_TEST_CONTAINER=clara-canonical-test-postgres node --import tsx --test src/tests/operational-recovery*.test.ts src/tests/native-conversation-postgres.test.ts src/tests/native-authority.test.ts src/tests/native-cognitive-scope.test.ts src/tests/historical-cockpit.test.ts
+Build: NEXT_FONT_GOOGLE_MOCKED_RESPONSES=/tmp/prod-font-responses.cjs NEXT_TELEMETRY_DISABLED=1 npm run build -- --webpack
+Navigateur: Next optimisé + HTTPS local + PostgreSQL 17 jetable + Chromium; native-runtime-browser.e2e.mjs.
+Lint ciblé et npx tsc --noEmit --pretty false: PASS.
+Génération simulée dans le chat; aucune simulation du registre natif ou des transactions/permissions SQL; aucun modèle utilisé dans les deux tests de verrouillage concurrent.
+
+=== AVANT: revue reproduite sur 5bd5687e ===
+REVIEW_RACE {"status":200,"secondaryMissionRevoked":"1","newMessageIncludesRevokedTitle":true}
+✖ actual chat → Brain → authorized PostgreSQL mission registry → composer → durable history, never mission mutation (6955.811981ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7491.945803
+
+✖ failing tests:
+
+test at src/tests/operational-recovery-mission-finalization-postgres.test.ts:2:1979
+✖ actual chat → Brain → authorized PostgreSQL mission registry → composer → durable history, never mission mutation (6955.811981ms)
+  AssertionError [ERR_ASSERTION]: Revocation after the final read but before finish must reject the response
+
+  200 !== 409
+
+      at TestContext.<anonymous> (/workspace/clara-os-mission-context/src/tests/operational-recovery-mission-finalization-postgres.test.ts:87:9)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 409,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+=== APRES: scénario et deux transactions réellement concurrentes ===
+REVIEW_RACE {"status":409,"secondaryMissionRevoked":"1","newMessageIncludesRevokedTitle":false}
+✔ real chat refuses the review race: secondary mission revoked after read and before finish (7226.586761ms)
+CONCURRENT_REVOCATION_FIRST: actual SQL wait observed; HTTP 409; zero new messages; replay 409
+▶ real concurrent PostgreSQL transactions serialize finalization and secondary-mission revocation
+  ✔ revocation owns the row first: finalizer waits, then refuses without persisting the new exchange (1705.043074ms)
+CONCURRENT_FINALIZATION_FIRST: revoker blocked by finalizer; HTTP 200 committed first; later replay 409; history preserved
+  ✔ finalizer owns the read locks first: revocation cannot commit before the message finalization (2045.595886ms)
+✔ real concurrent PostgreSQL transactions serialize finalization and secondary-mission revocation (6988.782927ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 14898.988873
+
+=== SUITE FINALE: inclut mission active hors liste bornée et refus de preuve navigateur ===
+✔ historical Tasks uses the authorized mission rather than the old 82 percent fixture (13.157735ms)
+✔ native historical microphone stays disabled and honest in all five languages (16.551307ms)
+✔ the historical action bar navigates existing pages instead of decorative buttons (6.120138ms)
+Checked 38 native handler refusals.
+[CLARA] instrumentation ready; business runtime is request-scoped
+✔ native session handler rejects missing, malformed and duplicate cookies before storage or global runtime (74.43386ms)
+✔ default, external and absent explicit selectors cannot resume a global/native fallback (1.471286ms)
+✔ every fenced native HTTP handler refuses anonymous/invalid cookies without entering legacy business logic (178.758331ms)
+✔ unavailable authority never leaks storage details or resumes the legacy runtime (5.054592ms)
+✔ even an explicitly authorized snapshot cannot unlock legacy native mutations (16.610527ms)
+✔ all six native server pages return before invoking any global data loader (73.126191ms)
+✔ reopened chat and native runtime/document handlers still refuse invalid authentication before business code (54.357835ms)
+✔ server instrumentation never imports or starts a global business runtime (1.97849ms)
+✔ Uncertified Google/Brevo/Make connection routes reject invalid OS sessions before storage or provider I/O (92.132906ms)
+✔ a verified native session cannot unlock Google credentials or Make configuration before connector certification (74.16808ms)
+✔ native cognitive scope uses explicit authorized selectors without inventing a mission (0.930522ms)
+✔ native context never falls back to a different request or to global context (0.257518ms)
+▶ native conversation: immutable Mission, atomic receipts, durable paginated history and actual concurrent/restart recovery
+  ✔ Mission reassignment, foreign user/client/project and unbound historical context fail closed (1918.186279ms)
+  ✔ concurrent identical submissions execute once; lost acknowledgement replays after fresh adapter instantiation (3200.336026ms)
+  ✔ ambiguous abandoned processing pins the Session and never steals/retries ownership (573.371592ms)
+  ✔ more than 100 messages survive in the same store with bounded pages and stable cursors (2134.434108ms)
+  ✔ revocation at finish rolls back receipt and business state; concurrent context update yields cached conflict (2574.995794ms)
+  ✔ lost SQL acknowledgement after actual commit replays the same receipt without a second cycle (1418.024099ms)
+  ✔ generation failure is persisted with its notice and replay never recomposes it (1253.599836ms)
+  ✔ pre-migration Mission history is preserved read-only, never silently certified (1229.189514ms)
+  ✔ explicit cancellation fences a delayed owner; an already committed result is never overwritten (2496.96817ms)
+  ✔ the existing inbound worker still claims its jobs but never expires native receipts or steals their owners (1317.352586ms)
+  ✔ missing upgraded runtime refuses new writes before entering business code (560.166644ms)
+  ✔ migration reapplication and backup/restore preserve receipts, history and invoker security (1592.061109ms)
+✔ native conversation: immutable Mission, atomic receipts, durable paginated history and actual concurrent/restart recovery (25853.620924ms)
+✔ actual chat → Brain → authorized PostgreSQL mission registry → composer → durable history, never mission mutation (14012.208797ms)
+✔ mission read helpers refuse absent native context before any global store access (0.718883ms)
+REVIEW_RACE {"status":409,"secondaryMissionRevoked":"1","newMessageIncludesRevokedTitle":false}
+✔ real chat refuses the review race: secondary mission revoked after read and before finish (10135.527066ms)
+CONCURRENT_REVOCATION_FIRST: actual SQL wait observed; HTTP 409; zero new messages; replay 409
+▶ real concurrent PostgreSQL transactions serialize finalization and secondary-mission revocation
+  ✔ revocation owns the row first: finalizer waits, then refuses without persisting the new exchange (2223.7805ms)
+CONCURRENT_FINALIZATION_FIRST: revoker blocked by finalizer; HTTP 200 committed first; later replay 409; history preserved
+  ✔ finalizer owns the read locks first: revocation cannot commit before the message finalization (2677.601399ms)
+  ✔ the active mission is protected even outside the 100-entry registry projection (1442.627317ms)
+✔ real concurrent PostgreSQL transactions serialize finalization and secondary-mission revocation (11196.109948ms)
+▶ operational recovery through scoped runtime and real PostgreSQL persistence
+  ✔ consultation in empty thread does not create a mission (1263.853313ms)
+  ✔ historical unproven thread cannot be certified by a forged marker (803.65834ms)
+  ✔ explicit command creates an authorized mission (504.091979ms)
+  ✔ consultation cannot replan/reactivate/execute or alter a blocked mission; history remains durable (1055.057044ms)
+  ✔ unselected Google connection has precise HTTP diagnostic and no provider access (129.857066ms)
+  ✔ native calendar missing binding and mailbox missing authority are explicit, no global fallback (213.358085ms)
+  ✔ selected-calendar cognition reuses real scoped authority and no mutation transport (4368.474291ms)
+  ✔ Google reauthentication response does not leak a provider message (610.973913ms)
+  ✔ mail cognition reads the authorized encrypted cache only; no SMTP/IMAP and revocation fences commit (2049.908692ms)
+  ✔ 030 reapplication preserves runtime ACL, data and wrapper identities (803.600458ms)
+  ✔ foreign project and revoked session cannot use these paths (396.168521ms)
+✔ operational recovery through scoped runtime and real PostgreSQL persistence (17053.814049ms)
+✔ consultations and ambiguous follow-ups cannot authorize a mission mutation (3.026759ms)
+✔ explicit commands retain the existing mission pipeline (0.693916ms)
+✔ Drive diagnostics only display reviewed public codes, never messages or provider payloads (0.193982ms)
+ℹ tests 50
+ℹ suites 0
+ℹ pass 50
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 34986.283463
+
+=== NAVIGATEUR HTTPS FINAL ===
+Native browser fixture initialized; no production connections.
+✔ native browser: explicit selection, positive persisted mission/chat and cross-user/project refusals (36761.603948ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 37286.426724
+
+BUILD FINAL
+✓ Compiled successfully in 7.8s
+  Finished TypeScript in 9.1s ...
+  Generating static pages using 4 workers (0/29) ...
+  Generating static pages using 4 workers (7/29)
+  Generating static pages using 4 workers (14/29)
+  Generating static pages using 4 workers (21/29)
+✓ Generating static pages using 4 workers (29/29) in 439ms
+  Collecting build traces ...

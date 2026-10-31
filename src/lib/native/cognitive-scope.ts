@@ -52,6 +52,12 @@ export async function nativeMissionBrainSource():Promise<BrainSourceContext>{
  const native=nativeContext();if(!native)throw new RegistryError(403,'NATIVE_SCOPE_REQUIRED');
  const missions=await loadMissions(),data=missionReadSnapshot(missions),proof=missionReadDigest(missions);
  native.missionReadProof=proof;
+ // Exact business fields read by this source, before display truncation. The
+ // final SQL statement locks and verifies them against the canonical registry.
+ const included=new Set(data.missions.map(m=>m.id));
+ // The composer also reads the active mission, even outside the bounded list.
+ if(native.session.mission?.id)included.add(native.session.mission.id);
+ native.missionReadRows=missions.filter(m=>included.has(m.id)).map(m=>({id:m.id,title:m.title,objective:m.objective,status:m.status,progress:m.progress,...(m.nextAction!==undefined?{nextAction:m.nextAction}:{})}));
  // Existing pre-commit read-revalidation hook, shared with documents/calendar.
  native.documentRevalidators??=new Map();
  native.documentRevalidators.set('native-missions',async()=>{

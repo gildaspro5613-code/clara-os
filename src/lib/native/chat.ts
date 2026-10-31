@@ -8,8 +8,48 @@ import {resolveLocale} from '@/i18n/config';
 export function nativeChatCommands(query:RegistryQuery=sql){
  return async(scope:ReturnType<typeof nativeSelectors>,operation:string,payload:Record<string,unknown>)=>{
   try{
-   const rows=await query`SELECT clara_native_chat_command(${scope.digest},${scope.workspaceId},${scope.clientId},${scope.projectId},${scope.sessionId},${operation},${JSON.stringify(payload)}::jsonb) AS data`;
-   const data=(rows[0] as {data?:Record<string,unknown>})?.data;if(!data)throw new RegistryError(503,'NATIVE_CHAT_UNAVAILABLE');return data;
+   // One statement/transaction: canonical scope first, deterministic SHARE
+   // locks on the read missions and their authority, then the existing finish.
+   // A concurrent revoker either commits first (refusal) or waits for finish.
+   const rows=operation==='finish'&&Array.isArray(payload.missionReads)?await query`
+WITH native_mission_finalize_input AS MATERIALIZED (
+ SELECT ${scope.digest}::text AS digest, ${scope.workspaceId}::text AS workspace,
+        ${scope.clientId}::text AS client, ${scope.projectId}::text AS project,
+        ${scope.sessionId}::text AS session, ${operation}::text AS operation,
+        ${JSON.stringify(payload)}::jsonb AS payload
+), native_mission_finalize_scope AS MATERIALIZED (
+ SELECT input.*, clara_native_runtime_command(input.digest,input.workspace,input.client,input.project,input.session,'write','{}'::jsonb) AS snapshot
+ FROM native_mission_finalize_input input
+), native_mission_finalize_reads AS MATERIALIZED (
+ SELECT expected.value AS expected FROM native_mission_finalize_scope scoped
+ CROSS JOIN LATERAL jsonb_array_elements(scoped.payload->'missionReads') expected
+), native_mission_finalize_locks AS MATERIALIZED (
+ SELECT authority.resource_id
+ FROM native_mission_finalize_scope scoped
+ JOIN native_mission_finalize_reads read ON true
+ JOIN clara_native_resource_authority authority ON authority.resource_kind='mission' AND authority.resource_id=read.expected->>'id'
+ JOIN clara_missions mission ON mission.id=authority.resource_id
+ WHERE authority.owner_user_id=scoped.snapshot->>'userId'
+   AND authority.workspace_id=scoped.workspace AND authority.client_id=scoped.client AND authority.project_id=scoped.project
+   AND authority.revoked_at IS NULL
+   AND authority.snapshot_sha256=encode(sha256(convert_to(mission.data::text,'UTF8')),'hex')
+   AND mission.data @> read.expected
+ ORDER BY authority.resource_id,authority.binding_id
+ FOR SHARE OF authority, mission
+), native_mission_finalize_check AS MATERIALIZED (
+ SELECT jsonb_array_length(scoped.payload->'missionReads')<=101
+   AND (SELECT count(*) FROM native_mission_finalize_reads)=(SELECT count(DISTINCT expected->>'id') FROM native_mission_finalize_reads)
+   AND (SELECT count(*) FROM native_mission_finalize_locks)=jsonb_array_length(scoped.payload->'missionReads') AS allowed
+ FROM native_mission_finalize_scope scoped
+)
+SELECT CASE WHEN native_mission_finalize_check.allowed THEN
+ clara_native_chat_command(scoped.digest,scoped.workspace,scoped.client,scoped.project,scoped.session,scoped.operation,scoped.payload)
+ ELSE jsonb_build_object('missionReadRejected',true) END AS data
+FROM native_mission_finalize_scope scoped CROSS JOIN native_mission_finalize_check
+`:await query`SELECT clara_native_chat_command(${scope.digest},${scope.workspaceId},${scope.clientId},${scope.projectId},${scope.sessionId},${operation},${JSON.stringify(payload)}::jsonb) AS data`;
+   const data=(rows[0] as {data?:Record<string,unknown>})?.data;
+   if(data?.missionReadRejected===true)throw new RegistryError(409,'NATIVE_MISSION_CONTEXT_CHANGED');
+   if(!data)throw new RegistryError(503,'NATIVE_CHAT_UNAVAILABLE');return data;
   }catch(error){if((error as {code?:string}).code==='40001')throw new RegistryError(409,'NATIVE_REVISION_CONFLICT');databaseError(error);}
  };
 }
@@ -38,7 +78,7 @@ export async function nativeChatRequest(request:Request,render:()=>Promise<Respo
   try{
    return await withNativeScope(request,true,async()=>{
     const response=await render();response.headers.set('Cache-Control','no-store');
-    nativeContext()!.chatCommitProof={jobId:reserved.jobId,ownerToken:reserved.ownerToken,result:{status:response.status,body:await response.clone().json(),...(nativeContext()!.missionReadProof?{missionReadProof:nativeContext()!.missionReadProof}:{})}};
+    nativeContext()!.chatCommitProof={jobId:reserved.jobId,ownerToken:reserved.ownerToken,...(nativeContext()!.missionReadRows?{missionReads:nativeContext()!.missionReadRows}:{}),result:{status:response.status,body:await response.clone().json(),...(nativeContext()!.missionReadProof?{missionReadProof:nativeContext()!.missionReadProof}:{})}};
     return response;
    },query);
   }catch(error){
