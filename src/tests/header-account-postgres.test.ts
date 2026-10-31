@@ -49,7 +49,7 @@ test('only the historical avatar slot changes; header navigation and locale cont
  assert.equal(after.slice(after.indexOf('  return (')),beforeJSX,'No other header element, class or arrangement changes');
  const menu=readFileSync('src/components/layout/UserAccountMenu.tsx','utf8');assert.ok(menu.includes('flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cyan-500 text-sm font-semibold text-white'));assert.ok(menu.includes('<UserRound size={19}'));
  for(const locale of ['fr','en','es','de','it']){
-  const messages=JSON.parse(readFileSync('src/i18n/messages/'+locale+'/index.json','utf8'));assert.equal(Object.keys(messages.account).length,13);
+  const messages=JSON.parse(readFileSync('src/i18n/messages/'+locale+'/index.json','utf8'));assert.equal(Object.keys(messages.account).length,18);
   for(const value of Object.values(messages.account))assert.ok(typeof value==='string'&&value.trim());
  }
 });

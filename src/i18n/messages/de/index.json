@@ -374,6 +374,11 @@
     "googleUnverified": "Google-Verknüpfung nicht bestätigt",
     "googleSeparation": "Diese Identität gilt für Clara OS. Berechtigungen für Drive und Kalender sind davon getrennt.",
     "preferences": "Einstellungen",
-    "signIn": "Bei Clara OS anmelden"
+    "signIn": "Bei Clara OS anmelden",
+    "space": "Mein Bereich",
+    "profileDescription": "Benutzerkonto",
+    "connections": "Verbindungen",
+    "connectionsDescription": "Autorisierte Dienste",
+    "signOut": "Abmelden"
   }
 }

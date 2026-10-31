@@ -2,7 +2,7 @@
 import {useCallback,useEffect,useId,useRef,useState} from 'react';
 import {useLocale,useTranslations} from 'next-intl';
 import {usePathname} from 'next/navigation';
-import {UserRound} from 'lucide-react';
+import {UserRound,Settings2,Plug,LogOut,ChevronRight} from 'lucide-react';
 import {accountProfile} from '@/app/actions/account-profile';
 import type {AccountProfile} from '@/lib/auth/account-profile';
 
@@ -33,16 +33,18 @@ export default function UserAccountMenu(){
    onToggle={event=>{if(event.target!==event.currentTarget)return;const visible=event.currentTarget.matches(':popover-open');setOpen(visible);setError(false);if(visible){void loadProfile();requestAnimationFrame(()=>{const items=panel.current?.querySelectorAll<HTMLElement>('summary,button:not(:disabled),a[href]');(lastFocus.current?items?.[items.length-1]:items?.[0])?.focus();});}else{generation.current++;setProfile(null);lastFocus.current=false;}}}
    onKeyDown={event=>{if(!['ArrowDown','ArrowUp','Home','End'].includes(event.key))return;const items=[...event.currentTarget.querySelectorAll<HTMLElement>('summary,button:not(:disabled),a[href]')],at=items.indexOf(document.activeElement as HTMLElement);if(!items.length)return;event.preventDefault();const next=event.key==='Home'?0:event.key==='End'?items.length-1:(at+(event.key==='ArrowDown'?1:-1)+items.length)%items.length;items[next].focus();}}
    onBlur={event=>{if(event.relatedTarget instanceof Node&&!event.currentTarget.contains(event.relatedTarget)&&event.relatedTarget!==button.current)close();}}>
-   <details open><summary className="cursor-pointer font-medium text-white">{t('profile')}</summary>
-    <p className="mt-2 break-words text-slate-300" data-account-name>{!profile?common('loading'):profile.state==='authenticated'?(profile.displayName??t('authenticatedUser')):t(profile.state==='signed-out'?'signedOut':profile.state==='unverified'?'unverified':'unavailable')}</p>
+   <div className="mb-3 border-b border-cyan-300/15 pb-3"><h2 className="text-base font-semibold text-white">{t('space')}</h2><p className="mt-1 text-xs text-slate-400">Mélodie Digital · Clara OS</p></div>
+   <details className="group rounded-xl border border-cyan-300/10 bg-[#101E30]">
+    <summary className="flex cursor-pointer list-none items-center gap-3 rounded-xl p-3 focus-visible:outline focus-visible:outline-cyan-200 [&::-webkit-details-marker]:hidden"><UserRound size={18} className="shrink-0 text-cyan-300" aria-hidden="true"/><span className="flex-1"><span className="block font-medium">{t('profile')}</span><span className="mt-0.5 block text-xs text-slate-400">{t('profileDescription')}</span></span><ChevronRight size={16} className="text-cyan-300/70 group-open:rotate-90" aria-hidden="true"/></summary>
+    <div className="px-3 pb-3 text-xs leading-5 text-slate-300">
+     <p className="break-words" data-account-name>{!profile?common('loading'):profile.state==='authenticated'?(profile.displayName??t('authenticatedUser')):t(profile.state==='signed-out'?'signedOut':profile.state==='unverified'?'unverified':'unavailable')}</p>
+     <p className="mt-2" data-account-google>{profile?.state==='authenticated'?t(profile.googleIdentityLinked?'googleLinked':'googleNotLinked'):t('googleUnverified')}</p>
+     <p className="mt-1 text-slate-400">{t('googleSeparation')}</p>
+    </div>
    </details>
-   <details open className="mt-3 border-t border-white/10 pt-3"><summary className="cursor-pointer font-medium text-white">{t('googleAccount')}</summary>
-    <p className="mt-2 text-slate-300" data-account-google>{profile?.state==='authenticated'?t(profile.googleIdentityLinked?'googleLinked':'googleNotLinked'):t('googleUnverified')}</p>
-    <p className="mt-1 text-xs leading-5 text-slate-400">{t('googleSeparation')}</p>
-   </details>
-   <button type="button" className="mt-3 block w-full rounded-lg border-t border-white/10 py-2 text-left text-slate-200 focus-visible:outline focus-visible:outline-cyan-200" onClick={()=>{close();button.current?.closest('header')?.querySelector<HTMLSelectElement>('select')?.focus();}}>{t('preferences')} · {common('language')} ({locale.toUpperCase()})</button>
-   {profile?.state==='signed-out'&&<a className="mt-2 block text-cyan-200 underline" href="/api/auth/google/start">{t('signIn')}</a>}
-   <button type="button" disabled={busy} className="mt-2 block w-full rounded-lg border border-white/20 px-3 py-2 text-left text-white disabled:opacity-50 focus-visible:outline focus-visible:outline-cyan-200" onClick={()=>void logout()}>{busy?common('loading'):common('logout')}</button>
+   <button type="button" className="mt-2 flex w-full items-center gap-3 rounded-xl border border-cyan-300/10 bg-[#101E30] p-3 text-left focus-visible:outline focus-visible:outline-cyan-200" onClick={()=>{close();button.current?.closest('header')?.querySelector<HTMLSelectElement>('select')?.focus();}}><Settings2 size={18} className="shrink-0 text-cyan-300" aria-hidden="true"/><span className="flex-1"><span className="block font-medium">{t('preferences')}</span><span className="mt-0.5 block text-xs text-slate-400">{common('language')} ({locale.toUpperCase()})</span></span><ChevronRight size={16} className="text-cyan-300/70" aria-hidden="true"/></button>
+   <a href="/connexions" onClick={close} className="mt-2 flex items-center gap-3 rounded-xl border border-cyan-300/10 bg-[#101E30] p-3 focus-visible:outline focus-visible:outline-cyan-200"><Plug size={18} className="shrink-0 text-cyan-300" aria-hidden="true"/><span className="flex-1"><span className="block font-medium">{t('connections')}</span><span className="mt-0.5 block text-xs text-slate-400">{t('connectionsDescription')}</span></span><ChevronRight size={16} className="text-cyan-300/70" aria-hidden="true"/></a>
+   <div className="mt-3 border-t border-cyan-300/15 pt-3"><button type="button" aria-label={common('logout')} disabled={busy} className="flex w-full items-center gap-3 rounded-xl border border-cyan-300/10 bg-[#101E30] p-3 text-left disabled:opacity-50 focus-visible:outline focus-visible:outline-cyan-200" onClick={()=>void logout()}><LogOut size={18} className="shrink-0 text-cyan-300" aria-hidden="true"/><span className="flex-1 font-medium">{busy?common('loading'):t('signOut')}</span><ChevronRight size={16} className="text-cyan-300/70" aria-hidden="true"/></button></div>
    {error&&<p role="alert" className="mt-2 text-sm text-amber-100">{ui('uiLogoutError')}</p>}
   </div>
  </>;

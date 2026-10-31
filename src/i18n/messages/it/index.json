@@ -374,6 +374,11 @@
     "googleUnverified": "Collegamento Google non verificato",
     "googleSeparation": "Questa identità riguarda Clara OS. Le autorizzazioni Drive e Calendar sono separate.",
     "preferences": "Preferenze",
-    "signIn": "Accedi a Clara OS"
+    "signIn": "Accedi a Clara OS",
+    "space": "Il mio spazio",
+    "profileDescription": "Account utente",
+    "connections": "Connessioni",
+    "connectionsDescription": "Servizi autorizzati",
+    "signOut": "Disconnetti"
   }
 }
