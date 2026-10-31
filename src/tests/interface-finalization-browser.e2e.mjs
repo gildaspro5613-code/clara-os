@@ -60,7 +60,7 @@ test('interface receipt: explicit business flow, responsive navigation, five lan
    await page.setViewportSize({width,height});
    for(const path of pages){
     const response=await page.goto(origin+'/'+path);assert.equal(response.status(),200,device+' '+path);
-    await page.locator('[data-context-loading="false"]').waitFor();
+    if(path)await page.locator('[data-context-loading="false"]').waitFor();else assert.equal(await page.locator('[data-context-loading], [data-cockpit-context]').count(),0);
     assert.equal(await page.locator('[data-native-authority="locked"]').count(),0,path);
     assert.equal(await page.locator('aside a[aria-current="page"]').getAttribute('href'),'/'+path);
     assert.ok(await page.locator('#main-workspace').evaluate(e=>e.scrollWidth<=e.clientWidth+1),device+' '+path+' overflows');
@@ -85,9 +85,9 @@ test('interface receipt: explicit business flow, responsive navigation, five lan
   for(const locale of ['fr','en','es','de','it']){
    await context.addCookies([{name:'NEXT_LOCALE',value:locale,url:origin}]);
    for(const path of pages){
-    const response=await page.goto(origin+'/'+path);assert.equal(response.status(),200,locale+' '+path);await page.locator('[data-context-loading="false"]').waitFor();
+    const response=await page.goto(origin+'/'+path);assert.equal(response.status(),200,locale+' '+path);if(path)await page.locator('[data-context-loading="false"]').waitFor();else assert.equal(await page.locator('[data-context-loading], [data-cockpit-context]').count(),0);
     assert.equal(await page.locator('html').getAttribute('lang'),locale);
-    await page.getByText(dictionary(locale).uiWorkspace+' · w / Client c1 / Project p1',{exact:true}).waitFor();
+    if(path)await page.getByText(dictionary(locale).uiWorkspace+' · w / Client c1 / Project p1',{exact:true}).waitFor();
     assert.ok(!(await page.locator('body').innerText()).includes('MISSING_MESSAGE'));
     matrix.push({page:'/'+path,locale,device:'desktop',status:'PASS',proof:'server render, translated shared controls, source data preserved'});
    }

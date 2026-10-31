@@ -21,10 +21,10 @@ import Sidebar from "./Sidebar";
 
 interface MainLayoutProps {
   children: ReactNode;
-  compactContext?: boolean;
+  hideContext?: boolean;
 }
 
-export default function MainLayout({ children, compactContext=false }: MainLayoutProps) {
+export default function MainLayout({ children, hideContext=false }: MainLayoutProps) {
   return (
     <div className="min-h-screen bg-[#0B1120] text-white">
       {/* Sidebar */}
@@ -37,7 +37,7 @@ export default function MainLayout({ children, compactContext=false }: MainLayou
 
         {/* Workspace */}
         <main id="main-workspace" tabIndex={-1} className="clara-workspace-scroll relative flex min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
-          <div className="clara-page-content min-w-0 w-full"><NativeScopeSelector collapsed={compactContext} />{children}</div>
+          <div className="clara-page-content min-w-0 w-full">{!hideContext&&<NativeScopeSelector />}{children}</div>
         </main>
       </div>
     </div>

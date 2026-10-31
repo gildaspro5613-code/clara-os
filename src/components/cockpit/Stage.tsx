@@ -3,7 +3,7 @@ import type { AcquisitionRecord } from "@/lib/acquisition/acquisition-store";
 
 import BriefPanel from "@/components/cockpit/panels/BriefPanel";
 import TasksPanel from "@/components/cockpit/panels/TasksPanel";
-import AgendaPanel from "@/components/cockpit/panels/AgendaPanel";
+import MailOverviewPanel from "@/components/cockpit/panels/MailOverviewPanel";
 import ClaraVoiceWidget from "@/components/cockpit/widgets/voice/ClaraVoiceWidget";
 import GlassPanel from "@/components/ui/GlassPanel";
 import { getTranslations } from "next-intl/server";
@@ -50,8 +50,8 @@ export default async function Stage({ session, acquisition,nativeScope=false,dis
         <ClaraVoiceWidget disabled={nativeScope}/>
       </div>
 
-      <div data-historical-agenda className="pointer-events-auto absolute right-[5%] top-[7%] z-20 hidden w-[28%] max-w-[420px] max-h-[35%] overflow-y-auto lg:block">
-        <AgendaPanel />
+      <div data-historical-mail className="pointer-events-auto absolute right-[5%] top-[7%] z-20 hidden w-[28%] max-w-[420px] max-h-[35%] overflow-y-auto lg:block">
+        {nativeScope&&<MailOverviewPanel />}
       </div>
 
       <div data-historical-tasks className="pointer-events-auto absolute right-[5%] top-[61%] z-20 hidden w-[28%] max-w-[420px] max-h-[35%] overflow-y-auto lg:block">
@@ -60,7 +60,7 @@ export default async function Stage({ session, acquisition,nativeScope=false,dis
 
       <div className="relative z-20 flex min-w-0 flex-col gap-4 px-4 py-6 sm:px-6 lg:hidden">
         <BriefPanel session={session} acquisition={acquisition} displayFirstName={displayFirstName}/>
-        <AgendaPanel/>
+        {nativeScope&&<MailOverviewPanel />}
         <MissionPanel mission={mission}/>
         <ClaraVoiceWidget disabled={nativeScope}/>
       </div>

@@ -28,9 +28,9 @@ test('781 composition Cockpit: actual native mission, five languages and respons
     await context.route('**/*',r=>new URL(r.request().url()).origin===new URL(origin).origin?r.continue():r.abort());
     await context.addCookies([{name:display.name,value:display.value,httpOnly:true,secure:true,url:origin},{name:'clara_auth_session',value:'A'.repeat(43),url:origin},{name:'clara_native_selection',value:selection.slice(selection.indexOf('=')+1),url:origin},{name:'NEXT_LOCALE',value:locale,url:origin}]);
     page=await context.newPage();page.on('request',r=>requests.push({path:new URL(r.url()).pathname,method:r.method()}));
-    await page.goto(origin);await page.locator('[data-cockpit-hero]').waitFor();
-    await page.locator('[data-context-loading="false"]').waitFor({state:'attached'});assert.equal(await page.locator('[data-cockpit-context]').evaluate(el=>el.open),false);assert.equal(await page.locator('[data-native-business-context]').isVisible(),false);
-    const contextPanel=page.locator('[data-cockpit-context]');await contextPanel.locator(':scope > summary').click();await page.locator('[data-native-business-context]').waitFor();await contextPanel.locator(':scope > summary').click();assert.equal(await page.locator('[data-native-business-context]').isVisible(),false);
+    const overviewReady=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/native/mail'&&new URL(r.url()).searchParams.get('action')==='overview');
+    await page.goto(origin);await (await overviewReady).finished();await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));await page.locator('[data-cockpit-hero]').waitFor();
+    assert.equal(await page.locator('[data-cockpit-context], [data-context-loading], [data-native-business-context]').count(),0);
     const hero=page.locator('[data-cockpit-hero]');await hero.getByText('HISTORICAL_AUTHORIZED_MISSION',{exact:true}).filter({visible:true}).first().waitFor();
     await page.evaluate(()=>document.fonts.ready);
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,locale+' '+device+' overflow');
@@ -42,8 +42,12 @@ test('781 composition Cockpit: actual native mission, five languages and respons
     assert.equal(await page.locator('[data-cockpit-widgets] textarea').isVisible(),true);
     const body=await page.locator('body').innerText();assert(!body.includes('82 %'));assert(!body.includes('PRIVATE_LEGACY_HISTORY'));
     const voice=hero.locator('button');for(const button of await voice.all())if(await button.isVisible())assert.equal(await button.isDisabled(),true);
-    const shortcuts=page.locator('[data-cockpit-widgets] nav').first();assert.equal(await shortcuts.locator('a').count(),6);assert.equal(await shortcuts.locator('button').count(),0);
-    for(const href of ['/clara?intent=new-mission','/agenda','/missions','/conversations','/automatisations','/documents'])assert.equal(await shortcuts.locator('a[href="'+href+'"]').count(),1);
+    assert.equal(await hero.locator('[data-historical-agenda]').count(),0);
+    assert.equal(await hero.locator('section').filter({has:page.locator('a[href="/messagerie"]')}).filter({visible:true}).count(),1);assert.ok(await hero.locator('a[href="/messagerie"]').filter({visible:true}).count()>=1);
+    assert.equal(await page.locator('[data-cockpit-widgets] nav').count(),0);
+    assert.equal(await page.locator('[data-cockpit-widgets] a[href="/messagerie"]').count(),0);
+    assert.equal(await page.locator('aside a[href="/agenda"]').count(),1);
+    assert.equal(await page.locator('aside a[href="/missions"]').count(),1);
     if(process.env.COCKPIT_VISUAL_DIR){mkdirSync(process.env.COCKPIT_VISUAL_DIR,{recursive:true});await page.screenshot({animations:'disabled',path:join(process.env.COCKPIT_VISUAL_DIR,locale+'-'+device+'.png')});if(locale==='fr'){await hero.locator('button').filter({visible:true}).scrollIntoViewIfNeeded();await page.screenshot({animations:'disabled',path:join(process.env.COCKPIT_VISUAL_DIR,'fr-'+device+'-voice.png')});await page.locator('[data-cockpit-widgets]').scrollIntoViewIfNeeded();await page.screenshot({animations:'disabled',path:join(process.env.COCKPIT_VISUAL_DIR,'fr-'+device+'-widgets.png')});}}
    }
   }
@@ -60,9 +64,10 @@ test('781 composition Cockpit: actual native mission, five languages and respons
   await page.getByRole('button',{name:widgetUi.go,exact:true}).click();await page.getByText(widgetMessages.navigationTemporarilyUnavailable,{exact:true}).waitFor();await page.unroute('**/api/waze?**');
   assert(!requests.some(r=>/voice|elevenlabs|telephony/.test(r.path)));
   const forbidden=await fetch(origin+'/api/native/runtime?'+new URLSearchParams({workspaceId:'w',clientId:'c1',projectId:'p1',sessionId}),{headers:{cookie:'clara_auth_session='+'B'.repeat(43)}});assert.equal(forbidden.status,403);
+  const nativeState=await page.request.get(origin+'/api/native/runtime');assert.equal(nativeState.status(),200);const resolved=await nativeState.json();assert.deepEqual(resolved.data,{workspaceId:'w',clientId:'c1',projectId:'p1',sessionId});assert.equal(resolved.permissions.read,true);assert.equal(resolved.session.mission.title,'HISTORICAL_AUTHORIZED_MISSION');assert.ok(resolved.missions.some(m=>m.title==='HISTORICAL_AUTHORIZED_MISSION'));
   // Read-only navigation links must not produce a second mission.
   const count=()=>pg("SELECT count(*) FROM clara_missions");const before=count();
-  const shortcuts=page.locator('[data-cockpit-widgets] nav').first();await shortcuts.locator('a[href="/conversations"]').click();await page.waitForURL(origin+'/conversations');
+  await page.setViewportSize({width:1536,height:1000});const sidebar=page.locator('aside');if(!await sidebar.isVisible())await page.locator('button[aria-controls]').filter({visible:true}).first().click();await sidebar.locator('a[href="/conversations"]').click();await page.waitForURL(origin+'/conversations');
   await page.goto(origin);await page.locator('[data-cockpit-hero]').waitFor();await page.reload();await page.locator('[data-cockpit-hero]').getByText('HISTORICAL_AUTHORIZED_MISSION',{exact:true}).filter({visible:true}).first().waitFor();assert.equal(count(),before);
   const chat=page.locator('[data-cockpit-widgets] form').last();
   const query='CONSULTATION_CONTEXT_ONLY_NO_NEW_MISSION';
