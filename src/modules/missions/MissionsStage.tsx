@@ -10,7 +10,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
@@ -31,6 +31,7 @@ export default function MissionsStage({
   const t = useTranslations("missionsPage");
   const [missions, setMissions] = useState<Mission[]>(initialMissions);
   const [selectedMissionId, setSelectedMissionId] = useState<string | null>(null);
+  useEffect(()=>{const select=()=>{try{const hash=decodeURIComponent(location.hash.slice(1));if(hash.startsWith('mission-')&&initialMissions.some(m=>m.id===hash.slice(8)))setSelectedMissionId(hash.slice(8));}catch{/* Invalid fragment never selects an unknown mission. */}};select();window.addEventListener('hashchange',select);return()=>window.removeEventListener('hashchange',select);},[initialMissions]);
 
   const activeMissions = missions.filter((mission) => mission.status === "active");
   const plannedMissions = missions.filter((mission) => mission.status === "planned");

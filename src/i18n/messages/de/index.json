@@ -382,5 +382,20 @@
     "signOut": "Abmelden",
     "logoutConfirm": "Von Clara OS abmelden?",
     "logoutError": "Abmeldung fehlgeschlagen. Bitte erneut versuchen."
+  },
+  "headerSearch": {
+    "label": "Suchen",
+    "placeholder": "Suchen…",
+    "missions": "Missionen",
+    "conversations": "Gespräche",
+    "contacts": "Kontakte",
+    "documents": "Dokumente",
+    "journal": "Journal",
+    "loading": "Wird geladen…",
+    "empty": "Keine Ergebnisse",
+    "unavailable": "In diesem Kontext nicht verfügbar",
+    "denied": "Zugriff verweigert",
+    "hint": "Geben Sie einen Namen oder einige Wörter ein.",
+    "scope": "Nur autorisierter Kontext. Gespräche: aktueller Verlauf. Ergebnisse auf verfügbare Datenfenster begrenzt."
   }
 }

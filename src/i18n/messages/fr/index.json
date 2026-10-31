@@ -382,5 +382,20 @@
     "signOut": "Se déconnecter",
     "logoutConfirm": "Confirmer la déconnexion de Clara OS ?",
     "logoutError": "Déconnexion impossible. Veuillez réessayer."
+  },
+  "headerSearch": {
+    "label": "Rechercher",
+    "placeholder": "Rechercher…",
+    "missions": "Missions",
+    "conversations": "Conversations",
+    "contacts": "Contacts",
+    "documents": "Documents",
+    "journal": "Journal",
+    "loading": "Chargement…",
+    "empty": "Aucun résultat",
+    "unavailable": "Indisponible dans ce contexte",
+    "denied": "Accès refusé",
+    "hint": "Saisissez un nom ou quelques mots.",
+    "scope": "Contexte autorisé uniquement. Conversations : fil courant. Résultats limités aux fenêtres de données disponibles."
   }
 }

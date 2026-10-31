@@ -54,7 +54,7 @@ export default async function ConversationsPage() {
             {messages.length > 0 ? (
               <ol className="space-y-3">
                 {messages.map((message) => (
-                  <li key={message.id} className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
+                  <li id={"message-"+message.id} key={message.id} className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
                     <div className="flex items-center justify-between gap-4">
                       <span className="text-xs uppercase tracking-[0.18em] text-cyan-300/70">
                         {message.role === "clara" ? "Clara" : session.session.user.firstName ?? ui("user")}

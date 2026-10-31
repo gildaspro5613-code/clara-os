@@ -51,7 +51,7 @@ test('interface receipt: explicit business flow, responsive navigation, five lan
   await page.goto(origin+'/missions');await page.getByRole('link',{name:dictionary('fr').uiNewMission,exact:true}).click();
   assert.equal(await page.locator('[data-native-context-switch]').evaluate(e=>e.open),true);await page.getByRole('button',{name:'Créer un nouveau fil',exact:true}).waitFor();assert.equal((await current()).mission.id,before.mission.id);
   await page.goto(origin+'/contacts');const contacts=await(await context.request.get(origin+'/api/contacts')).json();
-  const contact=contacts.contacts.find(c=>c.id==='prospect-a');assert.ok(contact);await page.locator('[data-contact-id]').filter({hasText:contact.name}).first().waitFor();await page.locator('input[placeholder]').fill(contact.email);await page.getByRole('button',{name:'Rechercher',exact:true}).click();await page.locator('[data-contact-id]').filter({hasText:contact.name}).first().waitFor();
+  const contact=contacts.contacts.find(c=>c.id==='prospect-a');assert.ok(contact);await page.locator('[data-contact-id]').filter({hasText:contact.name}).first().waitFor();await page.locator('#main-workspace input[placeholder]').fill(contact.email);await page.getByRole('button',{name:'Rechercher',exact:true}).click();await page.locator('[data-contact-id]').filter({hasText:contact.name}).first().waitFor();
   await page.goto(origin+'/conversations');await page.getByText(message,{exact:true}).waitFor();
   await page.goto(origin+'/journal');await page.locator('article').filter({hasText:'MISSION_INTERFACE_SYNTHETIQUE'}).first().waitFor();
 
@@ -101,7 +101,7 @@ test('interface receipt: explicit business flow, responsive navigation, five lan
   await context.route('**/api/native/mail',r=>r.fulfill({status:503,contentType:'application/json',body:JSON.stringify({success:false,code:'PRIVATE_SENTINEL',message:'PRIVATE_SENTINEL'})}));
   await page.goto(origin+'/messagerie');await page.getByRole('alert').filter({hasText:dictionary('fr').mailUnavailable}).waitFor();assert.ok(!(await page.locator('body').innerText()).includes('PRIVATE_SENTINEL'));await page.screenshot({path:out+'/mail-error.png'});await context.unroute('**/api/native/mail');
   await page.goto(origin+'/documents');await page.getByText(/\[NATIVE_GOOGLE_EXPLICIT_SELECTION_REQUIRED\]/).waitFor();
-  await page.getByRole('link',{name:dictionary('fr').uiDocumentSearch,exact:true}).click();await page.waitForURL(origin+'/documents#document-search');
+  await page.locator('header input[role="combobox"]').click();await page.locator('[data-header-search]').waitFor();await page.keyboard.press('Escape');await page.locator('[data-header-search]').waitFor({state:'hidden'});assert.equal(new URL(page.url()).pathname,'/documents');
   const logo=await context.request.get(origin+'/brand/clara-os-symbol.svg'),icon=await context.request.get(origin+'/icon.svg');assert.equal(await logo.text(),readFileSync('public/brand/clara-os-symbol.svg','utf8'));assert.equal(await icon.text(),await logo.text());
   assert.equal(readFileSync('/tmp/native-fixture-global-attempts-'+db,'utf8'),'','No global loader or unscoped fallback');
   writeFileSync(out+'/matrix.json',JSON.stringify({status:'PASS',providerCertified:false,matrix,business:{explicitMission:true,contact:true,multilineConversation:true,reload:true,journal:true},mailStates:'HTTP fixtures for empty/refused presentation; actual approval flow received separately'},null,2)+'\n');

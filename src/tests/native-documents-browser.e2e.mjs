@@ -57,10 +57,10 @@ test('documentary browser E2E: canonical selection → mission → pinned OAuth 
    else{
     if(path==='/'){
      // V2 keeps the document library on Documents, reached through the real
-     // Cockpit shortcut. Do not reinsert a second library into the frozen Hero.
+     // Sidebar link. Do not reinsert a second library into the frozen Hero.
      assert.ok((await page.locator('body').innerText()).includes('LOT2_DOCUMENTARY_MISSION'));
      assert.equal(await page.locator('[data-native-document]').count(),0);
-     const documents=page.getByRole('navigation',{name:'Actions Clara OS',exact:true}).getByRole('link',{name:'Documents',exact:true});
+     const documents=page.locator('aside').getByRole('link',{name:'Documents',exact:true});
      assert.equal(await documents.getAttribute('href'),'/documents');
      await documents.click();await page.waitForURL(origin+'/documents');
     }

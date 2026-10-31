@@ -43,13 +43,14 @@ test('account display: actual canonical PostgreSQL sessions, member rights, exac
  assert.ok(!JSON.stringify(unavailable).includes('PRIVATE_'));
 });
 
-test('only the historical avatar slot changes; header navigation and locale control are preserved',()=>{
+test('only approved account and search slots change; other header elements and locale control are preserved',()=>{
  const before=execFileSync('git',['show','fba152a6d232b7d079d523a3afbfdedf3965160b:src/components/layout/Header.tsx'],{encoding:'utf8'}),after=readFileSync('src/components/layout/Header.tsx','utf8');
- const beforeJSX=before.slice(before.indexOf('  return (')).replace(/        <div\n          aria-label=\{tc\("profile"\)\}[\s\S]*?        <\/div>/,'        <UserAccountMenu />');
- assert.equal(after.slice(after.indexOf('  return (')),beforeJSX,'No other header element, class or arrangement changes');
+ const normalizeSearch=(s:string)=>s.replace(/      <div className="mx-5[\s\S]*?(?=\n\n      <div className="flex shrink-0)/,'      <HeaderSearch />');
+ const beforeJSX=normalizeSearch(before.slice(before.indexOf('  return ('))).replace(/        <div\n          aria-label=\{tc\("profile"\)\}[\s\S]*?        <\/div>/,'        <UserAccountMenu />');
+ assert.equal(after.slice(after.indexOf('  return (')),beforeJSX,'No change outside the approved account and search slots');
  const menu=readFileSync('src/components/layout/UserAccountMenu.tsx','utf8');assert.ok(menu.includes('flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cyan-500 text-sm font-semibold text-white'));assert.ok(menu.includes('<UserRound size={19}'));
  for(const locale of ['fr','en','es','de','it']){
-  const messages=JSON.parse(readFileSync('src/i18n/messages/'+locale+'/index.json','utf8'));assert.equal(Object.keys(messages.account).length,18);
+  const messages=JSON.parse(readFileSync('src/i18n/messages/'+locale+'/index.json','utf8'));assert.equal(Object.keys(messages.account).length,20);
   for(const value of Object.values(messages.account))assert.ok(typeof value==='string'&&value.trim());
  }
 });

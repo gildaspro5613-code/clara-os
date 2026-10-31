@@ -382,5 +382,20 @@
     "signOut": "Sign out",
     "logoutConfirm": "Sign out of Clara OS?",
     "logoutError": "Could not sign out. Please try again."
+  },
+  "headerSearch": {
+    "label": "Search",
+    "placeholder": "Search…",
+    "missions": "Missions",
+    "conversations": "Conversations",
+    "contacts": "Contacts",
+    "documents": "Documents",
+    "journal": "Journal",
+    "loading": "Loading…",
+    "empty": "No results",
+    "unavailable": "Unavailable in this context",
+    "denied": "Access denied",
+    "hint": "Enter a name or a few words.",
+    "scope": "Authorized context only. Conversations: current thread. Results limited to available data windows."
   }
 }
