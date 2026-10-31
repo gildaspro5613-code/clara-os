@@ -379,6 +379,8 @@
     "profileDescription": "Benutzerkonto",
     "connections": "Verbindungen",
     "connectionsDescription": "Autorisierte Dienste",
-    "signOut": "Abmelden"
+    "signOut": "Abmelden",
+    "logoutConfirm": "Von Clara OS abmelden?",
+    "logoutError": "Abmeldung fehlgeschlagen. Bitte erneut versuchen."
   }
 }
