@@ -360,5 +360,42 @@
     "audioRequired": "Un enregistrement audio est requis.",
     "audioTooLarge": "Enregistrement audio trop volumineux (15 Mo maximum).",
     "noSpeech": "Aucune parole détectée."
+  },
+  "account": {
+    "title": "Compte utilisateur",
+    "profile": "Mon profil",
+    "authenticatedUser": "Utilisateur authentifié",
+    "signedOut": "Aucune session active",
+    "unverified": "Compte non vérifié dans ce contexte",
+    "unavailable": "Vérification du compte indisponible",
+    "googleAccount": "Compte Google",
+    "googleLinked": "Identité Google vérifiée et associée",
+    "googleNotLinked": "Aucune identité Google associée",
+    "googleUnverified": "Association Google non vérifiée",
+    "googleSeparation": "Cette identité concerne Clara OS. Les autorisations Drive et Agenda sont distinctes.",
+    "preferences": "Préférences",
+    "signIn": "Se connecter à Clara OS",
+    "space": "Mon espace",
+    "profileDescription": "Compte utilisateur",
+    "connections": "Connexions",
+    "connectionsDescription": "Services autorisés",
+    "signOut": "Se déconnecter",
+    "logoutConfirm": "Confirmer la déconnexion de Clara OS ?",
+    "logoutError": "Déconnexion impossible. Veuillez réessayer."
+  },
+  "headerSearch": {
+    "label": "Rechercher",
+    "placeholder": "Rechercher…",
+    "missions": "Missions",
+    "conversations": "Conversations",
+    "contacts": "Contacts",
+    "documents": "Documents",
+    "journal": "Journal",
+    "loading": "Chargement…",
+    "empty": "Aucun résultat",
+    "unavailable": "Indisponible dans ce contexte",
+    "denied": "Accès refusé",
+    "hint": "Saisissez un nom ou quelques mots.",
+    "scope": "Contexte autorisé uniquement. Conversations : fil courant. Résultats limités aux fenêtres de données disponibles."
   }
 }

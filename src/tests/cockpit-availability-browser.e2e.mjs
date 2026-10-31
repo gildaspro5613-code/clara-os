@@ -9,12 +9,12 @@ if(!origin||!['127.0.0.1','localhost'].includes(new URL(origin).hostname))throw 
 const ui=JSON.parse(readFileSync('src/i18n/messages/fr/consolidated-ui.json','utf8'));
 async function assertHeaderNavigation(page){
  const header=page.getByRole('banner');
- const search=header.getByRole('link',{name:ui.uiDocumentSearch,exact:true});
+ const search=header.getByRole('combobox',{name:'Rechercher',exact:true});
  const journal=header.getByRole('link',{name:ui.uiOpenJournal,exact:true});
  await search.waitFor();await journal.waitFor();
- assert.equal(await search.getAttribute('href'),'/documents#document-search');
+ assert.equal(await header.locator('a[href="/documents#document-search"]').count(),0);
  assert.equal(await journal.getAttribute('href'),'/journal');
- assert.equal(await header.getByRole('textbox',{name:'Rechercher',exact:true}).count(),0,'Do not restore an inactive global search');
+ assert.equal(await search.isEnabled(),true);
  assert.equal(await header.getByRole('button',{name:'Notifications — Indisponible',exact:true}).count(),0,'The Journal link replaces the inactive notification button');
 }
 test('cockpit: real header navigation, native service refusals and durable chat recovery',async()=>{
@@ -29,7 +29,7 @@ test('cockpit: real header navigation, native service refusals and durable chat 
   const created=await fetch(origin+'/api/native/runtime',{method:'POST',headers:{cookie:'clara_auth_session='+'A'.repeat(43)+'; '+selection,origin,'Content-Type':'application/json'},body:JSON.stringify({action:'createMission',title:'COCKPIT_RECOVERY',objective:'Isolated UI receipt'})});assert.equal(created.status,200);
   const page=await context.newPage(),calls=[];page.on('request',r=>calls.push(new URL(r.url()).pathname));await page.goto(origin+'/');
   await assertHeaderNavigation(page);
-  assert.equal(await page.getByText('⌘K',{exact:true}).count(),0);
+  await page.getByRole('banner').getByText('⌘K / Ctrl K',{exact:true}).waitFor();
   const talkButtons=page.getByRole('button',{name:/Parler/});
   assert.ok(await talkButtons.count()>0,'Historical voice widget stays visible');
   for(const button of await talkButtons.all())assert.equal(await button.isDisabled(),true,'Native voice remains fenced');
@@ -39,9 +39,9 @@ test('cockpit: real header navigation, native service refusals and durable chat 
   // The authorized Agenda can legitimately call /api/calendar in this fixture;
   // native voice must never initiate an ElevenLabs session.
   assert.equal(calls.filter(p=>p==='/api/elevenlabs/session').length,0);
-  // These are real navigation paths, not a global search or notification service.
-  await page.getByRole('banner').getByRole('link',{name:ui.uiDocumentSearch,exact:true}).click();
-  await page.waitForURL(origin+'/documents#document-search');
+  // The document library remains available independently of the header search.
+  await page.locator('aside a[href="/documents"]').click();
+  await page.waitForURL(origin+'/documents');
   const searchForm=page.locator('#document-search'),searchInput=searchForm.getByRole('textbox');
   await searchInput.waitFor();assert.equal(await searchInput.isEnabled(),true);
   const query='COCKPIT_AUTHORIZED_DOCUMENT_SEARCH';await searchInput.fill(query);

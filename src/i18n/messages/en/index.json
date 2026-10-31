@@ -360,5 +360,42 @@
     "audioRequired": "An audio recording is required.",
     "audioTooLarge": "Audio recording too large (15 MB maximum).",
     "noSpeech": "No speech detected."
+  },
+  "account": {
+    "title": "User account",
+    "profile": "My profile",
+    "authenticatedUser": "Authenticated user",
+    "signedOut": "No active session",
+    "unverified": "Account not verified in this context",
+    "unavailable": "Account verification unavailable",
+    "googleAccount": "Google account",
+    "googleLinked": "Verified Google identity linked",
+    "googleNotLinked": "No linked Google identity",
+    "googleUnverified": "Google association not verified",
+    "googleSeparation": "This identity is for Clara OS. Drive and Calendar permissions are separate.",
+    "preferences": "Preferences",
+    "signIn": "Sign in to Clara OS",
+    "space": "My space",
+    "profileDescription": "User account",
+    "connections": "Connections",
+    "connectionsDescription": "Authorized services",
+    "signOut": "Sign out",
+    "logoutConfirm": "Sign out of Clara OS?",
+    "logoutError": "Could not sign out. Please try again."
+  },
+  "headerSearch": {
+    "label": "Search",
+    "placeholder": "Search…",
+    "missions": "Missions",
+    "conversations": "Conversations",
+    "contacts": "Contacts",
+    "documents": "Documents",
+    "journal": "Journal",
+    "loading": "Loading…",
+    "empty": "No results",
+    "unavailable": "Unavailable in this context",
+    "denied": "Access denied",
+    "hint": "Enter a name or a few words.",
+    "scope": "Authorized context only. Conversations: current thread. Results limited to available data windows."
   }
 }
