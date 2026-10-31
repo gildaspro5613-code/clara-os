@@ -29,13 +29,15 @@ test('781 composition Cockpit: actual native mission, five languages and respons
     await context.addCookies([{name:display.name,value:display.value,httpOnly:true,secure:true,url:origin},{name:'clara_auth_session',value:'A'.repeat(43),url:origin},{name:'clara_native_selection',value:selection.slice(selection.indexOf('=')+1),url:origin},{name:'NEXT_LOCALE',value:locale,url:origin}]);
     page=await context.newPage();page.on('request',r=>requests.push({path:new URL(r.url()).pathname,method:r.method()}));
     await page.goto(origin);await page.locator('[data-cockpit-hero]').waitFor();
-    await page.locator('[data-context-loading="false"]').waitFor();await page.locator('[data-native-business-context]').waitFor();
+    await page.locator('[data-context-loading="false"]').waitFor({state:'attached'});assert.equal(await page.locator('[data-cockpit-context]').evaluate(el=>el.open),false);assert.equal(await page.locator('[data-native-business-context]').isVisible(),false);
+    const contextPanel=page.locator('[data-cockpit-context]');await contextPanel.locator(':scope > summary').click();await page.locator('[data-native-business-context]').waitFor();await contextPanel.locator(':scope > summary').click();assert.equal(await page.locator('[data-native-business-context]').isVisible(),false);
     const hero=page.locator('[data-cockpit-hero]');await hero.getByText('HISTORICAL_AUTHORIZED_MISSION',{exact:true}).filter({visible:true}).first().waitFor();
     await page.evaluate(()=>document.fonts.ready);
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,locale+' '+device+' overflow');
     assert.equal(await hero.locator('img').count(),0);
     assert((await hero.innerText()).includes('Gildas'));
     if(locale==='fr')await hero.getByRole('heading',{name:'Bonjour Gildas.',exact:true}).filter({visible:true}).waitFor();
+    const account=page.locator('header button[aria-haspopup="dialog"]');await account.click();const menu=page.locator('[data-account-menu]');await menu.waitFor();assert.equal(await menu.locator('summary,button,a').count(),4);assert.equal(await menu.locator('a[href="/connexions"]').count(),1);await page.keyboard.press('Escape');await menu.waitFor({state:'hidden'});
     assert.equal(await page.getByRole('log').count(),1);
     assert.equal(await page.locator('[data-cockpit-widgets] textarea').isVisible(),true);
     const body=await page.locator('body').innerText();assert(!body.includes('82 %'));assert(!body.includes('PRIVATE_LEGACY_HISTORY'));
@@ -45,6 +47,17 @@ test('781 composition Cockpit: actual native mission, five languages and respons
     if(process.env.COCKPIT_VISUAL_DIR){mkdirSync(process.env.COCKPIT_VISUAL_DIR,{recursive:true});await page.screenshot({animations:'disabled',path:join(process.env.COCKPIT_VISUAL_DIR,locale+'-'+device+'.png')});if(locale==='fr'){await hero.locator('button').filter({visible:true}).scrollIntoViewIfNeeded();await page.screenshot({animations:'disabled',path:join(process.env.COCKPIT_VISUAL_DIR,'fr-'+device+'-voice.png')});await page.locator('[data-cockpit-widgets]').scrollIntoViewIfNeeded();await page.screenshot({animations:'disabled',path:join(process.env.COCKPIT_VISUAL_DIR,'fr-'+device+'-widgets.png')});}}
    }
   }
+  // Existing widget paths: real local Waze preparation, no external navigation;
+  // explicit failure states instead of manufactured provider success.
+  const widgetMessages=JSON.parse(readFileSync('src/i18n/messages/it/index.json','utf8')).cockpitUi;
+  const widgetUi=JSON.parse(readFileSync('src/i18n/messages/it/consolidated-ui.json','utf8'));
+  await page.getByText(widgetMessages.weatherTemporarilyUnavailable,{exact:true}).waitFor();
+  await page.getByPlaceholder(widgetMessages.destination,{exact:true}).fill('Angers — isolated route only');
+  const [navigation,popup]=await Promise.all([page.waitForResponse(r=>new URL(r.url()).pathname==='/api/waze'),page.waitForEvent('popup'),page.getByRole('button',{name:widgetUi.go,exact:true}).click()]);
+  assert.equal(navigation.status(),200);const prepared=await navigation.json();assert.equal(new URL(prepared.url).hostname,'waze.com');assert.equal(new URL(prepared.url).searchParams.get('q'),'Angers — isolated route only');await popup.close();
+  assert.equal(await page.getByRole('link',{name:widgetMessages.openWaze,exact:true}).getAttribute('href'),prepared.url);
+  await page.route('**/api/waze?**',route=>route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({success:false})}));
+  await page.getByRole('button',{name:widgetUi.go,exact:true}).click();await page.getByText(widgetMessages.navigationTemporarilyUnavailable,{exact:true}).waitFor();await page.unroute('**/api/waze?**');
   assert(!requests.some(r=>/voice|elevenlabs|telephony/.test(r.path)));
   const forbidden=await fetch(origin+'/api/native/runtime?'+new URLSearchParams({workspaceId:'w',clientId:'c1',projectId:'p1',sessionId}),{headers:{cookie:'clara_auth_session='+'B'.repeat(43)}});assert.equal(forbidden.status,403);
   // Read-only navigation links must not produce a second mission.
