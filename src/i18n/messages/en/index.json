@@ -379,6 +379,8 @@
     "profileDescription": "User account",
     "connections": "Connections",
     "connectionsDescription": "Authorized services",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "logoutConfirm": "Sign out of Clara OS?",
+    "logoutError": "Could not sign out. Please try again."
   }
 }
