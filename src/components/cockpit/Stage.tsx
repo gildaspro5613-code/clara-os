@@ -2,7 +2,6 @@ import type { ClaraSession } from "@/lib/core/session";
 import type { AcquisitionRecord } from "@/lib/acquisition/acquisition-store";
 
 import BriefPanel from "@/components/cockpit/panels/BriefPanel";
-import MailOverviewPanel from "@/components/cockpit/panels/MailOverviewPanel";
 import TasksPanel from "@/components/cockpit/panels/TasksPanel";
 import AgendaPanel from "@/components/cockpit/panels/AgendaPanel";
 import ClaraVoiceWidget from "@/components/cockpit/widgets/voice/ClaraVoiceWidget";
@@ -10,9 +9,10 @@ import GlassPanel from "@/components/ui/GlassPanel";
 import { getTranslations } from "next-intl/server";
 
 interface StageProps {
-  nativeScope?: boolean;
   session: ClaraSession;
   acquisition?: AcquisitionRecord | null;
+  nativeScope?:boolean;
+  displayFirstName?:string|null;
 }
 
 async function EmptyMissionPanel() {
@@ -37,38 +37,32 @@ async function MissionPanel({ mission }: MissionPanelProps) {
   return mission ? <TasksPanel mission={mission} /> : <EmptyMissionPanel />;
 }
 
-export default async function Stage({ session, acquisition, nativeScope = false }: StageProps) {
+export default async function Stage({ session, acquisition,nativeScope=false,displayFirstName=null }: StageProps) {
   const mission = session.mission;
-  const native = nativeScope;
-  const ui = await getTranslations("ui");
-  const unavailable = <GlassPanel><p role="status">{ui("nativeProviderBlocked")}</p></GlassPanel>;
 
   return (
     <>
-      <div className="pointer-events-auto absolute left-[5%] top-[12%] z-20 hidden w-[25%] max-w-[360px] lg:block">
-        <BriefPanel session={session} acquisition={acquisition} />
+      <div data-historical-brief className="pointer-events-auto absolute left-[5%] top-[12%] z-20 hidden w-[25%] max-w-[360px] max-h-[45%] overflow-y-auto lg:block">
+        <BriefPanel session={session} acquisition={acquisition} displayFirstName={displayFirstName}/>
       </div>
 
-      <div className="pointer-events-auto absolute left-[6%] top-[61%] z-20 hidden w-[23%] max-w-[330px] lg:block">
-        {native ? unavailable : <ClaraVoiceWidget />}
+      <div data-historical-voice className="pointer-events-auto absolute left-[6%] top-[61%] z-20 hidden w-[23%] max-w-[330px] max-h-[35%] overflow-y-auto lg:block">
+        <ClaraVoiceWidget disabled={nativeScope}/>
       </div>
 
-      <div className="pointer-events-auto absolute right-[5%] top-[7%] z-20 hidden w-[28%] max-w-[420px] lg:block">
-        {native&&(!session.googleConnectionId||!session.googleCalendarId) ? unavailable : <AgendaPanel />}
+      <div data-historical-agenda className="pointer-events-auto absolute right-[5%] top-[7%] z-20 hidden w-[28%] max-w-[420px] max-h-[35%] overflow-y-auto lg:block">
+        <AgendaPanel />
       </div>
 
-      <div className="pointer-events-auto absolute right-[5%] top-[61%] z-20 hidden w-[28%] max-w-[420px] lg:block">
+      <div data-historical-tasks className="pointer-events-auto absolute right-[5%] top-[61%] z-20 hidden w-[28%] max-w-[420px] max-h-[35%] overflow-y-auto lg:block">
         <MissionPanel mission={mission} />
       </div>
 
-      {native&&<div className="pointer-events-auto absolute right-[5%] top-[36%] z-20 hidden w-[28%] max-w-[420px] lg:block"><MailOverviewPanel /></div>}
-
-      {/* Mobile: keep panels in document flow so long text and translated
-          content never overlap at fixed viewport percentages. */}
-      <div className="relative z-20 flex w-full min-w-0 flex-col gap-4 px-4 py-6 sm:px-6 lg:hidden">
-        <BriefPanel session={session} acquisition={acquisition} />
-        {native&&<MailOverviewPanel />}
-        <MissionPanel mission={mission} />
+      <div className="relative z-20 flex min-w-0 flex-col gap-4 px-4 py-6 sm:px-6 lg:hidden">
+        <BriefPanel session={session} acquisition={acquisition} displayFirstName={displayFirstName}/>
+        <AgendaPanel/>
+        <MissionPanel mission={mission}/>
+        <ClaraVoiceWidget disabled={nativeScope}/>
       </div>
     </>
   );

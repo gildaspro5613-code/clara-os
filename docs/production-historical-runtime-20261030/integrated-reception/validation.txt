@@ -1,0 +1,197 @@
+PR #220 — réception locale 2026-10-30
+Base applicative testée: ce51f0f706c9632169e4530afa3a9066ca0effdc
+Correctif: test navigateur et rapport uniquement; application/ACL/SQL identiques.
+PostgreSQL 17 jetable, Next optimisé Webpack ce51 réutilisé, HTTPS local et Chromium.
+Fournisseurs Google/OpenAI/IONOS simulés; aucun effet externe réel.
+
+Commandes:
+CANONICAL_TEST_CONTAINER=clara-canonical-test-postgres node --import tsx --test src/tests/operational-recovery*.test.ts src/tests/native-documents-postgres.test.ts src/tests/native-commercial-postgres.test.ts src/tests/native-conversation-postgres.test.ts src/tests/native-mail-postgres.test.ts src/tests/native-mail-triage.test.ts src/tests/native-mail-monitor-postgres.test.ts src/tests/native-google-work-postgres.test.ts src/tests/google-native-hub.test.ts src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/canonical-conversation-postgres.test.ts src/tests/canonical-conversation-routes.test.ts src/tests/live-callback-transport.test.ts
+
+CANONICAL_TEST_CONTAINER=clara-canonical-test-postgres node --import tsx --test src/tests/native-mail-signature-native-integration.test.ts src/tests/native-mail-overview-priority.test.ts src/tests/native-mail-language-source-gates.test.ts src/tests/native-mail-panel-reliability.test.ts src/tests/historical-cockpit.test.ts src/tests/voice-route-security.test.ts src/tests/google-display-name.test.ts
+
+Browser (variables fixture HTTPS locale/DB jetable/Chromium seulement): node --import tsx --test --test-concurrency=1 src/tests/native-runtime-browser.e2e.mjs src/tests/native-commercial-browser.e2e.mjs src/tests/native-documents-browser.e2e.mjs src/tests/native-mail-browser.e2e.mjs src/tests/native-conversation-browser.e2e.mjs src/tests/native-mission-contact-browser.e2e.mjs
+
+npx tsc --noEmit --pretty false: PASS
+npx eslint src/tests/native-documents-browser.e2e.mjs: PASS
+node --check src/tests/native-documents-browser.e2e.mjs: PASS
+git diff --check: PASS
+Build/captures: preuves ce51 réutilisées, aucun code applicatif modifié.
+CI distante: NON ATTESTÉE, API GitHub GraphQL Forbidden.
+
+
+=== REPRODUCTION AVANT CORRECTION ===
+✖ documentary browser E2E: canonical selection → mission → pinned OAuth → explicit Google selection → project attestation → PDF/Core/Brain → Journal/Cockpit → fresh resume and revocation (81962.123798ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 82642.43297
+
+✖ failing tests:
+
+test at src/tests/native-documents-browser.e2e.mjs:11:1
+✖ documentary browser E2E: canonical selection → mission → pinned OAuth → explicit Google selection → project attestation → PDF/Core/Brain → Journal/Cockpit → fresh resume and revocation (81962.123798ms)
+  locator.waitFor: Timeout 30000ms exceeded.
+  Call log:
+    - waiting for locator('[data-native-document="document-a"]') to be visible
+
+      at TestContext.<anonymous> (/workspace/clara-os-production-prep/src/tests/native-documents-browser.e2e.mjs:54:322) {
+    name: 'TimeoutError',
+    log: [ `  - waiting for locator('[data-native-document="document-a"]') to be visible` ]
+  }
+
+
+=== INTEGRATION POSTGRESQL ET CONTRATS ===
+▶ conversation registry: bilateral proof, native scope, isolation, durable replay, CAS, expiry and revoke
+  ✔ pending does not authorize and requests are durable/idempotent (419.231707ms)
+  ✔ two users/workspaces/projects/session scopes remain isolated (626.90162ms)
+  ✔ proof mismatch is denied before approval, then approval/reload replay only once (790.163417ms)
+  ✔ concurrent approval replay is serialized and creates one decision (715.88736ms)
+  ✔ concurrent approval and revocation admit exactly one expected-revision transition (472.395625ms)
+  ✔ revocation commits before transport, lost ack pins refusal, retry confirms stop (1582.370361ms)
+  ﹣ bilateral OS service / Live HTTP routes / PostgreSQL / Mongo survive fresh processes (0.160772ms) # SKIP
+  ✔ expiration, revoked memberships and source proof changes fail closed (1761.503499ms)
+  ✔ backup and restore to a fresh PostgreSQL database preserve associations and receipts (1768.753387ms)
+✔ conversation registry: bilateral proof, native scope, isolation, durable replay, CAS, expiry and revoke (11007.792041ms)
+✔ native conversation HTTP entrypoints reject missing/invalid cookies before SQL or transport (118.717565ms)
+✔ product HTTP boundary requires distinct capability and exact configured workspace; no read/archive/hardware fallback (14.756691ms)
+✔ native ACTIVE is registered/selected, never a provider certification or an automatic selection (1.631818ms)
+✔ selected reconnect/pending cannot fall back to another active account (0.2923ms)
+✔ missing selection, missing authority, reconnect and pending are distinct (0.310028ms)
+✔ HTTP refusal dominates an apparently ACTIVE payload and public authority errors are preserved (0.236065ms)
+✔ malformed, duplicate, unknown-status and historical connected flags cannot imply a native connection (0.18622ms)
+✔ Live transport refuses success without a structured result (35.432112ms)
+✔ Live transport rejects oversized response before decoding and never retries (1.070042ms)
+✔ Live transport refuses redirects and binds its timeout to the body read (1.093447ms)
+✔ Live network and malformed responses fail without leaking errors or retrying (0.985245ms)
+✔ Live timeout aborts a stalled body and leaves an uncertain outcome without retry (5004.283605ms)
+Checked 19 real PostgreSQL authority reads; no historical backfill.
+✔ native authority: actual PostgreSQL owner/workspace/client/project ACL, revisions, revocation and historical preservation (8050.304734ms)
+Checked 38 native handler refusals.
+[CLARA] instrumentation ready; business runtime is request-scoped
+✔ native session handler rejects missing, malformed and duplicate cookies before storage or global runtime (102.603344ms)
+✔ default, external and absent explicit selectors cannot resume a global/native fallback (2.062867ms)
+✔ every fenced native HTTP handler refuses anonymous/invalid cookies without entering legacy business logic (289.395761ms)
+✔ unavailable authority never leaks storage details or resumes the legacy runtime (5.500426ms)
+✔ even an explicitly authorized snapshot cannot unlock legacy native mutations (17.664229ms)
+✔ all six native server pages return before invoking any global data loader (87.69076ms)
+✔ reopened chat and native runtime/document handlers still refuse invalid authentication before business code (72.777853ms)
+✔ server instrumentation never imports or starts a global business runtime (12.3669ms)
+✔ Uncertified Google/Brevo/Make connection routes reject invalid OS sessions before storage or provider I/O (129.67518ms)
+✔ a verified native session cannot unlock Google credentials or Make configuration before connector certification (96.284925ms)
+✔ commercial continuity uses actual stores and PostgreSQL, excludes unbound/foreign records and commits draft/session/mission/journal atomically (8026.482987ms)
+▶ native conversation: immutable Mission, atomic receipts, durable paginated history and actual concurrent/restart recovery
+  ✔ Mission reassignment, foreign user/client/project and unbound historical context fail closed (2008.381317ms)
+  ✔ concurrent identical submissions execute once; lost acknowledgement replays after fresh adapter instantiation (3040.120055ms)
+  ✔ ambiguous abandoned processing pins the Session and never steals/retries ownership (625.810827ms)
+  ✔ more than 100 messages survive in the same store with bounded pages and stable cursors (2295.720446ms)
+  ✔ revocation at finish rolls back receipt and business state; concurrent context update yields cached conflict (2290.123575ms)
+  ✔ lost SQL acknowledgement after actual commit replays the same receipt without a second cycle (1522.366044ms)
+  ✔ generation failure is persisted with its notice and replay never recomposes it (1243.271661ms)
+  ✔ pre-migration Mission history is preserved read-only, never silently certified (1328.894262ms)
+  ✔ explicit cancellation fences a delayed owner; an already committed result is never overwritten (2182.060607ms)
+  ✔ the existing inbound worker still claims its jobs but never expires native receipts or steals their owners (968.150115ms)
+  ✔ missing upgraded runtime refuses new writes before entering business code (380.291337ms)
+  ✔ migration reapplication and backup/restore preserve receipts, history and invoker security (1787.111516ms)
+✔ native conversation: immutable Mission, atomic receipts, durable paginated history and actual concurrent/restart recovery (25099.096284ms)
+✔ native documentary continuity uses real Core/Brain/PDF and PostgreSQL; Google rights, canonical delegation, durable encrypted results and revocation (38588.413391ms)
+▶ Google native workspace: real PostgreSQL, exact confirmations, immutable scopes, single handoff, recovery and existing stores
+  ✔ consent transactions retain actual grants and reject missing or partial scopes (3744.610757ms)
+  ✔ explicit resource binding, two users/clients/projects and historical/primary/root refusals (7322.838376ms)
+  ✔ prepared encrypted file, exact human confirmation and concurrent one-time execution/replay (12696.918707ms)
+  ✔ lost provider acknowledgement, read-only reconciliation, fresh service/reconnect and no automatic resend (6733.668361ms)
+  ✔ conditional calendar update and Drive content/move preserve IDs, metadata, rights and versions (34594.563664ms)
+  ✔ project and Google resource revocation, read-only delegations, expired consent/proposals (9459.907931ms)
+  ✔ read delegation never becomes write authority; second owner retains independent mailbox/project resources (11291.032241ms)
+  ✔ single HTTP handoff never retries errors; explicit precondition and refusal receipt release scope (17566.470247ms)
+  ✔ uncertain no-effect blocks new handoffs and inbound maintenance cannot consume or expire native Google receipts (7171.891594ms)
+  ✔ 020 additive reapplication and pg_dump restoration preserve every operation/attestation/receipt (1762.472648ms)
+✔ Google native workspace: real PostgreSQL, exact confirmations, immutable scopes, single handoff, recovery and existing stores (118379.800128ms)
+✔ Google import validation rejects oversized bodies, ambiguous identities, native document conversion and offset-less times (3.605361ms)
+✔ autonomous IMAP PostgreSQL: five mailboxes, SQL service isolation, atomic revocation, leases, CAS and durable recovery (18967.333234ms)
+▶ IONOS real PostgreSQL: two independent authorities, explicit bindings, exact approvals, concurrent single-use SMTP, revocation and durable restart
+  ✔ Cockpit projects pending canonical operations without transport, secrets or cross-project visibility (3389.63048ms)
+  ✔ Cockpit retains approved as recorded state, never SMTP acceptance (559.093609ms)
+✔ IONOS real PostgreSQL: two independent authorities, explicit bindings, exact approvals, concurrent single-use SMTP, revocation and durable restart (74319.468533ms)
+✔ five-language commercial messages are prioritized, independent of mailbox UI language (2.018251ms)
+✔ service incidents require attention without executing email content (0.166561ms)
+✔ newsletter and bulk content are low priority, quarantine remains separate (0.105589ms)
+✔ urgency claims alone do not trigger high priority or grant send approval (1.005365ms)
+✔ unknown correspondence is retained for review, not silently discarded (0.281023ms)
+✔ administrative deadlines inside message bodies are surfaced without authorizing actions (0.27863ms)
+▶ operational recovery through scoped runtime and real PostgreSQL persistence
+  ✔ consultation in empty thread does not create a mission (743.768149ms)
+  ✔ historical unproven thread cannot be certified by a forged marker (450.096138ms)
+  ✔ explicit command creates an authorized mission (241.937074ms)
+  ✔ consultation cannot replan/reactivate/execute or alter a blocked mission; history remains durable (881.379625ms)
+  ✔ unselected Google connection has precise HTTP diagnostic and no provider access (136.73781ms)
+  ✔ native calendar missing binding and mailbox missing authority are explicit, no global fallback (266.244688ms)
+  ✔ selected-calendar cognition reuses real scoped authority and no mutation transport (4668.741511ms)
+  ✔ Google reauthentication response does not leak a provider message (718.003366ms)
+  ✔ mail cognition reads the authorized encrypted cache only; no SMTP/IMAP and revocation fences commit (2463.263013ms)
+  ✔ 030 reapplication preserves runtime ACL, data and wrapper identities (666.321474ms)
+  ✔ foreign project and revoked session cannot use these paths (382.241421ms)
+✔ operational recovery through scoped runtime and real PostgreSQL persistence (15989.101055ms)
+✔ consultations and ambiguous follow-ups cannot authorize a mission mutation (3.467324ms)
+✔ explicit commands retain the existing mission pipeline (0.295055ms)
+✔ Drive diagnostics only display reviewed public codes, never messages or provider payloads (0.276597ms)
+ℹ tests 85
+ℹ suites 0
+ℹ pass 84
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 1
+ℹ todo 0
+ℹ duration_ms 135806.784512
+
+
+=== CONTINUITE ET SECURITE COMPLEMENTAIRES ===
+✔ Google display metadata is encrypted, bounded and bound to one authenticated session; never an authority (3.978553ms)
+✔ Brief uses verified display identity only, never old session or environment fallback (11.644481ms)
+✔ actual callback attaches display only to a completed Google sign-in, clears it on failure (1637.945235ms)
+✔ historical Tasks uses the authorized mission rather than the old 82 percent fixture (49.438496ms)
+✔ native historical microphone stays disabled and honest in all five languages (60.280239ms)
+✔ the historical action bar navigates existing pages instead of decorative buttons (5.546085ms)
+✔ independent lexical verifier rejects evident FR/EN/ES/DE/IT mismatches (3.763109ms)
+✔ short and ambiguous replies never falsely claim confirmed language (0.175765ms)
+✔ native preparation performs check before saving any signed draft (0.237868ms)
+✔ signature registry sync requires explicit approval and never writes on drift by default (0.236446ms)
+✔ cached overview ranks quarantine and high-priority messages before truncating attention (1.014899ms)
+✔ overview never claims a complete or fresh inbox without evidence (0.230177ms)
+✔ draft submission is disabled until every local edit is saved (1.192626ms)
+✔ approval token is retained after refresh rather than cleared by refresh (0.182686ms)
+✔ changing mailbox or refreshing invalidates locally cached draft baseline (0.131718ms)
+✔ native preparation signs before existing encrypted save, never SMTP (1.350715ms)
+✔ durable draft still encrypts content and increments revision (0.296076ms)
+✔ submit, approval and send retain original authority boundaries (0.238849ms)
+✔ native draft preparation retains original content and no duplicated signature (0.425661ms)
+✔ voice authorization uses existing server-owned workspace and operator permissions, rejects foreign origin before auth (116.495329ms)
+✔ four provider routes deny unauthenticated requests before any provider and localize secret-free failures in five languages (158.859699ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 21
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2981.471982
+
+
+=== SIX PARCOURS NAVIGATEUR APRES CORRECTION ===
+✔ commercial browser E2E: authenticated canonical selection → contact → mission → dialogue → journal → draft → cockpit → reload and fresh authenticated session (25651.586969ms)
+✔ native conversation UI: immutable Mission/client, lost acknowledgement + refresh, concurrent replay and paginated durable history without Live (16397.402849ms)
+✔ documentary browser E2E: canonical selection → mission → pinned OAuth → explicit Google selection → project attestation → PDF/Core/Brain → Journal/Cockpit → fresh resume and revocation (73633.313516ms)
+✔ IONOS browser: real handlers/services/PostgreSQL, simulated providers, review/approve/send, Journal/Cockpit and fresh authenticated resume (64307.044402ms)
+✔ P1 browser: mission first/contact first, immutable old conversation, explicit fresh thread and durable idempotent association (27198.94604ms)
+✔ native browser: explicit selection, positive persisted mission/chat and cross-user/project refusals (44837.326584ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 257523.835199

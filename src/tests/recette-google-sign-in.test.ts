@@ -47,7 +47,7 @@ test('real Google verifier and completion: signed identity only, one-time state,
  const {privateKey,publicKey}=generateKeyPairSync('rsa',{modulusLength:2048});
  const jwk={...publicKey.export({format:'jwk'}),kid:'synthetic-key',use:'sig'};
  const nonce='n'.repeat(43),state='s'.repeat(43);let consumed=false,enrolled=true,issued=0,grants=0,exchange=0,jwks=0;
- const claims={iss:'https://accounts.google.com',aud:'synthetic-client',sub:'enrolled-subject',exp:Math.floor(Date.now()/1000)+300,nonce,email:'synthetic@example.test',email_verified:true};
+ const claims={iss:'https://accounts.google.com',aud:'synthetic-client',sub:'enrolled-subject',given_name:'Gildas',exp:Math.floor(Date.now()/1000)+300,nonce,email:'synthetic@example.test',email_verified:true};
  const jwt=(changes:Record<string,unknown>={})=>{const h=Buffer.from(JSON.stringify({alg:'RS256',kid:jwk.kid})).toString('base64url'),p=Buffer.from(JSON.stringify({...claims,...changes})).toString('base64url');return h+'.'+p+'.'+sign('RSA-SHA256',Buffer.from(h+'.'+p),privateKey).toString('base64url');};
  let token=jwt();
  const http:typeof fetch=async(input,init)=>{
@@ -66,14 +66,15 @@ test('real Google verifier and completion: signed identity only, one-time state,
   './verified-sign-in':{completeVerifiedSignIn:async(identity:{subject:string})=>{assert.equal(identity.subject,'enrolled-subject');issued++;return 'synthetic-session';}},
  },http);
  const url=new URL(auth.googleSignInAuthorizationUrl(state,nonce));assert.equal(url.searchParams.get('scope'),'openid profile email');
- assert.equal(await auth.completeGoogleSignIn('code',state,nonce),'synthetic-session');
- await assert.rejects(auth.completeGoogleSignIn('code',state,nonce),/REPLAYED/);assert.equal(issued,1);
+ const profiles:unknown[]=[];
+ assert.equal(await auth.completeGoogleSignIn('code',state,nonce,name=>profiles.push(name)),'synthetic-session');assert.deepEqual(profiles,['Gildas']);
+ await assert.rejects(auth.completeGoogleSignIn('code',state,nonce,name=>profiles.push(name)),/REPLAYED/);assert.equal(profiles.length,1);assert.equal(issued,1);
  for(const change of [{iss:'https://foreign.example.test'},{aud:'wrong'},{azp:'wrong'},{exp:0},{nonce:'wrong'}]){
-  token=jwt(change);await assert.rejects(auth.completeGoogleSignIn('code',state,nonce));assert.equal(issued,1);
+  token=jwt(change);await assert.rejects(auth.completeGoogleSignIn('code',state,nonce,name=>profiles.push(name)));assert.equal(profiles.length,1);assert.equal(issued,1);
  }
  token=jwt();const parts=token.split('.');parts[2]=(parts[2][0]==='A'?'B':'A')+parts[2].slice(1);token=parts.join('.');
- await assert.rejects(auth.completeGoogleSignIn('code',state,nonce),/SIGNATURE/);
- consumed=false;enrolled=false;token=jwt();await assert.rejects(auth.completeGoogleSignIn('code',state,nonce),/IDENTITY_NOT_ENROLLED/);
+ await assert.rejects(auth.completeGoogleSignIn('code',state,nonce,name=>profiles.push(name)),/SIGNATURE/);assert.equal(profiles.length,1);
+ consumed=false;enrolled=false;token=jwt();await assert.rejects(auth.completeGoogleSignIn('code',state,nonce,name=>profiles.push(name)),/IDENTITY_NOT_ENROLLED/);assert.equal(profiles.length,1);
  assert.equal(grants,0);assert.equal(issued,1);assert.ok(exchange>0&&jwks>0);
  const before=exchange;process.env.VERCEL_ENV='production';await assert.rejects(auth.completeGoogleSignIn('code',state,nonce),/DENIED/);assert.equal(exchange,before);
 });

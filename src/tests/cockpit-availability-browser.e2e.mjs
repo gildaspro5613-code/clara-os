@@ -30,9 +30,10 @@ test('cockpit: real header navigation, native service refusals and durable chat 
   const page=await context.newPage(),calls=[];page.on('request',r=>calls.push(new URL(r.url()).pathname));await page.goto(origin+'/');
   await assertHeaderNavigation(page);
   assert.equal(await page.getByText('⌘K',{exact:true}).count(),0);
-  const talkButtons=await page.getByRole('button',{name:/Parler/}).evaluateAll(nodes=>nodes.map(node=>({label:node.getAttribute('aria-label'),text:node.textContent?.trim().slice(0,100),outerHTML:node.outerHTML.slice(0,450)})));
-  assert.deepEqual(talkButtons,[],`Unexpected native voice control: ${JSON.stringify(talkButtons)}`);
-  // Voice is always blocked in native scope. Agenda may be legitimately available
+  const talkButtons=page.getByRole('button',{name:/Parler/});
+  assert.ok(await talkButtons.count()>0,'Historical voice widget stays visible');
+  for(const button of await talkButtons.all())assert.equal(await button.isDisabled(),true,'Native voice remains fenced');
+  // The historical voice control is visible but always disabled in native scope. Agenda may be legitimately available
   // when the selected native session has an attested Google connection/calendar.
   assert.ok(await page.getByText('Ce service externe reste indisponible dans le contexte natif tant que ses autorisations ne sont pas certifiées.',{exact:true}).count()>=1);
   // The authorized Agenda can legitimately call /api/calendar in this fixture;

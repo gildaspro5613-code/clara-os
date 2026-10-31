@@ -13,8 +13,9 @@ interface ChatResponse {
   conversation?: ClaraConversationMessage[];
 }
 
-export default function ClaraVoiceWidget() {
+export default function ClaraVoiceWidget({disabled=false}:{disabled?:boolean}) {
   const t = useTranslations("voice");
+  const ui=useTranslations("ui");
   const [state, setState] = useState<VoiceState>("idle");
   const recorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -101,6 +102,7 @@ export default function ClaraVoiceWidget() {
   }, [speak]);
 
   const startRecording = useCallback(async () => {
+    if(disabled)return;
     if (state === "processing" || state === "speaking") return;
 
     try {
@@ -130,16 +132,16 @@ export default function ClaraVoiceWidget() {
       stopStream();
       setState("error");
     }
-  }, [processRecording, state, stopStream]);
+  }, [disabled, processRecording, state, stopStream]);
 
   const stopRecording = useCallback(() => {
     const recorder = recorderRef.current;
     if (recorder && recorder.state !== "inactive") recorder.stop();
   }, []);
 
-  const isBusy = state === "processing" || state === "speaking";
+  const isBusy = disabled || state === "processing" || state === "speaking";
 
-  const statusLabel =
+  const statusLabel = disabled?ui("nativeProviderBlocked"):
     state === "listening"
       ? t("listening")
       : state === "processing"
@@ -180,7 +182,7 @@ export default function ClaraVoiceWidget() {
       </div>
 
       <p className="mt-4 text-xs leading-relaxed text-white/35">
-        {state === "listening" ? t("speakNaturally") : t("talk")}
+        {disabled?ui("nativeProviderBlocked"):state === "listening" ? t("speakNaturally") : t("talk")}
       </p>
     </section>
   );

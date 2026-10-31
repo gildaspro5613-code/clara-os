@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import {expiredGoogleDisplayCookie,verifiedGoogleDisplayCookie} from "@/lib/auth/google-display-name";
 import { authenticatedSessionCookie } from "@/lib/auth/authenticated-session-lifecycle";
 import { completeGoogleSignIn } from "@/lib/auth/google-sign-in";
 import { isOpaqueAuthValue } from "@/lib/auth/sign-in-transaction";
@@ -27,6 +28,7 @@ function finish(origin: string, status: string): NextResponse {
     path: "/api/auth/google/callback",
     maxAge: 0,
   });
+  response.cookies.set(expiredGoogleDisplayCookie(process.env.NODE_ENV === "production"));
   response.headers.set("Cache-Control", "no-store");
   return response;
 }
@@ -50,10 +52,12 @@ export async function GET(request: NextRequest) {
   try {
     // Verification order is deliberate: signature/issuer/audience/expiry/nonce,
     // then atomic state+nonce consumption, then enrollment/session issuance.
-    const token = await completeGoogleSignIn(code, state, nonce);
+    let givenName:string|null=null;
+    const token = await completeGoogleSignIn(code, state, nonce,name=>{givenName=name;});
     const response = finish(origin, "connected");
     const session = authenticatedSessionCookie(token, process.env.NODE_ENV === "production");
     response.cookies.set(session.name, session.value, session.options);
+    response.cookies.set(verifiedGoogleDisplayCookie(token,givenName,process.env.NODE_ENV === "production"));
     return response;
   } catch (error) {
     console.error("[Clara auth Google callback]", error);

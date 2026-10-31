@@ -51,7 +51,22 @@ test('documentary browser E2E: canonical selection → mission → pinned OAuth 
   const verified=await call('/api/native/documents/authorization?fileId=document-a');assert.equal(verified.status,200);assert.equal((await verified.json()).verification.readAllowed,true);
   const download=await call('/api/documents?action=download&fileId=document-a');assert.equal(download.status,200);assert.ok((await download.arrayBuffer()).byteLength>100);
   const persisted=await (await call('/api/documents?action=references')).json();assert.equal(persisted.references[0].available,true);assert.ok(persisted.references[0].analysis.answer);
-  for(const path of ['/journal','/','/clara']){await page.goto(origin+path);assert.equal(await page.locator('[data-native-authority="locked"]').count(),0);if(path==='/journal')assert.ok((await page.locator('body').innerText()).includes('DOCUMENT_RECEIVED'));else await page.locator('[data-native-document="document-a"]').waitFor();}
+  for(const path of ['/journal','/','/clara']){
+   await page.goto(origin+path);assert.equal(await page.locator('[data-native-authority="locked"]').count(),0);
+   if(path==='/journal')assert.ok((await page.locator('body').innerText()).includes('DOCUMENT_RECEIVED'));
+   else{
+    if(path==='/'){
+     // V2 keeps the document library on Documents, reached through the real
+     // Cockpit shortcut. Do not reinsert a second library into the frozen Hero.
+     assert.ok((await page.locator('body').innerText()).includes('LOT2_DOCUMENTARY_MISSION'));
+     assert.equal(await page.locator('[data-native-document]').count(),0);
+     const documents=page.getByRole('navigation',{name:'Actions Clara OS',exact:true}).getByRole('link',{name:'Documents',exact:true});
+     assert.equal(await documents.getAttribute('href'),'/documents');
+     await documents.click();await page.waitForURL(origin+'/documents');
+    }
+    await page.locator('[data-native-document="document-a"]').waitFor();
+   }
+  }
   await page.reload();await page.locator('[data-native-document="document-a"]').waitFor();
   const current=await (await call('/api/native/runtime')).json(),fresh=await newThread('A','c1','p1');
   assert.equal((await call('/api/native/runtime','POST',{action:'selectMission',missionId:current.session.mission.id},fresh.cookie)).status,200);
