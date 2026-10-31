@@ -1,3 +1,4 @@
+import {verifyNativeMissionReadProof} from './cognitive-scope';
 import {sql} from '@/lib/core/store/database';
 import {RegistryError,databaseError,type RegistryQuery} from '@/lib/canonical/registry';
 import {registryBody,sameOrigin,fields} from '@/lib/canonical/http';
@@ -25,14 +26,19 @@ export async function nativeChatRequest(request:Request,render:()=>Promise<Respo
   const locale=resolveLocale((request.headers.get('cookie')??'').split(';').map(v=>v.trim()).find(v=>v.startsWith('NEXT_LOCALE='))?.slice(12));
   const command=nativeChatCommands(query),reserved=await command(scope,'reserve',{operationId:body.operationId,message:body.message.trim(),locale,sessionId:scope.sessionId});
   if(reserved.state==='completed'){
-   await withNativeScope(request,false,async()=>{const ctx=nativeContext()!;if(ctx.session.mission?.documentReferences?.length||ctx.session.documentReferences?.length){const {selectedNativeDocuments}=await import('./documents');await (await selectedNativeDocuments()).brainSource();}},query);
-   const receipt=reserved.result as {body:unknown;status:number};return Response.json(receipt.body,{status:receipt.status,headers:{'Cache-Control':'no-store','X-Clara-Operation-Replayed':'1'}});
+   const receipt=reserved.result as {body:unknown;status:number;missionReadProof?:unknown};
+   await withNativeScope(request,false,async()=>{
+    const ctx=nativeContext()!;
+    if(ctx.session.mission?.documentReferences?.length||ctx.session.documentReferences?.length){const {selectedNativeDocuments}=await import('./documents');await (await selectedNativeDocuments()).brainSource();}
+    if(receipt.missionReadProof!==undefined)await verifyNativeMissionReadProof(receipt.missionReadProof);
+   },query);
+   return Response.json(receipt.body,{status:receipt.status,headers:{'Cache-Control':'no-store','X-Clara-Operation-Replayed':'1'}});
   }
   if(reserved.state!=='owned')return Response.json({success:false,code:'NATIVE_CHAT_PENDING',operationId:body.operationId,...(reserved.request?{pendingRequest:reserved.request}:{})},{status:202,headers:{'Cache-Control':'no-store'}});
   try{
    return await withNativeScope(request,true,async()=>{
     const response=await render();response.headers.set('Cache-Control','no-store');
-    nativeContext()!.chatCommitProof={jobId:reserved.jobId,ownerToken:reserved.ownerToken,result:{status:response.status,body:await response.clone().json()}};
+    nativeContext()!.chatCommitProof={jobId:reserved.jobId,ownerToken:reserved.ownerToken,result:{status:response.status,body:await response.clone().json(),...(nativeContext()!.missionReadProof?{missionReadProof:nativeContext()!.missionReadProof}:{})}};
     return response;
    },query);
   }catch(error){
