@@ -36,12 +36,26 @@ test('native runtime on real PostgreSQL: two users, clients, projects, atomic ve
   await saveMission(mission);missionId=mission.id;ctx.session.mission=mission;
   ctx.session.conversation.push({id:randomUUID(),role:'user',content:'PRIVATE_A_CONVERSATION',createdAt:new Date().toISOString()});await saveSession(ctx.session,sid);
   await new Journal().addEntry({id:randomUUID(),type:JournalEntryType.ACTION,createdAt:new Date(),summary:'PRIVATE_A_JOURNAL'});
-  const event={id:randomUUID(),type:EventType.USER_MESSAGE,source:'CLARA_CHAT',timestamp:new Date(),payload:{message:'documents drive gmail'}};
-  const sources=await buildBrainSources(event,new Date());assert.ok(sources.length>0);assert.ok(sources.every(s=>!s.available&&s.data===null));assert.deepEqual(loadMemory({event,now:new Date()}).shortTerm,[]);
  },query);
+ // Finish fixture creation before testing the non-mutating read path. Pending
+ // mission writes must not be passed off as an already-persisted source.
+ const assertScopedSources=async(who:number,c:string,p:string,s:string,expected:Array<{id:string;title:string;objective:string;status:string;progress:number;nextAction:null}>)=>withNativeScope(request(who,c,p,s),false,async()=>{
+  const event={id:randomUUID(),type:EventType.USER_MESSAGE,source:'CLARA_CHAT',timestamp:new Date(),payload:{message:'documents drive gmail'}};
+  const sources=await buildBrainSources(event,new Date());
+  assert.ok(sources.length>1,'Native mission read and blocked external sources are both exercised');
+  assert.deepEqual(sources.filter(source=>source.available).map(source=>source.source),['native-missions'],'Only the scoped native registry may be available');
+  assert.ok(sources.filter(source=>source.source!=='native-missions').every(source=>!source.available&&source.data===null),'Uncertified external sources remain unavailable');
+  const native=sources.filter(source=>source.source==='native-missions');assert.equal(native.length,1);
+  assert.deepEqual(native[0].data,{scope:{workspaceId:'w',clientId:c,projectId:p,sessionId:s},selectedMissionId:nativeContext()!.session.mission?.id??null,totalAuthorized:expected.length,partial:false,missions:expected});
+  assert.ok(!JSON.stringify(sources).includes('UNKNOWN_PRIVATE_HISTORY'),'Unbound historical missions never become a Brain source');
+  if(expected.length===0)assert.ok(!JSON.stringify(sources).includes('PRIVATE_A'),'Other owners, clients and projects cannot read A/P1 mission data');
+  assert.deepEqual(loadMemory({event,now:new Date()}).shortTerm,[]);
+ },query);
+ await assertScopedSources(0,'c1','p1',sid,[{id:missionId,title:'PRIVATE_A_P1',objective:'Owned objective',status:'active',progress:0,nextAction:null}]);
  const own=await command(scope(0,'c1','p1',sid),'read');assert.equal((own.session as {mission:{id:string}}).mission.id,missionId);assert.equal((own.journal as unknown[]).length,1);
  for(const sel of [scope(1,'c1','p1',sid),scope(0,'c1','p2',sid),scope(0,'c2','p3',sid),scope(0,'c2','p1',sid)])await assert.rejects(()=>command(sel,'read'));
  for(const sel of [scope(1,'c1','p1',bSid),scope(0,'c1','p2',p2Sid),scope(0,'c2','p3',p3Sid)]){const view=await command(sel,'read');assert.equal((view.missions as unknown[]).length,0);assert.equal((view.journal as unknown[]).length,0);assert.ok(!JSON.stringify(view).includes('PRIVATE_A'));}
+ for(const [who,c,p,s] of [[1,'c1','p1',bSid],[0,'c1','p2',p2Sid],[0,'c2','p3',p3Sid]] as const)await assertScopedSources(who,c,p,s,[]);
  const secondASid=String((await command(scope(),'create')).sessionId);
  await withNativeScope(request(0,'c1','p1',secondASid),true,async()=>{const ctx=nativeContext()!;ctx.session.mission=ctx.missions.get(missionId)!;await saveSession(ctx.session,secondASid);},query);
  await withNativeScope(request(),true,async()=>{const ctx=nativeContext()!,m=ctx.missions.get(missionId)!;await saveMission({...m,tasks:[{id:'manual-task',title:'Owned manual task',completed:false}],progress:1});ctx.session.mission=ctx.missions.get(missionId)!;await saveSession(ctx.session,sid);},query);
@@ -67,6 +81,7 @@ test('native runtime on real PostgreSQL: two users, clients, projects, atomic ve
  const before=(await command(scope(0,'c1','p1',sid),'read')).session;
  await assert.rejects(()=>command(scope(0,'c1','p1',sid),'commit',{expected:{},session:before,missions:[],journal:[]}));
  await assert.rejects(()=>withNativeScope(request(),true,async()=>{const ctx=nativeContext()!;ctx.session.state='WORKING' as typeof ctx.session.state;await saveSession(ctx.session,sid);pg(`UPDATE clara_registry_project_access SET revoked_at=NOW() WHERE user_id='a' AND project_id='p1'`);},query));
+ await assert.rejects(()=>assertScopedSources(0,'c1','p1',sid,[]),{status:403},'Revoked access must fail before source construction');
  assert.equal(pg("SELECT data->>'state' FROM clara_sessions WHERE id='"+sid+"'").trim(),'STOPPED');
  assert.equal(pg("SELECT count(*) FROM clara_native_resource_authority WHERE resource_id IN ('default','legacy-unknown')").trim(),'0');assert.ok(pg("SELECT data::text FROM clara_missions WHERE id='legacy-unknown'").includes('UNKNOWN_PRIVATE_HISTORY'));
  console.info('Native positive creation/write/reopen, two-user three-project isolation, provider-denial and commit-time revocation verified.');
