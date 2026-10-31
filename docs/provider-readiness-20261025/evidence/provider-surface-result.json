@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "telephonyButtonDisabled": true,
+  "keyboardPostCount": 0,
+  "nativeMakeBrevoFenced": true,
+  "anonymousVoiceDenied": true,
+  "cockpit": true,
+  "realProviderCalls": 0
+}

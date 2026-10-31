@@ -1,0 +1,16 @@
+Native browser fixture initialized; no production connections.
+captured desktop cockpit
+captured desktop clara
+captured desktop missions
+captured desktop documents
+captured desktop messagerie
+captured tablet cockpit
+captured tablet clara
+captured tablet missions
+captured tablet documents
+captured tablet messagerie
+captured mobile cockpit
+captured mobile clara
+captured mobile missions
+captured mobile documents
+captured mobile messagerie

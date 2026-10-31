@@ -5,12 +5,14 @@ import Stage from "../Stage";
 
 interface HeroProps {
   session: ClaraSession;
+  nativeScope?:boolean;
+  displayFirstName?:string|null;
   acquisition?: AcquisitionRecord | null;
 }
 
-export default function Hero({ session, acquisition }: HeroProps) {
+export default function Hero({ session, acquisition,nativeScope=false,displayFirstName=null }: HeroProps) {
   return (
-    <section className="relative h-full min-h-[720px] overflow-hidden bg-[#020914]">
+    <section data-cockpit-hero className="relative h-auto min-h-0 lg:h-full lg:min-h-[720px] overflow-hidden bg-[#020914]">
       {/*
         Clara OS is an operational workspace. The Hero borrows the website's
         architectural language — grid, cyan geometry and depth — without
@@ -33,7 +35,7 @@ export default function Hero({ session, acquisition }: HeroProps) {
         <div className="absolute bottom-0 left-0 right-0 h-[34%] bg-[linear-gradient(180deg,rgba(2,9,20,0),rgba(1,6,14,0.78))]" />
       </div>
 
-      <Stage session={session} acquisition={acquisition} />
+      <Stage session={session} acquisition={acquisition} nativeScope={nativeScope} displayFirstName={displayFirstName}/>
     </section>
   );
 }

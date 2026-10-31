@@ -1,25 +1,10 @@
-// ============================================
-// CLARA OS
-// Core API
-//
-// File : route.ts
-// Responsibility :
-// Expose the current Clara runtime session.
-// ============================================
-
-import { NextResponse } from "next/server";
-import { resolveOperationalContext } from "@/lib/core/operational-context";
-
-export async function GET() {
-  const { session, acquisition } = await resolveOperationalContext();
-
-  return NextResponse.json({
-    state: session.state,
-    recommendation: session.recommendation,
-    mission: session.mission,
-    brainDashboard: session.brainDashboard,
-    acquisition,
-    startedAt: session.startedAt,
-    updatedAt: session.updatedAt,
-  });
+import { readAuthorizedNativeSession, nativeFailure } from "@/lib/native/authority";
+export const dynamic="force-dynamic";
+export async function GET(request:Request) {
+  try {
+    const session=await readAuthorizedNativeSession(request);
+    return Response.json({state:session.state,recommendation:session.recommendation,
+      mission:session.mission,brainDashboard:session.brainDashboard,historyOnly:session.historyOnly===true,acquisition:null,
+      startedAt:session.startedAt,updatedAt:session.updatedAt}, {headers:{"Cache-Control":"no-store"}});
+  } catch(error) { return nativeFailure(error); }
 }

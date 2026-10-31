@@ -150,7 +150,15 @@
     "nextAction": "Nächste Aktion",
     "noMission": "Keine aktive Mission",
     "noObjective": "Kein aktives Ziel",
-    "noNextAction": "Keine nächste Aktion definiert"
+    "noNextAction": "Keine nächste Aktion definiert",
+    "conversations": "Gespräche",
+    "states": {
+      "STOPPED": "Gestoppt",
+      "STARTING": "Startet",
+      "WORKING": "Aktiv",
+      "STOPPING": "Wird gestoppt",
+      "UNKNOWN": "Status nicht geprüft"
+    }
   },
   "documents": {
     "subtitle": "Zugriff auf Dokumente in Ihrem Google-Drive-Arbeitsbereich.",
@@ -340,5 +348,17 @@
     "identified": "Clara hat {count, plural, one {# Termin} other {# Termine}} in Ihrem Kalender gefunden.",
     "noneRecorded": "Heute wurden keine Termine eingetragen.",
     "claraHelp": "Der Kalender hilft Clara, Ihren Tag bei Aktionen und Empfehlungen zu berücksichtigen."
+  },
+  "voiceApi": {
+    "operatorRequired": "Eine autorisierte Bedienersitzung ist erforderlich.",
+    "notConfigured": "Der Sprachdienst ist nicht konfiguriert.",
+    "sessionUnavailable": "Sprachsitzung nicht verfügbar.",
+    "synthesisFailed": "Die Sprachsynthese ist fehlgeschlagen.",
+    "transcriptionFailed": "Die Sprachtranskription ist fehlgeschlagen.",
+    "textRequired": "Text ist erforderlich.",
+    "textTooLong": "Text für Sprachsynthese zu lang (maximal 5.000 Zeichen).",
+    "audioRequired": "Eine Audioaufnahme ist erforderlich.",
+    "audioTooLarge": "Audioaufnahme zu groß (maximal 15 MB).",
+    "noSpeech": "Keine Sprache erkannt."
   }
 }

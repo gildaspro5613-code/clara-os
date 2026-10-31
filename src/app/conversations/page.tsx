@@ -1,3 +1,6 @@
+import NativeEarlierMessages from '@/components/native/NativeEarlierMessages';
+import {nativeContext} from '@/lib/native/scoped-context';
+import { nativePage } from "@/lib/native/page-fence";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import MainLayout from "@/components/layout/MainLayout";
@@ -6,6 +9,8 @@ import { resolveOperationalContext } from "@/lib/core/operational-context";
 export const dynamic = "force-dynamic";
 
 export default async function ConversationsPage() {
+  return nativePage(async()=>{
+
   const ui = await getTranslations("ui");
 
   const [t, locale, session] = await Promise.all([
@@ -45,6 +50,7 @@ export default async function ConversationsPage() {
               </Link>
             </div>
 
+            <NativeEarlierMessages key={nativeContext()?.scope.sessionId} sessionId={nativeContext()?.scope.sessionId} firstMessageId={messages[0]?.id} windowSize={messages.length}/>
             {messages.length > 0 ? (
               <ol className="space-y-3">
                 {messages.map((message) => (
@@ -71,4 +77,5 @@ export default async function ConversationsPage() {
       </div>
     </MainLayout>
   );
+  });
 }

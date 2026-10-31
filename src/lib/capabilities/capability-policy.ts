@@ -1,3 +1,4 @@
+import { assertRecetteExternalExecutionBlocked, isRecetteRuntime } from "@/lib/recette/external-execution-guard";
 export type ClaraPlan = "essential" | "pro" | "premium";
 export type CapabilityAccessMode = "read" | "prepare" | "write" | "execute";
 export type CapabilityApprovalPolicy = "never" | "required";
@@ -53,13 +54,18 @@ export interface CapabilityExecutionPrincipal {
 
 export type CapabilityPolicyDecision =
   | { allowed: true; policy: CapabilityPolicy }
-  | { allowed: false; policy: CapabilityPolicy; code: "PLAN_REQUIRED" | "APPROVAL_REQUIRED"; message: string };
+  | { allowed: false; policy: CapabilityPolicy; code: "PLAN_REQUIRED" | "APPROVAL_REQUIRED" | "RECETTE_EXTERNAL_EXECUTION_DENIED"; message: string };
 
 export function authorizeCapability(
   capabilityId: string,
   principal: CapabilityExecutionPrincipal,
 ): CapabilityPolicyDecision {
   const policy = getCapabilityPolicy(capabilityId);
+  if (isRecetteRuntime() && (policy.accessMode === "execute" || policy.accessMode === "write")) {
+    try { assertRecetteExternalExecutionBlocked(capabilityId); } catch {
+      return { allowed: false, policy, code: "RECETTE_EXTERNAL_EXECUTION_DENIED", message: "Exécution externe interdite en Recette." };
+    }
+  }
   if (PLAN_RANK[principal.plan] < PLAN_RANK[policy.requiredPlan]) {
     return {
       allowed: false,

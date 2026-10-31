@@ -11,6 +11,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 
 import MissionCard from "./components/MissionCard";
@@ -26,6 +27,7 @@ export default function MissionsStage({
   initialMissions = [],
   currentMissionId = null,
 }: MissionsStageProps) {
+  const ui = useTranslations("ui");
   const t = useTranslations("missionsPage");
   const [missions, setMissions] = useState<Mission[]>(initialMissions);
   const [selectedMissionId, setSelectedMissionId] = useState<string | null>(null);
@@ -35,9 +37,22 @@ export default function MissionsStage({
   const blockedMissions = missions.filter((mission) => mission.status === "blocked");
   const activeMission = missions.find((mission) => mission.id === currentMissionId)
     ?? activeMissions[0];
+  const otherActiveMissions = activeMissions.filter(mission => mission.id !== activeMission?.id);
   const otherPlannedMissions = plannedMissions.filter((mission) => mission.id !== activeMission?.id);
   const otherBlockedMissions = blockedMissions.filter((mission) => mission.id !== activeMission?.id);
   const selectedMission = missions.find((mission) => mission.id === selectedMissionId);
+
+  function openMissionCreation() {
+    if (currentMissionId) {
+      const switcher = document.querySelector('[data-native-context-switch]');
+      if (switcher instanceof HTMLDetailsElement) switcher.open = true;
+      document.getElementById('native-new-thread')?.focus();
+    } else {
+      const form = document.getElementById('native-mission-create');
+      if (form?.parentElement instanceof HTMLDetailsElement) form.parentElement.open = true;
+      form?.querySelector('input')?.focus();
+    }
+  }
 
   function updateMission(updatedMission: Mission) {
     setMissions((currentMissions) => currentMissions.map((mission) =>
@@ -78,6 +93,7 @@ export default function MissionsStage({
               <div>
                 <span className="text-[11px] uppercase tracking-[0.28em] text-cyan-400/70">CLARA OS</span>
                 <h1 className="mt-3 text-4xl font-medium tracking-tight">{t("title")}</h1>
+                <Link href={currentMissionId?"#native-new-thread":"#native-mission-create"} onClick={openMissionCreation} className="mt-4 inline-flex rounded-xl border border-cyan-400/25 bg-cyan-400/10 px-4 py-2.5 text-sm text-cyan-100">{ui("uiNewMission")}</Link>
                 <p className="mt-3 max-w-xl text-sm leading-6 text-white/50">{t("subtitle")}</p>
               </div>
 
@@ -97,7 +113,7 @@ export default function MissionsStage({
               <section className="mb-12">
                 <div className="mb-4 flex items-center gap-3">
                   <span className="h-2 w-2 rounded-full bg-cyan-400" />
-                  <span className="text-[11px] uppercase tracking-[0.25em] text-white/45">{t("activeMission")}</span>
+                  <span className="text-[11px] uppercase tracking-[0.25em] text-white/45">{currentMissionId === activeMission.id ? ui("currentOperationalMission") : ui("registryFocus")}</span>
                 </div>
 
                 <button
@@ -109,10 +125,11 @@ export default function MissionsStage({
                     <div className="max-w-2xl">
                       <div className="flex flex-wrap items-center gap-3">
                         <span className="rounded-full border border-cyan-400/20 bg-cyan-400/5 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-cyan-300/80">
-                          {t("status.active")}
+                          {t(`status.${activeMission.status}`)}
                         </span>
                         <span className="text-[10px] uppercase tracking-[0.18em] text-white/35">{t(activePriorityKey)}</span>
                       </div>
+                      <p className="mt-3 text-xs text-white/40">{ui("sourceOriginal")}</p>
                       <h2 className="mt-5 text-3xl font-medium tracking-tight">{activeMission.title}</h2>
                       <p className="mt-4 text-base leading-7 text-white/65">{activeMission.objective}</p>
                       {activeMission.context && (
@@ -153,6 +170,10 @@ export default function MissionsStage({
               </section>
             )}
 
+            {otherActiveMissions.length > 0 && <section className="mb-12">
+              <h2 className="mb-5 text-xl">{ui("otherActiveMissions")}</h2>
+              <div className="grid gap-5 lg:grid-cols-2">{otherActiveMissions.map(mission => <MissionCard key={mission.id} mission={mission} onSelect={selected => setSelectedMissionId(selected.id)} />)}</div>
+            </section>}
             {otherBlockedMissions.length > 0 && (
               <section className="mb-12">
                 <div className="mb-5">

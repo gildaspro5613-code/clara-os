@@ -6,6 +6,7 @@
  * provider adapters remain independent from that product boundary.
  */
 import { randomUUID } from "node:crypto";
+import { assertRecetteExternalExecutionBlocked } from "@/lib/recette/external-execution-guard";
 
 export type PhysicalExecutionDomain =
   | "LIGHT"
@@ -44,6 +45,7 @@ export async function authorizePhysicalExecution(
   request: PhysicalExecuteRequest,
   transport: PhysicalExecutionTransport = fetch,
 ): Promise<PhysicalExecuteReceipt> {
+  assertRecetteExternalExecutionBlocked("clara-live.physical-execute");
   const baseUrl = requiredEnv("CLARA_LIVE_BASE_URL").replace(/\/$/, "");
   if (!baseUrl.startsWith("https://")) {
     throw new Error("CLARA_LIVE_BASE_URL must use HTTPS.");

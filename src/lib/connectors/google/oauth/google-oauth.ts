@@ -1,3 +1,5 @@
+import { assertRecetteExternalExecutionBlocked } from "@/lib/recette/external-execution-guard";
+import {nativeContext} from "@/lib/native/scoped-context";
 import { google } from "googleapis";
 import type { Credentials } from "google-auth-library";
 import { googleConfig } from "@/lib/config/google";
@@ -14,14 +16,19 @@ export const GOOGLE_OAUTH_SCOPES = [
 ] as const;
 
 export function createGoogleOAuthClient() {
+  assertRecetteExternalExecutionBlocked("google.workspace-oauth");
   if (!googleConfig.clientId || !googleConfig.clientSecret || !googleConfig.redirectUri) {
     throw new Error("Google OAuth server configuration is incomplete.");
   }
-  return new google.auth.OAuth2(
+  const client=new google.auth.OAuth2(
     googleConfig.clientId,
     googleConfig.clientSecret,
     googleConfig.redirectUri,
   );
+  // The native transport participates in the application's controlled fetch
+  // boundary. Legacy adapters retain their existing transport behavior.
+  if(nativeContext()){client.transporter.defaults.fetchImplementation=globalThis.fetch as unknown as NonNullable<typeof client.transporter.defaults.fetchImplementation>;client.transporter.defaults.timeout=15_000;client.transporter.defaults.retry=false;}
+  return client;
 }
 
 export function mergeGoogleCredentials(
@@ -39,6 +46,7 @@ function normalizeGoogleCredentials(tokens: Credentials): OAuthTokenSet {
   if (!tokens.access_token) throw new Error("invalid_token_response");
   return {
     accessToken: tokens.access_token,
+    ...(tokens.id_token ? {idToken:tokens.id_token}:{}),
     refreshToken: tokens.refresh_token ?? undefined,
     tokenType: tokens.token_type ?? undefined,
     expiresAt: tokens.expiry_date ?? undefined,

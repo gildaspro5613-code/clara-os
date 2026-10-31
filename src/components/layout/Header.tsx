@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Search } from "lucide-react";
+import { BookOpen, Search, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
@@ -20,6 +20,7 @@ const pageTitleKeys: Record<string, string> = {
   "/agenda": "agenda",
   "/journal": "memoire",
   "/brain": "brain",
+  "/connexions": "connexions",
 };
 
 export default function Header() {
@@ -30,7 +31,7 @@ export default function Header() {
 
   const tn = useTranslations("navigation");
   const tc = useTranslations("common");
-  const tclara = useTranslations("clara");
+
 
   const pageTitleKey = pageTitleKeys[pathname];
   const pageTitle = pageTitleKey
@@ -49,32 +50,32 @@ export default function Header() {
         </Link>
       </div>
 
+      <a href="#main-workspace" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-2 focus:z-[70] focus:rounded-xl focus:bg-slate-900 focus:p-3 focus:text-cyan-100">{ui("uiSkipContent")}</a>
       <div className="mx-5 hidden min-w-0 flex-1 justify-center md:flex xl:mx-8">
-        <div className="flex h-10 w-full max-w-2xl min-w-0 items-center rounded-2xl border border-white/5 bg-white/5 px-4 transition-colors duration-200 hover:bg-white/10">
-          <Search size={18} className="shrink-0 text-slate-500" />
-          <input type="text" placeholder={tc("search") + "..."} aria-label={tc("search")} className="ml-3 min-w-0 flex-1 bg-transparent text-sm text-white placeholder:text-slate-500 focus:outline-none" />
-          <span className="hidden shrink-0 rounded-md border border-white/10 px-2 py-1 text-[11px] text-slate-500 sm:block">⌘K</span>
-        </div>
+        <Link href="/documents#document-search" className="flex min-h-10 w-full max-w-2xl min-w-0 items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-300 transition hover:border-cyan-400/30 hover:bg-white/10">
+          <Search size={18} className="shrink-0 text-cyan-300" />
+          <span>{ui("uiDocumentSearch")}</span>
+        </Link>
       </div>
 
       <div className="flex shrink-0 items-center justify-end gap-2 sm:gap-3 xl:w-80 xl:gap-4">
         <div className="hidden min-w-0 items-center gap-2 xl:flex">
-          <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-emerald-400" />
-          <span className="max-w-[150px] text-sm leading-5 text-slate-400">{tclara("status")}</span>
+          <span className="h-2 w-2 shrink-0 rounded-full bg-cyan-400" />
+          <span className="max-w-[150px] text-sm leading-5 text-slate-400">Mélodie Digital</span>
         </div>
 
         <LocaleSwitcher currentLocale={locale} />
 
-        <button type="button" aria-label={tc("notifications")} className="rounded-lg p-2 text-slate-400 transition hover:bg-white/10 hover:text-white">
-          <Bell size={19} />
-        </button>
+        <Link href="/journal" title={ui("uiOpenJournal")} aria-label={ui("uiOpenJournal")} className="rounded-lg p-2 text-slate-300 transition hover:bg-white/5 hover:text-cyan-200">
+          <BookOpen size={19} />
+        </Link>
 
         <div
           aria-label={tc("profile")}
           title={ui("claraOSProfile")}
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cyan-500 text-sm font-semibold text-white"
         >
-          G
+          <UserRound size={19} aria-hidden="true" />
         </div>
       </div>
     </header>

@@ -1,3 +1,7 @@
+import {RegistryError} from '@/lib/canonical/registry';
+import {nativeFailure} from '@/lib/native/authority';
+import {nativeChatRequest,cancelNativeChat} from '@/lib/native/chat';
+import {nativeContext} from "@/lib/native/scoped-context";
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { getTranslations } from "next-intl/server";
@@ -39,7 +43,8 @@ interface ChatRequest {
   message?: string;
 }
 
-const MAX_PERSISTED_MESSAGES = 100;
+// Active Session cache only. Migration 017 archives old/new messages atomically.
+const ACTIVE_CONVERSATION_WINDOW = 100;
 const MAX_REASONING_HISTORY = 16;
 
 /**
@@ -52,6 +57,10 @@ const MAX_REASONING_HISTORY = 16;
  * Cockpit and /clara are two views over this same persisted conversation.
  */
 export async function POST(request: Request) {
+  return nativeChatRequest(request,()=>scopedChat(request));
+}
+async function scopedChat(request:Request) {
+
   const locale = resolveLocale((await cookies()).get(LOCALE_COOKIE)?.value);
   const ui = await getTranslations("ui");
   try {
@@ -80,6 +89,7 @@ export async function POST(request: Request) {
         message,
         userFirstName: persistedBeforeCycle.user.firstName,
         conversationHistory: recentConversation,
+        ...(operational.acquisition?{selectedAcquisition:{submissionId:operational.acquisition.submissionId,contact:nativeContext()?.intakes.get(operational.acquisition.submissionId)?.contact,opportunity:operational.acquisition.qualification.opportunity}}:{}),
       },
       context: operational.acquisition
         ? {
@@ -96,6 +106,8 @@ export async function POST(request: Request) {
       ? classifyCommercialConversationIntent(message)
       : { kind: "none" as const };
 
+    if(nativeContext()&&commercialIntent.kind==='send-confirmation')return NextResponse.json({success:false,code:'NATIVE_COMMERCIAL_SEND_DISABLED'},{status:403,headers:{'Cache-Control':'no-store'}});
+
     // A commercial rewrite/send confirmation is a command inside the current
     // acquisition workflow, not a new operational objective. Handle it against
     // the durable draft before the generic Brain cycle so a phrase such as
@@ -106,7 +118,7 @@ export async function POST(request: Request) {
 
     // One user request = one Clara/Brain decision cycle, except bounded
     // commercial commands which keep the existing mission/session unchanged.
-    const workspaceId = operational.acquisition?.workspaceId
+    const workspaceId = nativeContext()?.scope.workspaceId ?? operational.acquisition?.workspaceId
       ?? (typeof persistedBeforeCycle.brainDashboard?.context.metadata?.workspaceId === "string"
         ? persistedBeforeCycle.brainDashboard.context.metadata.workspaceId
         : undefined);
@@ -125,11 +137,12 @@ export async function POST(request: Request) {
     const composed = await composeClaraResponseWithProposal(message, session, locale);
     let responseMessage = composed.content;
     if (composed.generation.status !== "completed" && !isCommercialCommand) {
+      const native=nativeContext();if(native)native.commitOnFailure=true;
       const at=new Date().toISOString();
       session.conversation=[...session.conversation,
         {id:crypto.randomUUID(),role:"user" as const,content:message,createdAt:at},
         {id:crypto.randomUUID(),role:"clara" as const,content:composed.content,createdAt:at,generation:composed.generation},
-      ].slice(-MAX_PERSISTED_MESSAGES);
+      ].slice(-ACTIVE_CONVERSATION_WINDOW);
       session.updatedAt=new Date();await saveSession(session,operational.sessionKey);
       return NextResponse.json({success:false,message:composed.content,generation:composed.generation,conversation:session.conversation},{status:502});
     }
@@ -145,6 +158,7 @@ export async function POST(request: Request) {
       summary: string;
       expiresAt: string;
     }>;
+    if(nativeContext()&&executionPlan.physicalActions.length>0)return NextResponse.json({success:false,code:"NATIVE_CAPABILITY_NOT_CERTIFIED"},{status:503});
     if (executionPlan.physicalActions.length > 0) {
       const token = readAuthCookie(request.headers.get("cookie"));
       const principal = await resolveSoleAuthenticatedWorkspace(token, "connections:manage");
@@ -271,7 +285,7 @@ export async function POST(request: Request) {
     session.conversation = [
       ...session.conversation,
       ...newMessages,
-    ].slice(-MAX_PERSISTED_MESSAGES);
+    ].slice(-ACTIVE_CONVERSATION_WINDOW);
     session.updatedAt = new Date();
     await saveSession(session, operational.sessionKey);
 
@@ -308,7 +322,8 @@ export async function POST(request: Request) {
         conversationId: physicalConversationId,
       })),
     });
-  } catch {
+  } catch(error) {
+    if(nativeContext()&&error instanceof RegistryError)return nativeFailure(error);
     return NextResponse.json(
       {
         success: false,
@@ -319,3 +334,5 @@ export async function POST(request: Request) {
     );
   }
 }
+
+export async function DELETE(request:Request){return cancelNativeChat(request);}

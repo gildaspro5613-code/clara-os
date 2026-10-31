@@ -1,0 +1,129 @@
+{
+  "os_base": "56ac97fa8fe9d3225fef3c1fb036b256f13923b5",
+  "pr176_head_ancestor": true,
+  "pr214": {
+    "headRefOid": "cd3185a0a6d1ae7904f4f98bf52a6847c1ff2a14",
+    "mergeCommit": {
+      "oid": "56ac97fa8fe9d3225fef3c1fb036b256f13923b5"
+    },
+    "mergedAt": "2026-10-27T08:48:48Z",
+    "state": "MERGED"
+  },
+  "live335": {
+    "headRefOid": "121769193bb8df72a63e5bc4ec4732a7557d82a7",
+    "isDraft": true,
+    "state": "OPEN",
+    "statusCheckRollup": [
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-25T11:34:48Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-live/actions/runs/40189430459/job/121157069096",
+        "name": "backend-library-tests",
+        "startedAt": "2026-10-25T11:34:28Z",
+        "status": "COMPLETED",
+        "workflowName": "Library QA"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-25T11:38:52Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-live/actions/runs/40189430400/job/121157068766",
+        "name": "isolated-validation",
+        "startedAt": "2026-10-25T11:34:27Z",
+        "status": "COMPLETED",
+        "workflowName": "Live Business Workspaces QA"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-25T11:36:56Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-live/actions/runs/40189430425/job/121157069016",
+        "name": "frontend-validation",
+        "startedAt": "2026-10-25T11:34:27Z",
+        "status": "COMPLETED",
+        "workflowName": "Live navigation performance QA"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-25T11:35:32Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-live/actions/runs/40189430399/job/121157068896",
+        "name": "real-mongo-p0",
+        "startedAt": "2026-10-25T11:34:27Z",
+        "status": "COMPLETED",
+        "workflowName": "Lot 3A isolated P0 authority and context"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-25T11:35:00Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-live/actions/runs/40189430423/job/121157069074",
+        "name": "Offline protocol validation (3.9)",
+        "startedAt": "2026-10-25T11:34:28Z",
+        "status": "COMPLETED",
+        "workflowName": "MQ50 protocol offline tests"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-25T11:38:24Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-live/actions/runs/40189430411/job/121157068933",
+        "name": "isolated-advice",
+        "startedAt": "2026-10-25T11:34:28Z",
+        "status": "COMPLETED",
+        "workflowName": "Production advice durable conversation QA"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-25T11:39:38Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-live/actions/runs/40189430422/job/121157069158",
+        "name": "four-professional-workspaces",
+        "startedAt": "2026-10-25T11:34:28Z",
+        "status": "COMPLETED",
+        "workflowName": "Professional workspaces isolated QA"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-25T11:35:39Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-live/actions/runs/40189430410/job/121157068839",
+        "name": "compile-and-import",
+        "startedAt": "2026-10-25T11:34:28Z",
+        "status": "COMPLETED",
+        "workflowName": "Python Import QA"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-25T11:42:11Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-live/actions/runs/40189430450/job/121157069144",
+        "name": "stage-interop-isolated",
+        "startedAt": "2026-10-25T11:34:28Z",
+        "status": "COMPLETED",
+        "workflowName": "Stage Model lot 2 isolated QA"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-25T11:34:48Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-live/actions/runs/40189430423/job/121157068865",
+        "name": "Offline protocol validation (3.12)",
+        "startedAt": "2026-10-25T11:34:28Z",
+        "status": "COMPLETED",
+        "workflowName": "MQ50 protocol offline tests"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-25T11:36:00Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-live/actions/runs/40189430459/job/121157069237",
+        "name": "frontend-library-tests",
+        "startedAt": "2026-10-25T11:34:28Z",
+        "status": "COMPLETED",
+        "workflowName": "Library QA"
+      }
+    ]
+  }
+}

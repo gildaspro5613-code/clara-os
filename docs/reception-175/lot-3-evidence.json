@@ -1,0 +1,222 @@
+{
+  "decision": "NO-GO en isolation pour le lot 3; NO-GO Production",
+  "baseline": "8ba183cec70163f9761814723fe160003441fd28",
+  "testedSourceCommit": "ec20d43bf17133361f307bab47011c7b326404eb",
+  "liveReadOnlyCommit": "48a2f94910d4a6111250e15046e0f471ddd6ac9b",
+  "pr": {
+    "number": 176,
+    "draft": true,
+    "head": "fix/os-operational-reception-175",
+    "base": "consolidation/clara-os-clean-base"
+  },
+  "modifiedFiles": [
+    "src/lib/external-capabilities/product-callback.ts",
+    "src/tests/live-callback-transport.test.ts",
+    ".github/workflows/native-authority-validation.yml",
+    "docs/reception-175/lot-3-os-live-continuity.md",
+    "docs/reception-175/lot-3-evidence.json",
+    "docs/reception-175/README.md"
+  ],
+  "checks": [
+    {
+      "name": "Transport Live, produit et événements",
+      "command": "node --import tsx --test src/tests/live-callback-transport.test.ts src/tests/clara-live-product-auth.test.ts src/tests/external-event-message-contract.test.ts",
+      "passed": 29,
+      "failed": 0,
+      "skipped": 0,
+      "provider": "controlled fetch; actual OS handlers/contracts"
+    },
+    {
+      "name": "Autorité native, runtime, commercial, documents, OAuth, IONOS",
+      "command": "CANONICAL_TEST_CONTAINER=clara-canonical-test-postgres node --import tsx --test src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts src/tests/native-commercial-postgres.test.ts src/tests/native-documents-postgres.test.ts src/tests/native-google-oauth.test.ts src/tests/native-mail-postgres.test.ts src/tests/ionos-transport.test.ts",
+      "passed": 25,
+      "failed": 0,
+      "skipped": 0,
+      "persistence": "actual isolated PostgreSQL; simulated providers"
+    },
+    {
+      "name": "Canonical archive continuity",
+      "command": "CANONICAL_TEST_CONTAINER=clara-canonical-test-postgres node --import tsx --test --test-concurrency=1 src/tests/canonical-registry-postgres.test.ts src/tests/canonical-archive-service.test.ts src/tests/canonical-archive-concurrency.test.ts",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "initialAttempt": "3 pass, 1 timeout at existing 55-second deadline under concurrent suites; serialized rerun passed unchanged in 33.2 seconds",
+      "persistence": "isolated PostgreSQL and MongoDB, actual existing OS/Live archive routers; 18 concurrency/recovery assertions"
+    },
+    {
+      "name": "Existing Live callback and contract tests (read-only checkout)",
+      "command": "PYTHONDONTWRITEBYTECODE=1 DOTENV_DISABLED=1 PYTHONPATH=/workspace/clara-live/backend MONGO_URL=mongodb://127.0.0.1:27039 DB_NAME=canonical_audit_lot3_router /workspace/.venvs/clara-live/bin/python -m pytest -q -n 0 -p no:cacheprovider backend/tests/test_unified_core_capability_routes.py backend/tests/test_unified_core_contracts.py",
+      "passed": 9,
+      "failed": 0,
+      "warnings": 2,
+      "scope": "actual callback router with controlled executor; no full domain engine or production",
+      "initialAttempts": "collection failed until explicit synthetic Mongo configuration and backend PYTHONPATH supplied"
+    },
+    {
+      "name": "TypeScript",
+      "command": "npx tsc --noEmit --pretty false",
+      "exitCode": 0
+    },
+    {
+      "name": "Targeted lint",
+      "command": "npx eslint src/lib/external-capabilities/product-callback.ts src/tests/live-callback-transport.test.ts",
+      "exitCode": 0
+    },
+    {
+      "name": "Global lint",
+      "command": "npm run lint",
+      "exitCode": 1,
+      "errors": 10,
+      "warnings": 13,
+      "baseline": "same diagnostics; diagnostic source files unchanged"
+    },
+    {
+      "name": "Legacy Vitest",
+      "command": "npm run test:legacy:vitest",
+      "exitCode": 1,
+      "passed": 20,
+      "failed": 2,
+      "suiteCollectionFailures": 1,
+      "baseline": "same acquisition-store, decision-brief and external/project-intake failures; files unchanged"
+    }
+  ],
+  "baselineComparison": [
+    {
+      "file": "src/app/api/external/project-intake/route.test.ts",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/app/api/weather/route.ts",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/components/automatisations/MakeConnectionStatus.tsx",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/components/clara/ClaraRecommendation.tsx",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/components/cockpit/panels/AgendaPanel.tsx",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/components/cockpit/panels/TodayPanel.tsx",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/components/cockpit/widgets/agenda/AgendaWidget.tsx",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/components/cockpit/widgets/weather/WeatherWidget.tsx",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/components/contacts/ContactsDirectory.tsx",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/components/layout/Sidebar.tsx",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/lib/acquisition/acquisition-store.test.ts",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/lib/acquisition/decision-brief.test.ts",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/lib/capabilities/magicq-lighting/executor.ts",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/lib/capabilities/workspace-install/workflow.ts",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/lib/connectors/internal/google/gmail/google-gmail-engine.ts",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/lib/connectors/internal/google/sheets/google-sheets-engine.ts",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/lib/core/store/database.ts",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/modules/agenda/AgendaStage.tsx",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/tests/integration/lighting-console-connections-v1.test.ts",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/tests/integration/lighting-self-service-onboarding-v1.test.ts",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/tests/integration/magicq-hardware-test-readiness.test.ts",
+      "identicalToBaseline": true
+    }
+  ],
+  "logArtifacts": [
+    {
+      "path": "/tmp/lot3-transport-before.log",
+      "sha256": "1bc4e4636f3dc42148764f10f35fa9470c1e2e0af38c4706f3a0b57bb237bc23"
+    },
+    {
+      "path": "/tmp/lot3-contracts.log",
+      "sha256": "dec3483dcb60be7466479024042e427dec0f6ca7f1151c128d05f8b541e6e4e6"
+    },
+    {
+      "path": "/tmp/lot3-nonreg.log",
+      "sha256": "ba33726ffb583c6c0d324b2a9a6155f179832aa2e7c7e9556e726efa7d906a40"
+    },
+    {
+      "path": "/tmp/lot3-canonical.log",
+      "sha256": "5452af5ef930d3a25d983bab45d638fa0d7e4a6007239ce830be59c8cbbc5166"
+    },
+    {
+      "path": "/tmp/lot3-canonical-rerun.log",
+      "sha256": "86e4e30a6630fae10fa04cf31f293b9720dc23ece2453730246ebc429d22a0f3"
+    },
+    {
+      "path": "/tmp/lot3-live-router.log",
+      "sha256": "eae64d2ece9f23c12b14dc4e81e46638bfce849c5a80d40a857891ac39dfe72f"
+    },
+    {
+      "path": "/tmp/lot3-types-rerun.log",
+      "sha256": "76162e465989f3f070a9de8db711fbf358e53b74d09ce1bbdb57c727e4c4a16d"
+    },
+    {
+      "path": "/tmp/lot3-lint.log",
+      "sha256": "76162e465989f3f070a9de8db711fbf358e53b74d09ce1bbdb57c727e4c4a16d"
+    },
+    {
+      "path": "/tmp/lot3-lint-global.log",
+      "sha256": "964e4b33eec3ffcb7752810a2203488c43be028ef4fae3d9f3aea321e0a9c320"
+    },
+    {
+      "path": "/tmp/lot3-vitest.log",
+      "sha256": "08471f34b270822621c957eb87739b7c69fbc83d7f60c7fd6ab4ba48a214e530"
+    }
+  ],
+  "unverified": [
+    "four native Mission-to-Live domain E2Es",
+    "UI Live native workflow",
+    "canonical execution revocation at Live boundary",
+    "forged, late/out-of-order results bound to native operations",
+    "durable Live computation deduplication and crash reconciliation",
+    "Stage/equipment/document result references",
+    "all Production behavior"
+  ],
+  "ci": "See PR checks for final HEAD; build and existing lot 1/2/2bis browser regression required before final report. No native Live E2E is claimed.",
+  "noProductionOrLiveChanges": true
+}

@@ -1,0 +1,27 @@
+[
+  {
+    "product": "live",
+    "reference": "b17cf916ae9bf946281165f6a4021a961718ce46",
+    "paths": [
+      "backend/stage_model",
+      "backend/lighting_design",
+      "backend/interop",
+      "frontend/src/components/workspace"
+    ],
+    "changedPaths": [],
+    "unchanged": true
+  },
+  {
+    "product": "os",
+    "reference": "e1e1897db674ebe4ca4fe268bf40ca40a08df3ee",
+    "paths": [
+      "db/migrations/025_native_mission_contact_association.sql",
+      "db/migrations/026_native_document_continuity.sql",
+      "db/migrations/028_native_job_kind_compatibility.sql",
+      "package.json",
+      "package-lock.json"
+    ],
+    "changedPaths": [],
+    "unchanged": true
+  }
+]

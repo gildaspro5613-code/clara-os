@@ -1,3 +1,4 @@
+import {expiredGoogleDisplayCookie} from "@/lib/auth/google-display-name";
 import { NextResponse, type NextRequest } from "next/server";
 import { revokeAuthenticatedSession, expiredSessionCookie } from "@/lib/auth/authenticated-session-lifecycle";
 import { readAuthCookie } from "@/lib/connectors/microsoft/security/request-authorization";
@@ -28,5 +29,6 @@ export async function POST(request: NextRequest) {
     headers: { "Cache-Control": "no-store" },
   });
   response.cookies.set(expiredSessionCookie(true));
+  response.cookies.set(expiredGoogleDisplayCookie(true));
   return response;
 }

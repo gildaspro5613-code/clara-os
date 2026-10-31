@@ -1,0 +1,6 @@
+REPRODUCED native ACTIVE selected => unavailable
+REPRODUCED native ACTIVE not selected => unavailable
+REPRODUCED native empty => unavailable
+REPRODUCED legacy connected => connected
+REPRODUCED legacy auth required => authRequired
+5 contract cases verified against current source. No provider, SQL or application mutation.

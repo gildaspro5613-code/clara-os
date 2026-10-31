@@ -1,0 +1,27 @@
+✔ read capabilities remain available to Essential without approval (1.626606ms)
+✔ write capabilities require Premium and explicit approval (0.55515ms)
+✔ Make preparation and execution use distinct policies (0.174482ms)
+✔ a GPT write call creates an approval instead of executing (4.191598ms)
+✖ Make acknowledgements remain requested in the durable audit until explicit completion evidence (0.635628ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 24872.98825
+
+✖ failing tests:
+
+test at src/tests/capability-tool-approval.test.ts:2:2194
+✖ Make acknowledgements remain requested in the durable audit until explicit completion evidence (0.635628ms)
+  ReferenceError: Cannot access 'result' before initialization
+      at CapabilityToolBridge.execute (/workspace/clara-os-v1-reception/src/lib/capabilities/capability-tool-bridge.ts:101:10)
+      at TestContext.<anonymous> (/workspace/clara-os-v1-reception/src/tests/capability-tool-approval.test.ts:54:29)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)

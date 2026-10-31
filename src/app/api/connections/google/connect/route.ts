@@ -1,57 +1,24 @@
-import { NextResponse } from "next/server";
-import { ConnectionStatus } from "@/lib/connections/connection";
-import {
-  createPendingGoogleConnection,
-  DatabaseConnectionRepository,
-} from "@/lib/connections/connection-repository";
-import { CURRENT_WORKSPACE_ID } from "@/lib/connections/current-workspace";
-import { OAuthAuthorizationService } from "@/lib/auth/oauth/service";
-import { oauthProviders } from "@/lib/auth/oauth/providers";
-import { googleConfig } from "@/lib/config/google";
-import { GOOGLE_OAUTH_SCOPES } from "@/lib/connectors/google/oauth/google-oauth";
-import { createGoogleOAuthNonce } from "@/lib/connectors/google/oauth/google-oauth-state";
-
-export const dynamic = "force-dynamic";
-const GOOGLE_OAUTH_COOKIE = "clara_google_oauth_nonce";
-
-export async function GET() {
-  const repository = new DatabaseConnectionRepository();
-  let connection = await repository.findByWorkspaceAndProvider(
-    CURRENT_WORKSPACE_ID,
-    "google",
-  );
-  if (!connection) {
-    connection = createPendingGoogleConnection(
-      CURRENT_WORKSPACE_ID,
-      [...GOOGLE_OAUTH_SCOPES],
-    );
-  } else {
-    connection = {
-      ...connection,
-      status: connection.status === ConnectionStatus.ACTIVE
-        ? ConnectionStatus.ACTIVE
-        : ConnectionStatus.PENDING_AUTHENTICATION,
-      scopes: [...GOOGLE_OAUTH_SCOPES],
-      updatedAt: new Date(),
-    };
-  }
-  await repository.save(connection);
-
-  const nonce = createGoogleOAuthNonce();
-  const url = new OAuthAuthorizationService(oauthProviders).create({
-    provider: "google", connectionId: connection.id,
-    workspaceId: connection.workspaceId, nonce,
-    redirectUri: googleConfig.redirectUri,
-    redirectPath: "/connexions?google=connected",
-    scopes: GOOGLE_OAUTH_SCOPES,
-  });
-  const response = NextResponse.redirect(url);
-  response.cookies.set(GOOGLE_OAUTH_COOKIE, nonce, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 10 * 60,
-    path: "/api/connections/google/callback",
-  });
-  return response;
-}
+import {randomUUID} from 'node:crypto';
+import {NextResponse} from 'next/server';
+import {withNativeScope,nativeContext} from '@/lib/native/scoped-context';
+import {nativeGoogleCommand,googleProofHash} from '@/lib/native/google-authority';
+import {nativeFailure,nativeOperationFence} from '@/lib/native/authority';
+import {fields,registryBody} from '@/lib/canonical/http';
+import {GOOGLE_SCOPES} from '@/lib/native/google-work';
+import {opaque,RegistryError} from '@/lib/canonical/registry';
+import {OAuthAuthorizationService} from '@/lib/auth/oauth/service';
+import {createOAuthNonce} from '@/lib/auth/oauth/state';
+import {oauthProviders} from '@/lib/auth/oauth/providers';
+import {googleConfig} from '@/lib/config/google';
+export const dynamic='force-dynamic';
+export async function GET(request:Request){return await nativeOperationFence(request);}
+export async function POST(request:Request){try{return await withNativeScope(request,true,async()=>{
+ const body=await registryBody(request);fields(body,['connectionId','capability']);const connectionId=body.connectionId?opaque(body.connectionId):randomUUID();
+ const ctx=nativeContext()!,identity=await nativeGoogleCommand('identity'),nonce=createOAuthNonce();
+ const capability=body.capability??'read';if(typeof capability!=='string'||!['read','agenda','drive','existing'].includes(capability))throw new RegistryError(400,'GOOGLE_CONSENT_PROFILE_INVALID');
+ const previous=body.connectionId?((await nativeGoogleCommand('list')).connections as Array<{id:string;scopes?:string[]}>).find(c=>c.id===connectionId):null;
+ const scopes=[...new Set([...GOOGLE_SCOPES.read,...(previous?.scopes??[]),...GOOGLE_SCOPES[capability as keyof typeof GOOGLE_SCOPES]])];
+ const authorization=new OAuthAuthorizationService(oauthProviders).create({provider:'google',connectionId,workspaceId:ctx.scope.workspaceId,nonce,redirectUri:googleConfig.redirectUri,redirectPath:capability==='agenda'?'/agenda':'/documents',scopes,parameters:{nonce,prompt:'consent select_account',include_granted_scopes:'false'},native:{userId:String(identity.userId),clientId:ctx.scope.clientId,projectId:ctx.scope.projectId,sessionId:ctx.scope.sessionId}});
+ await nativeGoogleCommand('begin',{connectionId,stateHash:googleProofHash(authorization.searchParams.get('state')!),nonceHash:googleProofHash(nonce),requestedScopes:scopes});
+ const response=NextResponse.json({success:true,authorizationUrl:authorization.toString()});response.cookies.set('clara_google_oauth_nonce',nonce,{httpOnly:true,sameSite:'lax',secure:true,maxAge:600,path:'/api/connections/google/callback'});response.headers.set('Cache-Control','no-store');return response;
+});}catch(error){return nativeFailure(error);}}

@@ -1,16 +1,20 @@
+import type {MdProjectIntake} from "@/types";
 import { getTranslations } from "next-intl/server";
 import GlassPanel from "@/components/ui/GlassPanel";
 import type { AcquisitionRecord } from "@/lib/acquisition/acquisition-store";
 import { buildCommercialQualificationDraft } from "@/lib/acquisition/commercial-communication-draft";
 import { loadProjectIntake } from "@/lib/intake/md-project-intake-inbox";
-import CommercialDraftEditor from "./CommercialDraftEditor";
+import Link from "next/link";
+import { originalLabel } from "@/lib/presentation/cockpit-summary";
 
 interface AcquisitionQualificationPanelProps {
   qualifications: AcquisitionRecord[];
+  nativeIntake?:MdProjectIntake|null;
 }
 
 export default async function AcquisitionQualificationPanel({
   qualifications,
+  nativeIntake,
 }: AcquisitionQualificationPanelProps) {
   const ui = await getTranslations("ui");
 
@@ -19,7 +23,7 @@ export default async function AcquisitionQualificationPanel({
 
   const opportunity = current.qualification.opportunity;
   const state = current.qualification.qualification;
-  const intake = await loadProjectIntake(current.workspaceId, current.submissionId).catch(() => null);
+  const intake = nativeIntake===undefined?await loadProjectIntake(current.workspaceId, current.submissionId).catch(() => null):nativeIntake?{intake:nativeIntake}:null;
   const draft = current.commercialDraft
     ?? (intake ? buildCommercialQualificationDraft(current, intake.intake) : null);
 
@@ -36,17 +40,16 @@ export default async function AcquisitionQualificationPanel({
 
         <div>
           <p className="text-base font-semibold leading-snug text-white/95">
-            {current.decisionBrief.headline}
+            {originalLabel(current.decisionBrief.headline)}
           </p>
-          <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-white/65">
-            {opportunity.brief}
-          </p>
+          <p className="mt-2 text-xs text-white/45">{ui("localizedSummary")}</p>
+          <Link href="/clara#source-details" className="mt-2 inline-flex text-xs text-cyan-300">{ui("openSourceDetails")} →</Link>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
             <p className="text-xs uppercase tracking-wide text-white/40">{ui("schedule")}</p>
-            <p className="mt-1 text-sm text-white/80">{opportunity.schedule || "À confirmer"}</p>
+            <p className="mt-1 text-sm text-white/80">{opportunity.schedule || ui("toConfirm")}</p>
           </div>
           <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
             <p className="text-xs uppercase tracking-wide text-white/40">{ui("venue")}</p>
@@ -60,7 +63,7 @@ export default async function AcquisitionQualificationPanel({
             <div className="mt-2 flex flex-wrap gap-2">
               {state.missing.map((item) => (
                 <span key={item} className="rounded-full border border-amber-200/20 bg-amber-200/5 px-3 py-1 text-xs text-amber-100/80">
-                  {item}
+                  {ui(item === "location" ? "venue" : item === "schedule" ? "schedule" : item === "disciplines" ? "technicalDisciplines" : item === "contactName" ? "contactName" : "informationToComplete")}
                 </span>
               ))}
             </div>
@@ -69,14 +72,18 @@ export default async function AcquisitionQualificationPanel({
 
         <div className="rounded-xl border border-cyan-300/15 bg-cyan-300/[0.04] p-3">
           <p className="text-xs uppercase tracking-wide text-cyan-100/55">{ui("claraSNextAction")}</p>
-          <p className="mt-1 text-sm leading-relaxed text-white/80">{current.lifecycle.nextAction}</p>
+          <p className="mt-1 text-sm leading-relaxed text-white/80">{draft ? ui("reviewDraft") : ui("informationToComplete")}</p>
         </div>
 
         {draft && (
-          <CommercialDraftEditor
-            key={`${draft.revision}-${draft.approval.status}-${draft.delivery.reason}`}
-            initialDraft={draft}
-          />
+          <div className="rounded-xl border border-amber-200/20 p-4 text-sm">
+            <p className="font-medium">{ui("draftSummary")}</p>
+            <p className="mt-2">{ui("from")} {draft.sender.name} &lt;{draft.sender.email}&gt;</p>
+            <p>{ui("to")} {draft.recipient.name} &lt;{draft.recipient.email}&gt;</p>
+            <p>{ui("subjectLabel77")} {originalLabel(draft.subject)}</p>
+            <p className="my-2 text-xs text-white/55">{ui("priorityLabel")}: {ui("unknownPriority")} · {ui("sourceOriginal")}</p>
+            <Link href="/clara?intent=email#commercial-draft" className="text-cyan-300">{ui("reviewDraft")} →</Link>
+          </div>
         )}
 
         {qualifications.length > 1 && (

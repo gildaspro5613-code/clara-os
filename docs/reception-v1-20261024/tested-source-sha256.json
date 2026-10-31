@@ -1,0 +1,18 @@
+{
+  ".github/workflows/native-authority-validation.yml": "4ec02eaaf134fd85a58f88fd8cb9ce19c9d84e8490a16adb8d7c68a049db0fe4",
+  "db/migrations/026_native_document_continuity.sql": "07ee79882ad3a1e1bc2eeeb3dfead9409b703b54e2ed18a14f7651f22baf9f11",
+  "db/migrations/028_native_job_kind_compatibility.sql": "ab3e6004074348500d5f2fd1d511f7afcea28a9c374f6f1d4d2029fc241642b9",
+  "package-lock.json": "b8c93108e8bd91148e8cd286655f2a40a050a9940204f94b0f421b8cba3411db",
+  "package.json": "f2ba1621420b446690c614fc7a35ede5acd791bc99a0964ee64b08c6acf41714",
+  "src/lib/connectors/make/client.ts": "656ab0ea7f6048d51867c19ef5cec3e4d35beff2d2679a287bf808df3679d3d4",
+  "src/lib/connectors/make/make-executable-connector.ts": "948b0b18a8833ff07d2bc409ff3676e2c88e41e5f1f13cb18a3d53c3e792a277",
+  "src/tests/helpers/native-runtime-browser-fixture.mts": "7aa403001f2e0152dda1ce7b02777f958771313ece395a30c3c0bdeeaad13511",
+  "src/tests/helpers/native-runtime-http-forward.mjs": "104a7b780bf51766ee41ece3ddd3341e138330317d22b71948e63a015b1cbdd6",
+  "src/tests/helpers/native-runtime-tls-proxy.mjs": "f4d6a8d4dad7d4943ac948333bc894bc231ad966b8aa20d9e6e66d610efb34d2",
+  "src/tests/make-connector.test.ts": "cbd41c934673c5da0582b3a739fb9232b0b18d0271a403a84f92b55a6a3fd81d",
+  "src/tests/native-document-continuity-browser.e2e.mjs": "b98f1e2bf38715d8259b00a10870a54a0da28c110d00f58bc4f88b3c3054d74a",
+  "src/tests/native-google-work-browser.e2e.mjs": "f821a4c047a7b149e95292cc5db7ca6bcde94a142d2d991dc289318c2c55f77a",
+  "src/tests/native-job-kind-compatibility.test.ts": "217e00e2803bc24aaac16106500d725ddddc363852a86314b37f2e748d5b6a26",
+  "src/tests/native-runtime-proxy.test.mjs": "56d365391035dedcc00dfc3c60929a3c6409e25b3cdfbcde728802ce6a65de75",
+  "src/tests/v1-mission-identity.test.ts": "ba3c92662c3693a6d0df0239aaf5dba6b4b70577acb0594e63421702dc0fb871"
+}

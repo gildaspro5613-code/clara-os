@@ -1,3 +1,4 @@
+import { assertRecetteExternalExecutionBlocked } from "@/lib/recette/external-execution-guard";
 /**
  * ============================================
  * CLARA OS
@@ -64,6 +65,7 @@ export class ElevenLabsEngine {
     options?: RequestInit,
   ): Promise<Response> {
 
+    assertRecetteExternalExecutionBlocked("elevenlabs.api");
     const apiKey = this.getApiKey();
 
     const headers = new Headers();

@@ -1,0 +1,1 @@
+{"ghsa_id":"GHSA-673q-mjm6-r5xr","published_at":"2026-10-22T16:42:31Z","severity":"critical","summary":"Next.js: Unauthenticated Remote Code Execution in `use cache` functions returning typed arrays","vulnerabilities":[{"first_patched_version":"16.4.1","package":{"ecosystem":"npm","name":"next"},"vulnerable_version_range":"\u003e= 16.0.0, \u003c= 16.4.0"}]}

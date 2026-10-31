@@ -1,0 +1,112 @@
+{
+  "base": "origin/consolidation/clara-os-clean-base",
+  "head": "674980e859b144fbc3f7ec0d6f8fc8842177120e",
+  "changedTrackedFiles": 523,
+  "sensitiveNamedFiles": [],
+  "patternMatchesRequireReview": [
+    {
+      "file": ".github/workflows/documents-workspace-validation.yml",
+      "categories": [
+        "4"
+      ],
+      "urlClassification": [
+        "synthetic-reserved",
+        "synthetic-reserved"
+      ]
+    },
+    {
+      "file": ".github/workflows/native-authority-validation.yml",
+      "categories": [
+        "4"
+      ],
+      "urlClassification": [
+        "synthetic-reserved"
+      ]
+    },
+    {
+      "file": "docs/first-day-20261024/evidence/run-browser.py",
+      "categories": [
+        "4"
+      ],
+      "urlClassification": [
+        "synthetic-reserved"
+      ]
+    },
+    {
+      "file": "docs/provider-readiness-20261025/evidence/run-browser.py",
+      "categories": [
+        "4"
+      ],
+      "urlClassification": [
+        "synthetic-reserved"
+      ]
+    },
+    {
+      "file": "docs/reception-175/README.md",
+      "categories": [
+        "4"
+      ],
+      "urlClassification": [
+        "synthetic-reserved",
+        "synthetic-reserved"
+      ]
+    },
+    {
+      "file": "src/tests/helpers/magicq-configuration-http.mts",
+      "categories": [
+        "4"
+      ],
+      "urlClassification": [
+        "synthetic-reserved"
+      ]
+    },
+    {
+      "file": "src/tests/helpers/native-runtime-browser-preload.mjs",
+      "categories": [
+        "4"
+      ],
+      "urlClassification": [
+        "synthetic-reserved"
+      ]
+    },
+    {
+      "file": "src/tests/helpers/reception-browser-runtime.mjs",
+      "categories": [
+        "4"
+      ],
+      "urlClassification": [
+        "synthetic-reserved"
+      ]
+    },
+    {
+      "file": "src/tests/helpers/stage-authority-http.mts",
+      "categories": [
+        "4"
+      ],
+      "urlClassification": [
+        "synthetic-reserved"
+      ]
+    },
+    {
+      "file": "src/tests/recette-google-sign-in.test.ts",
+      "categories": [
+        "4"
+      ],
+      "urlClassification": [
+        "template"
+      ]
+    },
+    {
+      "file": "src/tests/recette-runtime-attestation.test.ts",
+      "categories": [
+        "4"
+      ],
+      "urlClassification": [
+        "manual-review"
+      ]
+    }
+  ],
+  "scope": "Read-only heuristic on candidate tracked delta; no values logged. This is not proof that every historical commit contains no secret.",
+  "workingTree": " M src/tests/helpers/first-day-browser.ts\n",
+  "review": "No sensitive-named tracked file or key/token pattern match. SQL literals reviewed: local/reserved fixtures or documentation templates; runtime-attestation fixture explicitly uses synthetic-password and synthetic tokens."
+}

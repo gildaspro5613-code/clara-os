@@ -1,3 +1,4 @@
+import {nativeContext} from "@/lib/native/scoped-context";
 /**
  * ============================================
  * CLARA OS
@@ -18,26 +19,28 @@ const clara = new Clara();
  * Starts the Clara runtime.
  */
 export async function startRuntime(): Promise<ClaraSession> {
-  return await clara.start();
+  return await getRuntime().start();
 }
 
 /**
  * Stops the Clara runtime.
  */
 export async function stopRuntime(): Promise<void> {
-  await clara.stop();
+  await getRuntime().stop();
 }
 
 /**
  * Returns the current Clara session.
  */
 export function getSession(): ClaraSession {
-  return clara.getSession();
+  return getRuntime().getSession();
 }
 
 /**
  * Returns the Clara runtime instance.
  */
 export function getRuntime(): Clara {
+  const native=nativeContext();
+  if(native)return native.runtime??(native.runtime=new Clara(native.scope.sessionId,native.scope.workspaceId));
   return clara;
 }

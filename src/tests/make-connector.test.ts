@@ -4,6 +4,8 @@ import test from "node:test";
 import type { ConnectionResolver } from "@/lib/connections/connection-resolver";
 import { MakeConnectorAdapter } from "@/lib/connectors/make/adapter";
 import { MakeWebhookClient, MakeWebhookError } from "@/lib/connectors/make/client";
+import { MakeExecutableConnector } from "@/lib/connectors/make/make-executable-connector";
+import type { ConnectorContext } from "@/lib/connectors/core/connector-context";
 import { MAKE_CAPABILITIES, MakeConnectorDefinition } from "@/lib/connectors/make/definition";
 
 type Call = { url: string; init?: RequestInit };
@@ -131,4 +133,46 @@ test("webhook client rejects non-HTTPS destinations", async () => {
     ),
     (error) => error instanceof MakeWebhookError && /HTTPS/.test(error.message),
   );
+});
+
+test('HTTP 200 with an explicit provider failure never produces a completed Make receipt', async () => {
+  for (const body of [{status:'failed',provider:'brevo'}, {success:false,provider:'brevo'}, {ok:false,status:'completed'}]) {
+    let calls=0;
+    const client=new MakeWebhookClient(async()=>{calls++;return Response.json(body);});
+    await assert.rejects(()=>client.execute({url:'https://hook.eu2.make.com/synthetic-reception-only'},{scenarioKey:'crm-contact-sync',payload:{workspaceId:'isolated-workspace'}}),error=>error instanceof MakeWebhookError && !error.retryable);
+    assert.equal(calls,1,'no automatic retry after an explicit provider refusal');
+  }
+});
+
+test('Make transport timeouts perform one handoff and are never a success receipt', async () => {
+  let calls=0;
+  const client=new MakeWebhookClient(async()=>{calls++;throw new DOMException('Simulated acknowledgement lost','AbortError');});
+  await assert.rejects(()=>client.execute({url:'https://hook.eu2.make.com/synthetic-reception-only'},{scenarioKey:'notify-team'}),error=>error instanceof MakeWebhookError && error.code==='TIMEOUT');
+  assert.equal(calls,1);
+});
+
+test('a pending Make acknowledgement is not announced as successful execution', async () => {
+  const adapter={execute:async()=>({provider:'make',capability:MAKE_CAPABILITIES.SCENARIO_EXECUTE,data:{ok:true,scenarioKey:'notify-team',status:202,executionStatus:'accepted',data:{status:'accepted'}}})} as unknown as MakeConnectorAdapter;
+  const connector=new MakeExecutableConnector({} as ConnectorContext,'synthetic-connection',true,adapter);
+  const result=await connector.execute({id:'synthetic-operation',capability:MAKE_CAPABILITIES.SCENARIO_EXECUTE,payload:{scenarioKey:'notify-team'},source:'isolated-reception',receivedAt:new Date()});
+  assert.equal((result.data as {executionStatus:string}).executionStatus,'accepted');
+  assert.doesNotMatch(result.message??'',/executed successfully/i);
+});
+
+test('unqualified HTTP acknowledgements never certify a completed Make execution',async()=>{
+ for(const body of [null,'Accepted',{accepted:true},{status:'success'},{status:'unrecognized'},{status:'COMPLETED'}]){
+  let calls=0;const client=new MakeWebhookClient(async()=>{calls++;return typeof body==='string'?new Response(body):Response.json(body);});
+  const result=await client.execute({url:'https://hook.eu2.make.com/synthetic-only'},{scenarioKey:'crm-contact-sync'});
+  assert.equal(result.executionStatus,'accepted');assert.equal(calls,1);
+ }
+});
+
+test('contradictory provider statuses fail closed and ambiguous POST failures never authorize retry',async()=>{
+ const invocation={scenarioKey:'crm-contact-sync'},configuration={url:'https://hook.eu2.make.com/synthetic-only'};
+ const conflicting=new MakeWebhookClient(async()=>Response.json({executionStatus:'completed',status:'failed'}));
+ await assert.rejects(()=>conflicting.execute(configuration,invocation),error=>error instanceof MakeWebhookError&&!error.retryable);
+ for(const response of [new Error('Synthetic response lost'),new DOMException('Synthetic timeout','AbortError'),Response.json({error:'synthetic'},{status:503})]){
+  let calls=0;const client=new MakeWebhookClient(async()=>{calls++;if(response instanceof Error)throw response;return response;});
+  await assert.rejects(()=>client.execute(configuration,invocation),error=>error instanceof MakeWebhookError&&!error.retryable);assert.equal(calls,1);
+ }
 });

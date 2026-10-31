@@ -150,7 +150,15 @@
     "nextAction": "Prochaine action",
     "noMission": "Aucune mission active",
     "noObjective": "Aucun objectif actif",
-    "noNextAction": "Aucune action suivante définie"
+    "noNextAction": "Aucune action suivante définie",
+    "conversations": "Conversations",
+    "states": {
+      "STOPPED": "Arrêté",
+      "STARTING": "Démarrage",
+      "WORKING": "En activité",
+      "STOPPING": "Arrêt en cours",
+      "UNKNOWN": "État non vérifié"
+    }
   },
   "documents": {
     "subtitle": "Accès aux documents de votre espace Google Drive.",
@@ -189,7 +197,7 @@
   "chat": {
     "greeting": "Bonjour. Me voilà. Que faisons-nous aujourd’hui ?",
     "unavailable": "Clara est momentanément indisponible.",
-    "title": "Parler à Clara",
+    "title": "Parler avec Clara",
     "thinking": "Clara réfléchit…",
     "placeholder": "Écrire à Clara…",
     "send": "Envoyer à Clara",
@@ -340,5 +348,17 @@
     "identified": "Clara a identifié {count, plural, one {# événement} other {# événements}} dans votre agenda.",
     "noneRecorded": "Aucun rendez-vous enregistré aujourd’hui.",
     "claraHelp": "L’agenda permet à Clara de tenir compte de votre journée dans ses actions et ses recommandations."
+  },
+  "voiceApi": {
+    "operatorRequired": "Une session opérateur autorisée est requise.",
+    "notConfigured": "Le service vocal n’est pas configuré.",
+    "sessionUnavailable": "Session vocale indisponible.",
+    "synthesisFailed": "La synthèse vocale a échoué.",
+    "transcriptionFailed": "La transcription vocale a échoué.",
+    "textRequired": "Un texte est requis.",
+    "textTooLong": "Texte trop long pour la synthèse vocale (5 000 caractères maximum).",
+    "audioRequired": "Un enregistrement audio est requis.",
+    "audioTooLarge": "Enregistrement audio trop volumineux (15 Mo maximum).",
+    "noSpeech": "Aucune parole détectée."
   }
 }

@@ -9,5 +9,18 @@
       "path": "/api/internal/event-jobs-run",
       "schedule": "* * * * *"
     }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "integration/p0-stage-approval-ui": false,
+      "fix/canonical-stage-authority-20261022": false,
+      "proposal/stage-multidomain-contract": false,
+      "reception/stage-multidomain-authority": false,
+      "fix/magicq-config-revision": false,
+      "fix/clara-os-operational-recovery-20261027": false,
+      "fix/clara-os-operational-delivery-20261027": false,
+      "fix/google-native-hub-216": false,
+      "fix/clara-os-interface-finalization-20261027": false
+    }
+  }
 }

@@ -1,0 +1,10 @@
+✔ MagicQ real handlers/SQL: preserve, explicit replace/clear, atomic CAS, scope, revocation, integrity and invoker role (12416.108473ms)
+✔ additive migration preserves existing configuration, is repeatable, and detects revision alteration (2204.570384ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 14899.750306

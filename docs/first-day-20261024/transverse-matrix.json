@@ -1,0 +1,172 @@
+[
+  {
+    "fonction": "Cockpit",
+    "code_present": "Oui",
+    "test_isole": "125 historiques + 19/30 ciblés ; J1 navigateur PASS",
+    "fournisseur_reel": "Aucun fournisseur réel appelé ici",
+    "parcours_e2e": "Historique Chromium + J1",
+    "indispensable_j1": "Oui",
+    "statut": "B — Fonctionnelle en isolation",
+    "blocage": "Pas d’URL distante livrée ; aucune attestation runtime distant"
+  },
+  {
+    "fonction": "Brief",
+    "code_present": "Oui",
+    "test_isole": "Mission active ; courrier enregistré ; libellés de portée",
+    "fournisseur_reel": "Non attesté sur ce SHA",
+    "parcours_e2e": "Périmètre mission, pas agrégat journée automatique",
+    "indispensable_j1": "Oui, limité",
+    "statut": "C — Partiellement fonctionnelle",
+    "blocage": "Les cinq priorités globales ne sont pas démontrées ; revue guidée Messagerie/Missions/Agenda"
+  },
+  {
+    "fonction": "Missions",
+    "code_present": "Oui",
+    "test_isole": "SQL réel : identité, CAS, association tardive",
+    "fournisseur_reel": "Sans fournisseur",
+    "parcours_e2e": "Chromium et redémarrage historiques",
+    "indispensable_j1": "Oui",
+    "statut": "B — Fonctionnelle en isolation",
+    "blocage": "Ne pas rattacher silencieusement un fil avec historique"
+  },
+  {
+    "fonction": "Conversations",
+    "code_present": "Oui",
+    "test_isole": "SQL réel et idempotence historique ; sources autorisées",
+    "fournisseur_reel": "OpenAI simulé uniquement",
+    "parcours_e2e": "Chromium historique + J1",
+    "indispensable_j1": "Oui",
+    "statut": "B — Fonctionnelle en isolation",
+    "blocage": "Qualité et disponibilité OpenAI réelles non certifiées"
+  },
+  {
+    "fonction": "Contacts",
+    "code_present": "Oui",
+    "test_isole": "Autorités, édition, liens et refus historiques",
+    "fournisseur_reel": "OS référentiel ; aucun contact Brevo créé",
+    "parcours_e2e": "Commercial historique et sélection J1",
+    "indispensable_j1": "Oui",
+    "statut": "B — Fonctionnelle en isolation",
+    "blocage": "Association explicite, aucun rapprochement par email"
+  },
+  {
+    "fonction": "Documents",
+    "code_present": "Oui",
+    "test_isole": "Google simulé, source originale et provenance",
+    "fournisseur_reel": "Fonctionnement déclaré par propriétaire, version non précisée",
+    "parcours_e2e": "Chromium historique + redémarrage",
+    "indispensable_j1": "Oui",
+    "statut": "B — Fonctionnelle en isolation",
+    "blocage": "Pas de recette Google réelle de cette mission"
+  },
+  {
+    "fonction": "Brain",
+    "code_present": "Oui",
+    "test_isole": "Faits/hypothèses/conflits/provenance et isolation",
+    "fournisseur_reel": "OpenAI simulé, aucune qualité sémantique réelle certifiée",
+    "parcours_e2e": "Chromium historique et J1",
+    "indispensable_j1": "Oui",
+    "statut": "B — Fonctionnelle en isolation",
+    "blocage": "Les sources restent des assertions à vérifier"
+  },
+  {
+    "fonction": "Journal",
+    "code_present": "Oui",
+    "test_isole": "Reçus durables, rejeu, SQL réel",
+    "fournisseur_reel": "Aucun effet fournisseur réel",
+    "parcours_e2e": "Chromium historique + J1",
+    "indispensable_j1": "Oui",
+    "statut": "B — Fonctionnelle en isolation",
+    "blocage": "Les libellés d’événement ne prouvent pas une livraison"
+  },
+  {
+    "fonction": "Agenda",
+    "code_present": "Oui",
+    "test_isole": "Contrats, confirmations, version, lecture simulée",
+    "fournisseur_reel": "Agenda fonctionnel déclaré par propriétaire, SHA non précisé",
+    "parcours_e2e": "Chromium Google historique et J1",
+    "indispensable_j1": "Oui en consultation",
+    "statut": "B — Fonctionnelle en isolation",
+    "blocage": "Aucun rendez-vous réel créé ; droits revérifiés par opération"
+  },
+  {
+    "fonction": "IONOS contrôlé",
+    "code_present": "Oui, socle #176/#199 ; V1 b02b1dd absent",
+    "test_isole": "SQL réel et transport simulé ; approbations exactes",
+    "fournisseur_reel": "Configuration existante attestée par propriétaire ; aucun IMAP/SMTP réel ici",
+    "parcours_e2e": "Mail historique ; brouillon/approbation J1",
+    "indispensable_j1": "Oui : lecture/brouillon uniquement",
+    "statut": "B — Fonctionnelle en isolation",
+    "blocage": "Autonomie inactive ; langues financières/antifraude non entièrement reçues"
+  },
+  {
+    "fonction": "IONOS autonome",
+    "code_present": "Partiel ; surveillance déjà existante",
+    "test_isole": "Tests service/read-only, réseau désactivé",
+    "fournisseur_reel": "Aucune relève réelle autorisée",
+    "parcours_e2e": "Non reçu réel",
+    "indispensable_j1": "Non",
+    "statut": "F — Reportable hors lancement",
+    "blocage": "CLARA_IONOS_MONITOR_ENABLED=false ; aucun envoi automatique"
+  },
+  {
+    "fonction": "Make",
+    "code_present": "Oui, générique",
+    "test_isole": "Refus et messages non trompeurs ; fence natif",
+    "fournisseur_reel": "Scénarios 7294540/7291299 observés par propriétaire, aucune exécution attestée",
+    "parcours_e2e": "Mapping métier non reçu",
+    "indispensable_j1": "Non",
+    "statut": "F — Reportable hors lancement",
+    "blocage": "Routes natives fermées ; ne pas activer de droit produit externe/Notify Team"
+  },
+  {
+    "fonction": "Brevo",
+    "code_present": "Oui",
+    "test_isole": "Contrats isolés historiques ; fence natif",
+    "fournisseur_reel": "Connexion déclarée OK, pas de contact créé par ce candidat",
+    "parcours_e2e": "Non reçu scénario réel",
+    "indispensable_j1": "Non",
+    "statut": "F — Reportable hors lancement",
+    "blocage": "Contacts OS continuent indépendamment ; pas de campagne/synchronisation"
+  },
+  {
+    "fonction": "Twilio",
+    "code_present": "Oui",
+    "test_isole": "Contrats et autorité historiques ; pas de changement",
+    "fournisseur_reel": "Essais réussis déclarés par propriétaire, version non précisée",
+    "parcours_e2e": "Voix + contexte + journal non reçus ensemble",
+    "indispensable_j1": "Non pour J1",
+    "statut": "F — Reportable hors lancement",
+    "blocage": "Pas d’appel ; conserver connexion existante sans reconfiguration"
+  },
+  {
+    "fonction": "ElevenLabs",
+    "code_present": "Oui",
+    "test_isole": "Contrats historiques ; native voice indisponible",
+    "fournisseur_reel": "Essais réussis déclarés par propriétaire, version non précisée",
+    "parcours_e2e": "Couplage contextuel non reçu",
+    "indispensable_j1": "Non pour J1",
+    "statut": "F — Reportable hors lancement",
+    "blocage": "Aucun microphone/fournisseur testé ici"
+  },
+  {
+    "fonction": "OS ↔ Live",
+    "code_present": "Oui, contrats existants",
+    "test_isole": "Contrats historiques inchangés",
+    "fournisseur_reel": "Aucune exécution Live autorisée",
+    "parcours_e2e": "Pas de nouvelle recette bilatérale",
+    "indispensable_j1": "Non pour J1",
+    "statut": "F — Reportable hors lancement",
+    "blocage": "Aucune nouvelle capacité Live activée ou annoncée disponible"
+  },
+  {
+    "fonction": "Synthèse fin de journée",
+    "code_present": "Oui, résumé mission + Journal",
+    "test_isole": "Portée explicite, approbation ≠ exécution",
+    "fournisseur_reel": "Aucune synthèse réelle fournisseur attestée",
+    "parcours_e2e": "Revue guidée, pas synthèse globale autonome",
+    "indispensable_j1": "Oui, guidée",
+    "statut": "C — Partiellement fonctionnelle",
+    "blocage": "Ne pas promettre une synthèse exhaustive de toutes les missions"
+  }
+]

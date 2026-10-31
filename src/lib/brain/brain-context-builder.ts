@@ -1,3 +1,4 @@
+import {nativeContext} from "@/lib/native/scoped-context";
 /**
  * ============================================
  * CLARA OS
@@ -12,7 +13,7 @@
 
 import { Event } from "@/types";
 
-import { getKnowledge } from "@/lib/knowledge";
+import { getKnowledge,KnowledgeEngine } from "@/lib/knowledge";
 
 import { buildContext } from "./context";
 import { loadMemory } from "./memory";
@@ -37,7 +38,7 @@ export async function buildBrainContext(
   /*
    * Load Clara's knowledge.
    */
-  const knowledge = getKnowledge();
+  const knowledge = nativeContext()?new KnowledgeEngine():getKnowledge();
 
   /*
    * Load relevant memory.
@@ -58,7 +59,7 @@ export async function buildBrainContext(
    * Load the capabilities available to Clara.
    */
   const capabilities: Array<{ id: string; name: string; description: string }> =
-    new CapabilityRegistry().getAvailableCapabilities().map((capability) => ({
+    (nativeContext()?sources.map(source=>({id:source.source,name:source.source,description:source.available?"Authorized scoped read context loaded; no execution or send approval implied.":source.summary})):new CapabilityRegistry().getAvailableCapabilities()).map((capability) => ({
       id: capability.id,
       name: capability.name,
       description: capability.description ?? "Capability available to Clara.",

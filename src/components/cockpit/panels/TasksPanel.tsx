@@ -11,6 +11,7 @@
 
 import type { Mission } from "@/modules/missions/types/Mission";
 
+import Link from "next/link";
 import GlassPanel from "@/components/ui/GlassPanel";
 import { useTranslations } from "next-intl";
 
@@ -26,7 +27,7 @@ export default function TasksPanel({
     <GlassPanel className="!h-auto !p-4 sm:!p-5">
       <div>
         <p className="text-lg font-semibold">
-          {mission.title}
+          <Link href="/missions" className="hover:text-cyan-200">{mission.title}</Link>
         </p>
 
         <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-white/70">
@@ -61,7 +62,7 @@ export default function TasksPanel({
         </p>
 
         <p className="mt-1.5 line-clamp-2 text-sm font-medium leading-relaxed">
-          {mission.nextAction ?? t("noNextStep")}
+          {mission.nextAction||t("noNextAction")}
         </p>
       </div>
     </GlassPanel>

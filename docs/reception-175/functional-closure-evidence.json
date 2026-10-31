@@ -1,0 +1,148 @@
+{
+  "baseline": "a16497fce1e780bf9109a360dc75cf00fd56b6f0",
+  "codeCommit": "4e5d5c3f9c286b5402feb5b8ff48acd449af6984",
+  "branch": "fix/os-operational-reception-175",
+  "pr": 176,
+  "decision": "NO-GO full requested deployment; Agenda/Drive contracts and real Production certification missing",
+  "scope": "isolated PostgreSQL, Chromium and simulated external providers only",
+  "codeFiles": [
+    ".github/workflows/native-authority-validation.yml",
+    "db/migrations/018_native_mail_pagination.sql",
+    "db/migrations/019_native_contact_editing.sql",
+    "src/app/api/contacts/route.ts",
+    "src/app/api/native/mail/route.ts",
+    "src/app/automatisations/page.tsx",
+    "src/app/documents/page.tsx",
+    "src/app/telephonie/page.tsx",
+    "src/components/contacts/ContactsDirectory.tsx",
+    "src/components/native/NativeMailPanel.tsx",
+    "src/i18n/messages/de/consolidated-ui.json",
+    "src/i18n/messages/en/consolidated-ui.json",
+    "src/i18n/messages/es/consolidated-ui.json",
+    "src/i18n/messages/fr/consolidated-ui.json",
+    "src/i18n/messages/it/consolidated-ui.json",
+    "src/lib/native/contacts.ts",
+    "src/lib/native/mail.ts",
+    "src/lib/native/scoped-context.ts",
+    "src/tests/helpers/native-runtime-browser-fixture.mts",
+    "src/tests/native-functional-closure-browser.e2e.mjs",
+    "src/tests/native-functional-closure.test.ts",
+    "src/tests/native-mail-postgres.test.ts",
+    "src/types/project-intake.ts"
+  ],
+  "checks": {
+    "postgresCommon": {
+      "command": "CANONICAL_TEST_CONTAINER=clara-canonical-test-postgres node --import tsx --test (10 suites listed in native-authority-validation.yml)",
+      "pass": 43,
+      "fail": 0,
+      "skipped": 0,
+      "exit": 0,
+      "log": "postgres-common-final.log"
+    },
+    "contracts": {
+      "files": [
+        "i18n-consolidation.test.ts",
+        "operational-reception.test.tsx",
+        "live-callback-transport.test.ts",
+        "clara-live-product-auth.test.ts",
+        "external-event-message-contract.test.ts",
+        "voice-route-security.test.ts"
+      ],
+      "pass": 45,
+      "fail": 0,
+      "skipped": 0,
+      "exit": 0,
+      "log": "contracts-final.log"
+    },
+    "typescript": {
+      "command": "npx tsc --noEmit",
+      "exit": 0,
+      "log": "typescript-final.log"
+    },
+    "lintTargeted": {
+      "exit": 0,
+      "errors": 0,
+      "warnings": 0,
+      "log": "lint-final.log"
+    },
+    "build": {
+      "command": "NEXT_TELEMETRY_DISABLED=1 NEXT_FONT_GOOGLE_MOCKED_RESPONSES=/workspace/lot4ter-reception/font-responses.cjs npm run build -- --webpack",
+      "exit": 0,
+      "deployment": false,
+      "log": "build-final.log"
+    },
+    "localBrowser": {
+      "existingCore": {
+        "pass": 5,
+        "fail": 0,
+        "log": "browser-after.log",
+        "note": "Executed before final action-type validation hardening; final common CI must certify all seven on exact code SHA."
+      },
+      "closure": {
+        "pass": 1,
+        "fail": 0,
+        "log": "closure-browser.log",
+        "exactCodeCommit": "4e5d5c3f9c286b5402feb5b8ff48acd449af6984"
+      },
+      "cockpit": {
+        "pass": 1,
+        "fail": 0,
+        "log": "cockpit-browser-final.log",
+        "exactCodeCommit": "4e5d5c3f9c286b5402feb5b8ff48acd449af6984"
+      }
+    },
+    "globalLint": {
+      "exit": 1,
+      "errors": 9,
+      "warnings": 12,
+      "baselineErrors": 10,
+      "baselineWarnings": 13,
+      "log": "lint-global.log"
+    },
+    "globalVitest": {
+      "exit": 1,
+      "pass": 20,
+      "assertionFailures": 2,
+      "collectionErrors": 1,
+      "unchangedKnownFailures": [
+        "src/lib/acquisition/acquisition-store.test.ts: expected SQL 2 calls, actual 3",
+        "src/lib/acquisition/decision-brief.test.ts: expected decision.required true, actual false",
+        "src/app/api/external/project-intake/route.test.ts: dispatchEvent hoisted reference initialization"
+      ],
+      "log": "vitest-global.log"
+    }
+  },
+  "protectedContracts": {
+    "base": "a16497fce1e780bf9109a360dc75cf00fd56b6f0",
+    "migrations012to017Unchanged": {
+      "db/migrations/016_native_ionos_mail.sql": true,
+      "db/migrations/014_native_commercial_continuity.sql": true,
+      "db/migrations/013_native_scoped_runtime.sql": true,
+      "db/migrations/017_native_conversation_continuity.sql": true,
+      "db/migrations/015_native_google_document_authority.sql": true,
+      "db/migrations/012_native_resource_authority.sql": true
+    },
+    "mailAuthorityAndDeliveryFunctionBranchesUnchanged": true,
+    "runtime017ExistingLogicUnchangedOutsideContactCommitAndCapabilityMetadata": true
+  },
+  "live": {
+    "unchanged": true,
+    "head": "48a2f94910d4a6111250e15046e0f471ddd6ac9b"
+  },
+  "github": {
+    "codeCommit": "4e5d5c3f9c286b5402feb5b8ff48acd449af6984",
+    "observedAtDocumentPreparation": {
+      "successWorkflows": 5,
+      "nativeWorkflow": "in_progress"
+    },
+    "finalResultsLocation": "PR #176 status checks and final delivery archive; no anticipated success claim"
+  },
+  "limits": [
+    "Google Calendar native authority and OAuth consent missing",
+    "Google Drive consent read-only; write/destination/confirmation contract missing",
+    "Contacts with existing commercial/mailbox drafts refuse silent recipient changes (409)",
+    "Existing 500-message synchronization retention cap remains",
+    "Real providers, Neon/Vercel target, SQL privileges, backup/restore Production not certified"
+  ],
+  "prohibitedActionsPerformed": []
+}

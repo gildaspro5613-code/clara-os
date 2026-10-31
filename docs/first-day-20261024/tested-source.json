@@ -1,0 +1,41 @@
+{
+  "applicativeCommit": "2e5af6872b82585770b498d0045ef4c3f077b9e0",
+  "harnessCommit": "dd1ff5a9414924090d62b69f213c04c0d9deb75c",
+  "unchangedAppSinceApplicativeCommit": true,
+  "changedAppFiles": [
+    {
+      "path": "src/app/api/native/mail/route.ts",
+      "sha256": "02c69778e9811060daf6d5d3afdfbfc55fc192326f9ba853865725d34965b667"
+    },
+    {
+      "path": "src/components/cockpit/panels/MailOverviewPanel.tsx",
+      "sha256": "1d06dc43273eb39f9df85f0e6cfd8f20b7c67fd30bd0d66dea72664cb7c5f09d"
+    },
+    {
+      "path": "src/components/cockpit/panels/SummaryPanel.tsx",
+      "sha256": "e095e3b335a73522258118bd0e9c985e35d0adc0e46493fb21a0ffd530825edf"
+    },
+    {
+      "path": "src/i18n/messages/de/consolidated-ui.json",
+      "sha256": "d1ae6bb3f7c2e81e300d10437e39e7cb00d8f94ea8bc55b7e40b8f963899d930"
+    },
+    {
+      "path": "src/i18n/messages/en/consolidated-ui.json",
+      "sha256": "a0929d289da6b118394cdb04d99b1ee809c577a4eaf4415ed7898cdd70fe082b"
+    },
+    {
+      "path": "src/i18n/messages/es/consolidated-ui.json",
+      "sha256": "75ab6185372095b7bdf9a80ce33f93edb62c390d7ff9856942389180a7e5eb58"
+    },
+    {
+      "path": "src/i18n/messages/fr/consolidated-ui.json",
+      "sha256": "fa3594632e85c0b7ce032b6cd7dc6c88ed73c3362cc5d9c19e6f54f368b65c0b"
+    },
+    {
+      "path": "src/i18n/messages/it/consolidated-ui.json",
+      "sha256": "ea1bebeb8a809cf6508a21101e2f9033311d69d72443fbeccfe06da1452ff597"
+    }
+  ],
+  "databaseMigrationsChangedThisLot": false,
+  "packageLockChangedThisLot": false
+}

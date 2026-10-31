@@ -1,0 +1,14 @@
+{
+  "greeting": "Bonjour {name},",
+  "anonymousGreeting": "Bonjour,",
+  "intro": "Merci pour votre demande auprès de Mélodie Digital. J’ai commencé à structurer votre projet afin de pouvoir poursuivre sa qualification.",
+  "missing": "Il me manque simplement quelques précisions :",
+  "location": "Pouvez-vous me préciser le lieu prévu pour cet événement (ville et, si possible, site ou établissement) ?",
+  "schedule": "Pouvez-vous me confirmer la date ou la période prévue pour l’événement ?",
+  "disciplines": "Pouvez-vous me préciser les domaines techniques concernés par votre projet ?",
+  "contactName": "Pouvez-vous me confirmer le nom de la personne à contacter pour la suite de ce dossier ?",
+  "scheduleConflict": "J’ai également relevé une indication de calendrier à confirmer : la date renseignée est {schedule}, tandis que votre message mentionne une échéance relative. Pouvez-vous me confirmer la date à retenir ?",
+  "closing": "Dès réception de ces éléments, je pourrai poursuivre la préparation de votre dossier.",
+  "regards": "Bien cordialement,",
+  "subject": "Votre projet {projectType} — précisions complémentaires"
+}

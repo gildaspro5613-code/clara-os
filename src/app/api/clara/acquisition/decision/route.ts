@@ -1,3 +1,4 @@
+import { nativeOperationFence } from "@/lib/native/authority";
 import { NextResponse, type NextRequest } from "next/server";
 import {
   applyAcquisitionOperatorDecision,
@@ -22,6 +23,9 @@ function configuredWorkspaceId(): string | null {
 }
 
 export async function POST(request: NextRequest) {
+  const nativeDenied=await nativeOperationFence(request);
+  if(nativeDenied)return nativeDenied;
+
   try {
     const configuredOrigin = process.env.CLARA_AUTH_APP_ORIGIN;
     if (!isSameOriginRequest(request.headers.get("origin"), configuredOrigin)) {

@@ -18,6 +18,7 @@ import { useTranslations } from "next-intl";
 
 interface BriefPanelProps {
   session: ClaraSession;
+  displayFirstName?:string|null;
   acquisition?: AcquisitionRecord | null;
 }
 
@@ -33,15 +34,11 @@ function personalizeGreeting(
   );
 }
 
-export default function BriefPanel({ session, acquisition }: BriefPanelProps) {
+export default function BriefPanel({ session, acquisition,displayFirstName=null }: BriefPanelProps) {
   const ui = useTranslations("ui");
 
   const t = useTranslations("cockpitUi");
   const mission = session.mission;
-  const latestClaraMessage = [...session.conversation]
-    .reverse()
-    .find((message) => message.role === "clara")?.content;
-  const understanding = session.brainDashboard?.understanding.summary;
   const needsAttention = mission?.status === "blocked" || Boolean(
     mission?.tasks.find((task) => !task.completed)?.execution?.autonomous === false,
   );
@@ -50,7 +47,7 @@ export default function BriefPanel({ session, acquisition }: BriefPanelProps) {
   return (
     <GlassPanel className="max-w-[18rem] px-6 py-5 bg-[#07111f]/55 border-white/[0.08] shadow-[0_2px_18px_rgba(0,0,0,0.18)] backdrop-blur-[18px]">
       <h2 className="mb-3 text-[1.6rem] leading-snug font-light text-white/90">
-        {personalizeGreeting(t("greeting"), session.user.firstName)}
+        {personalizeGreeting(t("greeting"), displayFirstName)}
       </h2>
 
       {mission ? (
@@ -61,29 +58,18 @@ export default function BriefPanel({ session, acquisition }: BriefPanelProps) {
           <p className="mt-1 text-sm font-medium leading-normal text-white/82">
             {mission.title}
           </p>
-          <p className="mt-3 text-sm leading-normal text-white/62">
-            {mission.nextAction || mission.objective}
-          </p>
-          {understanding && (
-            <p className="mt-3 line-clamp-3 text-xs leading-relaxed text-cyan-50/60">
-              {understanding}
-            </p>
-          )}
+          <p className="mt-3 text-sm text-white/62">{ui("missionOverview", {completed: mission.tasks.filter(task => task.completed).length, total: mission.tasks.length, progress: mission.progress})}</p>
+          <p className="mt-3 text-xs text-white/45">{ui("sourceOriginal")}</p>
           {needsAttention && (
             <p className="mt-3 text-xs font-medium text-amber-200/80">
-              {t("attention")}: {mission.nextAction || t("noNextStep")}
+              {t("attention")}: {ui("reviewNextAction")}
             </p>
           )}
         </>
-      ) : latestClaraMessage ? (
-        <p className="text-sm leading-normal text-white/68">
-          {latestClaraMessage}
-        </p>
       ) : (
-        <p className="text-sm leading-normal text-white/58">
-          {t("noMission")}
-        </p>
+        <p className="text-sm leading-normal text-white/58">{ui("noCurrentFocus")}</p>
       )}
+      <p className="mt-3 text-xs text-white/45">{ui("missionScope")}</p>
 
       <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-white/10 pt-3 text-xs">
         {mission && <Link href="/missions" className="text-cyan-300/80 hover:text-cyan-200">{t("viewMissions")}</Link>}

@@ -1,0 +1,57 @@
+✔ Make definition exposes only prepare and execute V1 capabilities (191.189283ms)
+✔ prepare does not resolve credentials or perform network I/O (0.687845ms)
+✔ execute resolves the webhook from the credential store rather than user input (559.683839ms)
+✔ unknown scenario keys fail before any webhook call (7.651727ms)
+✔ webhook client rejects non-HTTPS destinations (0.782094ms)
+✔ HTTP 200 with an explicit provider failure never produces a completed Make receipt (24.803477ms)
+✔ Make transport timeouts perform one handoff and are never a success receipt (0.773783ms)
+✔ a pending Make acknowledgement is not announced as successful execution (36.31332ms)
+✖ unqualified HTTP acknowledgements never certify a completed Make execution (52.934998ms)
+✖ outbound HTTP 200 without a durable provider identifier cannot be reported as a started call (156.777764ms)
+✔ existing ElevenLabs/Twilio request and attested identifier are preserved, without automatic retry (527.191805ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 9
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2320.029584
+
+✖ failing tests:
+
+test at src/tests/make-connector.test.ts:2:7139
+✖ unqualified HTTP acknowledgements never certify a completed Make execution (52.934998ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+
+  + 'completed'
+  - 'accepted'
+
+      at TestContext.<anonymous> (/workspace/clara-os-v1-reception/src/tests/make-connector.test.ts:166:10)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'completed',
+    expected: 'accepted',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at src/tests/telephony-provider-receipt.test.ts:2:1930
+✖ outbound HTTP 200 without a durable provider identifier cannot be reported as a started call (156.777764ms)
+  AssertionError [ERR_ASSERTION]: {}
+
+  true !== false
+
+      at TestContext.<anonymous> (/workspace/clara-os-v1-reception/src/tests/telephony-provider-receipt.test.ts:15:172)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

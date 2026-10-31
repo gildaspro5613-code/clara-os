@@ -1,0 +1,38 @@
+[
+  {
+    "file": "os-build.log",
+    "rawSha256": "22fadf56815495948b359178e46cea00e3f98cb3899f1c74c2d4f597661e6740",
+    "normalizedSha256": "3d582e5b075987cc0611246d9393703344a0156dabd60edc30818ab5818e7c9f",
+    "onlyChange": "Trailing whitespace / CRLF / empty EOF lines; original local log retained outside repo."
+  },
+  {
+    "file": "live-ui.log",
+    "rawSha256": "c9d9016e7b340fbbd8d012f0f95f261bd88ccb9108dac9c3afd782c5fb658f67",
+    "normalizedSha256": "f5deda3fffc59ab594e6591d85bd8a49253b6ce32dc70c1bb6966f2dd928280d",
+    "onlyChange": "Trailing whitespace / CRLF / empty EOF lines; original local log retained outside repo."
+  },
+  {
+    "file": "live-browser.log",
+    "rawSha256": "82a6c274b953afd7ec2cd085febf5c4be1f4377452b5619ba5deb0fa015275b6",
+    "normalizedSha256": "a2d0da2335cdbac9baff0f715b3a0d1218749c62dbdc161361eb81d4f1d85daf",
+    "onlyChange": "Trailing whitespace / CRLF / empty EOF lines; original local log retained outside repo."
+  },
+  {
+    "file": "live-contracts.log",
+    "rawSha256": "31f592f5bc9cdcdf130d44dcbff7c9e4768d771722cb661425420195474a17b2",
+    "normalizedSha256": "260990cbcd0b2d6591d43a8ff3848a28484aef50aa1ad26ce527cde7470b7542",
+    "onlyChange": "Trailing whitespace / CRLF / empty EOF lines; original local log retained outside repo."
+  },
+  {
+    "file": "os-installed-versions.log",
+    "rawSha256": "c00d07b5da023380581392df2587abcbc34dfe410b0f88236c34672b33b03dc7",
+    "normalizedSha256": "6d1e1b39ffbe8b4df09c7bde27576fdf9768d921dbe79c8647292522e12a2622",
+    "onlyChange": "Trailing whitespace / CRLF / empty EOF lines; original local log retained outside repo."
+  },
+  {
+    "file": "live-build.log",
+    "rawSha256": "d49af11bb6c3fbd56de05c629b5106ca13ad7187a5022158352cfd5ea0586ce4",
+    "normalizedSha256": "a1cb06c556eb4a91bd24c91e6d73ae1b2381021e6a97b38720423ab2c955aa97",
+    "onlyChange": "Trailing whitespace / CRLF / empty EOF lines; original local log retained outside repo."
+  }
+]

@@ -1,0 +1,40 @@
+✔ IONOS network is off by default, no self-activation or guessed configuration (2.679504ms)
+✔ MIME decoding: plain text only, HTML never rendered or executed; oversized source rejected (25.074013ms)
+✔ MIME dangerous and excessive attachments are quarantined, no unsafe bytes exposed (19.829604ms)
+✔ actual IMAP adapter uses read-only locking, bounded partial fetch and UIDVALIDITY incremental resume (15.151494ms)
+✔ actual SMTP adapter freezes identity and bytes, enforces verified TLS, no URL/file access, no retry (0.890912ms)
+✔ SMTP EAUTH: failed, single attempt only (0.341045ms)
+✔ SMTP ECONNECTION: failed, single attempt only (0.282457ms)
+✔ SMTP ETIMEDOUT: uncertain, single attempt only (0.332843ms)
+✔ SMTP ESOCKET: uncertain, single attempt only (0.273364ms)
+✔ Make definition exposes only prepare and execute V1 capabilities (4.340017ms)
+✔ prepare does not resolve credentials or perform network I/O (11.380507ms)
+✔ execute resolves the webhook from the credential store rather than user input (164.844789ms)
+✔ unknown scenario keys fail before any webhook call (0.980192ms)
+✔ webhook client rejects non-HTTPS destinations (0.786841ms)
+✔ HTTP 200 with an explicit provider failure never produces a completed Make receipt (3.978939ms)
+✔ Make transport timeouts perform one handoff and are never a success receipt (1.015503ms)
+✔ a pending Make acknowledgement is not announced as successful execution (1.375648ms)
+Checked 38 native handler refusals.
+[CLARA] instrumentation ready; business runtime is request-scoped
+✔ native session handler rejects missing, malformed and duplicate cookies before storage or global runtime (296.037605ms)
+✔ default, external and absent explicit selectors cannot resume a global/native fallback (5.506233ms)
+✔ every fenced native HTTP handler refuses anonymous/invalid cookies without entering legacy business logic (746.576338ms)
+✔ unavailable authority never leaks storage details or resumes the legacy runtime (4.815834ms)
+✔ even an explicitly authorized snapshot cannot unlock legacy native mutations (16.506724ms)
+✔ all six native server pages return before invoking any global data loader (78.653706ms)
+✔ reopened chat and native runtime/document handlers still refuse invalid authentication before business code (113.212501ms)
+✔ server instrumentation never imports or starts a global business runtime (5.412047ms)
+✔ Uncertified Google/Brevo/Make connection routes reject invalid OS sessions before storage or provider I/O (143.592415ms)
+✔ a verified native session cannot unlock Google credentials or Make configuration before connector certification (91.283897ms)
+✔ monitor disabled by default and fails closed in Recette without touching database/transport (1.176193ms)
+✔ read adapter has no send method and cannot construct SMTP; incomplete IMAP batch never advances cursor (23.987069ms)
+✔ existing scheduler rejects missing/incorrect cron authentication before service work (2218.900804ms)
+ℹ tests 30
+ℹ suites 0
+ℹ pass 30
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4201.292482

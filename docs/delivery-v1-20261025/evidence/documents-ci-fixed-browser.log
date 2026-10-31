@@ -1,0 +1,15 @@
+✔ browser: folder navigation, breadcrumb and pagination (3955.080557ms)
+✔ browser: search and document reading display text and Brain recommendation (2334.002075ms)
+✔ browser: non-extractible, invalid and oversized PDF errors remain explicit and ignore provider secrets (2927.491939ms)
+✔ browser: creation and upload use current folder and refresh listing (2369.5403ms)
+✔ browser: move selects a destination, requires confirmation and refreshes (3099.697024ms)
+✔ browser: a late folder response cannot overwrite the current folder (2908.909278ms)
+✔ browser: missing explicit documentary scope refuses before read POST (1654.850729ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 19874.241197

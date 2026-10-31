@@ -1,5 +1,6 @@
 export interface OAuthTokenSet {
   accessToken: string;
+  idToken?: string;
   refreshToken?: string;
   tokenType?: string;
   expiresAt?: number;
@@ -33,6 +34,7 @@ export interface OAuthProviderDefinition {
 
 export interface OAuthStatePayload {
   provider: string;
+  native?: {userId:string;clientId:string;projectId:string;sessionId:string};
   connectionId: string;
   workspaceId: string;
   nonce: string;
