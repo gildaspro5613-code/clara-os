@@ -14,7 +14,7 @@ const post=body=>fetch(origin+'/api/native/runtime',{method:'POST',headers:{cook
 test('781 composition Cockpit: actual native mission, five languages and responsive navigation without provider activation',async t=>{
  const created=await post({action:'createSession',workspaceId:'w',clientId:'c1',projectId:'p1'});assert.equal(created.status,200);
  const sessionId=(await created.json()).data.sessionId,selection=created.headers.get('set-cookie').split(';')[0];
- const response=await fetch(origin+'/api/native/runtime',{method:'POST',headers:{cookie:cookie+'; '+selection,origin,'Content-Type':'application/json'},body:JSON.stringify({action:'createMission',title:'HISTORICAL_AUTHORIZED_MISSION',objective:'Technical preparation with authorized evidence only'})});assert.equal(response.status,200);
+ const response=await fetch(origin+'/api/native/runtime',{method:'POST',headers:{cookie:cookie+'; '+selection,origin,'Content-Type':'application/json'},body:JSON.stringify({action:'createMission',title:'Préparer la prestation d’Angers',objective:'Vérifier les besoins techniques, les documents et les échéances.'})});assert.equal(response.status,200);
  process.env.CLARA_CREDENTIALS_ENCRYPTION_KEY=Buffer.alloc(32,9).toString('base64');
  const display=verifiedGoogleDisplayCookie('A'.repeat(43),'Gildas',true);assert(display.value);
  const pin=createHash('sha256').update(new X509Certificate(readFileSync('/tmp/native-runtime-cert.pem')).publicKey.export({type:'spki',format:'der'})).digest('base64');
@@ -31,7 +31,7 @@ test('781 composition Cockpit: actual native mission, five languages and respons
     const overviewReady=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/native/mail'&&new URL(r.url()).searchParams.get('action')==='overview');
     await page.goto(origin);await (await overviewReady).finished();await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));await page.locator('[data-cockpit-hero]').waitFor();
     assert.equal(await page.locator('[data-cockpit-context], [data-context-loading], [data-native-business-context]').count(),0);
-    const hero=page.locator('[data-cockpit-hero]');await hero.getByText('HISTORICAL_AUTHORIZED_MISSION',{exact:true}).filter({visible:true}).first().waitFor();
+    const hero=page.locator('[data-cockpit-hero]');await hero.getByText('Préparer la prestation d’Angers',{exact:true}).filter({visible:true}).first().waitFor();
     await page.evaluate(()=>document.fonts.ready);
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,locale+' '+device+' overflow');
     assert.equal(await hero.locator('img').count(),0);
@@ -64,11 +64,11 @@ test('781 composition Cockpit: actual native mission, five languages and respons
   await page.getByRole('button',{name:widgetUi.go,exact:true}).click();await page.getByText(widgetMessages.navigationTemporarilyUnavailable,{exact:true}).waitFor();await page.unroute('**/api/waze?**');
   assert(!requests.some(r=>/voice|elevenlabs|telephony/.test(r.path)));
   const forbidden=await fetch(origin+'/api/native/runtime?'+new URLSearchParams({workspaceId:'w',clientId:'c1',projectId:'p1',sessionId}),{headers:{cookie:'clara_auth_session='+'B'.repeat(43)}});assert.equal(forbidden.status,403);
-  const nativeState=await page.request.get(origin+'/api/native/runtime');assert.equal(nativeState.status(),200);const resolved=await nativeState.json();assert.deepEqual(resolved.data,{workspaceId:'w',clientId:'c1',projectId:'p1',sessionId});assert.equal(resolved.permissions.read,true);assert.equal(resolved.session.mission.title,'HISTORICAL_AUTHORIZED_MISSION');assert.ok(resolved.missions.some(m=>m.title==='HISTORICAL_AUTHORIZED_MISSION'));
+  const nativeState=await page.request.get(origin+'/api/native/runtime');assert.equal(nativeState.status(),200);const resolved=await nativeState.json();assert.deepEqual(resolved.data,{workspaceId:'w',clientId:'c1',projectId:'p1',sessionId});assert.equal(resolved.permissions.read,true);assert.equal(resolved.session.mission.title,'Préparer la prestation d’Angers');assert.ok(resolved.missions.some(m=>m.title==='Préparer la prestation d’Angers'));
   // Read-only navigation links must not produce a second mission.
   const count=()=>pg("SELECT count(*) FROM clara_missions");const before=count();
   await page.setViewportSize({width:1536,height:1000});const sidebar=page.locator('aside');if(!await sidebar.isVisible())await page.locator('button[aria-controls]').filter({visible:true}).first().click();await sidebar.locator('a[href="/conversations"]').click();await page.waitForURL(origin+'/conversations');
-  await page.goto(origin);await page.locator('[data-cockpit-hero]').waitFor();await page.reload();await page.locator('[data-cockpit-hero]').getByText('HISTORICAL_AUTHORIZED_MISSION',{exact:true}).filter({visible:true}).first().waitFor();assert.equal(count(),before);
+  await page.goto(origin);await page.locator('[data-cockpit-hero]').waitFor();await page.reload();await page.locator('[data-cockpit-hero]').getByText('Préparer la prestation d’Angers',{exact:true}).filter({visible:true}).first().waitFor();assert.equal(count(),before);
   const chat=page.locator('[data-cockpit-widgets] form').last();
   const query='CONSULTATION_CONTEXT_ONLY_NO_NEW_MISSION';
   await chat.locator('textarea').fill(query);

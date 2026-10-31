@@ -90,6 +90,7 @@ on:
       - 'src/app/actions/account-profile.ts'
       - 'src/tests/header-account*'
       - 'src/tests/header-search*'
+      - 'src/tests/cockpit-capabilities*'
       - 'src/app/actions/header-search.ts'
       - 'src/app/api/auth/google/callback/route.ts'
       - 'src/app/api/auth/session/logout/route.ts'
@@ -156,7 +157,7 @@ jobs:
       - run: npx eslint src/lib/connectors/ionos src/lib/acquisition/mailbox-communication-draft.ts src/tests/native-mail* src/tests/native-functional-closure* src/components/contacts/ContactsDirectory.tsx src/tests/ionos-transport.test.ts src/tests/helpers/native-mail*
       - run: npx eslint src/tests/helpers/native-browser-diagnostics.mjs src/tests/native-conversation* src/tests/cockpit-availability* src/tests/helpers/native-conversation* src/lib/native/chat.ts src/components/cockpit/widgets/clara/ClaraChatWidget.tsx src/lib/external-capabilities/event-jobs.ts src/components/layout/Header.tsx src/components/clara/ClaraVoiceWidget.tsx src/tests/historical-cockpit.test.ts src/tests/google-display-name.test.ts src/lib/auth/google-display-name.ts src/lib/auth/google-sign-in.ts src/app/api/auth/google/callback/route.ts src/app/api/auth/session/logout/route.ts src/tests/historical-production-cockpit-browser.e2e.mjs src/components/cockpit/widgets/CockpitActionBar.tsx src/components/cockpit/panels/TasksPanel.tsx src/components/cockpit/Stage.tsx src/components/cockpit/hero/Hero.tsx src/components/cockpit/Cockpit.tsx src/components/cockpit/widgets/CockpitWidgets.tsx src/app/page.tsx
       - run: npx eslint src/tests/native-mission-contact* src/tests/native-google-work* src/tests/helpers/native-google-work*
-      - run: npx eslint src/components/layout/UserAccountMenu.tsx src/lib/auth/account-profile.ts src/app/actions/account-profile.ts src/tests/header-account* src/tests/header-search* src/app/actions/header-search.ts
+      - run: npx eslint src/components/layout/UserAccountMenu.tsx src/lib/auth/account-profile.ts src/app/actions/account-profile.ts src/tests/header-account* src/tests/header-search* src/tests/cockpit-capabilities* src/app/actions/header-search.ts
       - name: Optimized local app build in GitHub only
         run: npm run build
         env:
@@ -237,6 +238,7 @@ jobs:
           done
           test "$ready" = true
           NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node --import tsx --test src/tests/header-search-browser.e2e.mjs
+          NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node --import tsx --test src/tests/cockpit-capabilities-browser.e2e.mjs
           NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node --import tsx --test src/tests/header-account-browser.e2e.mjs
       - name: Stop isolated fixture
         if: always()
