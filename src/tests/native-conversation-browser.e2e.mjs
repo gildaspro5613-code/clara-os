@@ -22,8 +22,35 @@ test('native conversation UI: immutable Mission/client, lost acknowledgement + r
  assert.equal((await call(a.cookie,'/api/clara/chat',{operationId:randomUUID(),message:'LOT4BIS_TURN_A',sessionId:a.sessionId})).status,200);
  assert.equal((await call(a.cookie,'/api/native/runtime',{action:'createMission',title:'MUST_NOT_CREATE_B',objective:'No reassignment'})).status,409);
  assert.equal((await call(a.cookie,'/api/native/runtime',{action:'selectMission',missionId:mb})).status,409);
- const current=(await (await call(a.cookie,'/api/native/runtime')).json()).session;assert.equal(current.mission.id,ma);assert.ok(!JSON.stringify(current).includes('LOT4BIS_MISSION_B'));
+ // a and b are different threads of the SAME authenticated user/project.
+ // The native registry may expose both authorized missions, never B's history
+ // or a silent reassignment of the mission bound to thread a.
+ assert.equal((await call(b.cookie,'/api/clara/chat',{operationId:randomUUID(),message:'LOT4BIS_THREAD_B_ONLY',sessionId:b.sessionId})).status,200);
+ const currentView=await (await call(a.cookie,'/api/native/runtime')).json(),current=currentView.session;
+ assert.deepEqual(currentView.data,{workspaceId:'w',clientId:'c1',projectId:'p2',sessionId:a.sessionId});
+ assert.equal(current.mission.id,ma);assert.equal(current.nativeMissionId,ma);
+ assert.equal(current.brainDashboard.context.sessionId,a.sessionId);
+ for(const [key,value] of Object.entries({workspaceId:'w',clientId:'c1',projectId:'p2'}))assert.equal(current.brainDashboard.context.metadata[key],value);
+ const allowed=new Map(currentView.missions.map(m=>[m.id,m.title]));assert.equal(allowed.get(ma),'LOT4BIS_MISSION_A');assert.equal(allowed.get(mb),'LOT4BIS_MISSION_B');
+ for(const sources of [current.sources,current.brainDashboard.sources]){
+  const registry=sources.filter(source=>source.source==='native-missions');assert.equal(registry.length,1);assert.equal(registry[0].available,true);
+  const data=registry[0].data;assert.deepEqual(data.scope,currentView.data);assert.equal(data.selectedMissionId,ma);
+  assert.equal(data.totalAuthorized,allowed.size);assert.equal(data.partial,false);
+  assert.deepEqual(data.missions.map(m=>m.id).sort(),[...allowed.keys()].sort());
+  for(const m of data.missions)assert.equal(m.title,allowed.get(m.id),'Registry entries must match the SQL-authorized view');
+  assert.ok(data.missions.some(m=>m.id===mb&&m.title==='LOT4BIS_MISSION_B'&&m.objective==='LOT4BIS_MISSION_B'));
+  const {source,policy,...summary}=JSON.parse(registry[0].summary);assert.equal(source,'native-missions');assert.equal(typeof policy,'string');assert.deepEqual(summary,data);
+  assert.ok(sources.filter(source=>source.source!=='native-missions').every(source=>!JSON.stringify(source).includes('LOT4BIS_MISSION_B')));
+ }
+ const {sources:registrySources,brainDashboard,...thread}=current;assert.ok(registrySources);
+ const {sources:brainSources,...brain}=brainDashboard;assert.ok(brainSources);
+ assert.ok(!JSON.stringify({thread,brain}).includes('LOT4BIS_MISSION_B'),'The sibling mission is read context only, never a reassignment of this thread');
+ assert.ok(!JSON.stringify(current).includes('LOT4BIS_THREAD_B_ONLY'),'Sibling conversation content must not enter this thread or its Brain context');
+ const sibling=(await (await call(b.cookie,'/api/native/runtime')).json()).session;assert.equal(sibling.mission.id,mb);assert.equal(sibling.nativeMissionId,mb);
+ assert.ok(sibling.conversation.some(m=>m.content==='LOT4BIS_THREAD_B_ONLY'));assert.ok(!JSON.stringify(sibling.conversation).includes('LOT4BIS_TURN_A'));
+ assert.equal((await call(a.cookie.replace('A'.repeat(43),'B'.repeat(43)),'/api/native/runtime')).status,403,'Another canonical user cannot read thread a');
  const otherClient=await create('c2','p3');assert.equal((await call(otherClient.cookie,'/api/native/runtime',{action:'selectMission',missionId:ma})).status,403);
+ for(const scope of [otherClient,await create('c1','p1')]){const isolated=await (await call(scope.cookie,'/api/native/runtime')).json();assert.ok(isolated.missions.every(m=>m.id!==ma&&m.id!==mb));assert.ok(!JSON.stringify(isolated.session).includes('LOT4BIS_MISSION_B'));assert.ok(!JSON.stringify(isolated.session).includes('LOT4BIS_THREAD_B_ONLY'));}
  const pin=createHash('sha256').update(new X509Certificate(readFileSync('/tmp/native-runtime-cert.pem')).publicKey.export({type:'spki',format:'der'})).digest('base64');
  const browser=await chromium.launch({executablePath:process.env.DOCUMENTS_E2E_CHROMIUM,headless:true,args:['--no-sandbox','--ignore-certificate-errors-spki-list='+pin]});
  try{
