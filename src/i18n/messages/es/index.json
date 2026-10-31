@@ -379,6 +379,8 @@
     "profileDescription": "Cuenta de usuario",
     "connections": "Conexiones",
     "connectionsDescription": "Servicios autorizados",
-    "signOut": "Cerrar sesión"
+    "signOut": "Cerrar sesión",
+    "logoutConfirm": "¿Confirmar el cierre de sesión de Clara OS?",
+    "logoutError": "No se pudo cerrar sesión. Inténtalo de nuevo."
   }
 }
