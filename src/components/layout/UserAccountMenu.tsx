@@ -16,7 +16,7 @@ export default function UserAccountMenu(){
  useEffect(()=>{if(!open)return;window.addEventListener('resize',positionMenu);return()=>window.removeEventListener('resize',positionMenu);},[open,positionMenu]);
  async function loadProfile(){const version=++generation.current;setProfile(null);try{const result=await accountProfile();if(version===generation.current)setProfile(result);}catch{if(version===generation.current)setProfile({state:'unavailable'});}}
  async function logout(){
-  if(busy||!window.confirm(ui('uiLogoutConfirm')))return;
+  if(busy||!window.confirm(t('logoutConfirm')))return;
   setBusy(true);setError(false);
   try{const response=await fetch('/api/auth/session/logout',{method:'POST',credentials:'same-origin'}),result=await response.json();if(!response.ok||result.success!==true)throw Error();close();window.location.replace('/');}
   catch{setError(true);}finally{setBusy(false);}
@@ -45,7 +45,7 @@ export default function UserAccountMenu(){
    <button type="button" className="mt-2 flex w-full items-center gap-3 rounded-xl border border-cyan-300/10 bg-[#101E30] p-3 text-left focus-visible:outline focus-visible:outline-cyan-200" onClick={()=>{close();button.current?.closest('header')?.querySelector<HTMLSelectElement>('select')?.focus();}}><Settings2 size={18} className="shrink-0 text-cyan-300" aria-hidden="true"/><span className="flex-1"><span className="block font-medium">{t('preferences')}</span><span className="mt-0.5 block text-xs text-slate-400">{common('language')} ({locale.toUpperCase()})</span></span><ChevronRight size={16} className="text-cyan-300/70" aria-hidden="true"/></button>
    <a href="/connexions" onClick={close} className="mt-2 flex items-center gap-3 rounded-xl border border-cyan-300/10 bg-[#101E30] p-3 focus-visible:outline focus-visible:outline-cyan-200"><Plug size={18} className="shrink-0 text-cyan-300" aria-hidden="true"/><span className="flex-1"><span className="block font-medium">{t('connections')}</span><span className="mt-0.5 block text-xs text-slate-400">{t('connectionsDescription')}</span></span><ChevronRight size={16} className="text-cyan-300/70" aria-hidden="true"/></a>
    <div className="mt-3 border-t border-cyan-300/15 pt-3"><button type="button" aria-label={common('logout')} disabled={busy} className="flex w-full items-center gap-3 rounded-xl border border-cyan-300/10 bg-[#101E30] p-3 text-left disabled:opacity-50 focus-visible:outline focus-visible:outline-cyan-200" onClick={()=>void logout()}><LogOut size={18} className="shrink-0 text-cyan-300" aria-hidden="true"/><span className="flex-1 font-medium">{busy?common('loading'):t('signOut')}</span><ChevronRight size={16} className="text-cyan-300/70" aria-hidden="true"/></button></div>
-   {error&&<p role="alert" className="mt-2 text-sm text-amber-100">{ui('uiLogoutError')}</p>}
+   {error&&<p role="alert" className="mt-2 text-sm text-amber-100">{t('logoutError')}</p>}
   </div>
  </>;
 }
