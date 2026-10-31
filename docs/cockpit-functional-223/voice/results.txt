@@ -1,0 +1,16 @@
+✔ native conversation HTTP entrypoints reject missing/invalid cookies before SQL or transport (101.912879ms)
+✔ product HTTP boundary requires distinct capability and exact configured workspace; no read/archive/hardware fallback (13.389679ms)
+✔ voice authorization uses existing server-owned workspace and operator permissions, rejects foreign origin before auth (68.464537ms)
+✔ four provider routes deny unauthenticated requests before any provider and localize secret-free failures in five languages (84.585529ms)
+✔ native voice guard prevents microphone, signed URL and SDK startup in the actual cockpit handler (20.683295ms)
+✔ legacy cockpit SDK lifecycle reproducer distinguishes transport from native history, resume and revocation (15.506707ms)
+ℹ SDK handoff: onMessage=undefined; history requests=0
+ℹ Disabling an already active component: additional endSession calls=0
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 814.057849
