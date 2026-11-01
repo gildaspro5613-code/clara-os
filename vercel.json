@@ -21,7 +21,8 @@
       "fix/clara-os-operational-delivery-20261027": false,
       "fix/google-native-hub-216": false,
       "fix/clara-os-interface-finalization-20261027": false,
-      "fix/production-existing-capabilities-20261101": false
+      "fix/production-existing-capabilities-20261101": false,
+      "fix/cockpit-operational-finalization-20261101": false
     }
   }
 }
