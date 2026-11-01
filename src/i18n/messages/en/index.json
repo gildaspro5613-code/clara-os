@@ -286,7 +286,11 @@
       "later": "Later",
       "reject": "Decline",
       "remaining": "{count, plural, one {# other decision pending.} other {# other decisions pending.}}"
-    }
+    },
+    "agendaConnectionRequired": "Select an authorized Google connection in Agenda.",
+    "agendaCalendarRequired": "Select an authorized calendar for this project in Agenda.",
+    "agendaSessionExpired": "Sign in again to view your agenda.",
+    "agendaAccessDenied": "This calendar is not accessible with your current permissions."
   },
   "voice": {
     "connecting": "Connecting to Clara…",
@@ -300,7 +304,11 @@
     "failed": "The conversation could not start.",
     "ready": "Clara is ready.",
     "stop": "Stop Clara",
-    "startError": "Unable to start the conversation with Clara."
+    "startError": "Unable to start the conversation with Clara.",
+    "unavailable_configuration": "Voice configuration unavailable.",
+    "unavailable_authorization": "Your voice access needs verification.",
+    "unavailable_network": "Voice verification is temporarily unavailable. Return to this window to try again.",
+    "unavailable_recette": "Live voice is disabled in this environment."
   },
   "brainPage": {
     "subtitle": "What Clara understands, decides and recommends.",

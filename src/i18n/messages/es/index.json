@@ -286,7 +286,11 @@
       "later": "Más tarde",
       "reject": "Rechazar",
       "remaining": "{count, plural, one {# decisión más pendiente.} other {# decisiones más pendientes.}}"
-    }
+    },
+    "agendaConnectionRequired": "Selecciona una conexión Google autorizada en Agenda.",
+    "agendaCalendarRequired": "Selecciona un calendario autorizado para este proyecto en Agenda.",
+    "agendaSessionExpired": "Vuelve a iniciar sesión para ver tu agenda.",
+    "agendaAccessDenied": "Tus permisos actuales no permiten acceder a este calendario."
   },
   "voice": {
     "connecting": "Conectando con Clara…",
@@ -300,7 +304,11 @@
     "failed": "No se pudo iniciar la conversación.",
     "ready": "Clara está lista.",
     "stop": "Detener a Clara",
-    "startError": "No se puede iniciar la conversación con Clara."
+    "startError": "No se puede iniciar la conversación con Clara.",
+    "unavailable_configuration": "Configuración de voz no disponible.",
+    "unavailable_authorization": "Tu acceso de voz necesita verificación.",
+    "unavailable_network": "La verificación de voz no está disponible temporalmente. Vuelve a esta ventana para reintentar.",
+    "unavailable_recette": "La voz real está desactivada en este entorno."
   },
   "brainPage": {
     "subtitle": "Lo que Clara comprende, decide y recomienda.",

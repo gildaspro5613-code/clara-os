@@ -108,3 +108,12 @@ body {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+
+/* Existing cyan palette; no dimensions, panel placement or overflow behavior changed. */
+.clara-glass-scroll, .clara-glass-scroll *, [data-historical-brief], [data-historical-mail], [data-historical-tasks], [data-historical-voice] {
+  scrollbar-width: thin;
+  scrollbar-color: #22b8d6 #0b3645;
+}
+.clara-glass-scroll::-webkit-scrollbar, .clara-glass-scroll *::-webkit-scrollbar, [data-historical-brief]::-webkit-scrollbar, [data-historical-mail]::-webkit-scrollbar, [data-historical-tasks]::-webkit-scrollbar, [data-historical-voice]::-webkit-scrollbar { width: 5px; }
+.clara-glass-scroll::-webkit-scrollbar-track, .clara-glass-scroll *::-webkit-scrollbar-track, [data-historical-brief]::-webkit-scrollbar-track, [data-historical-mail]::-webkit-scrollbar-track, [data-historical-tasks]::-webkit-scrollbar-track, [data-historical-voice]::-webkit-scrollbar-track { background: #0b3645; }
+.clara-glass-scroll::-webkit-scrollbar-thumb, .clara-glass-scroll *::-webkit-scrollbar-thumb, [data-historical-brief]::-webkit-scrollbar-thumb, [data-historical-mail]::-webkit-scrollbar-thumb, [data-historical-tasks]::-webkit-scrollbar-thumb, [data-historical-voice]::-webkit-scrollbar-thumb { background: #22b8d6; border-radius: 9999px; }
