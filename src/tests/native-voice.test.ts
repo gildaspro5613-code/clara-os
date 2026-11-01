@@ -69,7 +69,7 @@ test('voice recovery adopts the existing native pending receipt on 202 without r
   react:{useState:(value:unknown)=>[stateIndex++===1?true:value,()=>{}],useRef:(value:unknown)=>({current:value}),useCallback:(fn:unknown)=>fn,useEffect:()=>{}}
  },{
   window:{dispatchEvent:()=>{}},CustomEvent:class{},
-  URLSearchParams,AbortSignal,
+  URLSearchParams,AbortSignal,AudioContext:class {async resume(){} async close(){}},
   sessionStorage:{getItem:(k:string)=>storage.get(k)??null,setItem:(k:string,v:string)=>storage.set(k,v)},
   setTimeout:()=>1,clearTimeout:()=>{},setInterval:()=>1,clearInterval:()=>{},
   fetch:async(path:string)=>{calls.push(path.split('?')[0]);if(path.startsWith('/api/voice/transcribe'))return Response.json({success:true});if(path.startsWith('/api/clara/chat'))return Response.json({pendingRequest:pending},{status:202});throw Error('No provider call during pending recovery');}
