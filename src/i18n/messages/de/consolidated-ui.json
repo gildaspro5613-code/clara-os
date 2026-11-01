@@ -166,7 +166,7 @@
   "DOCUMENT_TOO_LONG": "Dokument zu lang (maximal 200.000 Zeichen).",
   "sourceOriginal": "Quelldaten · Originalsprache beibehalten",
   "localizedSummary": "Oberflächenübersicht · Quelldaten unverändert",
-  "noCurrentFocus": "Keine Aufgabe im aktuellen Verlauf ausgewählt",
+  "noCurrentFocus": "Kein Auftrag in dieser Unterhaltung ausgewählt.",
   "missionScope": "Aktueller Verlauf; das Aufgabenregister kann weitere Aufgaben enthalten. Die Projektzugehörigkeit ist hier nicht bestätigt.",
   "missionOverview": "{completed} / {total} Aktionen abgeschlossen · {progress} %",
   "reviewNextAction": "Nächste Aktion in den Aufgabendetails prüfen",
@@ -193,7 +193,7 @@
   "nativeNewSession": "Neuen Verlauf erstellen",
   "nativeOpenSession": "Diesen Verlauf öffnen",
   "nativeSelectionError": "Auswahl oder Vorgang abgelehnt. Rechte und Kennungen prüfen.",
-  "nativeSessionId": "Verlaufskennung",
+  "nativeSessionId": "Unterhaltung",
   "nativeMissionTitle": "Missionstitel",
   "nativeMissionObjective": "Missionsziel",
   "nativeCreateMission": "Mission erstellen",
@@ -363,5 +363,10 @@
   "uiChangeContext": "Arbeitsbereich oder Projekt wechseln",
   "uiTechnicalDetails": "Technische Details",
   "googleHubDescription": "Autorisierte Google-Verbindungen für Dokumente und Kalender.",
-  "uiMissionContact": "Mission und Kontakt"
+  "uiMissionContact": "Mission und Kontakt",
+  "googleSelectionThread": "Verbindung und Kalender werden in dieser Unterhaltung gespeichert. Wähle eine bestehende Verbindung und einen freigegebenen Kalender; ausreichende Rechte erfordern keine neue Zustimmung.",
+  "googleCalendarChoose": "Wähle unten einen freigegebenen Kalender.",
+  "googleAgendaReadAvailable": "Kalenderlesen ist verfügbar. Ein Auftrag wird nur für Geschäftsvorgänge benötigt.",
+  "mailChooseAuthorized": "Wähle ein freigegebenes Postfach und aktualisiere die Übersicht.",
+  "mailCachedEmpty": "Keine Nachrichten in der gespeicherten Übersicht. Eine aktuelle Synchronisierung ist damit nicht bestätigt."
 }

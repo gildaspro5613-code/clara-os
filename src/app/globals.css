@@ -117,3 +117,8 @@ body {
 .clara-glass-scroll::-webkit-scrollbar, .clara-glass-scroll *::-webkit-scrollbar, [data-historical-brief]::-webkit-scrollbar, [data-historical-mail]::-webkit-scrollbar, [data-historical-tasks]::-webkit-scrollbar, [data-historical-voice]::-webkit-scrollbar { width: 5px; }
 .clara-glass-scroll::-webkit-scrollbar-track, .clara-glass-scroll *::-webkit-scrollbar-track, [data-historical-brief]::-webkit-scrollbar-track, [data-historical-mail]::-webkit-scrollbar-track, [data-historical-tasks]::-webkit-scrollbar-track, [data-historical-voice]::-webkit-scrollbar-track { background: #0b3645; }
 .clara-glass-scroll::-webkit-scrollbar-thumb, .clara-glass-scroll *::-webkit-scrollbar-thumb, [data-historical-brief]::-webkit-scrollbar-thumb, [data-historical-mail]::-webkit-scrollbar-thumb, [data-historical-tasks]::-webkit-scrollbar-thumb, [data-historical-voice]::-webkit-scrollbar-thumb { background: #22b8d6; border-radius: 9999px; }
+
+/* Existing workspace controls: wrap long selections without changing the Cockpit. */
+.native-context :where(details, form, select, input) { min-width: 0; max-width: 100%; }
+.native-context :where(button, summary) { white-space: normal; overflow-wrap: anywhere; }
+.clara-glass-scroll { min-width: 0; overflow-wrap: anywhere; }

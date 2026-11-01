@@ -166,7 +166,7 @@
   "DOCUMENT_TOO_LONG": "Document too long (200,000 characters maximum).",
   "sourceOriginal": "Source data · original language preserved",
   "localizedSummary": "Interface summary · source data unchanged",
-  "noCurrentFocus": "No mission selected in the current thread",
+  "noCurrentFocus": "No mission selected in this conversation.",
   "missionScope": "Current thread; the Missions registry may contain other missions. Their project ownership is not certified here.",
   "missionOverview": "{completed} / {total} actions completed · {progress}%",
   "reviewNextAction": "Review the next action in mission details",
@@ -193,7 +193,7 @@
   "nativeNewSession": "Create a new thread",
   "nativeOpenSession": "Open this thread",
   "nativeSelectionError": "Selection or operation denied. Check permissions and identifiers.",
-  "nativeSessionId": "Thread identifier",
+  "nativeSessionId": "Conversation",
   "nativeMissionTitle": "Mission title",
   "nativeMissionObjective": "Mission objective",
   "nativeCreateMission": "Create mission",
@@ -363,5 +363,10 @@
   "uiChangeContext": "Change workspace or project",
   "uiTechnicalDetails": "Technical details",
   "googleHubDescription": "Authorized Google connections for documents and calendar.",
-  "uiMissionContact": "Mission and contact"
+  "uiMissionContact": "Mission and contact",
+  "googleSelectionThread": "Your connection and calendar are saved in this conversation. Select an existing connection, then an authorized calendar; no new consent is needed when current permissions suffice.",
+  "googleCalendarChoose": "Choose an authorized calendar below.",
+  "googleAgendaReadAvailable": "Calendar reading is available. A mission is required only for business operations.",
+  "mailChooseAuthorized": "Choose an authorized mailbox, then refresh its snapshot.",
+  "mailCachedEmpty": "No messages in this mailbox’s cached snapshot. This does not confirm a recent synchronization."
 }

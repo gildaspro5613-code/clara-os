@@ -166,7 +166,7 @@
   "DOCUMENT_TOO_LONG": "Documento troppo lungo (massimo 200.000 caratteri).",
   "sourceOriginal": "Dati di origine · lingua originale conservata",
   "localizedSummary": "Riepilogo dell’interfaccia · dati di origine invariati",
-  "noCurrentFocus": "Nessuna missione selezionata nel filo corrente",
+  "noCurrentFocus": "Nessuna missione selezionata in questa conversazione.",
   "missionScope": "Filo corrente; il registro Missioni può contenere altre missioni. Qui non è certificata la loro appartenenza al progetto.",
   "missionOverview": "{completed} / {total} azioni completate · {progress} %",
   "reviewNextAction": "Consulta la prossima azione nei dettagli della missione",
@@ -193,7 +193,7 @@
   "nativeNewSession": "Crea un nuovo thread",
   "nativeOpenSession": "Apri questo thread",
   "nativeSelectionError": "Selezione o operazione negata. Verifica permessi e identificatori.",
-  "nativeSessionId": "Identificativo del thread",
+  "nativeSessionId": "Conversazione",
   "nativeMissionTitle": "Titolo della missione",
   "nativeMissionObjective": "Obiettivo della missione",
   "nativeCreateMission": "Crea missione",
@@ -363,5 +363,10 @@
   "uiChangeContext": "Cambia spazio o progetto",
   "uiTechnicalDetails": "Dettagli tecnici",
   "googleHubDescription": "Connessioni Google autorizzate per documenti e calendario.",
-  "uiMissionContact": "Missione e contatto"
+  "uiMissionContact": "Missione e contatto",
+  "googleSelectionThread": "Connessione e calendario vengono salvati in questa conversazione. Scegli una connessione esistente e un calendario autorizzato; non serve un nuovo consenso se i permessi attuali bastano.",
+  "googleCalendarChoose": "Scegli un calendario autorizzato qui sotto.",
+  "googleAgendaReadAvailable": "La lettura del calendario è disponibile. Solo le operazioni aziendali richiedono una missione.",
+  "mailChooseAuthorized": "Scegli una casella autorizzata e aggiorna la panoramica.",
+  "mailCachedEmpty": "Nessun messaggio nella panoramica salvata. Questo non conferma una sincronizzazione recente."
 }

@@ -101,7 +101,7 @@ export default function ClaraVoiceWidget({disabled=true,scope}:{disabled?:boolea
         </div>
 
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
             <div className="flex h-5 items-center gap-[3px]">
               {[3, 7, 11, 6, 9, 4, 8, 5, 10].map(
                 (height, index) => (
@@ -129,7 +129,7 @@ export default function ClaraVoiceWidget({disabled=true,scope}:{disabled?:boolea
               )}
             </div>
 
-            <span className="text-[11px] uppercase tracking-[0.18em] text-white/45">
+            <span className="min-w-0 break-words text-[11px] uppercase tracking-[0.18em] text-white/45">
               {label}
             </span>
           </div>

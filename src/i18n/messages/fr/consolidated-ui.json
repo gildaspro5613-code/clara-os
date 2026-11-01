@@ -166,7 +166,7 @@
   "DOCUMENT_TOO_LONG": "Document trop long (200 000 caractères maximum).",
   "sourceOriginal": "Données source · langue d’origine conservée",
   "localizedSummary": "Synthèse d’interface · sans modification des données source",
-  "noCurrentFocus": "Aucune mission sélectionnée dans le fil courant",
+  "noCurrentFocus": "Aucune mission sélectionnée dans cette conversation.",
   "missionScope": "Fil courant ; le registre Missions peut contenir d’autres missions. Leur appartenance au projet n’est pas certifiée ici.",
   "missionOverview": "{completed} / {total} actions terminées · {progress} %",
   "reviewNextAction": "Consulter la prochaine action dans le détail de la mission",
@@ -193,7 +193,7 @@
   "nativeNewSession": "Créer un nouveau fil",
   "nativeOpenSession": "Ouvrir ce fil",
   "nativeSelectionError": "Sélection ou opération refusée. Vérifiez vos droits et les identifiants.",
-  "nativeSessionId": "Identifiant du fil",
+  "nativeSessionId": "Conversation",
   "nativeMissionTitle": "Titre de la mission",
   "nativeMissionObjective": "Objectif de la mission",
   "nativeCreateMission": "Créer la mission",
@@ -363,5 +363,10 @@
   "uiChangeContext": "Changer d’espace ou de projet",
   "uiTechnicalDetails": "Détails techniques",
   "googleHubDescription": "Connexions Google autorisées pour les documents et l’agenda.",
-  "uiMissionContact": "Mission et contact"
+  "uiMissionContact": "Mission et contact",
+  "googleSelectionThread": "Ta connexion et ton calendrier sont conservés dans cette conversation. Choisis une connexion existante, puis un calendrier autorisé ; aucun nouveau consentement n’est nécessaire si les droits actuels suffisent.",
+  "googleCalendarChoose": "Choisis un calendrier autorisé ci-dessous.",
+  "googleAgendaReadAvailable": "Lecture du calendrier disponible. Une mission est nécessaire uniquement pour les opérations métier.",
+  "mailChooseAuthorized": "Choisis une boîte autorisée, puis actualise son aperçu.",
+  "mailCachedEmpty": "Aucun message dans l’aperçu enregistré de cette boîte. Cela ne confirme pas une synchronisation récente."
 }
