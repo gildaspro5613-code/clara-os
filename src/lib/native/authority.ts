@@ -62,7 +62,8 @@ export async function nativeOperationFence(request:Request,operation?:'google-ca
       const {googleWorkCommand}=await import('./google-work');
       await withNativeScope(request,false,async()=>{
         const ctx=nativeContext()!,connectionId=ctx.session.googleConnectionId,calendarId=ctx.session.googleCalendarId;
-        if(!connectionId||!calendarId)throw new RegistryError(503,'NATIVE_SCOPED_OPERATION_UNAVAILABLE');
+        if(!connectionId)throw new RegistryError(503,'NATIVE_GOOGLE_CONNECTION_REQUIRED');
+        if(!calendarId)throw new RegistryError(503,'NATIVE_GOOGLE_CALENDAR_REQUIRED');
         const caps=await googleWorkCommand('capabilities',{connectionId});if(!caps.calendar)throw new RegistryError(403,'GOOGLE_CONSENT_REQUIRED');
         const resources=await googleWorkCommand('resources',{connectionId});
         const bound=(resources.resources as Array<{kind:string;metadata:{id:string}}>).some(r=>r.kind==='calendar'&&r.metadata.id===calendarId);

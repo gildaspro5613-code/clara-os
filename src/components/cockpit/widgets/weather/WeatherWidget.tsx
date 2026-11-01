@@ -33,7 +33,7 @@ export default function WeatherWidget() {
 
         const data: WeatherResponse = await response.json();
 
-        if (!response.ok || !data.success) {
+        if (!response.ok || !data.success || typeof data.temperatureC!=='number' || !Number.isFinite(data.temperatureC) || !data.condition?.trim() || !data.location?.trim()) {
           throw new Error(
             data.message ?? t("weatherUnavailable"),
           );
@@ -58,7 +58,7 @@ export default function WeatherWidget() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [t]);
 
   return (
     <GlassPanel>
@@ -99,7 +99,7 @@ export default function WeatherWidget() {
         <div className="mt-5">
           <div className="flex items-end gap-3">
             <span className="text-4xl font-light tracking-tight text-white">
-              {Math.round(weather.temperatureC ?? 0)}°
+              {Math.round(weather.temperatureC!)}°
             </span>
 
             <div className="pb-1">

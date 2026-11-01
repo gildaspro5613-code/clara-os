@@ -14,9 +14,10 @@ const MAX_AUDIO_BYTES = 15 * 1024 * 1024;
 export async function GET(request:Request){
  if(!hasNativeVoiceScope(request))return Response.json({success:false},{status:403});
  return nativeVoiceOperation(request,async()=>{
-  assertRecetteExternalExecutionBlocked("elevenlabs.voice-readiness");
-  if(!elevenLabsConfig.apiKey||!elevenLabsConfig.voiceId)return Response.json({success:false,code:"NATIVE_VOICE_UNAVAILABLE"},{status:503});
-  return Response.json({success:true});
+  try{assertRecetteExternalExecutionBlocked("elevenlabs.voice-readiness");}catch{return Response.json({success:false,code:"NATIVE_VOICE_EXTERNAL_EXECUTION_BLOCKED"},{status:503});}
+  if(!elevenLabsConfig.apiKey)return Response.json({success:false,code:"NATIVE_VOICE_CONFIG_API_KEY_MISSING"},{status:503});
+  if(!elevenLabsConfig.voiceId)return Response.json({success:false,code:"NATIVE_VOICE_CONFIG_VOICE_ID_MISSING"},{status:503});
+  return Response.json({success:true,code:"NATIVE_VOICE_READY",providerChecked:false});
  });
 }
 export async function POST(request: Request) {

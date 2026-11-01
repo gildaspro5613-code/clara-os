@@ -28,7 +28,7 @@ export default function ClaraVoiceWidget({disabled=true,scope}:{disabled?:boolea
             ? t("retry")
             : t("talk");
 
-  const description = blocked?ui("nativeProviderBlocked"):
+  const description = blocked?(voice.unavailable?t("unavailable_"+voice.unavailable):ui("nativeProviderBlocked")):
     state === "connecting"
       ? t("initializing")
       : state === "speaking"

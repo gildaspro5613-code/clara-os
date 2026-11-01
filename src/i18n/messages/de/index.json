@@ -286,7 +286,11 @@
       "later": "Später",
       "reject": "Ablehnen",
       "remaining": "{count, plural, one {# weitere Entscheidung ausstehend.} other {# weitere Entscheidungen ausstehend.}}"
-    }
+    },
+    "agendaConnectionRequired": "Wähle eine autorisierte Google-Verbindung in der Agenda.",
+    "agendaCalendarRequired": "Wähle einen autorisierten Kalender für dieses Projekt in der Agenda.",
+    "agendaSessionExpired": "Melde dich erneut an, um deine Agenda zu sehen.",
+    "agendaAccessDenied": "Mit deinen aktuellen Rechten ist dieser Kalender nicht zugänglich."
   },
   "voice": {
     "connecting": "Verbindung mit Clara…",
@@ -300,7 +304,11 @@
     "failed": "Das Gespräch konnte nicht gestartet werden.",
     "ready": "Clara ist bereit.",
     "stop": "Clara anhalten",
-    "startError": "Das Gespräch mit Clara konnte nicht gestartet werden."
+    "startError": "Das Gespräch mit Clara konnte nicht gestartet werden.",
+    "unavailable_configuration": "Sprachkonfiguration nicht verfügbar.",
+    "unavailable_authorization": "Dein Sprachzugriff muss geprüft werden.",
+    "unavailable_network": "Sprachprüfung vorübergehend nicht verfügbar. Kehre zum erneuten Prüfen in dieses Fenster zurück.",
+    "unavailable_recette": "Echte Sprachausgabe ist in dieser Umgebung deaktiviert."
   },
   "brainPage": {
     "subtitle": "Was Clara versteht, entscheidet und empfiehlt.",

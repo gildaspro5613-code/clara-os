@@ -24,6 +24,7 @@ interface CalendarResponse {
   success: boolean;
   events: CalendarEvent[];
   message?: string;
+  code?:string;
 }
 
 function formatTime(event: CalendarEvent, locale: string, allDay: string) {
@@ -46,32 +47,36 @@ export default function AgendaWidget() {
   const locale = useLocale();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string|null>(null);
 
   useEffect(() => {
-    let cancelled = false;
+    let cancelled = false;let sequence=0;let controller:AbortController|undefined;
 
     async function loadAgenda() {
+      const current=++sequence;controller?.abort();controller=new AbortController();setLoading(true);
       try {
         const response = await fetch(todayCalendarUrl(), {
           cache: "no-store",
+          signal:controller.signal,
         });
 
         const data: CalendarResponse = await response.json();
 
         if (!response.ok || !data.success) {
-          throw new Error(data.message ?? t("agendaUnavailable"));
+          const key=data.code==='NATIVE_GOOGLE_CONNECTION_REQUIRED'?'agendaConnectionRequired':data.code==='NATIVE_GOOGLE_CALENDAR_REQUIRED'?'agendaCalendarRequired':response.status===401?'agendaSessionExpired':response.status===403?'agendaAccessDenied':'agendaTemporarilyUnavailable';
+          if(!cancelled&&current===sequence){setEvents([]);setError(t(key));}return;
         }
 
-        if (!cancelled) {
-          setEvents(data.events ?? []);setError(false);
+        if (!cancelled&&current===sequence) {
+          if(!Array.isArray(data.events))throw Error("Invalid calendar response");
+          setEvents(data.events);setError(null);
         }
       } catch {
-        if (!cancelled) {
-          setError(true);
+        if (!cancelled&&current===sequence) {
+          setEvents([]);setError(t("agendaTemporarilyUnavailable"));
         }
       } finally {
-        if (!cancelled) {
+        if (!cancelled&&current===sequence) {
           setLoading(false);
         }
       }
@@ -81,7 +86,7 @@ export default function AgendaWidget() {
     const changed=()=>{void loadAgenda();};window.addEventListener("clara:google-work-updated",changed);
 
     return () => {
-      cancelled = true;window.removeEventListener("clara:google-work-updated",changed);
+      cancelled = true;controller?.abort();window.removeEventListener("clara:google-work-updated",changed);
     };
   }, [t]);
 
@@ -125,7 +130,7 @@ export default function AgendaWidget() {
         </div>
 
         <span className="text-xs text-white/35">
-          {t("eventCount", {count: events.length})}
+          {loading||error?"—":t("eventCount", {count: events.length})}
         </span>
       </div>
 
@@ -137,7 +142,7 @@ export default function AgendaWidget() {
 
       {!loading && error && (
         <div className="py-6 text-sm text-white/45">
-          {t("agendaTemporarilyUnavailable")}
+          {error}
         </div>
       )}
 

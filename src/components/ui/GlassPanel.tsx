@@ -14,6 +14,7 @@ export default function GlassPanel({
   return (
     <section
       className={`
+        clara-glass-scroll
         relative
         overflow-hidden
         rounded-[24px]

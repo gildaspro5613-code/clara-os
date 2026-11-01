@@ -11,6 +11,7 @@ type VoiceState='idle'|'connecting'|'listening'|'processing'|'speaking'|'error';
 export function useClaraRuntimeVoice(disabled:boolean,scope?:NativeSelectors){
  const [state,setState]=useState<VoiceState>('idle');
  const [authorized,setAuthorized]=useState(false);
+ const [unavailable,setUnavailable]=useState<'configuration'|'authorization'|'network'|'recette'|null>(null);
  const resources=useRef<{recorder?:MediaRecorder;stream?:MediaStream;audio?:HTMLAudioElement;url?:string;abort?:AbortController;timer?:ReturnType<typeof setInterval>;deadline?:ReturnType<typeof setTimeout>;epoch:number;active:boolean}>({epoch:0,active:false});
  const key=scope?'clara.pending-chat:'+scope.sessionId:null;
  const query=scope?'?'+new URLSearchParams({...scope}).toString():'';
@@ -32,10 +33,19 @@ export function useClaraRuntimeVoice(disabled:boolean,scope?:NativeSelectors){
  useEffect(()=>{if(disabled){stop();}},[disabled,stop]);
  useEffect(()=>{
   if(disabled||!query)return;
-  const abort=new AbortController();let current=true;
-  fetch('/api/voice/transcribe'+query,{headers:{'x-clara-native-voice':'1'},cache:'no-store',signal:AbortSignal.any([abort.signal,AbortSignal.timeout(3000)])})
-   .then(response=>{if(current)setAuthorized(response.ok);}).catch(()=>{if(current)setAuthorized(false);});
-  return()=>{current=false;abort.abort();};
+  let current=true;let controller:AbortController|undefined;
+  const probe=async()=>{
+   controller?.abort();const abort=new AbortController();controller=abort;
+   try{
+    // Initial/cold-start reads may take longer than an active revocation check.
+    const response=await fetch('/api/voice/transcribe'+query,{headers:{'x-clara-native-voice':'1'},cache:'no-store',signal:AbortSignal.any([abort.signal,AbortSignal.timeout(10000)])});
+    const data=await response.json();if(!current||abort.signal.aborted)return;
+    setAuthorized(response.ok&&data.success===true);
+    setUnavailable(response.ok?null:response.status===401||response.status===403?'authorization':data.code==='NATIVE_VOICE_EXTERNAL_EXECUTION_BLOCKED'?'recette':data.code?.startsWith('NATIVE_VOICE_CONFIG_')?'configuration':'network');
+   }catch{if(current&&!abort.signal.aborted){setAuthorized(false);setUnavailable('network');}}
+  };
+  void probe();window.addEventListener('online',probe);window.addEventListener('focus',probe);
+  return()=>{current=false;controller?.abort();window.removeEventListener('online',probe);window.removeEventListener('focus',probe);};
  },[query,disabled]);
  async function toggle(){
   const r=resources.current;
@@ -106,5 +116,5 @@ export function useClaraRuntimeVoice(disabled:boolean,scope?:NativeSelectors){
    recorder.start();setState('listening');
   }catch{fail();}
  }
- return {state,toggle,authorized,active:!['idle','error'].includes(state)};
+ return {state,toggle,authorized,unavailable,active:!['idle','error'].includes(state)};
 }

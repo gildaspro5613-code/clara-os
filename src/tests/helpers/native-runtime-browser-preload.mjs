@@ -1,7 +1,7 @@
 import {nativeDocumentCognitionFixture} from './native-document-cognition-fixture.mjs';
 import {googleWorkHttp} from './native-google-work-http-fixture.mjs';
 import {generateKeyPairSync,sign} from 'node:crypto';
-import {appendFileSync,writeFileSync,readFileSync} from 'node:fs';
+import {appendFileSync,writeFileSync,readFileSync,existsSync} from 'node:fs';
 import {execFileSync} from 'node:child_process';
 const syntheticKey=generateKeyPairSync('rsa',{modulusLength:2048});
 const publicJwk={...syntheticKey.publicKey.export({format:'jwk'}),kid:'isolated-google-key',use:'sig'};
@@ -16,6 +16,8 @@ globalThis.fetch=async(input,init)=>{
  if(url.hostname==='api.invalid'){
   const body=JSON.parse(String(init?.body));
   const normalized=body.query.replace(/\s+/g,' ').trim();
+  const voiceDelay='/tmp/native-fixture-voice-delay-'+process.env.NATIVE_TEST_DATABASE;
+  if(body.query.startsWith('SELECT clara_native_runtime_command')&&body.params[5]==='write'&&existsSync(voiceDelay)){const delay=JSON.parse(readFileSync(voiceDelay,'utf8')).delayMs;if(delay>0)await new Promise(resolve=>setTimeout(resolve,delay));}
   const logout=normalized==='UPDATE clara_auth_sessions SET revoked_at = NOW() WHERE token_hash = $1 AND revoked_at IS NULL';
   // Existing canonical authentication reads for account display only.
   const accountIdentity=/^SELECT user_id FROM clara_auth_sessions WHERE token_hash = \$1 AND revoked_at IS NULL AND expires_at > NOW\(\) LIMIT 1$/.test(normalized);
@@ -55,6 +57,12 @@ globalThis.fetch=async(input,init)=>{
   if(url.searchParams.get('alt')==='media')return new Response(Buffer.from(state.pdfByFile?.[fileId]??(fileId==='document-b'?state.foreignPdf:state.pdf),'base64'),{headers:{'Content-Type':'application/pdf'}});
   return Response.json({id:fileId,name:fileId==='document-shared'?'Shared project PDF':'Authorized project PDF',mimeType:'application/pdf',size:String(Buffer.from(state.pdf,'base64').length),version:state.versions[fileId],trashed:false,capabilities:{canDownload:true}});
  }
+ if(url.hostname==='api.weatherapi.com'){
+  if(process.env.WEATHER_API_KEY!=='synthetic-weather-test-only'||url.searchParams.get('key')!=='synthetic-weather-test-only')throw Error('Synthetic WeatherAPI only');
+  const state=JSON.parse(readFileSync('/tmp/native-fixture-weather-'+process.env.NATIVE_TEST_DATABASE,'utf8'));
+  if(state.mode==='refused')return Response.json({error:{message:'PRIVATE_PROVIDER_MESSAGE'}},{status:403});
+  return Response.json({location:{name:'Angers',country:'France'},current:{...(state.mode==='invalid'?{}:{temp_c:21}),condition:{text:'Clear'},last_updated_epoch:1700000000}});
+ }
  if(url.hostname==='api.elevenlabs.io'){
   if(process.env.ELEVENLABS_API_KEY!=='synthetic-voice-test-only'||!['/v1/speech-to-text','/v1/text-to-speech/synthetic-voice'].includes(url.pathname))throw Error('Synthetic voice fixture only');
   const path='/tmp/native-fixture-voice-'+process.env.NATIVE_TEST_DATABASE;
@@ -67,7 +75,11 @@ globalThis.fetch=async(input,init)=>{
   const rate=8000,seconds=state.seconds??3,data=Buffer.alloc(rate*seconds*2),wav=Buffer.alloc(44+data.length);
   wav.write('RIFF',0);wav.writeUInt32LE(36+data.length,4);wav.write('WAVEfmt ',8);wav.writeUInt32LE(16,16);wav.writeUInt16LE(1,20);wav.writeUInt16LE(1,22);wav.writeUInt32LE(rate,24);wav.writeUInt32LE(rate*2,28);wav.writeUInt16LE(2,32);wav.writeUInt16LE(16,34);wav.write('data',36);wav.writeUInt32LE(data.length,40);data.copy(wav,44);return new Response(wav,{headers:{'Content-Type':'audio/wav'}});
  }
- if(url.hostname==='api.openai.com'){const serialized=String(init?.body??'');const state=JSON.parse(readFileSync('/tmp/native-fixture-google-state-'+process.env.NATIVE_TEST_DATABASE,'utf8'));if(state.personalityReceipt&&serialized.includes('Tu es Clara, la présence conversationnelle de Clara OS.')){
+ if(url.hostname==='api.openai.com'){const serialized=String(init?.body??'');const state=JSON.parse(readFileSync('/tmp/native-fixture-google-state-'+process.env.NATIVE_TEST_DATABASE,'utf8'));if(state.companyReceipt&&serialized.includes('src/lib/knowledge/melodie-digital/identity.ts')){
+ const composer=serialized.includes('Tu es Clara, la présence conversationnelle de Clara OS.');
+ appendFileSync('/tmp/native-fixture-company-'+process.env.NATIVE_TEST_DATABASE,JSON.stringify({phase:composer?'composer':'reasoning',hasRepositorySource:true,hasEmptyOffers:serialized.includes('offers.ts'),scopePresent:serialized.includes('Projet canonique sélectionné : p1')})+'\n');
+ if(composer)return Response.json({id:'synthetic',object:'response',status:'completed',output_text:'SIMULATED — documented company records received; detailed Services offer and commercial priority remain unestablished.',output:[{id:'synthetic-message',type:'message',status:'completed',role:'assistant',content:[{type:'output_text',text:'SIMULATED — documented company records received; detailed Services offer and commercial priority remain unestablished.',annotations:[]}]}]});
+ }if(state.personalityReceipt&&serialized.includes('Tu es Clara, la présence conversationnelle de Clara OS.')){
  const payload=JSON.parse(serialized),instructions=payload.instructions??'';
  if(!instructions.includes('PERSONNALITÉ HISTORIQUE DE CLARA')||!instructions.includes('No tool use or permission changes')||!instructions.includes('untrusted evidence'))throw Error('Missing existing personality or authority instructions');
  const namePresent=payload.input.includes('Prénom : Camille'),unknownName=payload.input.includes('Prénom : non identifié');
