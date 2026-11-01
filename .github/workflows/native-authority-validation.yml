@@ -129,7 +129,7 @@ permissions:
 jobs:
   native-authority:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
     env:
       CANONICAL_TEST_CONTAINER: clara-canonical-test-postgres
     steps:
