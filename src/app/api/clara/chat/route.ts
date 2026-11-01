@@ -1,3 +1,4 @@
+import {readGoogleDisplayName} from "@/lib/auth/google-display-name";
 import {RegistryError} from '@/lib/canonical/registry';
 import {nativeFailure} from '@/lib/native/authority';
 import {nativeChatRequest,cancelNativeChat} from '@/lib/native/chat';
@@ -75,6 +76,10 @@ async function scopedChat(request:Request) {
     }
 
     const operational = await resolveOperationalContext();
+    const native=nativeContext()!;
+    native.authenticatedFirstName=readGoogleDisplayName(request.headers.get('cookie'),native.scope.digest);
+    // Never promote a historical session default or a user-supplied name into identity.
+    operational.session.user={firstName:native.authenticatedFirstName};
     const persistedBeforeCycle = operational.session;
     const recentConversation = persistedBeforeCycle.conversation
       .slice(-MAX_REASONING_HISTORY)

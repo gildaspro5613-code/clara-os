@@ -24,6 +24,7 @@ test('voice authorization uses existing server-owned workspace and operator perm
  },noNetwork);
  const authorize=loaded.authorizeVoiceRequest as(request:Request)=>Promise<boolean>;
  assert.equal(await authorize(new Request('https://fixture.invalid/api/telephony',{method:'POST',headers:{origin:'https://foreign.invalid',cookie:'canonical-session'}})),false);assert.equal(calls,0);
+ for(const blocked of [new Request('https://fixture.invalid/api/elevenlabs/session?sessionId=native-a'),new Request('https://fixture.invalid/api/elevenlabs/session',{headers:{cookie:'canonical-session; clara_native_selection=synthetic'}}),new Request('https://fixture.invalid/api/elevenlabs/session',{headers:{'x-clara-native-voice':'1'}})])assert.equal(await authorize(blocked),false);assert.equal(calls,0,'No native selection may fall back to global voice authority');
  assert.equal(await authorize(new Request('https://fixture.invalid/api/telephony',{method:'POST',headers:{origin:'https://fixture.invalid',cookie:'canonical-session'}})),true);
  assert.deepEqual(JSON.parse(JSON.stringify(seen[0])),['canonical-session','workspace-A','connections:manage']);
  assert.equal(await authorize(new Request('https://fixture.invalid/api/telephony',{method:'POST',headers:{origin:'https://fixture.invalid',cookie:'caller-workspace-B'}})),false);
@@ -35,6 +36,9 @@ test('four provider routes deny unauthenticated requests before any provider and
  const providerFetch:typeof fetch=async()=>{calls++;return Response.json({detail:'PRIVATE_PROVIDER_SECRET'}, {status:401});};
  const modules:Record<string,unknown>={
   'next/server':{NextResponse:Response},'next-intl/server':{getTranslations:translate},
+  '@/lib/native/voice':{hasNativeVoiceScope:()=>false},
+  '@/lib/native/scoped-context':{nativeCommand:()=>{throw Error('No native scope in legacy test');}},
+  '@/lib/canonical/registry':{RegistryError:Error},
   '@/lib/auth/voice-request-authorization':{authorizeVoiceRequest:async()=>authorized},
   '@/lib/config/elevenlabs':{elevenLabsConfig:{apiKey:'synthetic-key',agentId:'synthetic-agent',voiceId:'synthetic-voice'}},
   '@/lib/connectors/internal/elevenlabs/elevenlabs-engine':{ElevenLabsEngine:class{async textToSpeech(){calls++;return {success:false,error:'PRIVATE_PROVIDER_SECRET'};}}},

@@ -1,10 +1,12 @@
 "use client";
 
-import { BookOpen, Search, UserRound } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 
+import HeaderSearch from "./HeaderSearch";
+import UserAccountMenu from "./UserAccountMenu";
 import LocaleSwitcher from "@/components/ui/LocaleSwitcher";
 import type { Locale } from "@/i18n/types";
 
@@ -30,7 +32,6 @@ export default function Header() {
   const locale = useLocale() as Locale;
 
   const tn = useTranslations("navigation");
-  const tc = useTranslations("common");
 
 
   const pageTitleKey = pageTitleKeys[pathname];
@@ -51,12 +52,7 @@ export default function Header() {
       </div>
 
       <a href="#main-workspace" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-2 focus:z-[70] focus:rounded-xl focus:bg-slate-900 focus:p-3 focus:text-cyan-100">{ui("uiSkipContent")}</a>
-      <div className="mx-5 hidden min-w-0 flex-1 justify-center md:flex xl:mx-8">
-        <Link href="/documents#document-search" className="flex min-h-10 w-full max-w-2xl min-w-0 items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-300 transition hover:border-cyan-400/30 hover:bg-white/10">
-          <Search size={18} className="shrink-0 text-cyan-300" />
-          <span>{ui("uiDocumentSearch")}</span>
-        </Link>
-      </div>
+      <HeaderSearch />
 
       <div className="flex shrink-0 items-center justify-end gap-2 sm:gap-3 xl:w-80 xl:gap-4">
         <div className="hidden min-w-0 items-center gap-2 xl:flex">
@@ -70,13 +66,7 @@ export default function Header() {
           <BookOpen size={19} />
         </Link>
 
-        <div
-          aria-label={tc("profile")}
-          title={ui("claraOSProfile")}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cyan-500 text-sm font-semibold text-white"
-        >
-          <UserRound size={19} aria-hidden="true" />
-        </div>
+        <UserAccountMenu />
       </div>
     </header>
   );

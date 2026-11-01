@@ -66,7 +66,7 @@ export default async function JournalStage({
                 .slice()
                 .reverse()
                 .map((entry) => (
-                  <article
+                  <article id={"entry-"+entry.id}
                     key={entry.id}
                     className="rounded-3xl border border-white/10 bg-white/[0.025] p-7"
                   >

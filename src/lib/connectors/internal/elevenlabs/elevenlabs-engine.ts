@@ -136,6 +136,7 @@ export class ElevenLabsEngine {
    */
   public async textToSpeech(
     context: ElevenLabsContext,
+    signal?: AbortSignal,
   ): Promise<ElevenLabsResult> {
 
     if (!context.text) {
@@ -166,6 +167,7 @@ export class ElevenLabsEngine {
         `?output_format=${encodeURIComponent(outputFormat)}`,
         {
           method: "POST",
+          signal,
           body: JSON.stringify({
             text: context.text,
             model_id: modelId,

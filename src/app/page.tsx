@@ -15,8 +15,8 @@ export default async function HomePage() {
   const operational = await resolveOperationalContext();
 
   return (
-    <MainLayout>
-      <Cockpit displayFirstName={readGoogleDisplayName((await cookies()).toString(),nativeContext()!.scope.digest)} nativeSessionId={nativeContext()!.scope.sessionId} nativeIntake={operational.acquisition?nativeContext()!.intakes.get(operational.acquisition.submissionId)??null:null} nativeMissions={await loadMissions()} session={operational.session} acquisition={operational.acquisition} />
+    <MainLayout hideContext>
+      <Cockpit nativeVoiceScope={{workspaceId:nativeContext()!.scope.workspaceId,clientId:nativeContext()!.scope.clientId,projectId:nativeContext()!.scope.projectId,sessionId:nativeContext()!.scope.sessionId}} displayFirstName={readGoogleDisplayName((await cookies()).toString(),nativeContext()!.scope.digest)} nativeSessionId={nativeContext()!.scope.sessionId} nativeIntake={operational.acquisition?nativeContext()!.intakes.get(operational.acquisition.submissionId)??null:null} nativeMissions={await loadMissions()} session={operational.session} acquisition={operational.acquisition} />
     </MainLayout>
   );
   });

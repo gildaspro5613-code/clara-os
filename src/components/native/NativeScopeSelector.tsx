@@ -3,7 +3,7 @@ import {useEffect,useRef,useState} from 'react';
 import {useRouter} from 'next/navigation';
 import {useTranslations,useLocale} from 'next-intl';
 type Item={id:string;displayName:string};
-export default function NativeScopeSelector(){
+export default function NativeScopeSelector({collapsed=false}:{collapsed?:boolean}){
  const t=useTranslations('ui'),locale=useLocale(),router=useRouter(),generation=useRef(0);
  const [workspaces,setWorkspaces]=useState<string[]>([]),[clients,setClients]=useState<Item[]>([]),[projects,setProjects]=useState<Item[]>([]),[sessions,setSessions]=useState<{sessionId:string;updatedAt:string}[]>([]),[currentScope,setCurrentScope]=useState(''),[activeSessionId,setActiveSessionId]=useState('');
  const [workspaceId,setWorkspace]=useState(''),[clientId,setClient]=useState(''),[projectId,setProject]=useState(''),[sessionId,setSession]=useState('');
@@ -20,7 +20,7 @@ export default function NativeScopeSelector(){
  async function chooseClient(value:string){const version=++generation.current;setClient(value);setProject('');setSession('');setSelected(false);setCanWrite(false);setProjects([]);setMessage('');if(!value)return;try{const data=await registry('listProjects',{workspaceId,clientId:value});if(version===generation.current)setProjects(data);}catch{if(version===generation.current)setMessage(t('nativeSelectionError'));}}
  async function chooseProject(value:string){const version=++generation.current;setProject(value);setSession('');setSessions([]);setSelected(false);setCanWrite(false);setMessage('');if(!value)return;try{const r=await fetch('/api/native/runtime?'+new URLSearchParams({workspaceId,clientId,projectId:value,sessionId:'native:listing',list:'1'}));const b=await r.json();if(!r.ok||!b.success)throw Error();if(version===generation.current){setSessions(b.data.sessions);setCanWrite(b.data.canWrite===true);}}catch{if(version===generation.current)setMessage(t('nativeSelectionError'));}}
  async function command(body:Record<string,string|boolean>){setBusy(true);setMessage('');try{const response=await fetch('/api/native/runtime',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const result=await response.json();if(!response.ok||!result.success)throw Error(result.code);if(body.action==='prepareCommercialDraft')router.push('/clara?intent=email#commercial-draft');else location.reload();}catch(error){setMessage(t(error instanceof Error&&['NATIVE_THREAD_MISSION_BOUND','NATIVE_NEW_SESSION_REQUIRED'].includes(error.message)?'nativeThreadMissionBound':'nativeSelectionError'));}finally{setBusy(false);}}
- return <section data-context-loading={contextLoading} aria-label={t('nativeContextLabel')} className="native-panel native-context border-b border-white/10 text-sm text-white">
+ const content=<section data-context-loading={contextLoading} aria-label={t('nativeContextLabel')} className="native-panel native-context border-b border-white/10 text-sm text-white">
  {needsSignIn&&<a className="underline" href="/api/auth/google/start">{t('signInToViewAuthorizedProjects')}</a>}
  <p className="font-medium text-slate-200">{t('uiWorkspace')}{scopeLabel?' · '+scopeLabel:''}</p>
  {!selected&&projectId&&<p>{t("nativePendingSelection")}</p>}
@@ -40,4 +40,5 @@ export default function NativeScopeSelector(){
  {selected&&missionContact&&missionContact!==selectedContact&&<p role="status" className="mt-3 rounded-xl border border-amber-300/20 bg-amber-300/5 p-3 text-amber-100">{t('nativeMissionContactNewThread')}</p>}
  {message&&<p role="alert">{message}</p>}
  </section>;
+ return collapsed?<details data-cockpit-context className="border-b border-white/10 bg-[#08111F] text-sm text-white"><summary className="cursor-pointer px-4 py-2 text-cyan-200 sm:px-6 lg:px-8">{t("uiChangeContext")}</summary>{content}</details>:content;
 }

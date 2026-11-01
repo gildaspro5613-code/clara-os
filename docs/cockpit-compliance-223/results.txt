@@ -1,0 +1,91 @@
+PR #223 — mise en conformité — validation isolée
+Base : 6ee8d98d8feb06a976152802c15ed6b817d4b88e
+TypeScript : PASS
+Lint ciblé : PASS
+Build Webpack : PASS (polices locales de test)
+git diff --check : PASS
+
+Tests ciblés
+✔ account display: actual canonical PostgreSQL sessions, member rights, exact Google association, revoked/expired contexts and secret-free failures (8631.028303ms)
+✔ only the historical avatar slot changes; header navigation and locale control are preserved (6.36914ms)
+✔ historical Tasks uses the authorized mission rather than the old 82 percent fixture (15.1633ms)
+✔ native historical microphone stays disabled and honest in all five languages (14.830178ms)
+✔ the historical action bar navigates existing pages instead of decorative buttons (5.278346ms)
+Checked 38 native handler refusals.
+[CLARA] instrumentation ready; business runtime is request-scoped
+✔ native session handler rejects missing, malformed and duplicate cookies before storage or global runtime (102.680739ms)
+✔ default, external and absent explicit selectors cannot resume a global/native fallback (1.655402ms)
+✔ every fenced native HTTP handler refuses anonymous/invalid cookies without entering legacy business logic (273.612789ms)
+✔ unavailable authority never leaks storage details or resumes the legacy runtime (5.158987ms)
+✔ even an explicitly authorized snapshot cannot unlock legacy native mutations (17.4017ms)
+✔ all six native server pages return before invoking any global data loader (76.501978ms)
+✔ reopened chat and native runtime/document handlers still refuse invalid authentication before business code (74.872235ms)
+✔ server instrumentation never imports or starts a global business runtime (2.64352ms)
+✔ Uncertified Google/Brevo/Make connection routes reject invalid OS sessions before storage or provider I/O (171.515157ms)
+✔ a verified native session cannot unlock Google credentials or Make configuration before connector certification (82.442718ms)
+✔ actual chat → Brain → authorized PostgreSQL mission registry → composer → durable history, never mission mutation (14299.874428ms)
+✔ mission read helpers refuse absent native context before any global store access (1.124588ms)
+REVIEW_RACE {"status":409,"secondaryMissionRevoked":"1","newMessageIncludesRevokedTitle":false}
+✔ real chat refuses the review race: secondary mission revoked after read and before finish (10233.443789ms)
+CONCURRENT_REVOCATION_FIRST: actual SQL wait observed; HTTP 409; zero new messages; replay 409
+▶ real concurrent PostgreSQL transactions serialize finalization and secondary-mission revocation
+  ✔ revocation owns the row first: finalizer waits, then refuses without persisting the new exchange (2064.571106ms)
+CONCURRENT_FINALIZATION_FIRST: revoker blocked by finalizer; HTTP 200 committed first; later replay 409; history preserved
+  ✔ finalizer owns the read locks first: revocation cannot commit before the message finalization (2232.602294ms)
+  ✔ the active mission is protected even outside the 100-entry registry projection (1345.190074ms)
+✔ real concurrent PostgreSQL transactions serialize finalization and secondary-mission revocation (9772.929667ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 22427.764855
+
+
+Cockpit cinq langues et trois formats
+✔ 781 composition Cockpit: actual native mission, five languages and responsive navigation without provider activation (55063.195947ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 55627.228018
+
+
+Messagerie native et aperçu Hero
+✔ IONOS browser: real handlers/services/PostgreSQL, simulated providers, review/approve/send, Journal/Cockpit and fresh authenticated resume (62796.059147ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 64998.754341
+
+
+Non-régression layout des 13 pages
+UI_VIEWPORT_PASS desktop
+UI_VIEWPORT_PASS tablet
+UI_VIEWPORT_PASS mobile
+UI_LOCALE_PASS fr
+UI_LOCALE_PASS en
+UI_LOCALE_PASS es
+UI_LOCALE_PASS de
+UI_LOCALE_PASS it
+✔ interface receipt: explicit business flow, responsive navigation, five languages, honest provider states and persistence (160568.075824ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 161169.704402
+
+
+PostgreSQL réel jetable, fournisseurs simulés. Aucune certification Production. Aucun merge, déploiement ou migration distante.

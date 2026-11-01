@@ -1,0 +1,131 @@
+PR #223 — finalisation Header — résultats locaux
+TypeScript PASS
+Lint ciblé PASS
+Build Webpack PASS — polices locales de test
+Workflow YAML et shell PASS
+git diff --check PASS
+
+Tests PostgreSQL et sécurité
+✔ Google display metadata is encrypted, bounded and bound to one authenticated session; never an authority (4.43611ms)
+✔ Brief uses verified display identity only, never old session or environment fallback (17.304912ms)
+✔ actual callback attaches display only to a completed Google sign-in, clears it on failure (724.476504ms)
+✔ account display: actual canonical PostgreSQL sessions, member rights, exact Google association, revoked/expired contexts and secret-free failures (7957.017576ms)
+✔ only approved account and search slots change; other header elements and locale control are preserved (7.930352ms)
+✔ header search projects only the existing authorized PostgreSQL snapshot, never writes, and refuses revoked/foreign/expired contexts (7930.477191ms)
+✔ historical Tasks uses the authorized mission rather than the old 82 percent fixture (18.712363ms)
+✔ native historical microphone stays disabled and honest in all five languages (19.690269ms)
+✔ the historical action bar navigates existing pages instead of decorative buttons (6.225615ms)
+Checked 38 native handler refusals.
+[CLARA] instrumentation ready; business runtime is request-scoped
+✔ native session handler rejects missing, malformed and duplicate cookies before storage or global runtime (78.101132ms)
+✔ default, external and absent explicit selectors cannot resume a global/native fallback (1.926371ms)
+✔ every fenced native HTTP handler refuses anonymous/invalid cookies without entering legacy business logic (197.985605ms)
+✔ unavailable authority never leaks storage details or resumes the legacy runtime (3.683518ms)
+✔ even an explicitly authorized snapshot cannot unlock legacy native mutations (15.325311ms)
+✔ all six native server pages return before invoking any global data loader (75.497176ms)
+✔ reopened chat and native runtime/document handlers still refuse invalid authentication before business code (72.666838ms)
+✔ server instrumentation never imports or starts a global business runtime (3.991381ms)
+✔ Uncertified Google/Brevo/Make connection routes reject invalid OS sessions before storage or provider I/O (112.839007ms)
+✔ a verified native session cannot unlock Google credentials or Make configuration before connector certification (99.647482ms)
+✔ actual chat → Brain → authorized PostgreSQL mission registry → composer → durable history, never mission mutation (14582.425022ms)
+✔ mission read helpers refuse absent native context before any global store access (1.083942ms)
+REVIEW_RACE {"status":409,"secondaryMissionRevoked":"1","newMessageIncludesRevokedTitle":false}
+✔ real chat refuses the review race: secondary mission revoked after read and before finish (9569.783433ms)
+CONCURRENT_REVOCATION_FIRST: actual SQL wait observed; HTTP 409; zero new messages; replay 409
+▶ real concurrent PostgreSQL transactions serialize finalization and secondary-mission revocation
+  ✔ revocation owns the row first: finalizer waits, then refuses without persisting the new exchange (2008.631453ms)
+CONCURRENT_FINALIZATION_FIRST: revoker blocked by finalizer; HTTP 200 committed first; later replay 409; history preserved
+  ✔ finalizer owns the read locks first: revocation cannot commit before the message finalization (2392.462578ms)
+  ✔ the active mission is protected even outside the 100-entry registry projection (1414.872875ms)
+✔ real concurrent PostgreSQL transactions serialize finalization and secondary-mission revocation (9518.49453ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 26
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 28019.699628
+
+
+Recherche navigateur cinq langues × trois formats
+✔ header search: real native reads and exact targets, five locales/three formats, keyboard, errors and authority (69394.773574ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 69996.400702
+
+
+Menu et déconnexion native
+✔ historical header account: 5 locales × 3 viewports, native profile, keyboard/outside close, existing language setting and real logout (45948.702297ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 46491.493519
+
+
+Cockpit navigation et reprise
+✔ cockpit: real header navigation, native service refusals and durable chat recovery (22441.181386ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 23137.777673
+
+
+Cockpit composition préservée
+✔ 781 composition Cockpit: actual native mission, five languages and responsive navigation without provider activation (32300.402222ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 32962.059614
+
+
+Documents natifs existants
+✔ documentary browser E2E: canonical selection → mission → pinned OAuth → explicit Google selection → project attestation → PDF/Core/Brain → Journal/Cockpit → fresh resume and revocation (72159.076025ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 72657.366655
+
+
+13 pages — langues et formats
+UI_VIEWPORT_PASS desktop
+UI_VIEWPORT_PASS tablet
+UI_VIEWPORT_PASS mobile
+UI_LOCALE_PASS fr
+UI_LOCALE_PASS en
+UI_LOCALE_PASS es
+UI_LOCALE_PASS de
+UI_LOCALE_PASS it
+✔ interface receipt: explicit business flow, responsive navigation, five languages, honest provider states and persistence (144180.473663ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 144765.222473
+
+
+Aucun fournisseur réel, migration distante, merge ou déploiement. CI distante non attestée depuis cet environnement.

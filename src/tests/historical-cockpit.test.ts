@@ -32,3 +32,14 @@ test('the historical action bar navigates existing pages instead of decorative b
  const html=render(createElement(Actions));assert.equal((html.match(/<a /g)??[]).length,6);assert(!html.includes('<button'));
  for(const href of ['/clara?intent=new-mission','/agenda','/missions','/conversations','/automatisations','/documents'])assert(html.includes('href="'+href+'"'));
 });
+
+test('Mission GlassPanel interface labels are translated in all five languages while stored titles and next actions remain verbatim',()=>{
+ const mission={title:'Préparer la prestation d’Angers',objective:'Vérifier les besoins techniques.',progress:17,nextAction:'Confirmer les horaires avec le régisseur',tasks:[]} as unknown as Mission;
+ for(const locale of ['fr','en','es','de','it']){
+  const messages=JSON.parse(readFileSync(`src/i18n/messages/${locale}/index.json`,'utf8')).cockpitUi;
+  const html=render(createElement(Tasks,{mission}),locale);
+  for(const text of [messages.progress,messages.nextStep,mission.title,mission.objective,mission.nextAction,'17 %'])assert.ok(html.includes(text!),locale+': '+text);
+  assert.ok(!html.includes('HISTORICAL_'));assert.ok(!html.includes('MISSING_MESSAGE'));
+  assert.ok(render(createElement(Tasks,{mission:{...mission,nextAction:undefined}}),locale).includes(messages.noNextAction));
+ }
+});
