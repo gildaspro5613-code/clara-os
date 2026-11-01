@@ -60,8 +60,8 @@ export default function ConversationsPanel({
             </p>
           </div>
         )}
-        <Link href={recentMessages.length > 0 ? "/conversations" : "/clara"} className="inline-flex text-xs text-cyan-400 transition hover:text-cyan-300">
-          {recentMessages.length > 0 ? t("openConversationHistory") : t("startConversation")}
+        <Link href="/conversations" className="inline-flex text-xs text-cyan-400 transition hover:text-cyan-300">
+          {t("openConversationHistory")}
         </Link>
       </div>
     </GlassPanel>
