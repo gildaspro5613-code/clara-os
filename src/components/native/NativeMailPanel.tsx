@@ -9,7 +9,7 @@ type Operation={id:string;state:string};
 type Review={from:string;to:string[];subject:string;text:string;attachments:Array<{name:string;sha256:string}>};
 export default function NativeMailPanel({referencesOnly=false}:{referencesOnly?:boolean}){
  const t=useTranslations('ui'),locale=useLocale();
- const [loading,setLoading]=useState(true);
+ const [loading,setLoading]=useState(true),[mailboxLoaded,setMailboxLoaded]=useState(false);
  const [connections,setConnections]=useState<Connection[]>([]),[connectionId,setConnection]=useState(''),[folders,setFolders]=useState<string[]>([]),[folder,setFolder]=useState(''),[messages,setMessages]=useState<Message[]>([]),[messageId,setMessage]=useState(''),[opened,setOpened]=useState<OpenMail|null>(null),[draft,setDraft]=useState<MailboxCommunicationDraft|null>(null),[operations,setOperations]=useState<Operation[]>([]),[review,setReview]=useState<{id:string;envelope:Review}|null>(null),[approval,setApproval]=useState<{id:string;token:string}|null>(null),[delegate,setDelegate]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
  useEffect(()=>{let active=true;void fetch('/api/native/mail',{cache:'no-store'}).then(async r=>{const b=await r.json();if(!r.ok||!b.success)throw Error();if(active)setConnections(b.connections);}).catch(()=>{if(active)setError(t('mailUnavailable'));}).finally(()=>{if(active)setLoading(false);});return()=>{active=false;};},[t]);
  const owned=connections.find(c=>c.id===connectionId)?.owned;
@@ -21,9 +21,9 @@ export default function NativeMailPanel({referencesOnly=false}:{referencesOnly?:
  async function post(action:string,extra:Record<string,unknown>={}){const r=await fetch('/api/native/mail',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,connectionId,...extra})}),b=await r.json();if(!r.ok)throw Error();return b;}
  async function perform(work:()=>Promise<void>){setBusy(true);setError('');try{await work();}catch{setError(t('mailUnavailable'));}finally{setBusy(false);}}
  async function refresh(){
-  setMessages([]);setNextCursor(null);setOpened(null);setMessage('');setOperations([]);setDraft(null);setSavedDraft(null);
+  setMailboxLoaded(false);setMessages([]);setNextCursor(null);setOpened(null);setMessage('');setOperations([]);setDraft(null);setSavedDraft(null);
   const [list,ops,d]=await Promise.allSettled([get('messages'),get('operations'),get('draft')]);
-  if(list.status==='fulfilled'){setMessages(list.value.messages);setNextCursor(list.value.nextCursor);}
+  if(list.status==='fulfilled'){setMessages(list.value.messages);setNextCursor(list.value.nextCursor);setMailboxLoaded(true);}
   if(ops.status==='fulfilled')setOperations(ops.value.operations);
   if(d.status==='fulfilled'){setDraft(d.value.draft);setSavedDraft(d.value.draft);}
   if([list,ops,d].some(r=>r.status==='rejected'))setError(t('mailUnavailable'));
@@ -32,8 +32,10 @@ export default function NativeMailPanel({referencesOnly=false}:{referencesOnly?:
  <h2 className="font-semibold">{t('mailTitle')}</h2><p className="my-2 text-white/60">{t('mailIsolation')}</p>
  {loading&&<p role="status">{t('uiLoading')}</p>}
  {!loading&&!error&&connections.length===0&&<p role="status" className="my-4 rounded-xl border border-white/10 p-4 text-slate-300">{t('uiMailEmpty')}</p>}
- <label>{t('mailAccount')} <select aria-label={t('mailAccount')} className="bg-slate-900" value={connectionId} disabled={busy} onChange={e=>{setConnection(e.target.value);setNextCursor(null);setFolder('');setFolders([]);setMessages([]);setOpened(null);setMessage('');setDraft(null);setSavedDraft(null);setOperations([]);setReview(null);setApproval(null);}}><option value="">{t('choose')}</option>{connections.map(c=><option key={c.id} value={c.id}>{c.address}</option>)}</select></label>
+ <label>{t('mailAccount')} <select aria-label={t('mailAccount')} className="bg-slate-900" value={connectionId} disabled={busy} onChange={e=>{setConnection(e.target.value);setMailboxLoaded(false);setNextCursor(null);setFolder('');setFolders([]);setMessages([]);setOpened(null);setMessage('');setDraft(null);setSavedDraft(null);setOperations([]);setReview(null);setApproval(null);}}><option value="">{t('choose')}</option>{connections.map(c=><option key={c.id} value={c.id}>{c.address}</option>)}</select></label>
  <button className="m-2 border p-2" disabled={busy||!connectionId} onClick={()=>void perform(refresh)}>{t('mailRefresh')}</button>
+ {!loading&&!error&&connections.length>0&&!connectionId&&<p role="status" className="my-3 text-white/65">{t('mailChooseAuthorized')}</p>}
+ {mailboxLoaded&&!error&&messages.length===0&&<p role="status" className="my-3 text-white/65">{t('mailCachedEmpty')}</p>}
  {!referencesOnly&&<>
  <button className="m-2 border p-2" disabled={busy||!connectionId} onClick={()=>void perform(async()=>{setFolders((await get('folders')).folders);})}>{t('mailFolders')}</button>
  <select aria-label={t('mailFolder')} className="bg-slate-900" value={folder} onChange={e=>setFolder(e.target.value)}><option value="">{t('mailFolder')}</option>{folders.map(f=><option key={f}>{f}</option>)}</select>
