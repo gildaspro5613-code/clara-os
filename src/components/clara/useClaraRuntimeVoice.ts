@@ -12,17 +12,17 @@ export function useClaraRuntimeVoice(disabled:boolean,scope?:NativeSelectors){
  const [state,setState]=useState<VoiceState>('idle');
  const [authorized,setAuthorized]=useState(false);
  const [unavailable,setUnavailable]=useState<'configuration'|'authorization'|'network'|'recette'|null>(null);
- const resources=useRef<{recorder?:MediaRecorder;stream?:MediaStream;audio?:HTMLAudioElement;url?:string;abort?:AbortController;timer?:ReturnType<typeof setInterval>;deadline?:ReturnType<typeof setTimeout>;epoch:number;active:boolean}>({epoch:0,active:false});
+ const resources=useRef<{recorder?:MediaRecorder;stream?:MediaStream;audio?:HTMLAudioElement;url?:string;abort?:AbortController;timer?:ReturnType<typeof setInterval>;deadline?:ReturnType<typeof setTimeout>;silence?:ReturnType<typeof setInterval>;context?:AudioContext;epoch:number;active:boolean}>({epoch:0,active:false});
  const key=scope?'clara.pending-chat:'+scope.sessionId:null;
  const query=scope?'?'+new URLSearchParams({...scope}).toString():'';
  const headers=scope?{'x-clara-native-voice':'1'}:undefined;
  const stop=useCallback(()=>{
   const r=resources.current;r.epoch++;r.active=false;
-  if(r.timer)clearInterval(r.timer);if(r.deadline)clearTimeout(r.deadline);
+  if(r.timer)clearInterval(r.timer);if(r.deadline)clearTimeout(r.deadline);if(r.silence)clearInterval(r.silence);void r.context?.close().catch(()=>{});
   r.abort?.abort();if(r.recorder){r.recorder.onstop=null;if(r.recorder.state!=='inactive')r.recorder.stop();}
   r.stream?.getTracks().forEach(t=>t.stop());if(r.audio){r.audio.pause();r.audio.removeAttribute('src');r.audio.load();}
   if(r.url)URL.revokeObjectURL(r.url);
-  r.recorder=undefined;r.stream=undefined;r.audio=undefined;r.url=undefined;r.timer=undefined;r.deadline=undefined;
+  r.recorder=undefined;r.stream=undefined;r.audio=undefined;r.url=undefined;r.timer=undefined;r.deadline=undefined;r.silence=undefined;r.context=undefined;
  },[]);
  useEffect(()=>{const interrupt=()=>{stop();setState('idle');};
   const hidden=()=>{if(document.visibilityState!=='visible')interrupt();};
@@ -50,7 +50,7 @@ export function useClaraRuntimeVoice(disabled:boolean,scope?:NativeSelectors){
  async function toggle(){
   const r=resources.current;
   if(disabled||(scope&&!authorized))return;
-  if(r.active){if(r.recorder?.state==='recording'){r.recorder.stop();return;}stop();setState('idle');return;}
+  if(r.active){stop();setState('idle');return;}
   window.dispatchEvent(new CustomEvent('clara:voice-activity',{detail:r}));
   r.active=true;const epoch=++r.epoch;const abort=new AbortController();r.abort=abort;
   const alive=()=>{if(!r.active||r.epoch!==epoch||abort.signal.aborted)throw Error('VOICE_INTERRUPTED');};
@@ -62,6 +62,7 @@ export function useClaraRuntimeVoice(disabled:boolean,scope?:NativeSelectors){
    }catch(error){if(r.epoch===epoch)setAuthorized(false);throw error;}
   };
   const fail=()=>{if(r.epoch===epoch){stop();setState('error');}};
+  const deadline=()=>{if(r.deadline)clearTimeout(r.deadline);r.deadline=setTimeout(fail,120_000);};
   async function playAndCommit(operation:{operationId:string;message:string;sessionId?:string}){
    await check();setState('processing');
    const response=await fetch('/api/clara/chat'+query,{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify(operation),signal:abort.signal});
@@ -89,31 +90,55 @@ export function useClaraRuntimeVoice(disabled:boolean,scope?:NativeSelectors){
    if(!audioResponse.ok)throw Error('VOICE_SYNTHESIS_DENIED');
    const blob=await audioResponse.blob();await check();alive();
    r.url=URL.createObjectURL(blob);const audio=new Audio(r.url);r.audio=audio;setState('speaking');
-   audio.onended=()=>{if(r.epoch===epoch){stop();setState('idle');}};audio.onerror=fail;
+   audio.onended=()=>{if(r.epoch===epoch&&r.active&&r.audio===audio){audio.onended=null;audio.pause();audio.removeAttribute('src');if(r.url)URL.revokeObjectURL(r.url);r.url=undefined;r.audio=undefined;void listen().catch(fail);}};audio.onerror=fail;
    await audio.play();alive();
   }
-  try{
-   setState('connecting');await check();
-   if(scope){let checking=false;r.timer=setInterval(()=>{if(checking)return;checking=true;check().catch(fail).finally(()=>{checking=false;});},500);}
-   // Fail closed even when a browser permission prompt or network request stalls.
-   r.deadline=setTimeout(fail,120_000);
-   const saved=key?sessionStorage.getItem(key):null;
-   if(saved){const pending=JSON.parse(saved);if(pending.sessionId!==scope?.sessionId||typeof pending.operationId!=='string'||typeof pending.message!=='string')throw Error('VOICE_PENDING_INVALID');await playAndCommit(pending);return;}
-   const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-   if(!r.active||r.epoch!==epoch){stream.getTracks().forEach(t=>t.stop());return;}r.stream=stream;
-   await check();const chunks:Blob[]=[];const recorder=new MediaRecorder(stream);r.recorder=recorder;
-   recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};
-   recorder.onstop=()=>{r.stream?.getTracks().forEach(t=>t.stop());r.stream=undefined;r.recorder=undefined;
+  async function listen(){
+   await check();deadline();
+   // Reuse the same permission/stream for this explicitly started conversation.
+   // Tracks are disabled during processing/playback so Clara cannot transcribe herself.
+   if(!r.stream){
+    const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});
+    if(!r.active||r.epoch!==epoch){stream.getTracks().forEach(t=>t.stop());return;}r.stream=stream;
+   }
+   alive();await check();r.stream.getAudioTracks().forEach(t=>{t.enabled=true;});
+   const context=r.context!;if(context.state==='suspended')await context.resume();alive();
+   const source=context.createMediaStreamSource(r.stream),analyser=context.createAnalyser();analyser.fftSize=1024;source.connect(analyser);
+   const samples=new Float32Array(analyser.fftSize),chunks:Blob[]=[];
+   const mime=['audio/webm;codecs=opus','audio/mp4','audio/webm'].find(type=>MediaRecorder.isTypeSupported(type));
+   const recorder=new MediaRecorder(r.stream,mime?{mimeType:mime}:undefined);r.recorder=recorder;
+   let spoke=false,lastSpeech=performance.now(),speechStarted=0;const started=performance.now();
+   const detach=()=>{if(r.silence)clearInterval(r.silence);r.silence=undefined;source.disconnect();analyser.disconnect();};
+   recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};recorder.onerror=fail;
+   recorder.onstop=()=>{detach();r.stream?.getAudioTracks().forEach(t=>{t.enabled=false;});r.recorder=undefined;
     void(async()=>{
-     await check();setState('processing');const form=new FormData();form.append('audio',new Blob(chunks,{type:recorder.mimeType||'audio/webm'}),'clara-voice.webm');
+     await check();deadline();setState('processing');const form=new FormData();const type=recorder.mimeType||mime||'audio/webm';form.append('audio',new Blob(chunks,{type}),type.includes('mp4')?'clara-voice.mp4':'clara-voice.webm');
      const response=await fetch('/api/voice/transcribe'+query,{method:'POST',headers,body:form,signal:abort.signal});
-     const transcription=await response.json();alive();if(!response.ok||!transcription.success||!transcription.text)throw Error('VOICE_TRANSCRIPTION_DENIED');
+     const transcription=await response.json();alive();if(!response.ok||!transcription.success||typeof transcription.text!=='string')throw Error('VOICE_TRANSCRIPTION_DENIED');
+     if(!transcription.text.trim()){await listen();return;}
      await check();const operation={operationId:crypto.randomUUID(),message:transcription.text,...(scope?{sessionId:scope.sessionId}:{})};
      if(key){if(sessionStorage.getItem(key))throw Error('VOICE_CHAT_ALREADY_PENDING');sessionStorage.setItem(key,JSON.stringify(operation));}
      await playAndCommit(operation);
     })().catch(fail);
    };
    recorder.start();setState('listening');
+   r.silence=setInterval(()=>{
+    if(!r.active||r.epoch!==epoch||recorder.state!=='recording'){detach();return;}
+    analyser.getFloatTimeDomainData(samples);const rms=Math.sqrt(samples.reduce((sum,value)=>sum+value*value,0)/samples.length),now=performance.now();
+    if(rms>=0.018){if(!spoke)speechStarted=now;spoke=true;lastSpeech=now;}
+    if(spoke&&now-speechStarted>=300&&(now-lastSpeech>=1100||now-started>=45_000)){detach();recorder.stop();}
+    else if(!spoke&&now-started>=30_000){detach();stop();setState('idle');}
+   },50);
+  }
+  try{
+   // Resume Web Audio within the user's gesture (including mobile browsers).
+   r.context=new AudioContext();await r.context.resume();alive();
+   setState('connecting');await check();
+   if(scope){let checking=false;r.timer=setInterval(()=>{if(checking)return;checking=true;check().catch(fail).finally(()=>{checking=false;});},500);}
+   deadline();
+   const saved=key?sessionStorage.getItem(key):null;
+   if(saved){const pending=JSON.parse(saved);if(pending.sessionId!==scope?.sessionId||typeof pending.operationId!=='string'||typeof pending.message!=='string')throw Error('VOICE_PENDING_INVALID');await playAndCommit(pending);return;}
+   await listen();
   }catch{fail();}
  }
  return {state,toggle,authorized,unavailable,active:!['idle','error'].includes(state)};

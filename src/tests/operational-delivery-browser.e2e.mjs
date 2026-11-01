@@ -36,7 +36,9 @@ test('delivery UI: official logo, business navigation, private advanced controls
     await page.getByRole('region',{name:'Contexte canonique privé',exact:true}).waitFor();
     await revealContextSelection(page);
     await page.getByText('Identifiants du contexte sélectionné',{exact:true}).waitFor();
-    await page.getByText(/Espace de travail · w \/ Client c1 \/ Project p1/).waitFor();
+    // The redesigned selector exposes the private context in a dedicated details section,
+    // rather than repeating its former technical workspace/client/project sentence.
+    assert.equal(await page.getByText(/Espace de travail · w \/ Client c1 \/ Project p1/).count(),0);
     await page.locator('[data-native-context-switch] > summary').click();
    }
    if(path==='documents')await page.getByText(/\[NATIVE_GOOGLE_EXPLICIT_SELECTION_REQUIRED\]/).waitFor();

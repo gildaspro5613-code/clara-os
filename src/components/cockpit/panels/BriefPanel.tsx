@@ -72,9 +72,9 @@ export default function BriefPanel({ session, acquisition,displayFirstName=null 
       <p className="mt-3 text-xs text-white/45">{ui("missionScope")}</p>
 
       <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-white/10 pt-3 text-xs">
-        {mission && <Link href="/missions" className="text-cyan-300/80 hover:text-cyan-200">{t("viewMissions")}</Link>}
+        {<Link href="/missions" className="text-cyan-300/80 hover:text-cyan-200">{t("viewMissions")}</Link>}
         <Link href="/clara" className="text-cyan-300/80 hover:text-cyan-200">Clara →</Link>
-        {session.conversation.length > 0 && <Link href="/conversations" className="text-cyan-300/80 hover:text-cyan-200">{t("latestConversations")} →</Link>}
+        {<Link href="/conversations" className="text-cyan-300/80 hover:text-cyan-200">{t("latestConversations")} →</Link>}
         {acquisition && <a href="#acquisition" className="text-amber-200/80 hover:text-amber-100">{ui("commercialBrief")}</a>}
         {documentEvent && <Link href="/documents" className="text-cyan-300/80 hover:text-cyan-200">{ui("documents")}</Link>}
       </div>

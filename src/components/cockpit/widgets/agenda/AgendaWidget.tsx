@@ -197,7 +197,7 @@ export default function AgendaWidget() {
       )}
 
       <Link
-        href="/agenda"
+        href="/agenda#native-google-document-authority"
         className="
           mt-5
           flex

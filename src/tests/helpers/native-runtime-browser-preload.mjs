@@ -69,10 +69,12 @@ globalThis.fetch=async(input,init)=>{
   const state=JSON.parse(readFileSync(path,'utf8'));state.calls??=[];state.calls.push(url.pathname);writeFileSync(path,JSON.stringify(state));
   const signal=init?.signal;
   if(signal?.aborted)throw new DOMException('Aborted','AbortError');
-  await new Promise((resolve,reject)=>{const finish=()=>{signal?.removeEventListener('abort',cancel);resolve();};const timer=setTimeout(finish,state.delayMs??0);const cancel=()=>{clearTimeout(timer);const latest=JSON.parse(readFileSync(path,'utf8'));latest.aborted=(latest.aborted??0)+1;writeFileSync(path,JSON.stringify(latest));reject(new DOMException('Aborted','AbortError'));};signal?.addEventListener('abort',cancel,{once:true});});
+  await new Promise((resolve,reject)=>{const finish=()=>{signal?.removeEventListener('abort',cancel);resolve();};const timer=setTimeout(finish,(url.pathname.includes("text-to-speech")?state.speakDelayMs:state.delayMs)??0);const cancel=()=>{clearTimeout(timer);const latest=JSON.parse(readFileSync(path,'utf8'));latest.aborted=(latest.aborted??0)+1;writeFileSync(path,JSON.stringify(latest));reject(new DOMException('Aborted','AbortError'));};signal?.addEventListener('abort',cancel,{once:true});});
+  if(url.pathname==='/v1/speech-to-text'&&state.failStt)return Response.json({error:'Synthetic unavailable'},{status:503});
   if(url.pathname==='/v1/speech-to-text')return Response.json({text:'Présente les missions autorisées, sans modification.',language_code:'fr'});
   // A local WAV exercises actual HTMLAudioElement playback, never ElevenLabs.
   const rate=8000,seconds=state.seconds??3,data=Buffer.alloc(rate*seconds*2),wav=Buffer.alloc(44+data.length);
+  if(state.audible)for(let i=0;i<data.length/2;i++)data.writeInt16LE(Math.round(5000*Math.sin(2*Math.PI*220*i/rate)),i*2);
   wav.write('RIFF',0);wav.writeUInt32LE(36+data.length,4);wav.write('WAVEfmt ',8);wav.writeUInt32LE(16,16);wav.writeUInt16LE(1,20);wav.writeUInt16LE(1,22);wav.writeUInt32LE(rate,24);wav.writeUInt32LE(rate*2,28);wav.writeUInt16LE(2,32);wav.writeUInt16LE(16,34);wav.write('data',36);wav.writeUInt32LE(data.length,40);data.copy(wav,44);return new Response(wav,{headers:{'Content-Type':'audio/wav'}});
  }
  if(url.hostname==='api.openai.com'){const serialized=String(init?.body??'');const state=JSON.parse(readFileSync('/tmp/native-fixture-google-state-'+process.env.NATIVE_TEST_DATABASE,'utf8'));if(state.companyReceipt&&serialized.includes('src/lib/knowledge/melodie-digital/identity.ts')){

@@ -87,7 +87,7 @@ test('interface receipt: explicit business flow, responsive navigation, five lan
    for(const path of pages){
     const response=await page.goto(origin+'/'+path);assert.equal(response.status(),200,locale+' '+path);if(path)await page.locator('[data-context-loading="false"]').waitFor();else assert.equal(await page.locator('[data-context-loading], [data-cockpit-context]').count(),0);
     assert.equal(await page.locator('html').getAttribute('lang'),locale);
-    if(path)await page.getByText(dictionary(locale).uiWorkspace+' · w / Client c1 / Project p1',{exact:true}).waitFor();
+     if(path){assert.equal(await page.getByText(dictionary(locale).uiWorkspace+' · w / Client c1 / Project p1',{exact:true}).count(),0);await page.locator('[data-context-loading="false"]').waitFor();}
     assert.ok(!(await page.locator('body').innerText()).includes('MISSING_MESSAGE'));
     matrix.push({page:'/'+path,locale,device:'desktop',status:'PASS',proof:'server render, translated shared controls, source data preserved'});
    }

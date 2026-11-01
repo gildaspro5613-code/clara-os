@@ -166,7 +166,7 @@
   "DOCUMENT_TOO_LONG": "Documento demasiado largo (máximo 200 000 caracteres).",
   "sourceOriginal": "Datos fuente · idioma original conservado",
   "localizedSummary": "Resumen de interfaz · datos fuente sin cambios",
-  "noCurrentFocus": "Ninguna misión seleccionada en el hilo actual",
+  "noCurrentFocus": "Ninguna misión seleccionada en esta conversación.",
   "missionScope": "Hilo actual; el registro de misiones puede contener otras misiones. Aquí no se certifica su pertenencia al proyecto.",
   "missionOverview": "{completed} / {total} acciones completadas · {progress} %",
   "reviewNextAction": "Consultar la siguiente acción en los detalles de la misión",
@@ -193,7 +193,7 @@
   "nativeNewSession": "Crear un nuevo hilo",
   "nativeOpenSession": "Abrir este hilo",
   "nativeSelectionError": "Selección u operación denegada. Compruebe permisos e identificadores.",
-  "nativeSessionId": "Identificador del hilo",
+  "nativeSessionId": "Conversación",
   "nativeMissionTitle": "Título de la misión",
   "nativeMissionObjective": "Objetivo de la misión",
   "nativeCreateMission": "Crear misión",
@@ -363,5 +363,10 @@
   "uiChangeContext": "Cambiar espacio o proyecto",
   "uiTechnicalDetails": "Detalles técnicos",
   "googleHubDescription": "Conexiones de Google autorizadas para documentos y calendario.",
-  "uiMissionContact": "Misión y contacto"
+  "uiMissionContact": "Misión y contacto",
+  "googleSelectionThread": "La conexión y el calendario se guardan en esta conversación. Elige una conexión existente y un calendario autorizado; no hace falta otro consentimiento si los permisos actuales bastan.",
+  "googleCalendarChoose": "Elige abajo un calendario autorizado.",
+  "googleAgendaReadAvailable": "La lectura del calendario está disponible. Solo las operaciones de negocio requieren una misión.",
+  "mailChooseAuthorized": "Elige un buzón autorizado y actualiza su resumen.",
+  "mailCachedEmpty": "No hay mensajes en el resumen guardado de este buzón. Esto no confirma una sincronización reciente."
 }
