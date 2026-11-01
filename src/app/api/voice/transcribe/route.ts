@@ -1,3 +1,4 @@
+import {hasNativeVoiceScope,nativeVoiceOperation} from "@/lib/native/voice";
 import { getTranslations } from "next-intl/server";
 import { authorizeVoiceRequest } from "@/lib/auth/voice-request-authorization";
 import { NextResponse } from "next/server";
@@ -10,10 +11,22 @@ export const dynamic = "force-dynamic";
 const ELEVENLABS_STT_URL = "https://api.elevenlabs.io/v1/speech-to-text";
 const MAX_AUDIO_BYTES = 15 * 1024 * 1024;
 
+export async function GET(request:Request){
+ if(!hasNativeVoiceScope(request))return Response.json({success:false},{status:403});
+ return nativeVoiceOperation(request,async()=>{
+  assertRecetteExternalExecutionBlocked("elevenlabs.voice-readiness");
+  if(!elevenLabsConfig.apiKey||!elevenLabsConfig.voiceId)return Response.json({success:false,code:"NATIVE_VOICE_UNAVAILABLE"},{status:503});
+  return Response.json({success:true});
+ });
+}
 export async function POST(request: Request) {
+ if(hasNativeVoiceScope(request))return nativeVoiceOperation(request,async(_scope,signal)=>transcribe(request,signal,true));
+ return transcribe(request);
+}
+async function transcribe(request:Request,signal?:AbortSignal,native=false){
   const t = await getTranslations("voiceApi");
   try {
-    if (!await authorizeVoiceRequest(request)) return NextResponse.json({success:false,message:t("operatorRequired")}, {status:403});
+    if (!native && !await authorizeVoiceRequest(request)) return NextResponse.json({success:false,message:t("operatorRequired")}, {status:403});
     assertRecetteExternalExecutionBlocked("elevenlabs.speech-to-text");
     const apiKey = elevenLabsConfig.apiKey;
 
@@ -52,6 +65,7 @@ export async function POST(request: Request) {
       },
       body: payload,
       cache: "no-store",
+      signal,
     });
 
     const data = (await response.json()) as {

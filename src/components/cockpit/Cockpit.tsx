@@ -1,3 +1,4 @@
+import type {NativeSelectors} from "@/lib/native/authority";
 import type {MdProjectIntake} from "@/types";
 import type {Mission} from "@/modules/missions/types/Mission";
 import type { ClaraSession } from "@/lib/core/session";
@@ -8,6 +9,7 @@ import CockpitLayout from "./CockpitLayout";
 import CockpitWidgets from "./widgets/CockpitWidgets";
 
 interface CockpitProps {
+  nativeVoiceScope?:NativeSelectors;
   nativeSessionId?:string;
   session: ClaraSession;
   displayFirstName?:string|null;
@@ -17,14 +19,14 @@ interface CockpitProps {
 }
 
 export default function Cockpit({
-  session,displayFirstName=null,
+  session,displayFirstName=null,nativeVoiceScope,
   acquisition,
   nativeMissions,
   nativeIntake,
   nativeSessionId,
 }: CockpitProps) {
   return (
-    <CockpitLayout hero={<Hero displayFirstName={displayFirstName} nativeScope={nativeMissions!==undefined} session={session} acquisition={acquisition} />}>
+    <CockpitLayout hero={<Hero nativeVoiceScope={nativeVoiceScope} displayFirstName={displayFirstName} nativeScope={nativeMissions!==undefined} session={session} acquisition={acquisition} />}>
       <CockpitWidgets displayFirstName={displayFirstName} nativeSessionId={nativeSessionId} nativeIntake={nativeIntake} nativeMissions={nativeMissions} session={session} acquisition={acquisition} />
     </CockpitLayout>
   );

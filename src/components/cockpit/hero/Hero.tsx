@@ -1,16 +1,18 @@
+import type {NativeSelectors} from "@/lib/native/authority";
 import type { ClaraSession } from "@/lib/core/session";
 import type { AcquisitionRecord } from "@/lib/acquisition/acquisition-store";
 
 import Stage from "../Stage";
 
 interface HeroProps {
+  nativeVoiceScope?:NativeSelectors;
   session: ClaraSession;
   nativeScope?:boolean;
   displayFirstName?:string|null;
   acquisition?: AcquisitionRecord | null;
 }
 
-export default function Hero({ session, acquisition,nativeScope=false,displayFirstName=null }: HeroProps) {
+export default function Hero({ session, acquisition,nativeScope=false,nativeVoiceScope,displayFirstName=null }: HeroProps) {
   return (
     <section data-cockpit-hero className="relative h-auto min-h-0 lg:h-full lg:min-h-[720px] overflow-hidden bg-[#020914]">
       {/*
@@ -35,7 +37,7 @@ export default function Hero({ session, acquisition,nativeScope=false,displayFir
         <div className="absolute bottom-0 left-0 right-0 h-[34%] bg-[linear-gradient(180deg,rgba(2,9,20,0),rgba(1,6,14,0.78))]" />
       </div>
 
-      <Stage session={session} acquisition={acquisition} nativeScope={nativeScope} displayFirstName={displayFirstName}/>
+      <Stage nativeVoiceScope={nativeVoiceScope} session={session} acquisition={acquisition} nativeScope={nativeScope} displayFirstName={displayFirstName}/>
     </section>
   );
 }

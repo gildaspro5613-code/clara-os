@@ -8,7 +8,7 @@ import {seedGoogleWork,workScopes} from './helpers/native-google-work-fixture.ts
 const origin=process.env.DOCUMENTS_E2E_ORIGIN,db=process.env.NATIVE_TEST_DATABASE;
 if(!origin||new URL(origin).hostname!=='127.0.0.1'||!/^native_browser_[a-f0-9]{32}$/.test(db??''))throw Error('Isolated native PostgreSQL/HTTPS fixture required');
 const pg=s=>execFileSync('docker',['exec','clara-canonical-test-postgres','psql','-U','postgres','-d',db,'-qAt','-v','ON_ERROR_STOP=1','-c',s],{encoding:'utf8',stdio:'pipe'}).trim();
-test('Cockpit existing capabilities: authorized Calendar read and refusals, unavailable weather, real local Waze preparation, native voice stays fenced',{timeout:120000},async()=>{
+test('Cockpit existing capabilities: authorized Calendar read and refusals, unavailable weather, real local Waze preparation, native voice authority probes without provider invocation',{timeout:120000},async()=>{
  process.env.CLARA_CREDENTIALS_ENCRYPTION_KEY=Buffer.alloc(32,9).toString('base64');seedGoogleWork(pg);
  const path='/tmp/native-fixture-google-state-'+db,change=fn=>{const s=JSON.parse(readFileSync(path,'utf8'));fn(s);writeFileSync(path,JSON.stringify(s));};
  const now=Date.now();change(s=>{s.workspace={calendars:{'calendar-a':{id:'calendar-a',summary:'Agenda de préparation',etag:'"calendar-a-1"',accessRole:'owner'}},files:{},events:{'calendar-a/preparation':{id:'preparation',summary:'Réunion de préparation technique',start:{dateTime:new Date(now).toISOString()},end:{dateTime:new Date(now+1800000).toISOString()}}},writes:[],generated:0};});
@@ -27,7 +27,7 @@ test('Cockpit existing capabilities: authorized Calendar read and refusals, unav
   change(s=>{s.workspace.calendars['calendar-a'].accessRole='reader';});
   const agendaResponse=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/calendar');await page.goto(origin+'/');const calendar=await agendaResponse;assert.equal(calendar.status(),200);const body=await calendar.json();assert.equal(body.calendarId,'calendar-a');assert.equal(body.events[0].summary,'Réunion de préparation technique');
   await page.getByText('Réunion de préparation technique',{exact:true}).waitFor();await page.getByText(labels.weatherTemporarilyUnavailable,{exact:true}).waitFor();
-  const voice=page.locator('[data-cockpit-hero] button');for(const button of await voice.all()){assert.equal(await button.isDisabled(),true);await button.evaluate(b=>b.click());}assert.equal(await page.evaluate(()=>window.__microphoneCalls),0);assert.ok(!requests.some(p=>/elevenlabs|\/voice\//.test(p)));
+  assert.equal(await page.evaluate(()=>window.__microphoneCalls),0);assert.ok(!requests.some(p=>/elevenlabs/.test(p))); // Read-only voice probes are legitimate; microphone starts only on explicit user action.
   const weather=await call('/api/weather?location=Angers');assert.equal(weather.status,502);assert.equal((await weather.json()).success,false);
   const evidence=process.env.COCKPIT_CAPABILITIES_EVIDENCE;if(evidence){mkdirSync(evidence,{recursive:true});for(const [name,width,height]of [['desktop',1440,1000],['mobile',390,844]]){await page.setViewportSize({width,height});await page.goto(origin+'/');await page.getByText('Réunion de préparation technique',{exact:true}).waitFor();await page.screenshot({path:evidence+'/'+name+'-hero.png'});await page.getByText('Réunion de préparation technique',{exact:true}).scrollIntoViewIfNeeded();await page.screenshot({path:evidence+'/'+name+'-agenda.png'});}}
   // Existing connector refusals must not become empty appointments.

@@ -10,5 +10,7 @@ export function forwardNativeRequest(req,res,target){
   if(res.headersSent){res.destroy();return;}
   res.writeHead(503,{'Content-Type':'application/json'});res.end(JSON.stringify({code:'ISOLATED_PROXY_UPSTREAM_UNAVAILABLE'}));
  });
+ req.on('aborted',()=>forwarded.destroy());
+ res.on('close',()=>{if(!res.writableFinished)forwarded.destroy();});
  req.pipe(forwarded);
 }

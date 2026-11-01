@@ -36,6 +36,7 @@ interface ClaraChatWidgetProps {
 }
 
 interface ConversationUpdatedDetail {
+  sessionId?:string;
   conversation?: ClaraConversationMessage[];
 }
 
@@ -91,6 +92,7 @@ export default function ClaraChatWidget({
   useEffect(() => {
     const handleConversationUpdated = (event: Event) => {
       const detail = (event as CustomEvent<ConversationUpdatedDetail>).detail;
+      if (nativeSessionId && detail?.sessionId!==nativeSessionId) return;
       if (Array.isArray(detail?.conversation)) {
         setMessages(detail.conversation);
       }
@@ -107,7 +109,7 @@ export default function ClaraChatWidget({
         handleConversationUpdated,
       );
     };
-  }, []);
+  }, [nativeSessionId]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

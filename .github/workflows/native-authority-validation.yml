@@ -91,6 +91,10 @@ on:
       - 'src/tests/header-account*'
       - 'src/tests/header-search*'
       - 'src/tests/cockpit-capabilities*'
+      - 'src/tests/native-voice*'
+      - 'src/components/clara/useClaraRuntimeVoice.ts'
+      - 'src/components/cockpit/widgets/voice/**'
+      - 'src/app/api/voice/**'
       - 'src/app/actions/header-search.ts'
       - 'src/app/api/auth/google/callback/route.ts'
       - 'src/app/api/auth/session/logout/route.ts'
@@ -143,7 +147,7 @@ jobs:
           npx eslint src/components/connections src/tests/google-native-hub*
           npx eslint src/components/layout src/components/native/NativeScopeSelector.tsx src/components/native/NativeDocumentsPanel.tsx src/components/native/NativeMailPanel.tsx src/components/cockpit/widgets/clara/ClaraChatWidget.tsx src/components/automatisations/MakeConnectionStatus.tsx src/components/contacts/ContactsDirectory.tsx src/modules/missions/MissionsStage.tsx src/app/documents/page.tsx src/app/clara/page.tsx src/tests/helpers/native-ui-disclosures.mjs src/tests/interface-finalization-browser.e2e.mjs
       - name: Operational recovery, consultations and scoped provider reads
-        run: node --import tsx --test src/tests/operational-recovery*.test.ts src/tests/historical-cockpit.test.ts src/tests/google-display-name.test.ts src/tests/header-account-postgres.test.ts src/tests/header-search-postgres.test.ts
+        run: node --import tsx --test src/tests/operational-recovery*.test.ts src/tests/historical-cockpit.test.ts src/tests/native-voice.test.ts src/tests/voice-route-security.test.ts src/tests/google-display-name.test.ts src/tests/header-account-postgres.test.ts src/tests/header-search-postgres.test.ts
       - name: Actual handlers and database isolation, revocation, snapshot and history
         run: node --import tsx --test src/tests/google-sign-in-postgres.test.ts src/tests/canonical-conversation-postgres.test.ts src/tests/canonical-conversation-routes.test.ts src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts src/tests/native-commercial-postgres.test.ts src/tests/native-mission-contact-postgres.test.ts src/tests/native-documents-postgres.test.ts src/tests/native-google-oauth.test.ts src/tests/native-mail-postgres.test.ts src/tests/native-mail-triage.test.ts src/tests/native-mail-monitor.test.ts src/tests/native-mail-monitor-postgres.test.ts src/tests/ionos-transport.test.ts src/tests/native-conversation-postgres.test.ts src/tests/native-functional-closure.test.ts src/tests/native-google-work-postgres.test.ts
       - name: Canonical Stage decision, native identity and restricted SQL role
@@ -158,6 +162,7 @@ jobs:
       - run: npx eslint src/tests/helpers/native-browser-diagnostics.mjs src/tests/native-conversation* src/tests/cockpit-availability* src/tests/helpers/native-conversation* src/lib/native/chat.ts src/components/cockpit/widgets/clara/ClaraChatWidget.tsx src/lib/external-capabilities/event-jobs.ts src/components/layout/Header.tsx src/components/clara/ClaraVoiceWidget.tsx src/tests/historical-cockpit.test.ts src/tests/google-display-name.test.ts src/lib/auth/google-display-name.ts src/lib/auth/google-sign-in.ts src/app/api/auth/google/callback/route.ts src/app/api/auth/session/logout/route.ts src/tests/historical-production-cockpit-browser.e2e.mjs src/components/cockpit/widgets/CockpitActionBar.tsx src/components/cockpit/panels/TasksPanel.tsx src/components/cockpit/Stage.tsx src/components/cockpit/hero/Hero.tsx src/components/cockpit/Cockpit.tsx src/components/cockpit/widgets/CockpitWidgets.tsx src/app/page.tsx
       - run: npx eslint src/tests/native-mission-contact* src/tests/native-google-work* src/tests/helpers/native-google-work*
       - run: npx eslint src/components/layout/UserAccountMenu.tsx src/lib/auth/account-profile.ts src/app/actions/account-profile.ts src/tests/header-account* src/tests/header-search* src/tests/cockpit-capabilities* src/app/actions/header-search.ts
+      - run: npx eslint src/components/clara/useClaraRuntimeVoice.ts src/components/clara/ClaraVoiceWidget.tsx src/components/cockpit/widgets/voice src/lib/auth/voice-request-authorization.ts src/app/api/voice src/tests/native-voice*
       - name: Optimized local app build in GitHub only
         run: npm run build
         env:
@@ -169,7 +174,7 @@ jobs:
           node --import tsx src/tests/helpers/native-runtime-browser-fixture.mts "$NATIVE_TEST_DATABASE"
           openssl req -x509 -newkey rsa:2048 -nodes -keyout /tmp/native-runtime-key.pem -out /tmp/native-runtime-cert.pem -subj /CN=localhost -addext 'subjectAltName=DNS:localhost,IP:127.0.0.1' -days 1 > /tmp/native-tls-generation.log 2>&1
           start_native_app() {
-            DATABASE_URL=postgresql://synthetic:synthetic@documents-e2e.invalid/synthetic OPENAI_API_KEY=synthetic-test-only CLARA_AUTH_APP_ORIGIN=https://127.0.0.1:3060 GOOGLE_CLIENT_ID=synthetic-google-client GOOGLE_CLIENT_SECRET=synthetic-google-secret GOOGLE_REDIRECT_URI=https://127.0.0.1:3060/api/connections/google/callback CLARA_CREDENTIALS_ENCRYPTION_KEY=CQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQk= NODE_OPTIONS="--import=$PWD/src/tests/helpers/native-runtime-browser-preload.mjs" node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3058 > /tmp/native-app.log 2>&1 &
+            DATABASE_URL=postgresql://synthetic:synthetic@documents-e2e.invalid/synthetic ELEVENLABS_API_KEY=synthetic-voice-test-only ELEVENLABS_VOICE_ID=synthetic-voice OPENAI_API_KEY=synthetic-test-only CLARA_AUTH_APP_ORIGIN=https://127.0.0.1:3060 GOOGLE_CLIENT_ID=synthetic-google-client GOOGLE_CLIENT_SECRET=synthetic-google-secret GOOGLE_REDIRECT_URI=https://127.0.0.1:3060/api/connections/google/callback CLARA_CREDENTIALS_ENCRYPTION_KEY=CQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQk= NODE_OPTIONS="--import=$PWD/src/tests/helpers/native-runtime-browser-preload.mjs" node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3058 > /tmp/native-app.log 2>&1 &
             native_app_pid=$!
           }
           start_native_app
@@ -239,6 +244,7 @@ jobs:
           test "$ready" = true
           NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node --import tsx --test src/tests/header-search-browser.e2e.mjs
           NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node --import tsx --test src/tests/cockpit-capabilities-browser.e2e.mjs
+          NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node --import tsx --test src/tests/native-voice-browser.e2e.mjs
           NODE_EXTRA_CA_CERTS=/tmp/native-runtime-cert.pem DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 node --import tsx --test src/tests/header-account-browser.e2e.mjs
       - name: Stop isolated fixture
         if: always()

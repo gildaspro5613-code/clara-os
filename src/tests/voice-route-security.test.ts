@@ -24,6 +24,7 @@ test('voice authorization uses existing server-owned workspace and operator perm
  },noNetwork);
  const authorize=loaded.authorizeVoiceRequest as(request:Request)=>Promise<boolean>;
  assert.equal(await authorize(new Request('https://fixture.invalid/api/telephony',{method:'POST',headers:{origin:'https://foreign.invalid',cookie:'canonical-session'}})),false);assert.equal(calls,0);
+ for(const blocked of [new Request('https://fixture.invalid/api/elevenlabs/session?sessionId=native-a'),new Request('https://fixture.invalid/api/elevenlabs/session',{headers:{cookie:'canonical-session; clara_native_selection=synthetic'}}),new Request('https://fixture.invalid/api/elevenlabs/session',{headers:{'x-clara-native-voice':'1'}})])assert.equal(await authorize(blocked),false);assert.equal(calls,0,'No native selection may fall back to global voice authority');
  assert.equal(await authorize(new Request('https://fixture.invalid/api/telephony',{method:'POST',headers:{origin:'https://fixture.invalid',cookie:'canonical-session'}})),true);
  assert.deepEqual(JSON.parse(JSON.stringify(seen[0])),['canonical-session','workspace-A','connections:manage']);
  assert.equal(await authorize(new Request('https://fixture.invalid/api/telephony',{method:'POST',headers:{origin:'https://fixture.invalid',cookie:'caller-workspace-B'}})),false);
@@ -35,6 +36,9 @@ test('four provider routes deny unauthenticated requests before any provider and
  const providerFetch:typeof fetch=async()=>{calls++;return Response.json({detail:'PRIVATE_PROVIDER_SECRET'}, {status:401});};
  const modules:Record<string,unknown>={
   'next/server':{NextResponse:Response},'next-intl/server':{getTranslations:translate},
+  '@/lib/native/voice':{hasNativeVoiceScope:()=>false},
+  '@/lib/native/scoped-context':{nativeCommand:()=>{throw Error('No native scope in legacy test');}},
+  '@/lib/canonical/registry':{RegistryError:Error},
   '@/lib/auth/voice-request-authorization':{authorizeVoiceRequest:async()=>authorized},
   '@/lib/config/elevenlabs':{elevenLabsConfig:{apiKey:'synthetic-key',agentId:'synthetic-agent',voiceId:'synthetic-voice'}},
   '@/lib/connectors/internal/elevenlabs/elevenlabs-engine':{ElevenLabsEngine:class{async textToSpeech(){calls++;return {success:false,error:'PRIVATE_PROVIDER_SECRET'};}}},
@@ -54,57 +58,4 @@ test('four provider routes deny unauthenticated requests before any provider and
   }
  }
  assert.equal(calls,20);
-});
-
-// Execute the actual legacy widget handlers with an injected SDK. This is an
-// offline reproducer, not a supplier or native persistence certification.
-function cockpitVoiceHarness() {
- type Node={type:unknown;props:Record<string,unknown>};
- const slots:unknown[]=[];let cursor=0,microphone=0,starts=0,ends=0;
- const requests:string[]=[];const callbacks:Array<Record<string,unknown>>=[];
- const slot=(initial:unknown)=>{const i=cursor++;if(!(i in slots))slots[i]=initial;return i;};
- const exports:Record<string,unknown>={};
- const jsx=(type:unknown,props:Record<string,unknown>):Node=>({type,props});
- const modules:Record<string,unknown>={
-  react:{useState:(initial:unknown)=>{const i=slot(initial);return [slots[i],(value:unknown)=>{slots[i]=value;}];},useRef:(initial:unknown)=>{const i=slot({current:initial});return slots[i];}},
-  'react/jsx-runtime':{jsx,jsxs:jsx},
-  'next-intl':{useTranslations:()=>((key:string)=>key)},
-  'lucide-react':{Mic:()=>null},
-  '@elevenlabs/client':{Conversation:{startSession:async(options:Record<string,unknown>)=>{starts++;callbacks.push(options);(options.onConnect as ()=>void)();return {endSession:async()=>{ends++;(options.onDisconnect as ()=>void)();}};}}}
- };
- vm.runInNewContext(ts.transpileModule(readFileSync('src/components/cockpit/widgets/voice/ClaraVoiceWidget.tsx','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText,{
-  exports,require:(name:string)=>{if(!(name in modules))throw Error('Unexpected widget dependency');return modules[name];},
-  navigator:{mediaDevices:{getUserMedia:async()=>{microphone++;return {getTracks:()=>[]};}}},
-  fetch:async(url:string)=>{requests.push(url);assert.equal(url,'/api/elevenlabs/session');return Response.json({success:true,signedUrl:'wss://synthetic.invalid/offline'});},
-  console:{error:()=>{throw Error('Unexpected widget error');}}
- });
- return {
-  render(disabled:boolean){cursor=0;return (exports.default as (props:{disabled:boolean})=>Node)({disabled});},
-  click(node:Node){return (node.props.onClick as ()=>Promise<void>)();},
-  metrics:()=>({microphone,starts,ends,requests:[...requests]}),callbacks
- };
-}
-
-test('native voice guard prevents microphone, signed URL and SDK startup in the actual cockpit handler',async()=>{
- const h=cockpitVoiceHarness(),button=h.render(true);
- assert.equal(button.props.disabled,true);
- await h.click(button); // Even a direct handler invocation cannot bypass it.
- assert.deepEqual(h.metrics(),{microphone:0,starts:0,ends:0,requests:[]});
-});
-
-test('legacy cockpit SDK lifecycle reproducer distinguishes transport from native history, resume and revocation',async(t)=>{
- const h=cockpitVoiceHarness();await h.click(h.render(false));
- assert.deepEqual(h.metrics(),{microphone:1,starts:1,ends:0,requests:['/api/elevenlabs/session']});
- // Diagnose the exact current SDK handoff; do not call this a durable turn.
- const first=h.callbacks[0];
- assert.equal(typeof first.onConnect,'function');assert.equal(typeof first.onModeChange,'function');
- t.diagnostic('SDK handoff: onMessage='+String(typeof first.onMessage)+'; history requests='+h.metrics().requests.filter(x=>x.includes('conversation')||x.includes('chat')).length);
- await h.click(h.render(false));assert.equal(h.metrics().ends,1); // Manual stop exists.
- await h.click(h.render(false));assert.equal(h.metrics().starts,2); // Fresh session, not a demonstrated resume.
- const before=h.metrics().ends;h.render(true);
- t.diagnostic('Disabling an already active component: additional endSession calls='+(h.metrics().ends-before));
- // Keep the positive safety assertion: native mode never initiates another session.
- await h.click(h.render(true));assert.equal(h.metrics().starts,2);
- // Fixture cleanup uses the SDK callback, not a claimed server revocation.
- (h.callbacks[1].onDisconnect as ()=>void)();
 });

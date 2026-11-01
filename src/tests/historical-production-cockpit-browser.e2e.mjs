@@ -41,7 +41,7 @@ test('781 composition Cockpit: actual native mission, five languages and respons
     assert.equal(await page.getByRole('log').count(),1);
     assert.equal(await page.locator('[data-cockpit-widgets] textarea').isVisible(),true);
     const body=await page.locator('body').innerText();assert(!body.includes('82 %'));assert(!body.includes('PRIVATE_LEGACY_HISTORY'));
-    const voice=hero.locator('button');for(const button of await voice.all())if(await button.isVisible())assert.equal(await button.isDisabled(),true);
+    const voice=hero.locator('button');assert.ok(await voice.count()>0); // Activation is authority-probed; recording is tested separately in native-voice-browser.
     assert.equal(await hero.locator('[data-historical-agenda]').count(),0);
     assert.equal(await hero.locator('section').filter({has:page.locator('a[href="/messagerie"]')}).filter({visible:true}).count(),1);assert.ok(await hero.locator('a[href="/messagerie"]').filter({visible:true}).count()>=1);
     assert.equal(await page.locator('[data-cockpit-widgets] nav').count(),0);
@@ -62,7 +62,7 @@ test('781 composition Cockpit: actual native mission, five languages and respons
   assert.equal(await page.getByRole('link',{name:widgetMessages.openWaze,exact:true}).getAttribute('href'),prepared.url);
   await page.route('**/api/waze?**',route=>route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({success:false})}));
   await page.getByRole('button',{name:widgetUi.go,exact:true}).click();await page.getByText(widgetMessages.navigationTemporarilyUnavailable,{exact:true}).waitFor();await page.unroute('**/api/waze?**');
-  assert(!requests.some(r=>/voice|elevenlabs|telephony/.test(r.path)));
+  assert(!requests.some(r=>/elevenlabs|telephony/.test(r.path)||r.path.startsWith('/api/voice/')&&r.method!=='GET')); // Only read-only native voice authority probes are allowed here.
   const forbidden=await fetch(origin+'/api/native/runtime?'+new URLSearchParams({workspaceId:'w',clientId:'c1',projectId:'p1',sessionId}),{headers:{cookie:'clara_auth_session='+'B'.repeat(43)}});assert.equal(forbidden.status,403);
   const nativeState=await page.request.get(origin+'/api/native/runtime');assert.equal(nativeState.status(),200);const resolved=await nativeState.json();assert.deepEqual(resolved.data,{workspaceId:'w',clientId:'c1',projectId:'p1',sessionId});assert.equal(resolved.permissions.read,true);assert.equal(resolved.session.mission.title,'Préparer la prestation d’Angers');assert.ok(resolved.missions.some(m=>m.title==='Préparer la prestation d’Angers'));
   // Read-only navigation links must not produce a second mission.

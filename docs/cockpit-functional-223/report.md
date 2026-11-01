@@ -1,5 +1,7 @@
 # PR #223 — Réception fonctionnelle finale ciblée
 
+> Le constat vocal de ce lot est antérieur au raccordement effectif. Voir [la réception native du 1er novembre](voice/native-receipt/report.md) pour le code livré, les contrôles et la limite fournisseur.
+
 Branche : `fix/historical-cockpit-restoration-20261031`. Référence applicative : `5c7d4c1a64d3c09af44b32da6109628f13f38081`. Aucun changement de code applicatif, de présentation, de permission, de contrat, de connecteur ou de base distante.
 
 ## Tableau de décision

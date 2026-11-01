@@ -1,134 +1,17 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Conversation } from "@elevenlabs/client";
 import { Mic } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-type VoiceState =
-  | "ready"
-  | "connecting"
-  | "listening"
-  | "speaking"
-  | "error";
+import {useClaraRuntimeVoice} from "@/components/clara/useClaraRuntimeVoice";
+import type {NativeSelectors} from "@/lib/native/authority";
 
-type ConversationSession = {
-  endSession: () => Promise<void>;
-};
-
-export default function ClaraVoiceWidget({disabled=false}:{disabled?:boolean}) {
-  const t = useTranslations("voice");
-  const ui=useTranslations("ui");
-  const [state, setState] = useState<VoiceState>("ready");
-  const conversationRef = useRef<ConversationSession | null>(null);
-
-  const active =
-    state === "connecting" ||
-    state === "listening" ||
-    state === "speaking";
-
-  async function startConversation() {
-    if(disabled)return;
-    if (active) {
-      return;
-    }
-
-    try {
-      setState("connecting");
-
-      await navigator.mediaDevices.getUserMedia({
-        audio: true,
-      });
-
-      const response = await fetch("/api/elevenlabs/session", {
-        method: "GET",
-        cache: "no-store",
-      });
-
-      const data = (await response.json()) as {
-        success?: boolean;
-        signedUrl?: string;
-        error?: string;
-      };
-
-      if (!response.ok || !data.success || !data.signedUrl) {
-        throw new Error(
-          data.error ??
-            t("startError"),
-        );
-      }
-
-      const conversation =
-        await Conversation.startSession({
-          signedUrl: data.signedUrl,
-
-          onConnect: () => {
-            setState("listening");
-          },
-
-          onDisconnect: () => {
-            conversationRef.current = null;
-            setState("ready");
-          },
-
-          onError: () => {
-            conversationRef.current = null;
-            setState("error");
-          },
-
-          onModeChange: ({ mode }) => {
-            setState(
-              mode === "speaking"
-                ? "speaking"
-                : "listening",
-            );
-          },
-        });
-
-      conversationRef.current = conversation;
-    } catch (error) {
-      console.error(
-        "Failed to start Clara voice conversation:",
-        error,
-      );
-
-      conversationRef.current = null;
-      setState("error");
-    }
-  }
-
-  async function stopConversation() {
-    const conversation = conversationRef.current;
-
-    if (!conversation) {
-      setState("ready");
-      return;
-    }
-
-    try {
-      await conversation.endSession();
-    } catch (error) {
-      console.error(
-        "Failed to stop Clara voice conversation:",
-        error,
-      );
-    } finally {
-      conversationRef.current = null;
-      setState("ready");
-    }
-  }
-
-  async function handleToggle() {
-    if(disabled)return;
-    if (active) {
-      await stopConversation();
-      return;
-    }
-
-    setState("ready");
-    await startConversation();
-  }
-
+export default function ClaraVoiceWidget({disabled=true,scope}:{disabled?:boolean;scope?:NativeSelectors}) {
+  const t=useTranslations("voice"),ui=useTranslations("ui");
+  const voice=useClaraRuntimeVoice(disabled||!scope,scope);
+  const state=voice.state==='idle'?'ready':voice.state==='processing'?'connecting':voice.state;
+  const active=voice.active,handleToggle=voice.toggle;
+  const blocked=disabled||!scope||!voice.authorized;
   const listening =
     state === "listening" ||
     state === "speaking" ||
@@ -145,7 +28,7 @@ export default function ClaraVoiceWidget({disabled=false}:{disabled?:boolean}) {
             ? t("retry")
             : t("talk");
 
-  const description = disabled?ui("nativeProviderBlocked"):
+  const description = blocked?ui("nativeProviderBlocked"):
     state === "connecting"
       ? t("initializing")
       : state === "speaking"
@@ -159,8 +42,9 @@ export default function ClaraVoiceWidget({disabled=false}:{disabled?:boolean}) {
   return (
     <button
       type="button"
+      data-native-voice={scope?"scoped":"locked"}
       onClick={handleToggle}
-      disabled={disabled}
+      disabled={blocked}
       aria-label={
         active
           ? t("stop")
@@ -264,7 +148,7 @@ export default function ClaraVoiceWidget({disabled=false}:{disabled?:boolean}) {
             transition-all
             duration-300
             ${
-              disabled?"bg-slate-500":listening
+              blocked?"bg-slate-500":listening
                 ? "bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.55)]"
                 : state === "error"
                   ? "bg-red-400"

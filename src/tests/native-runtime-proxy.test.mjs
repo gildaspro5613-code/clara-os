@@ -34,3 +34,12 @@ test('isolated proxy: losing a response after headers cannot become a false comp
  try{await assert.rejects(()=>request(port),error=>error.code==='ECONNRESET');assert.equal(requests,1);}
  finally{await close(proxy);await close(upstream);}
 });
+
+
+test('isolated proxy: browser cancellation closes the in-flight upstream without a retry',async()=>{
+ let requests=0,started,stopped;const start=new Promise(resolve=>{started=resolve;}),stop=new Promise(resolve=>{stopped=resolve;});
+ const upstream=http.createServer((_req,res)=>{requests++;res.on('close',stopped);started();});const upstreamPort=await listen(upstream);
+ const proxy=http.createServer((req,res)=>forwardNativeRequest(req,res,upstreamPort)),port=await listen(proxy);
+ try{const client=http.get({host:'127.0.0.1',port},()=>{});client.on('error',()=>{});await start;client.destroy();await Promise.race([stop,new Promise((_,reject)=>{const timeout=setTimeout(()=>reject(Error('Upstream not cancelled')),1000);timeout.unref();})]);assert.equal(requests,1);}
+ finally{await close(proxy);await close(upstream);}
+});

@@ -1,5 +1,7 @@
 # PR #223 — Raccordement vocal historique, preuve ciblée
 
+> État historique avant raccordement. Le code et la réception suivants sont décrits dans [le compte rendu du raccordement natif](native-receipt/report.md).
+
 Base examinée : `e50ca57d074e1b414311da5a209fb9ccdd356475`. Aucun fichier applicatif modifié. Cette livraison ajoute uniquement le reproducer dans le test de sécurité vocal existant et les résultats ci-joints.
 
 ## Provenance retrouvée

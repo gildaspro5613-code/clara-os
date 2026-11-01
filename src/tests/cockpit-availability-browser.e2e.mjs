@@ -32,13 +32,8 @@ test('cockpit: real header navigation, native service refusals and durable chat 
   await page.getByRole('banner').getByText('⌘K / Ctrl K',{exact:true}).waitFor();
   const talkButtons=page.getByRole('button',{name:/Parler/});
   assert.ok(await talkButtons.count()>0,'Historical voice widget stays visible');
-  for(const button of await talkButtons.all())assert.equal(await button.isDisabled(),true,'Native voice remains fenced');
-  // The historical voice control is visible but always disabled in native scope. Agenda may be legitimately available
-  // when the selected native session has an attested Google connection/calendar.
-  assert.ok(await page.getByText('Ce service externe reste indisponible dans le contexte natif tant que ses autorisations ne sont pas certifiées.',{exact:true}).count()>=1);
-  // The authorized Agenda can legitimately call /api/calendar in this fixture;
-  // native voice must never initiate an ElevenLabs session.
-  assert.equal(calls.filter(p=>p==='/api/elevenlabs/session').length,0);
+  const probe=await page.request.get(origin+'/api/voice/transcribe');assert.equal(probe.status(),200,'Native voice still requires a current explicit operator/project authority');
+  assert.equal(calls.filter(p=>p==='/api/elevenlabs/session').length,0,'No autonomous provider session in native mode');
   // The document library remains available independently of the header search.
   await page.locator('aside a[href="/documents"]').click();
   await page.waitForURL(origin+'/documents');
