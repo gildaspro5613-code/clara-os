@@ -57,7 +57,7 @@ export function useClaraRuntimeVoice(disabled:boolean,scope?:NativeSelectors){
   const check=async()=>{
    alive();if(!scope)return;
    try{
-    const response=await fetch('/api/voice/transcribe'+query,{headers,cache:'no-store',signal:AbortSignal.any([abort.signal,AbortSignal.timeout(3000)])});
+    const response=await fetch('/api/voice/transcribe'+query,{headers,cache:'no-store',signal:AbortSignal.any([abort.signal,AbortSignal.timeout(10000)])});
     if(!response.ok)throw Error('VOICE_AUTHORITY_DENIED');alive();
    }catch(error){if(r.epoch===epoch)setAuthorized(false);throw error;}
   };
@@ -134,7 +134,7 @@ export function useClaraRuntimeVoice(disabled:boolean,scope?:NativeSelectors){
    // Resume Web Audio within the user's gesture (including mobile browsers).
    r.context=new AudioContext();await r.context.resume();alive();
    setState('connecting');await check();
-   if(scope){let checking=false;r.timer=setInterval(()=>{if(checking)return;checking=true;check().catch(fail).finally(()=>{checking=false;});},500);}
+   if(scope){let checking=false;r.timer=setInterval(()=>{if(checking)return;checking=true;check().catch(fail).finally(()=>{checking=false;});},5000);}
    deadline();
    const saved=key?sessionStorage.getItem(key):null;
    if(saved){const pending=JSON.parse(saved);if(pending.sessionId!==scope?.sessionId||typeof pending.operationId!=='string'||typeof pending.message!=='string')throw Error('VOICE_PENDING_INVALID');await playAndCommit(pending);return;}
