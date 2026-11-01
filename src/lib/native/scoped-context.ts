@@ -13,6 +13,8 @@ import type {AcquisitionRecord} from '@/lib/acquisition/acquisition-store';
 import type {MdProjectIntake} from '@/types';
 import type {CommercialCommunicationDraft} from '@/lib/acquisition/commercial-communication-draft';
 export interface ScopedNativeContext {
+ /** Request-scoped presentation identity; never an authorization or a persisted default. */
+ authenticatedFirstName?:string|null;
  consultationProtocolVersion:number;query:RegistryQuery;scope:NativeSelectors&{digest:string};userId:string;session:ClaraSession;
  missions:Map<string,Mission>;journal:JournalEntry[];writes:Map<string,Mission>;entries:JournalEntry[];
  acquisitions:Map<string,AcquisitionRecord>;intakes:Map<string,MdProjectIntake>;intakeMetadata:Map<string,{productId:string;sessionKey:string;eventId:string}>;acquisitionSnapshots:Record<string,unknown>;draftWrites:Map<string,CommercialCommunicationDraft>;draftRevisionSteps:Map<string,number>;
