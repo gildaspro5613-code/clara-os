@@ -24,7 +24,7 @@ export function guardElevenLabsSession(
  },{
   stopMicrophone:()=>tracks.stopMicrophone(),
   stopPlayback:()=>tracks.stopPlayback(),
-  endProviderSession:()=>sdk.endSession(),
+  endProviderSession:async()=>{await sdk.endSession();},
  },intervalMs);
 }
 /** Authenticated browser probe using exactly the selected native scope. */
