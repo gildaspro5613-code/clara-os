@@ -108,3 +108,13 @@ Commande CI/locale prévue : `node --import tsx --test src/tests/custom-llm-isol
 Documentation fournisseur consultée : https://elevenlabs.io/docs/eleven-agents/customization/llm/custom-llm (Chat Completions/Responses compatibles ; SSE requis). Les tests de contrat locaux ne prouvent pas qu'ElevenLabs transmettra au système les identifiants natifs ni qu'une voix externe sera interrompue lors d'une révocation.
 
 **GO limité à la qualification isolée. NO-GO raccord fournisseur / merge / Production.**
+
+## Serveur natif — incrément isolé ajouté
+
+- `src/lib/voice/native-brain-adapter.ts` contient `respondThroughNativeBrain`, un adaptateur **server-only et sans route HTTP**, qui impose la lecture d'un tour Custom LLM, l'appel d'une fonction native injectée, une réponse 200, un reçu et la correspondance exacte du dernier message Clara avec la conversation native avant construction du SSE.
+- `src/tests/native-brain-adapter.test.ts` couvre le reçu valide, l'opération non achevée, la divergence avec l'historique et la révocation après commit.
+- Le workflow `voice-custom-llm-isolated.yml` déclenche désormais ces tests, le contrôle TypeScript, lint et build sur la branche de PR #228.
+
+**Important :** ce composant ne constitue PAS encore un raccord réel à `nativeChatRequest` : le `NativeVoiceLease` et `invokeNativeChat` sont injectés sans implémentation opérationnelle. Aucune authentification réseau ElevenLabs, création de bail durable, arrêt WebSocket, mutation d'agent fournisseur ou modification de l'interface n'est réalisée. Pour éviter un contournement d'autorité, aucune route publique n'est créée avant la validation du transport fournisseur et de la liaison sûre des identifiants. Aucun certificat de révocation de flux audio continu n'est revendiqué.
+
+Le passage suivant exige un contrôleur réel liant la session ElevenLabs au principal propriétaire authentifié, et une preuve de suppression/arrêt de flux à la révocation sur deux côtés (serveur + navigateur).
