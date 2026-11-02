@@ -69,3 +69,27 @@ Le fichier `src/app/api/clara/chat/route.ts` analysé sur `main` appelle `runBra
 6. Aucun secret, URL signée ou autorisation ne doit être transmis à un autre projet/fil. La configuration ElevenLabs côté fournisseur et la compatibilité avec le protocole SSE restent à valider hors Production.
 
 **Décision actuelle : option Custom LLM documentée, faisabilité opérationnelle non certifiée, aucune restauration applicative et NO-GO merge/Production.**
+
+
+## Localisation confirmée du writer natif — étape suivante
+
+Inspection directe de la branche de PR #228 :
+
+- `src/app/api/clara/chat/route.ts` : `POST` délègue à `nativeChatRequest(request, () => scopedChat(request))`. `scopedChat` reconstitue le contexte opérationnel, déclenche `dispatchEvent` vers le Brain, compose la réponse et utilise `saveSession`. Le wrapper natif prend ensuite le reçu de réponse et la preuve pour l'opération transactionnelle de finalisation.
+- `src/lib/native/chat.ts` : `nativeChatRequest` valide le scope et l'origine, exige un `operationId`, réserve l'opération par `clara_native_chat_command(...,'reserve',...)`, retourne le reçu en cas de rejeu, puis finalise avec `chatCommitProof` dans `withNativeScope`. La migration 017 assure l'archivage natif ancien/nouveau selon les commentaires du code. Le comportement SQL réel est à requalifier sur environnement isolé.
+- `src/app/api/clara/conversation/route.ts` : lecture du même fil via `nativeCommand(scope,'history',...)`, avec comparaison stricte entre `thread` et `scope.sessionId`.
+- `src/components/clara/useClaraRuntimeVoice.ts` : réutilise **déjà** `/api/clara/chat` avec `operationId` et `sessionId`, attend puis vérifie l'historique natif, fait synthétiser `messageId` via `/api/voice/speak`, et reprend `listen()` après la fin de lecture. Il s'agit donc déjà d'une boucle multi-tours dans le code, mais pas de la session conversationnelle ElevenLabs d'août. Le dysfonctionnement constaté sur navigateur réel ne saurait être considéré résolu par cette preuve de code.
+
+### Conséquence architecturale
+
+Il **ne faut pas créer un second writer ou appeler directement `dispatchEvent` depuis un nouvel endpoint vocal**. Le pont ElevenLabs, s'il est retenu, doit utiliser la même opération native `reserve → Brain → commit/reçu → history`, sans dupliquer les tours ni contourner `withNativeScope`.
+
+L'adaptateur Custom LLM devra traiter le format de requête et de flux de réponse exigé par ElevenLabs ; le transport d'identité et de session entre un fournisseur externe et une route aujourd'hui fondée sur les cookies et `sameOrigin` n'est **pas résolu**. Prévoir une authentification serveur-fournisseur et une association de session à durée limitée, sans confiance dans des paramètres libres. Ne pas remplacer `sameOrigin` par une exemption publique générique.
+
+### Deux qualifications avant une implémentation
+
+A. Vérifier expérimentalement le contrat Custom LLM en flux (identification et séquençage des tours, exigence de persistance avant restitution, annulation, absence de réponse de secours autonome) avec un fournisseur simulé.
+
+B. Vérifier si la session ElevenLabs continue peut être arrêtée immédiatement par Clara OS et si Safari iOS permet la reprise conforme après chaque réponse. Un flux externe SSE/WebSocket peut survivre à la fermeture de la requête applicative : l'arrêt local et la révocation sont deux exigences distinctes.
+
+**Statut : writer natif retrouvé et réutilisation prioritaire confirmée par lecture du code ; intégration fournisseur et validation iPhone NON démontrées. Pas de code applicatif, pas de merge/déploiement.**
