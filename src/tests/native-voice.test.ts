@@ -78,3 +78,56 @@ test('voice recovery adopts the existing native pending receipt on 202 without r
  await hook(false,scope).toggle();assert.deepEqual(JSON.parse(storage.get(key)!),pending);
  assert.deepEqual(calls,['/api/voice/transcribe','/api/voice/transcribe','/api/clara/chat']);
 });
+
+const startupScope={workspaceId:'w',clientId:'c',projectId:'p',sessionId:'native:startup-fixture'};
+function harness(fetcher:(path:string,init:RequestInit)=>Promise<Response>,microphone?:()=>Promise<never>){
+ const values:unknown[]=[],effects:Array<()=>unknown>=[],timings:number[]=[],ticks:Array<()=>void>=[];let index=0,mics=0;const ref={current:null as unknown};
+ const exports:Record<string,unknown>={};
+ const react={useState:(initial:unknown)=>{const slot=index++;values[slot]=slot===1?true:initial;return [values[slot],(value:unknown)=>{values[slot]=value;}];},useRef:(initial:unknown)=>{ref.current=initial;return ref;},useCallback:(fn:unknown)=>fn,useEffect:(fn:()=>unknown)=>effects.push(fn)};
+ vm.runInNewContext(ts.transpileModule(readFileSync('src/components/clara/useClaraRuntimeVoice.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{
+  exports,require:(name:string)=>{if(name!=='react')throw Error('Unexpected import');return react;},
+  Response,URL,URLSearchParams,AbortController,AbortSignal:{any:AbortSignal.any,timeout:(ms:number)=>{timings.push(ms);return AbortSignal.timeout(ms);}},
+  AudioContext:class {async resume(){} async close(){}},
+  navigator:{mediaDevices:{getUserMedia:async()=>{mics++;if(microphone)return microphone();throw Error('Unexpected microphone');}}},
+  window:{dispatchEvent:()=>{},addEventListener:()=>{},removeEventListener:()=>{}},CustomEvent:class{},
+  setInterval:(fn:()=>void)=>{ticks.push(fn);return 1;},clearInterval:()=>{},setTimeout:()=>1,clearTimeout:()=>{},
+  sessionStorage:{getItem:()=>null},fetch:fetcher,
+ });
+ const voice=(exports.useClaraRuntimeVoice as (disabled:boolean,scope:unknown)=>unknown)(false,startupScope) as {toggle:()=>Promise<void>};
+ return {voice,values,effects,timings,ticks,mics:()=>mics};
+}
+const flush=()=>new Promise(resolve=>setImmediate(resolve));
+test('voice startup: a pre-start readiness response cannot undo a newer authority refusal',async()=>{
+ let release!:(r:Response)=>void,calls=0;const h=harness(async()=>{if(++calls===1)return new Promise(resolve=>{release=resolve;});return Response.json({success:false,code:'NATIVE_SCOPE_DENIED'},{status:403});});
+ h.effects[2]();await h.voice.toggle();assert.equal(h.values[1],false);release(Response.json({success:true,code:'NATIVE_VOICE_READY'}));await flush();
+ assert.equal(h.values[1],false,'Late readiness must not reauthorize after the active denial');assert.equal(h.mics(),0);
+});
+test('voice startup: unchanged active timeout fails closed but is not an access refusal',async()=>{
+ const h=harness(async()=>{throw new DOMException('Private transport detail must never be copied','TimeoutError');});await h.voice.toggle();
+ assert.equal(h.values[1],false);const failure=h.values[3] as {kind:string;stage:string};assert.equal(failure?.kind,'timeout');assert.equal(failure?.stage,'authority');assert.equal(h.mics(),0);assert.deepEqual(h.timings,[3000]);assert.ok(!JSON.stringify(failure).includes('Private'));
+});
+test('voice startup: a real HTTP denial retains its public status/code and stops before microphone',async()=>{
+ const h=harness(async()=>Response.json({success:false,code:'NATIVE_SCOPE_DENIED',detail:'Private fixture detail'},{status:403}));await h.voice.toggle();
+ const failure=h.values[3] as {kind:string;status:number;code:string};assert.equal(failure?.kind,'denied');assert.equal(failure?.status,403);assert.equal(failure?.code,'NATIVE_SCOPE_DENIED');assert.equal(h.mics(),0);assert.ok(!JSON.stringify(failure).includes('Private'));
+});
+test('voice startup: browser microphone rejection is distinct from authority and contains no private error text',async()=>{
+ const h=harness(async()=>Response.json({success:true}),async()=>{throw new DOMException('Private device identifier','NotAllowedError');});await h.voice.toggle();
+ const failure=h.values[3] as {stage:string;kind:string};assert.equal(failure?.stage,'microphone');assert.equal(failure?.kind,'device');assert.equal(h.mics(),1);assert.ok(!JSON.stringify(failure).includes('Private'));
+});
+test('voice startup: initial readiness keeps its 10 s bound and never opens the microphone',async()=>{
+ const h=harness(async()=>Response.json({success:true}));h.effects[2]();await flush();assert.deepEqual(h.timings,[10000]);assert.equal(h.mics(),0);assert.equal(h.values[1],true);
+});
+test('voice startup: explicit stop wins over a late active denial without restarting or replacing the failure',async()=>{
+ let release!:(r:Response)=>void;const h=harness(async()=>new Promise(resolve=>{release=resolve;}));const starting=h.voice.toggle();await flush();await h.voice.toggle();assert.equal(h.values[0],'idle');release(Response.json({success:false,code:'NATIVE_SCOPE_DENIED'},{status:403}));await starting;assert.equal(h.values[0],'idle');assert.equal(h.values[3],null);assert.equal(h.mics(),0);
+});
+test('voice startup: HTTP denial survives a malformed body; certification conflict is not called an ACL refusal',async()=>{
+ const malformed=harness(async()=>new Response('Private upstream HTML',{status:403}));await malformed.voice.toggle();const denied=malformed.values[3] as {kind:string;status:number};assert.equal(denied.kind,'denied');assert.equal(denied.status,403);assert.ok(!JSON.stringify(denied).includes('Private'));
+ const conflict=harness(async()=>Response.json({success:false,code:'NATIVE_THREAD_REVIEW_REQUIRED'},{status:409}));await conflict.voice.toggle();const failure=conflict.values[3] as {kind:string;status:number};assert.equal(failure.kind,'response');assert.equal(failure.status,409);assert.equal(conflict.values[2],'authorization');assert.equal(conflict.mics(),0);
+});
+
+test('voice startup: periodic and foreground checks share one pending authority read without changing the 3 s bound',async()=>{
+ let calls=0;const pending:Array<(r:Response)=>void>=[];const h=harness(async()=>{calls++;return new Promise(resolve=>pending.push(resolve));});
+ const starting=h.voice.toggle();await flush();assert.equal(calls,1);pending.shift()!(Response.json({success:true}));await flush();assert.equal(calls,2);
+ h.ticks[0]();await flush();assert.equal(calls,2,'The periodic check must not duplicate the foreground authority request');
+ pending.shift()!(Response.json({success:true}));await starting;await flush();assert.equal(h.mics(),1);assert.deepEqual(h.timings,[3000,3000]);
+});
