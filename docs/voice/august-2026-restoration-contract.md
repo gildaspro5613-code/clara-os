@@ -39,3 +39,33 @@ Cette première étape documente les preuves et les contraintes. **Aucun code ap
 - **PR #140 (4 octobre 2026)** : demande de restaurer « Cockpit Hero + voice » avec le même contexte durable, confirmant l'intention de continuité ; ne démontre pas que le flux WebSocket historique écrivait dans la conversation native.
 
 **Conclusion bornée** : l'écoute continue historique est retrouvée dans le code ; la preuve d'un bridge vocal→Brain durable reste absente des fichiers et PR examinés. L'existence passée d'une voix fonctionnelle ne doit pas être confondue avec la certification de cette liaison.
+
+
+## Analyse complémentaire — choix du pont (2 novembre 2026)
+
+### Nouvelle source fournisseur
+
+La documentation officielle ElevenLabs « Integrate your own model » décrit la prise en charge d'un endpoint LLM personnalisé compatible OpenAI Chat Completions ou Responses, avec réponses en flux SSE. Source : https://elevenlabs.io/docs/eleven-agents/customization/llm/custom-llm
+
+**Option privilégiée à qualifier :** garder `@elevenlabs/react` pour la session audio continue et connecter l'agent à un **endpoint adaptateur Clara OS** compatible avec le protocole Custom LLM. Cet endpoint n'est pas un nouveau cerveau : il doit déléguer intégralement chaque tour au pipeline natif Brain/GPT, avec conversation ID serveur, autorité et persistance. L'adaptateur ne doit pas appeler directement un modèle GPT en contournant Brain.
+
+### Pourquoi ne pas adopter immédiatement les tools webhook
+
+Les outils webhook de l'agent sont déclenchés par la décision du modèle de l'agent, selon sa configuration. Cela n'atteste pas que chaque échange passe obligatoirement par Brain. Source : https://elevenlabs.io/docs/eleven-agents/customization/tools/webhook-tools
+
+### Vérification de code supplémentaire
+
+Le fichier `src/lib/native/voice.ts` sur cette branche conserve les contrôles natifs de scope, `connections:manage`, certification de fil et revalidation périodique de 500 ms pour les requêtes STT/TTS **bufferisées**. Son commentaire précise qu'aucune session conversationnelle autonome n'est ouverte. **Ces contrôles ne couvrent pas automatiquement un WebSocket fournisseur de longue durée** ; un bail de session et une révocation active devront être établis avant toute réutilisation de la route signée.
+
+Le fichier `src/app/api/clara/chat/route.ts` analysé sur `main` appelle `runBrainDashboard` puis `OpenAIResponsesEngine`, mais l'extrait ne montre pas de persistance native de tour. Il ne faut donc **pas présumer** qu'un simple branchement Custom LLM vers cette route garantit le journal durable. Les routes, contrats et writers natifs de conversation restent à localiser/vérifier.
+
+### Contrat d'implémentation à démontrer avant code applicatif
+
+1. Authentifier la session et fixer côté serveur le workspace, le client, le projet, l'utilisateur et le fil ; aucun identifiant de contexte fourni par l'agent ne fait autorité.
+2. Vérifier la capacité du fournisseur à transmettre l'identifiant de session et chaque tour au serveur Custom LLM, sans réponse autonome ni contournement.
+3. Rendre le chemin vocal identique au chemin métier natif : un tour utilisateur, un dispatch Brain, une réponse gouvernée, et **persistances utilisateur + Clara** dans le fil autorisé, avec idempotence.
+4. Implémenter un suivi durable du bail de session ; lors d'une révocation, l'application doit forcer l'arrêt local microphone/audio et invalider les accès serveur. Tester la latence d'annulation des tours en vol et l'absence d'émission résiduelle du fournisseur.
+5. Tester sur Safari iPhone réel les cinq langues, trois tours consécutifs sans nouvel appui, coupure volontaire, navigation, reconnexion et refus inter-projets.
+6. Aucun secret, URL signée ou autorisation ne doit être transmis à un autre projet/fil. La configuration ElevenLabs côté fournisseur et la compatibilité avec le protocole SSE restent à valider hors Production.
+
+**Décision actuelle : option Custom LLM documentée, faisabilité opérationnelle non certifiée, aucune restauration applicative et NO-GO merge/Production.**
