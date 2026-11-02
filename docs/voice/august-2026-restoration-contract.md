@@ -93,3 +93,18 @@ A. Vérifier expérimentalement le contrat Custom LLM en flux (identification et
 B. Vérifier si la session ElevenLabs continue peut être arrêtée immédiatement par Clara OS et si Safari iOS permet la reprise conforme après chaque réponse. Un flux externe SSE/WebSocket peut survivre à la fermeture de la requête applicative : l'arrêt local et la révocation sont deux exigences distinctes.
 
 **Statut : writer natif retrouvé et réutilisation prioritaire confirmée par lecture du code ; intégration fournisseur et validation iPhone NON démontrées. Pas de code applicatif, pas de merge/déploiement.**
+
+
+## Protocole isolé ajouté — qualification préalable au raccord réel
+
+Fichiers de la PR #228 :
+- `src/lib/voice/custom-llm-isolated.ts` : parseur contraint du dernier tour utilisateur (`stream:true`), adaptateur SSE Chat Completions, exigence d'une autorisation avant/après une **fonction injectée** `commitViaNativeChat`, et interdiction d'émettre le texte si la finalisation native échoue.
+- `src/tests/custom-llm-isolated.test.ts` : tests de forme du message, reçu natif préalable, rejet d'une révocation et revalidation après commit.
+
+Ce code est **une fixture isolée non branchée** : la fonction `commitViaNativeChat` n'est pas connectée à l'autorité réelle ; aucun endpoint HTTP n'est exposé, aucune configuration ElevenLabs n'a été modifiée. La disponibilité fournisseur, le transport sûr de l'identité, le contrôle de révocation WebSocket et l'enchaînement audio Safari iOS restent à qualifier avant intégration.
+
+Commande CI/locale prévue : `node --import tsx --test src/tests/custom-llm-isolated.test.ts`, puis `npx tsc --noEmit` et `npm run build`. **Aucune exécution de ces commandes n'est attestée par cette modification GitHub.**
+
+Documentation fournisseur consultée : https://elevenlabs.io/docs/eleven-agents/customization/llm/custom-llm (Chat Completions/Responses compatibles ; SSE requis). Les tests de contrat locaux ne prouvent pas qu'ElevenLabs transmettra au système les identifiants natifs ni qu'une voix externe sera interrompue lors d'une révocation.
+
+**GO limité à la qualification isolée. NO-GO raccord fournisseur / merge / Production.**
