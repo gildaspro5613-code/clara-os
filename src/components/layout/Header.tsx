@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen } from "lucide-react";
+import { ArrowLeft, BookOpen } from "lucide-react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
@@ -45,10 +45,21 @@ export default function Header() {
 
   return (
     <header className="flex h-[64px] flex-shrink-0 items-center border-b border-white/10 bg-[#08111F]/95 px-4 pl-16 backdrop-blur-xl sm:h-[70px] sm:px-6 sm:pl-20 lg:px-8">
-      <div className="min-w-0 flex-1 sm:w-36 sm:flex-none xl:w-40">
-        <Link href="/" className="block truncate text-lg font-semibold tracking-tight text-white transition-opacity hover:opacity-80">
+      <div className="flex min-w-0 flex-1 items-center gap-3 sm:w-auto xl:max-w-sm">
+        {pathname !== "/" && (
+          <Link
+            href="/"
+            aria-label={tn("cockpit")}
+            title={tn("cockpit")}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-cyan-400/20 bg-cyan-400/[0.07] px-2.5 py-2 text-xs font-medium text-cyan-200 transition hover:border-cyan-400/40 hover:bg-cyan-400/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
+          >
+            <ArrowLeft size={16} aria-hidden="true" />
+            <span className="hidden sm:inline">{tn("cockpit")}</span>
+          </Link>
+        )}
+        <span className="block min-w-0 truncate text-base font-semibold tracking-tight text-white sm:text-lg">
           {pageTitle}
-        </Link>
+        </span>
       </div>
 
       <a href="#main-workspace" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-2 focus:z-[70] focus:rounded-xl focus:bg-slate-900 focus:p-3 focus:text-cyan-100">{ui("uiSkipContent")}</a>
