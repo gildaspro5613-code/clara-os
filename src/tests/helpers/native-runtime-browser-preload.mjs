@@ -1,7 +1,7 @@
 import {nativeDocumentCognitionFixture} from './native-document-cognition-fixture.mjs';
 import {googleWorkHttp} from './native-google-work-http-fixture.mjs';
-import {generateKeyPairSync,sign} from 'node:crypto';
-import {appendFileSync,writeFileSync,readFileSync,existsSync} from 'node:fs';
+import {generateKeyPairSync,sign,randomUUID} from 'node:crypto';
+import {appendFileSync,writeFileSync,renameSync,readFileSync,existsSync} from 'node:fs';
 import {execFileSync} from 'node:child_process';
 const syntheticKey=generateKeyPairSync('rsa',{modulusLength:2048});
 const publicJwk={...syntheticKey.publicKey.export({format:'jwk'}),kid:'isolated-google-key',use:'sig'};
@@ -11,6 +11,8 @@ if(process.env.DATABASE_URL!==database||process.env.POSTGRES_URL||!/^native_brow
 const scopeProofFile='/tmp/native-fixture-commercial-prompt-'+process.env.NATIVE_TEST_DATABASE;writeFileSync(scopeProofFile,'');
 const attemptsFile='/tmp/native-fixture-global-attempts-'+process.env.NATIVE_TEST_DATABASE;writeFileSync(attemptsFile,'');
 const literal=v=>v===null?'NULL':"'"+String(v).replaceAll("'","''")+"'";
+// Atomic provider fixture updates: a parallel E2E reader must never observe truncation.
+const writeVoiceState=(path,value)=>{const tmp=path+'.'+randomUUID();writeFileSync(tmp,JSON.stringify(value));renameSync(tmp,path);};
 globalThis.fetch=async(input,init)=>{
  const url=new URL(typeof input==='string'?input:input instanceof URL?input.href:input.url);
  if(url.hostname==='api.invalid'){
@@ -66,10 +68,10 @@ globalThis.fetch=async(input,init)=>{
  if(url.hostname==='api.elevenlabs.io'){
   if(process.env.ELEVENLABS_API_KEY!=='synthetic-voice-test-only'||!['/v1/speech-to-text','/v1/text-to-speech/synthetic-voice'].includes(url.pathname))throw Error('Synthetic voice fixture only');
   const path='/tmp/native-fixture-voice-'+process.env.NATIVE_TEST_DATABASE;
-  const state=JSON.parse(readFileSync(path,'utf8'));state.calls??=[];state.calls.push(url.pathname);writeFileSync(path,JSON.stringify(state));
+  const state=JSON.parse(readFileSync(path,'utf8'));state.calls??=[];state.calls.push(url.pathname);writeVoiceState(path,state);
   const signal=init?.signal;
   if(signal?.aborted)throw new DOMException('Aborted','AbortError');
-  await new Promise((resolve,reject)=>{const finish=()=>{signal?.removeEventListener('abort',cancel);resolve();};const timer=setTimeout(finish,(url.pathname.includes("text-to-speech")?state.speakDelayMs:state.delayMs)??0);const cancel=()=>{clearTimeout(timer);const latest=JSON.parse(readFileSync(path,'utf8'));latest.aborted=(latest.aborted??0)+1;writeFileSync(path,JSON.stringify(latest));reject(new DOMException('Aborted','AbortError'));};signal?.addEventListener('abort',cancel,{once:true});});
+  await new Promise((resolve,reject)=>{const finish=()=>{signal?.removeEventListener('abort',cancel);resolve();};const timer=setTimeout(finish,(url.pathname.includes("text-to-speech")?state.speakDelayMs:state.delayMs)??0);const cancel=()=>{clearTimeout(timer);const latest=JSON.parse(readFileSync(path,'utf8'));latest.aborted=(latest.aborted??0)+1;writeVoiceState(path,latest);reject(new DOMException('Aborted','AbortError'));};signal?.addEventListener('abort',cancel,{once:true});});
   if(url.pathname==='/v1/speech-to-text'&&state.failStt)return Response.json({error:'Synthetic unavailable'},{status:503});
   if(url.pathname==='/v1/speech-to-text')return Response.json({text:'Présente les missions autorisées, sans modification.',language_code:'fr'});
   // A local WAV exercises actual HTMLAudioElement playback, never ElevenLabs.
