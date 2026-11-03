@@ -354,8 +354,15 @@ export default function ClaraChatWidget({
 
       {nativeThreadReadOnly&&<p role="alert">{ui('nativeThreadReviewRequired')}</p>}
       {chatError&&<p role="alert">{chatError}</p>}
-      {pending&&!nativeThreadReadOnly&&<button type="button" disabled={loading} onClick={()=>void submitOperation(pending)}>{ui('nativeCheckChat')}</button>}
-      {pending&&!nativeThreadReadOnly&&<button type="button" disabled={loading} onClick={()=>void cancelPending()}>{ui('nativeCancelChat')}</button>}
+      {pending&&!loading&&!nativeThreadReadOnly&&(
+        <details className="mt-3 rounded-lg border border-white/10 px-3 py-2 text-sm text-white/60">
+          <summary className="cursor-pointer text-white/70">{ui('nativeChatPending')}</summary>
+          <div className="mt-3 flex flex-wrap gap-3">
+            <button type="button" className="rounded-lg border border-cyan-400/25 px-3 py-2 text-cyan-200 hover:bg-cyan-400/10" onClick={()=>void submitOperation(pending)}>{ui('nativeCheckChat')}</button>
+            <button type="button" className="rounded-lg border border-white/15 px-3 py-2 hover:bg-white/5" onClick={()=>void cancelPending()}>{ui('nativeCancelChat')}</button>
+          </div>
+        </details>
+      )}
       <form
         onSubmit={handleSubmit}
         className="mt-4 flex items-center gap-2"
