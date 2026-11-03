@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {X509Certificate,createHash} from 'node:crypto';
 import {readFileSync,mkdirSync,writeFileSync} from 'node:fs';
 import {chromium} from 'playwright';
-import {revealBusinessContext,revealContextSelection,revealMissionCreation} from './helpers/native-ui-disclosures.mjs';
+import {openContextMenu,revealBusinessContext,revealContextSelection,revealMissionCreation} from './helpers/native-ui-disclosures.mjs';
 
 const origin=process.env.DOCUMENTS_E2E_ORIGIN;
 const db=process.env.NATIVE_TEST_DATABASE;
@@ -30,12 +30,12 @@ test('interface receipt: explicit business flow, responsive navigation, five lan
   await revealMissionCreation(page);await page.getByLabel('Titre de la mission',{exact:true}).fill('MISSION_INTERFACE_SYNTHETIQUE');
   await page.getByLabel('Objectif de la mission',{exact:true}).fill('Vérifier les interfaces sans fournisseur réel');
   await Promise.all([page.waitForEvent('load'),page.getByRole('button',{name:'Créer la mission',exact:true}).click()]);
-  await page.locator('[data-context-loading="false"]').waitFor();
-  assert.equal(await page.locator('[data-native-context-switch]').evaluate(e=>e.open),false);
+  assert.equal(await page.locator('#main-workspace .native-context').count(),0);
+  await openContextMenu(page);await page.locator('[data-context-loading=false]').waitFor();
   assert.equal(await page.locator('[data-native-mission-create]').evaluate(e=>e.open),false);
   await revealBusinessContext(page);await page.getByLabel('Contact / prospect',{exact:true}).selectOption('prospect-a');page.once('dialog',d=>d.accept());
   await Promise.all([page.waitForEvent('load'),page.getByRole('button',{name:'Sélectionner le contact',exact:true}).click()]);
-  await page.locator('[data-context-loading="false"]').waitFor();
+  assert.equal(await page.locator('[data-context-loading]').count(),0);
   const current=async()=>{const r=await context.request.get(origin+'/api/clara/session');assert.equal(r.status(),200);return r.json();};
   const before=await current();assert.equal(before.mission.title,'MISSION_INTERFACE_SYNTHETIQUE');
   const message='Question informative avec retour à la ligne\nConserver la source et le contexte autorisé.';
@@ -48,7 +48,7 @@ test('interface receipt: explicit business flow, responsive navigation, five lan
   assert.equal(await chat.getByText(message,{exact:true}).evaluate(e=>getComputedStyle(e).whiteSpace),'pre-wrap');
   await page.reload();await page.getByRole('log').getByText(message,{exact:true}).waitFor();
   assert.deepEqual((await current()).mission,before.mission);
-  await page.goto(origin+'/missions');await page.getByRole('link',{name:dictionary('fr').uiNewMission,exact:true}).click();
+  await page.goto(origin+'/missions');await page.getByRole('link',{name:dictionary('fr').uiNewMission,exact:true}).click();await revealContextSelection(page);
   assert.equal(await page.locator('[data-native-context-switch]').evaluate(e=>e.open),true);await page.getByRole('button',{name:'Créer un nouveau fil',exact:true}).waitFor();assert.equal((await current()).mission.id,before.mission.id);
   await page.goto(origin+'/contacts');const contacts=await(await context.request.get(origin+'/api/contacts')).json();
   const contact=contacts.contacts.find(c=>c.id==='prospect-a');assert.ok(contact);await page.locator('[data-contact-id]').filter({hasText:contact.name}).first().waitFor();await page.locator('#main-workspace input[placeholder]').fill(contact.email);await page.getByRole('button',{name:'Rechercher',exact:true}).click();await page.locator('[data-contact-id]').filter({hasText:contact.name}).first().waitFor();
@@ -60,7 +60,7 @@ test('interface receipt: explicit business flow, responsive navigation, five lan
    await page.setViewportSize({width,height});
    for(const path of pages){
     const response=await page.goto(origin+'/'+path);assert.equal(response.status(),200,device+' '+path);
-    if(path)await page.locator('[data-context-loading="false"]').waitFor();else assert.equal(await page.locator('[data-context-loading], [data-cockpit-context]').count(),0);
+    assert.equal(await page.locator('[data-context-loading], [data-cockpit-context]').count(),0);
     assert.equal(await page.locator('[data-native-authority="locked"]').count(),0,path);
     assert.equal(await page.locator('aside a[aria-current="page"]').getAttribute('href'),'/'+path);
     assert.ok(await page.locator('#main-workspace').evaluate(e=>e.scrollWidth<=e.clientWidth+1),device+' '+path+' overflows');
@@ -85,9 +85,9 @@ test('interface receipt: explicit business flow, responsive navigation, five lan
   for(const locale of ['fr','en','es','de','it']){
    await context.addCookies([{name:'NEXT_LOCALE',value:locale,url:origin}]);
    for(const path of pages){
-    const response=await page.goto(origin+'/'+path);assert.equal(response.status(),200,locale+' '+path);if(path)await page.locator('[data-context-loading="false"]').waitFor();else assert.equal(await page.locator('[data-context-loading], [data-cockpit-context]').count(),0);
+    const response=await page.goto(origin+'/'+path);assert.equal(response.status(),200,locale+' '+path);assert.equal(await page.locator('[data-context-loading], [data-cockpit-context]').count(),0);
     assert.equal(await page.locator('html').getAttribute('lang'),locale);
-     if(path){assert.equal(await page.getByText(dictionary(locale).uiWorkspace+' · w / Client c1 / Project p1',{exact:true}).count(),0);await page.locator('[data-context-loading="false"]').waitFor();}
+     if(path){assert.equal(await page.getByText(dictionary(locale).uiWorkspace+' · w / Client c1 / Project p1',{exact:true}).count(),0);assert.equal(await page.locator('#main-workspace .native-context').count(),0);}
     assert.ok(!(await page.locator('body').innerText()).includes('MISSING_MESSAGE'));
     matrix.push({page:'/'+path,locale,device:'desktop',status:'PASS',proof:'server render, translated shared controls, source data preserved'});
    }

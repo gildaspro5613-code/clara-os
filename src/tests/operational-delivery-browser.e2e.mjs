@@ -1,4 +1,5 @@
-import {revealContextSelection} from './helpers/native-ui-disclosures.mjs';
+import './header-login-browser.e2e.mjs';
+import {revealContextSelection,closeContextSelection} from './helpers/native-ui-disclosures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {X509Certificate,createHash} from 'node:crypto';
@@ -33,13 +34,14 @@ test('delivery UI: official logo, business navigation, private advanced controls
     assert.equal(await page.getByRole('region',{name:'Contexte canonique privé',exact:true}).count(),0);
     assert.equal(await page.locator('[data-native-context-switch]').count(),0);
    }else{
-    await page.getByRole('region',{name:'Contexte canonique privé',exact:true}).waitFor();
+    assert.equal(await page.locator('#main-workspace .native-context').count(),0);
     await revealContextSelection(page);
     await page.getByText('Identifiants du contexte sélectionné',{exact:true}).waitFor();
     // The redesigned selector exposes the private context in a dedicated details section,
     // rather than repeating its former technical workspace/client/project sentence.
     assert.equal(await page.getByText(/Espace de travail · w \/ Client c1 \/ Project p1/).count(),0);
     await page.locator('[data-native-context-switch] > summary').click();
+    await closeContextSelection(page);
    }
    if(path==='documents')await page.getByText(/\[NATIVE_GOOGLE_EXPLICIT_SELECTION_REQUIRED\]/).waitFor();
    assert.equal(await page.locator('[data-native-authority="locked"]').count(),0,path);

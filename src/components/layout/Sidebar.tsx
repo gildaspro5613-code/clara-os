@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
+import NativeContextMenu from "@/components/native/NativeContextMenu";
 
 import {
   LayoutDashboard,
@@ -71,15 +72,16 @@ export default function Sidebar() {
   }, []);
   const t = useTranslations("navigation");
   const tCommon = useTranslations("common");
-  const ui = useTranslations("ui");
   const menuButton = useRef<HTMLButtonElement>(null);
   const drawer = useRef<HTMLElement>(null);
   useEffect(() => {
     if (!open) return;
     const keydown = (event: KeyboardEvent) => {
+      // A native modal owns Escape and focus while its context controls are open.
+      if (drawer.current?.querySelector('dialog[open]')) return;
       if (event.key === "Escape") { setOpen(false); menuButton.current?.focus(); }
       if (event.key === "Tab" && window.innerWidth < 1024) {
-        const controls = [menuButton.current, ...Array.from(drawer.current?.querySelectorAll<HTMLAnchorElement>("a[href]") ?? [])].filter((e): e is HTMLButtonElement | HTMLAnchorElement => !!e);
+        const controls = [menuButton.current, ...Array.from(drawer.current?.querySelectorAll<HTMLElement>("a[href],button:not(:disabled)") ?? [])].filter((e): e is HTMLElement => !!e && e.getClientRects().length > 0);
         const first = controls[0], last = controls.at(-1);
         if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
         else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
@@ -192,13 +194,7 @@ export default function Sidebar() {
 
       {/* Footer */}
       <div className="border-t border-white/10 px-5 py-4">
-        <div className="mb-4 flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full bg-cyan-400" />
-
-          <span className="text-sm text-slate-300">
-            {ui("uiWorkspace")}
-          </span>
-        </div>
+        <NativeContextMenu />
 
         <div className="text-xs leading-5 text-slate-500">
           <p className="font-medium text-slate-400">

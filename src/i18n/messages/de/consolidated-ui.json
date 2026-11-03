@@ -368,5 +368,9 @@
   "googleCalendarChoose": "Wähle unten einen freigegebenen Kalender.",
   "googleAgendaReadAvailable": "Kalenderlesen ist verfügbar. Ein Auftrag wird nur für Geschäftsvorgänge benötigt.",
   "mailChooseAuthorized": "Wähle ein freigegebenes Postfach und aktualisiere die Übersicht.",
-  "mailCachedEmpty": "Keine Nachrichten in der gespeicherten Übersicht. Eine aktuelle Synchronisierung ist damit nicht bestätigt."
+  "mailCachedEmpty": "Keine Nachrichten in der gespeicherten Übersicht. Eine aktuelle Synchronisierung ist damit nicht bestätigt.",
+  "signInWelcome": "Willkommen bei Clara OS",
+  "signInDescription": "Öffne deinen Arbeitsbereich und deine Werkzeuge mit deinem autorisierten Google-Konto.",
+  "signInWithGoogle": "Mit Google anmelden",
+  "signInContextHelp": "Bereits angemeldet? Öffne „Arbeitsbereich“ im Menü, um dein Projekt und deine Unterhaltung auszuwählen."
 }
