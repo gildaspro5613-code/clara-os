@@ -12,6 +12,40 @@ export default function NativeMailPanel({referencesOnly=false}:{referencesOnly?:
  const [loading,setLoading]=useState(true),[mailboxLoaded,setMailboxLoaded]=useState(false);
  const [connections,setConnections]=useState<Connection[]>([]),[connectionId,setConnection]=useState(''),[folders,setFolders]=useState<string[]>([]),[folder,setFolder]=useState(''),[messages,setMessages]=useState<Message[]>([]),[messageId,setMessage]=useState(''),[opened,setOpened]=useState<OpenMail|null>(null),[draft,setDraft]=useState<MailboxCommunicationDraft|null>(null),[operations,setOperations]=useState<Operation[]>([]),[review,setReview]=useState<{id:string;envelope:Review}|null>(null),[approval,setApproval]=useState<{id:string;token:string}|null>(null),[delegate,setDelegate]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
  useEffect(()=>{let active=true;void fetch('/api/native/mail',{cache:'no-store'}).then(async r=>{const b=await r.json();if(!r.ok||!b.success)throw Error();if(active)setConnections(b.connections);}).catch(()=>{if(active)setError(t('mailUnavailable'));}).finally(()=>{if(active)setLoading(false);});return()=>{active=false;};},[t]);
+ const setupStrings:Record<string,{title:string;intro:string;address:string;password:string;confirm:string;save:string;success:string;failure:string;disabled:string}>={
+ fr:{title:'Connecter la boîte Clara (IONOS)',intro:'Réservé au propriétaire. Mot de passe chiffré sur le serveur ; aucun envoi automatique.',address:'Adresse email',password:'Mot de passe IONOS',confirm:"J’autorise l’enregistrement sécurisé de cette boîte, sans envoi automatique.",save:'Enregistrer la connexion IONOS',success:'Identifiants enregistrés. La réception IMAP doit encore être vérifiée.',failure:'Connexion non enregistrée. Vérifiez les droits ou contactez l’administrateur.',disabled:'La connexion IONOS doit encore être activée par l’administrateur.'},
+ en:{title:'Connect Clara mailbox (IONOS)',intro:'Owner only. Password encrypted on the server; no automatic sending.',address:'Email address',password:'IONOS password',confirm:'I authorize securely saving this mailbox without automatic sending.',save:'Save IONOS connection',success:'Credentials saved. IMAP reception still needs verification.',failure:'Connection not saved. Check permissions or contact the administrator.',disabled:'IONOS connection needs administrator activation.'},
+ es:{title:'Conectar buzón Clara (IONOS)',intro:'Solo propietario. Contraseña cifrada en el servidor; sin envíos automáticos.',address:'Correo electrónico',password:'Contraseña IONOS',confirm:'Autorizo guardar este buzón de forma segura, sin envíos automáticos.',save:'Guardar conexión IONOS',success:'Credenciales guardadas. Falta verificar la recepción IMAP.',failure:'No se guardó la conexión. Compruebe los permisos.',disabled:'El administrador debe activar la conexión IONOS.'},
+ de:{title:'Clara-Postfach verbinden (IONOS)',intro:'Nur für Eigentümer. Passwort serverseitig verschlüsselt; kein automatischer Versand.',address:'E-Mail-Adresse',password:'IONOS-Passwort',confirm:'Ich erlaube die sichere Speicherung ohne automatischen Versand.',save:'IONOS-Verbindung speichern',success:'Zugangsdaten gespeichert. IMAP-Empfang muss noch geprüft werden.',failure:'Verbindung nicht gespeichert. Berechtigungen prüfen.',disabled:'IONOS-Verbindung muss administrativ freigeschaltet werden.'},
+ it:{title:'Collega la casella Clara (IONOS)',intro:'Solo proprietario. Password cifrata sul server; nessun invio automatico.',address:'Indirizzo email',password:'Password IONOS',confirm:'Autorizzo il salvataggio sicuro senza invio automatico.',save:'Salva connessione IONOS',success:'Credenziali salvate. La ricezione IMAP deve essere verificata.',failure:'Connessione non salvata. Controllare le autorizzazioni.',disabled:'La connessione IONOS deve essere abilitata dall’amministratore.'}
+ };
+ const setupText=setupStrings[locale]??setupStrings.fr;
+ const ionosAddresses=['clara@melodie.digital','gildas@melodie.digital','contact@melodie.digital','info@melodie.digital','support@melodie.digital'];
+ const [setupAddress,setSetupAddress]=useState('clara@melodie.digital');
+ const availableIonosAddresses=ionosAddresses.filter(a=>!connections.some(c=>c.address===a));
+ const selectedSetupAddress=availableIonosAddresses.includes(setupAddress)?setupAddress:(availableIonosAddresses[0]??'');
+ const [setupPassword,setSetupPassword]=useState('');
+ const [setupConfirmed,setSetupConfirmed]=useState(false);
+ const [setupBusy,setSetupBusy]=useState(false);
+ const [setupResult,setSetupResult]=useState('');
+ const [setupError,setSetupError]=useState('');
+ async function connectClaraMailbox(e:React.FormEvent<HTMLFormElement>){
+  e.preventDefault();
+  if(setupBusy||!setupConfirmed||!setupPassword||!selectedSetupAddress)return;
+  setSetupBusy(true);setSetupError('');setSetupResult('');
+  try{
+   const r=await fetch('/api/native/mail/setup',{method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',body:JSON.stringify({address:selectedSetupAddress,password:setupPassword,confirmed:true})});
+   const response=await r.json();
+   if(!r.ok||!response.success)throw new Error(response.code||'MAIL_SETUP_FAILED');
+   setSetupPassword('');setSetupConfirmed(false);
+      setSetupResult(setupText.success);
+   const list=await fetch('/api/native/mail',{cache:'no-store'});
+   if(list.ok){const updated=await list.json();if(updated.success&&Array.isArray(updated.connections))setConnections(updated.connections);}
+  }catch(err){
+   const code=err instanceof Error?err.message:'MAIL_SETUP_FAILED';
+   setSetupError(code==='MAIL_PROVISIONING_NOT_ENABLED'?setupText.disabled:setupText.failure);
+  }finally{setSetupBusy(false);}
+ }
  const owned=connections.find(c=>c.id===connectionId)?.owned;
  const [savedDraft,setSavedDraft]=useState<MailboxCommunicationDraft|null>(null);
  const draftDirty=!!draft&&(!savedDraft||JSON.stringify({subject:draft.subject,body:draft.body,recipients:draft.recipients,attachmentIds:draft.attachmentIds})!==JSON.stringify({subject:savedDraft.subject,body:savedDraft.body,recipients:savedDraft.recipients,attachmentIds:savedDraft.attachmentIds}));
@@ -32,6 +66,18 @@ export default function NativeMailPanel({referencesOnly=false}:{referencesOnly?:
  <h2 className="font-semibold">{t('mailTitle')}</h2><p className="my-2 text-white/60">{t('mailIsolation')}</p>
  {loading&&<p role="status">{t('uiLoading')}</p>}
  {!loading&&!error&&connections.length===0&&<p role="status" className="my-4 rounded-xl border border-white/10 p-4 text-slate-300">{t('uiMailEmpty')}</p>}
+ {!referencesOnly&&!loading&&connections.length<ionosAddresses.length&&<details className="my-4 rounded-xl border border-white/10 p-4">
+  <summary className="cursor-pointer font-semibold">{setupText.title}</summary>
+  <p className="my-3 text-white/70">{setupText.intro}</p>
+  <form onSubmit={e=>void connectClaraMailbox(e)} autoComplete="off" className="flex max-w-lg flex-col gap-3">
+   <label className="flex flex-col gap-1">{setupText.address}<select className="rounded-lg border border-white/20 bg-slate-900 p-2" value={selectedSetupAddress} disabled={setupBusy} onChange={e=>{setSetupAddress(e.target.value);setSetupPassword("");setSetupConfirmed(false);setSetupError("");setSetupResult("");}}>{availableIonosAddresses.map(a=><option key={a} value={a}>{a}</option>)}</select></label>
+   <label className="flex flex-col gap-1">{setupText.password}<input type="password" name="ionos-password" autoComplete="new-password" className="rounded-lg border border-white/20 bg-slate-900 p-2" value={setupPassword} required disabled={setupBusy} onChange={e=>setSetupPassword(e.target.value)}/></label>
+   <label className="flex items-start gap-2"><input type="checkbox" checked={setupConfirmed} disabled={setupBusy} onChange={e=>setSetupConfirmed(e.target.checked)}/>{setupText.confirm}</label>
+   <button className="rounded-lg border border-cyan-500/60 p-2 disabled:opacity-50" disabled={setupBusy||!setupPassword||!setupConfirmed}>{setupText.save}</button>
+  </form>
+  {setupError&&<p role="alert" className="mt-3 text-amber-300">{setupError}</p>}
+  {setupResult&&<p role="status" className="mt-3 text-cyan-200">{setupResult}</p>}
+ </details>}
  <label>{t('mailAccount')} <select aria-label={t('mailAccount')} className="bg-slate-900" value={connectionId} disabled={busy} onChange={e=>{setConnection(e.target.value);setMailboxLoaded(false);setNextCursor(null);setFolder('');setFolders([]);setMessages([]);setOpened(null);setMessage('');setDraft(null);setSavedDraft(null);setOperations([]);setReview(null);setApproval(null);}}><option value="">{t('choose')}</option>{connections.map(c=><option key={c.id} value={c.id}>{c.address}</option>)}</select></label>
  <button className="m-2 border p-2" disabled={busy||!connectionId} onClick={()=>void perform(refresh)}>{t('mailRefresh')}</button>
  {!loading&&!error&&connections.length>0&&!connectionId&&<p role="status" className="my-3 text-white/65">{t('mailChooseAuthorized')}</p>}
