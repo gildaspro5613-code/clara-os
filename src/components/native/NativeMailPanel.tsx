@@ -20,6 +20,8 @@ export default function NativeMailPanel({referencesOnly=false}:{referencesOnly?:
  it:{title:'Collega la casella Clara (IONOS)',intro:'Solo proprietario. Password cifrata sul server; nessun invio automatico.',address:'Indirizzo email',password:'Password IONOS',confirm:'Autorizzo il salvataggio sicuro senza invio automatico.',save:'Salva connessione IONOS',success:'Credenziali salvate. La ricezione IMAP deve essere verificata.',failure:'Connessione non salvata. Controllare le autorizzazioni.',disabled:'La connessione IONOS deve essere abilitata dall’amministratore.'}
  };
  const setupText=setupStrings[locale]??setupStrings.fr;
+ const ionosAddresses=['clara@melodie.digital','gildas@melodie.digital','contact@melodie.digital','info@melodie.digital','support@melodie.digital'];
+ const [setupAddress,setSetupAddress]=useState('clara@melodie.digital');
  const [setupPassword,setSetupPassword]=useState('');
  const [setupConfirmed,setSetupConfirmed]=useState(false);
  const [setupBusy,setSetupBusy]=useState(false);
@@ -27,13 +29,15 @@ export default function NativeMailPanel({referencesOnly=false}:{referencesOnly?:
  const [setupError,setSetupError]=useState('');
  async function connectClaraMailbox(e:React.FormEvent<HTMLFormElement>){
   e.preventDefault();
-  if(setupBusy||!setupConfirmed||!setupPassword)return;
+  if(setupBusy||!setupConfirmed||!setupPassword||connections.some(c=>c.address===setupAddress))return;
   setSetupBusy(true);setSetupError('');setSetupResult('');
   try{
-   const r=await fetch('/api/native/mail/setup',{method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',body:JSON.stringify({address:'clara@melodie.digital',password:setupPassword,confirmed:true})});
+   const r=await fetch('/api/native/mail/setup',{method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',body:JSON.stringify({address:setupAddress,password:setupPassword,confirmed:true})});
    const response=await r.json();
    if(!r.ok||!response.success)throw new Error(response.code||'MAIL_SETUP_FAILED');
    setSetupPassword('');setSetupConfirmed(false);
+   const remaining=ionosAddresses.filter(a=>a!==setupAddress&&!connections.some(c=>c.address===a));
+   if(remaining.length)setSetupAddress(remaining[0]);
    setSetupResult(setupText.success);
    const list=await fetch('/api/native/mail',{cache:'no-store'});
    if(list.ok){const updated=await list.json();if(updated.success&&Array.isArray(updated.connections))setConnections(updated.connections);}
@@ -62,11 +66,11 @@ export default function NativeMailPanel({referencesOnly=false}:{referencesOnly?:
  <h2 className="font-semibold">{t('mailTitle')}</h2><p className="my-2 text-white/60">{t('mailIsolation')}</p>
  {loading&&<p role="status">{t('uiLoading')}</p>}
  {!loading&&!error&&connections.length===0&&<p role="status" className="my-4 rounded-xl border border-white/10 p-4 text-slate-300">{t('uiMailEmpty')}</p>}
- {!referencesOnly&&!loading&&connections.length===0&&<details className="my-4 rounded-xl border border-white/10 p-4">
+ {!referencesOnly&&!loading&&connections.length<ionosAddresses.length&&<details className="my-4 rounded-xl border border-white/10 p-4">
   <summary className="cursor-pointer font-semibold">{setupText.title}</summary>
   <p className="my-3 text-white/70">{setupText.intro}</p>
   <form onSubmit={e=>void connectClaraMailbox(e)} autoComplete="off" className="flex max-w-lg flex-col gap-3">
-   <label className="flex flex-col gap-1">{setupText.address}<input className="rounded-lg border border-white/20 bg-slate-900 p-2" value="clara@melodie.digital" readOnly/></label>
+   <label className="flex flex-col gap-1">{setupText.address}<select className="rounded-lg border border-white/20 bg-slate-900 p-2" value={setupAddress} disabled={setupBusy} onChange={e=>{setSetupAddress(e.target.value);setSetupPassword("");setSetupConfirmed(false);setSetupError("");setSetupResult("");}}>{ionosAddresses.filter(a=>!connections.some(c=>c.address===a)).map(a=><option key={a} value={a}>{a}</option>)}</select></label>
    <label className="flex flex-col gap-1">{setupText.password}<input type="password" name="ionos-password" autoComplete="new-password" className="rounded-lg border border-white/20 bg-slate-900 p-2" value={setupPassword} required disabled={setupBusy} onChange={e=>setSetupPassword(e.target.value)}/></label>
    <label className="flex items-start gap-2"><input type="checkbox" checked={setupConfirmed} disabled={setupBusy} onChange={e=>setSetupConfirmed(e.target.checked)}/>{setupText.confirm}</label>
    <button className="rounded-lg border border-cyan-500/60 p-2 disabled:opacity-50" disabled={setupBusy||!setupPassword||!setupConfirmed}>{setupText.save}</button>
