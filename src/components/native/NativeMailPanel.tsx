@@ -12,6 +12,28 @@ export default function NativeMailPanel({referencesOnly=false}:{referencesOnly?:
  const [loading,setLoading]=useState(true),[mailboxLoaded,setMailboxLoaded]=useState(false);
  const [connections,setConnections]=useState<Connection[]>([]),[connectionId,setConnection]=useState(''),[folders,setFolders]=useState<string[]>([]),[folder,setFolder]=useState(''),[messages,setMessages]=useState<Message[]>([]),[messageId,setMessage]=useState(''),[opened,setOpened]=useState<OpenMail|null>(null),[draft,setDraft]=useState<MailboxCommunicationDraft|null>(null),[operations,setOperations]=useState<Operation[]>([]),[review,setReview]=useState<{id:string;envelope:Review}|null>(null),[approval,setApproval]=useState<{id:string;token:string}|null>(null),[delegate,setDelegate]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
  useEffect(()=>{let active=true;void fetch('/api/native/mail',{cache:'no-store'}).then(async r=>{const b=await r.json();if(!r.ok||!b.success)throw Error();if(active)setConnections(b.connections);}).catch(()=>{if(active)setError(t('mailUnavailable'));}).finally(()=>{if(active)setLoading(false);});return()=>{active=false;};},[t]);
+ const [setupPassword,setSetupPassword]=useState('');
+ const [setupConfirmed,setSetupConfirmed]=useState(false);
+ const [setupBusy,setSetupBusy]=useState(false);
+ const [setupResult,setSetupResult]=useState('');
+ const [setupError,setSetupError]=useState('');
+ async function connectClaraMailbox(e:React.FormEvent<HTMLFormElement>){
+  e.preventDefault();
+  if(setupBusy||!setupConfirmed||!setupPassword)return;
+  setSetupBusy(true);setSetupError('');setSetupResult('');
+  try{
+   const r=await fetch('/api/native/mail/setup',{method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',body:JSON.stringify({address:'clara@melodie.digital',password:setupPassword,confirmed:true})});
+   const response=await r.json();
+   if(!r.ok||!response.success)throw new Error(response.code||'MAIL_SETUP_FAILED');
+   setSetupPassword('');setSetupConfirmed(false);
+   setSetupResult('Identifiants enregistrés. La lecture IMAP doit encore être vérifiée avant de considérer la boîte opérationnelle.');
+   const list=await fetch('/api/native/mail',{cache:'no-store'});
+   if(list.ok){const updated=await list.json();if(updated.success&&Array.isArray(updated.connections))setConnections(updated.connections);}
+  }catch(err){
+   const code=err instanceof Error?err.message:'MAIL_SETUP_FAILED';
+   setSetupError(code==='MAIL_PROVISIONING_NOT_ENABLED'?'Activation administrative de la connexion IONOS encore nécessaire.':'Connexion non enregistrée. Vérifiez vos droits ou contactez l’administrateur.');
+  }finally{setSetupBusy(false);}
+ }
  const owned=connections.find(c=>c.id===connectionId)?.owned;
  const [savedDraft,setSavedDraft]=useState<MailboxCommunicationDraft|null>(null);
  const draftDirty=!!draft&&(!savedDraft||JSON.stringify({subject:draft.subject,body:draft.body,recipients:draft.recipients,attachmentIds:draft.attachmentIds})!==JSON.stringify({subject:savedDraft.subject,body:savedDraft.body,recipients:savedDraft.recipients,attachmentIds:savedDraft.attachmentIds}));
@@ -32,6 +54,18 @@ export default function NativeMailPanel({referencesOnly=false}:{referencesOnly?:
  <h2 className="font-semibold">{t('mailTitle')}</h2><p className="my-2 text-white/60">{t('mailIsolation')}</p>
  {loading&&<p role="status">{t('uiLoading')}</p>}
  {!loading&&!error&&connections.length===0&&<p role="status" className="my-4 rounded-xl border border-white/10 p-4 text-slate-300">{t('uiMailEmpty')}</p>}
+ {!referencesOnly&&!loading&&connections.length===0&&<details className="my-4 rounded-xl border border-white/10 p-4">
+  <summary className="cursor-pointer font-semibold">Connecter la boîte Clara (IONOS)</summary>
+  <p className="my-3 text-white/70">Réservé au propriétaire de Mélodie Digital. Le mot de passe est envoyé à Clara OS via la connexion sécurisée et chiffré côté serveur. Aucun envoi d'email n'est activé par cette opération.</p>
+  <form onSubmit={e=>void connectClaraMailbox(e)} autoComplete="off" className="flex max-w-lg flex-col gap-3">
+   <label className="flex flex-col gap-1">Adresse email<input className="rounded-lg border border-white/20 bg-slate-900 p-2" value="clara@melodie.digital" readOnly/></label>
+   <label className="flex flex-col gap-1">Mot de passe IONOS<input type="password" name="ionos-password" autoComplete="new-password" className="rounded-lg border border-white/20 bg-slate-900 p-2" value={setupPassword} required disabled={setupBusy} onChange={e=>setSetupPassword(e.target.value)}/></label>
+   <label className="flex items-start gap-2"><input type="checkbox" checked={setupConfirmed} disabled={setupBusy} onChange={e=>setSetupConfirmed(e.target.checked)}/>J'autorise l'enregistrement sécurisé de cette boîte pour Clara OS, sans envoi automatique.</label>
+   <button className="rounded-lg border border-cyan-500/60 p-2 disabled:opacity-50" disabled={setupBusy||!setupPassword||!setupConfirmed}>Enregistrer la connexion IONOS</button>
+  </form>
+  {setupError&&<p role="alert" className="mt-3 text-amber-300">{setupError}</p>}
+  {setupResult&&<p role="status" className="mt-3 text-cyan-200">{setupResult}</p>}
+ </details>}
  <label>{t('mailAccount')} <select aria-label={t('mailAccount')} className="bg-slate-900" value={connectionId} disabled={busy} onChange={e=>{setConnection(e.target.value);setMailboxLoaded(false);setNextCursor(null);setFolder('');setFolders([]);setMessages([]);setOpened(null);setMessage('');setDraft(null);setSavedDraft(null);setOperations([]);setReview(null);setApproval(null);}}><option value="">{t('choose')}</option>{connections.map(c=><option key={c.id} value={c.id}>{c.address}</option>)}</select></label>
  <button className="m-2 border p-2" disabled={busy||!connectionId} onClick={()=>void perform(refresh)}>{t('mailRefresh')}</button>
  {!loading&&!error&&connections.length>0&&!connectionId&&<p role="status" className="my-3 text-white/65">{t('mailChooseAuthorized')}</p>}
