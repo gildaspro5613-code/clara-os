@@ -1,3 +1,4 @@
+import './google-reconnect-postgres.test';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {execFileSync,execFile} from 'node:child_process';

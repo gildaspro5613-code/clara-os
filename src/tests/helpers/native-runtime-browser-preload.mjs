@@ -31,7 +31,7 @@ globalThis.fetch=async(input,init)=>{
    const output=execFileSync('docker',['exec','clara-canonical-test-postgres','psql','-U','postgres','-d',process.env.NATIVE_TEST_DATABASE,'-qAt','-v','ON_ERROR_STOP=1','-v','VERBOSITY=verbose','-c',`SELECT row_to_json(r) FROM (${statement})r`],{encoding:'utf8',stdio:['pipe','pipe','pipe']});
    const rows=output.trim().split('\n').filter(Boolean).map(x=>JSON.parse(x)),names=Object.keys(rows[0]??{});
    return Response.json({fields:names.map(name=>({name,dataTypeID:3802})),rows:rows.map(r=>names.map(n=>JSON.stringify(r[n]))),rowCount:rows.length,command:'SELECT',rowAsArray:true});
-  }catch(e){return Response.json({message:'Isolated authority error',code:String(e.stderr).match(/ERROR:\s+([A-Z0-9]{5}):/)?.[1]??'XX000'},{status:400});}
+  }catch(e){return Response.json({message:/ERROR:\s+42501:\s+NATIVE_GOOGLE_REAUTH_REQUIRED(?:\r?\n|$)/.test(String(e.stderr))?'NATIVE_GOOGLE_REAUTH_REQUIRED':'Isolated authority error',code:String(e.stderr).match(/ERROR:\s+([A-Z0-9]{5}):/)?.[1]??'XX000'},{status:400});}
  }
  if(['www.googleapis.com','oauth2.googleapis.com','openidconnect.googleapis.com'].includes(url.hostname)){
   const state=JSON.parse(readFileSync('/tmp/native-fixture-google-state-'+process.env.NATIVE_TEST_DATABASE,'utf8'));

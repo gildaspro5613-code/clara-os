@@ -372,5 +372,12 @@
   "signInWelcome": "Welcome to Clara OS",
   "signInDescription": "Access your workspace and tools with your authorized Google account.",
   "signInWithGoogle": "Sign in with Google",
-  "signInContextHelp": "Already signed in? Open “Workspace” in the menu to choose your project and conversation."
+  "signInContextHelp": "Already signed in? Open “Workspace” in the menu to choose your project and conversation.",
+  "googleAccountNumber": "Google account {number}",
+  "googleReconnectHelp": "Renew this Google connection before using it. Your existing permissions will be preserved.",
+  "googleReconnectAction": "Reconnect this Google account",
+  "googleReconnectOwnerHelp": "The owner must reconnect this Google connection before it can be used.",
+  "googleConnectionDenied": "You cannot access this connection in the selected project. Check your workspace and project.",
+  "googleConnectionUnavailable": "Google connections are temporarily unavailable. Try again later.",
+  "googleConnectionSignIn": "Sign in to Clara OS to view your Google connections."
 }

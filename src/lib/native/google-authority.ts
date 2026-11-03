@@ -8,7 +8,12 @@ import type {Connection} from '@/lib/connections/connection';
 export const googleProofHash=(v:string)=>createHash('sha256').update(v).digest('hex');
 export function nativeGoogleCommands(query?:RegistryQuery){return async(operation:string,payload:Record<string,unknown>={})=>{
  const ctx=nativeContext();if(!ctx)throw new RegistryError(403,'NATIVE_GOOGLE_SCOPE_REQUIRED');const s=ctx.scope;const run=query??ctx.query??sql;
- try {const rows=await run`SELECT clara_native_google_command(${s.digest},${s.workspaceId},${s.clientId},${s.projectId},${s.sessionId},${operation},${JSON.stringify(payload)}::jsonb) AS data`;return (rows[0] as {data:Record<string,unknown>}).data;}catch(error){if((error as {code?:string}).code==='40001')throw new RegistryError(409,'NATIVE_DOCUMENT_REVISION_CONFLICT');databaseError(error);}
+ try {const rows=await run`SELECT clara_native_google_command(${s.digest},${s.workspaceId},${s.clientId},${s.projectId},${s.sessionId},${operation},${JSON.stringify(payload)}::jsonb) AS data`;return (rows[0] as {data:Record<string,unknown>}).data;}catch(error){
+  // This reviewed status refusal follows the unchanged native identity/scope checks.
+  // Never expose arbitrary SQL messages or reclassify another permission failure.
+  if((error as {code?:string})?.code==='42501'&&(error as {message?:string}).message==='NATIVE_GOOGLE_REAUTH_REQUIRED')throw new RegistryError(403,'NATIVE_GOOGLE_REAUTH_REQUIRED');
+  if((error as {code?:string})?.code==='40001')throw new RegistryError(409,'NATIVE_DOCUMENT_REVISION_CONFLICT');databaseError(error);
+ }
 };}
 export const nativeGoogleCommand=nativeGoogleCommands();
 export interface NativeGoogleProof {connectionId:string;revision:number;issuer:string;subject:string;ownerUserId:string;userId:string;encryptedPayload?:string;connection:Record<string,unknown>}

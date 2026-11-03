@@ -63,7 +63,7 @@ export default function AgendaWidget() {
         const data: CalendarResponse = await response.json();
 
         if (!response.ok || !data.success) {
-          const key=data.code==='NATIVE_GOOGLE_CONNECTION_REQUIRED'?'agendaConnectionRequired':data.code==='NATIVE_GOOGLE_CALENDAR_REQUIRED'?'agendaCalendarRequired':response.status===401?'agendaSessionExpired':response.status===403?'agendaAccessDenied':'agendaTemporarilyUnavailable';
+          const key=['NATIVE_GOOGLE_REAUTH_REQUIRED','GOOGLE_REAUTH_REQUIRED'].includes(data.code??'')?'agendaReconnectRequired':data.code==='NATIVE_GOOGLE_CONNECTION_REQUIRED'?'agendaConnectionRequired':data.code==='NATIVE_GOOGLE_CALENDAR_REQUIRED'?'agendaCalendarRequired':response.status===401?'agendaSessionExpired':response.status===403?'agendaAccessDenied':'agendaTemporarilyUnavailable';
           if(!cancelled&&current===sequence){setEvents([]);setError(t(key));}return;
         }
 

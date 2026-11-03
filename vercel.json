@@ -24,7 +24,8 @@
       "fix/production-existing-capabilities-20261101": false,
       "fix/cockpit-operational-finalization-20261101": false,
       "fix/native-voice-startup-20261102": false,
-      "fix/header-login-cleanup-20261103": false
+      "fix/header-login-cleanup-20261103": false,
+      "fix/google-reconnect-ionos-reception-20261103": false
     }
   }
 }

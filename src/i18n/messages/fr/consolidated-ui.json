@@ -372,5 +372,12 @@
   "signInWelcome": "Bienvenue dans Clara OS",
   "signInDescription": "Retrouve ton espace de travail et tes outils avec ton compte Google autorisé.",
   "signInWithGoogle": "Se connecter avec Google",
-  "signInContextHelp": "Déjà connecté ? Ouvre « Espace de travail » dans le menu pour choisir ton projet et ta conversation."
+  "signInContextHelp": "Déjà connecté ? Ouvre « Espace de travail » dans le menu pour choisir ton projet et ta conversation.",
+  "googleAccountNumber": "Compte Google {number}",
+  "googleReconnectHelp": "Cette connexion Google doit être renouvelée avant de pouvoir être utilisée. Tes accès existants seront conservés.",
+  "googleReconnectAction": "Reconnecter ce compte Google",
+  "googleReconnectOwnerHelp": "Le propriétaire de cette connexion Google doit la reconnecter avant son utilisation.",
+  "googleConnectionDenied": "Tu n’as pas accès à cette connexion dans le projet sélectionné. Vérifie ton espace et ton projet.",
+  "googleConnectionUnavailable": "Les connexions Google sont momentanément indisponibles. Réessaie plus tard.",
+  "googleConnectionSignIn": "Connecte-toi à Clara OS pour consulter tes connexions Google."
 }
