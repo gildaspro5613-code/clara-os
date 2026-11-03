@@ -1,0 +1,29 @@
+Base exacte : 1f7b25b0cd8ff41c9f08c04089405662285bd1fa.
+
+PASS — 19 tests unitaires/SSR/non-régression/sécurité, 0 ignoré :
+node --import tsx --test src/tests/historical-cockpit.test.ts src/tests/native-authority.test.ts
+Le point d'entrée historique importe agenda-presentation.test.ts : date Paris, 5 langues, minuit, fins de mois/année, journées DST 23/25h, refus publics, SSR identique en UTC et Californie, paramètres initialement repliés.
+
+PASS — recette ciblée de présentation HTTPS/PostgreSQL :
+node --import tsx --test src/tests/agenda-presentation-browser.e2e.mjs
+30 vues (2 pages × 5 langues × 3 formats), heure Paris avec navigateur en Californie, passage à minuit sur page ouverte, reprise après suspension, aucune erreur d'hydratation, contrôles repliés/accessibles, commandes sans débordement horizontal, zéro mutation automatique. Calendrier autorisé avec événement, lecture autorisée vide, absence de connexion, absence de calendrier, reconnexion, refus fournisseur, panne et session non authentifiée. Fournisseur simulé ; routes natives et stockage réels locaux.
+
+PASS — non-régression des opérations Google existantes et confirmées :
+node --import tsx --test src/tests/native-google-work-browser.e2e.mjs
+Proposition, consentement simulé, confirmation exacte, reprise après interruption/résultat incertain, rejeu sans doublon, données durables et retour Cockpit. Les tests n'élargissent pas les permissions applicatives.
+
+PASS — recette #231 de reconnexion vérifiée séparément :
+node --import tsx --test src/tests/google-reconnect-browser.e2e.mjs
+Résultat final consigné dans evidence/reconnect-231.txt.
+
+PASS — contrôle Mail local via evidence/mail-honesty.mjs : aucune boîte autorisée, aucune boîte fictive affichée comme active.
+
+Environnement des recettes : DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 ; DOCUMENTS_E2E_CHROMIUM=/usr/bin/chromium ; NODE_EXTRA_CA_CERTS du certificat local ; NATIVE_TEST_DATABASE=native_browser_<32 caractères hexadécimaux>, fixture PostgreSQL jetable dédiée par recette Google. Pas de base distante.
+
+PASS — npx tsc --noEmit --pretty false.
+PASS — lint ciblé, sans erreur/avertissement sur les fichiers modifiés.
+PASS — build optimisé Webpack, polices Geist locales de Next dans la fixture, aucun téléchargement fournisseur.
+PASS — git diff --check.
+PASS — absence de modification des API, OAuth, SQL, scopes, autorités, connecteurs, composants partagés Google, moteurs, Header/Sidebar et architecture du Cockpit.
+
+Aucune certification Google/IONOS Production. Aucun merge, déploiement, migration ou modification distante.

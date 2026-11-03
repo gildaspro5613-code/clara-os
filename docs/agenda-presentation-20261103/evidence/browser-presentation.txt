@@ -1,0 +1,24 @@
+AGENDA_VIEWPORT_PASS fr desktop
+AGENDA_VIEWPORT_PASS fr tablet
+AGENDA_VIEWPORT_PASS fr mobile
+AGENDA_VIEWPORT_PASS en desktop
+AGENDA_VIEWPORT_PASS en tablet
+AGENDA_VIEWPORT_PASS en mobile
+AGENDA_VIEWPORT_PASS es desktop
+AGENDA_VIEWPORT_PASS es tablet
+AGENDA_VIEWPORT_PASS es mobile
+AGENDA_VIEWPORT_PASS de desktop
+AGENDA_VIEWPORT_PASS de tablet
+AGENDA_VIEWPORT_PASS de mobile
+AGENDA_VIEWPORT_PASS it desktop
+AGENDA_VIEWPORT_PASS it tablet
+AGENDA_VIEWPORT_PASS it mobile
+✔ Agenda presentation: Paris clock/midnight, real native Calendar states, lazy controls, five locales and responsive layout (145365.282461ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 146952.913897

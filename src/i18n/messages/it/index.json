@@ -348,7 +348,7 @@
     "unavailable": "Agenda non disponibile",
     "temporarilyUnavailable": "Agenda temporaneamente non disponibile.",
     "empty": "Nessun appuntamento previsto oggi.",
-    "emptyHelp": "La tua giornata sembra libera.",
+    "emptyHelp": "Il calendario autorizzato non ha restituito appuntamenti per questa giornata.",
     "allDay": "Tutto il giorno",
     "untitled": "Evento senza titolo",
     "context": "Contesto",
@@ -356,7 +356,16 @@
     "latestActivity": "Ultima attività",
     "identified": "Clara ha individuato {count, plural, one {# evento} other {# eventi}} nella tua agenda.",
     "noneRecorded": "Nessun appuntamento registrato oggi.",
-    "claraHelp": "L’agenda consente a Clara di considerare la tua giornata nelle sue azioni e raccomandazioni."
+    "claraHelp": "L’agenda consente a Clara di considerare la tua giornata nelle sue azioni e raccomandazioni.",
+    "settingsAndOperations": "Impostazioni e operazioni",
+    "advancedSettings": "Impostazioni avanzate dell’agenda",
+    "advancedHelp": "Account, calendario, autorizzazioni e operazioni esistenti. Nessuna modifica senza una tua azione e le conferme previste.",
+    "chooseAccount": "Scegli il mio account Google",
+    "chooseCalendar": "Scegli il mio calendario",
+    "reconnectAccount": "Apri le impostazioni di riconnessione",
+    "reviewSettings": "Verifica le impostazioni",
+    "signIn": "Accedi a Clara OS",
+    "appointments": "Appuntamenti del giorno"
   },
   "voiceApi": {
     "operatorRequired": "È richiesta una sessione operatore autorizzata.",

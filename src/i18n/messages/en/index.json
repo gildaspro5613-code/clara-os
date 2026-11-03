@@ -348,7 +348,7 @@
     "unavailable": "Calendar unavailable",
     "temporarilyUnavailable": "The calendar is temporarily unavailable.",
     "empty": "No appointments scheduled today.",
-    "emptyHelp": "Your day looks clear.",
+    "emptyHelp": "The authorized calendar returned no appointments for this day.",
     "allDay": "All day",
     "untitled": "Untitled event",
     "context": "Context",
@@ -356,7 +356,16 @@
     "latestActivity": "Latest activity",
     "identified": "Clara found {count, plural, one {# event} other {# events}} in your calendar.",
     "noneRecorded": "No appointments recorded today.",
-    "claraHelp": "The calendar lets Clara account for your day in her actions and recommendations."
+    "claraHelp": "The calendar lets Clara account for your day in her actions and recommendations.",
+    "settingsAndOperations": "Settings and operations",
+    "advancedSettings": "Advanced calendar settings",
+    "advancedHelp": "Existing account, calendar, permissions and operations. Nothing changes without your action and the required confirmations.",
+    "chooseAccount": "Choose my Google account",
+    "chooseCalendar": "Choose my calendar",
+    "reconnectAccount": "Open reconnection settings",
+    "reviewSettings": "Review settings",
+    "signIn": "Sign in to Clara OS",
+    "appointments": "Today’s appointments"
   },
   "voiceApi": {
     "operatorRequired": "An authorized operator session is required.",

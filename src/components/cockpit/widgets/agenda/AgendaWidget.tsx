@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import {todayCalendarUrl} from "@/modules/agenda/calendar-window";
+import {BUSINESS_TIME_ZONE,formatBusinessDate,todayCalendarUrl} from "@/modules/agenda/calendar-window";
+import {useBusinessDay} from "@/modules/agenda/useBusinessDay";
+import {calendarReadErrorKey} from "@/modules/agenda/calendar-read-state";
 import { useEffect, useState } from "react";
 import { CalendarDays, ChevronRight, Clock } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -37,6 +39,7 @@ function formatTime(event: CalendarEvent, locale: string, allDay: string) {
   }
 
   return new Intl.DateTimeFormat(locale, {
+    timeZone: BUSINESS_TIME_ZONE,
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(event.start.dateTime));
@@ -45,11 +48,13 @@ function formatTime(event: CalendarEvent, locale: string, allDay: string) {
 export default function AgendaWidget() {
   const t = useTranslations("cockpitUi");
   const locale = useLocale();
+  const day=useBusinessDay();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string|null>(null);
 
   useEffect(() => {
+    if(!day)return;
     let cancelled = false;let sequence=0;let controller:AbortController|undefined;
 
     async function loadAgenda() {
@@ -63,7 +68,7 @@ export default function AgendaWidget() {
         const data: CalendarResponse = await response.json();
 
         if (!response.ok || !data.success) {
-          const key=['NATIVE_GOOGLE_REAUTH_REQUIRED','GOOGLE_REAUTH_REQUIRED'].includes(data.code??'')?'agendaReconnectRequired':data.code==='NATIVE_GOOGLE_CONNECTION_REQUIRED'?'agendaConnectionRequired':data.code==='NATIVE_GOOGLE_CALENDAR_REQUIRED'?'agendaCalendarRequired':response.status===401?'agendaSessionExpired':response.status===403?'agendaAccessDenied':'agendaTemporarilyUnavailable';
+          const key=calendarReadErrorKey(response.status,data.code);
           if(!cancelled&&current===sequence){setEvents([]);setError(t(key));}return;
         }
 
@@ -88,7 +93,7 @@ export default function AgendaWidget() {
     return () => {
       cancelled = true;controller?.abort();window.removeEventListener("clara:google-work-updated",changed);
     };
-  }, [t]);
+  }, [t,day]);
 
   return (
     <article
@@ -110,8 +115,8 @@ export default function AgendaWidget() {
         className="absolute inset-y-0 left-0 w-[2px] bg-cyan-400/70"
       />
 
-      <div className="mb-5 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="mb-5 flex items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-3">
           <CalendarDays
             size={20}
             strokeWidth={1.7}
@@ -124,12 +129,12 @@ export default function AgendaWidget() {
             </p>
 
             <p className="mt-1 text-sm text-white/75">
-              {t("today")}
+              <time data-business-date dateTime={day??undefined}>{day?formatBusinessDate(day,locale):"—"}</time>
             </p>
           </div>
         </div>
 
-        <span className="text-xs text-white/35">
+        <span className="shrink-0 text-xs text-white/35">
           {loading||error?"—":t("eventCount", {count: events.length})}
         </span>
       </div>
@@ -197,7 +202,7 @@ export default function AgendaWidget() {
       )}
 
       <Link
-        href="/agenda#native-google-document-authority"
+        href="/agenda"
         className="
           mt-5
           flex
