@@ -1,9 +1,12 @@
 export async function openContextMenu(page) {
   const dialog=page.locator('[data-native-context-dialog]');
-  if(await dialog.count() && !(await dialog.evaluate(element=>element.open))){
+  // Wait for the client-side Sidebar to mount after each navigation/reload.
+  await page.locator('[data-open-native-context]').waitFor({state:'attached'});
+  if(!(await dialog.evaluate(element=>element.open))){
     const navigation=page.locator('button[aria-controls="clara-navigation"]');
     if(await navigation.isVisible() && await navigation.getAttribute('aria-expanded')!=='true')await navigation.click();
     await page.locator('[data-open-native-context]').click();
+    await dialog.waitFor({state:'visible'});
   }
   const panel=page.locator('[data-cockpit-context]');
   if(await panel.count() && !(await panel.evaluate(element=>element.open))) await panel.locator(':scope > summary').click();
@@ -26,7 +29,7 @@ export async function revealMissionCreation(page) {
 
 export async function revealContextSelection(page) {
   await openContextMenu(page);
-  await page.locator('[data-context-loading="false"]').waitFor();
+  await page.locator('[data-context-loading="false"]').waitFor({state:'visible'});
   const panel = page.locator('[data-native-context-switch]');
   if (!(await panel.evaluate(element => element.open))) await panel.locator(':scope > summary').click();
 }
