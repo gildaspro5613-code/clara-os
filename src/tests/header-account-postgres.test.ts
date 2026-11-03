@@ -47,7 +47,16 @@ test('only approved account and search slots change; other header elements and l
  const before=readFileSync('src/tests/fixtures/header-before-account-search.tsx','utf8'),after=readFileSync('src/components/layout/Header.tsx','utf8');
  const normalizeSearch=(s:string)=>s.replace(/      <div className="mx-5[\s\S]*?(?=\n\n      <div className="flex shrink-0)/,'      <HeaderSearch />');
  const beforeJSX=normalizeSearch(before.slice(before.indexOf('  return ('))).replace(/        <div\n          aria-label=\{tc\("profile"\)\}[\s\S]*?        <\/div>/,'        <UserAccountMenu />');
- assert.equal(after.slice(after.indexOf('  return (')),beforeJSX,'No change outside the approved account and search slots');
+ // Normalize ONLY the new Cockpit navigation slot; preserve the original
+ // strict comparison for the remainder of the header (search, account, locale).
+ const returnSlot=/      <div className="flex min-w-0 flex-1 items-center gap-3 sm:w-auto xl:max-w-sm">[\s\S]*?      <\/div>(?=\n\n      <a href="#main-workspace")/;
+ const historicalTitle='      <div className="min-w-0 flex-1 sm:w-36 sm:flex-none xl:w-40">\n        <Link href="/" className="block truncate text-lg font-semibold tracking-tight text-white transition-opacity hover:opacity-80">\n          {pageTitle}\n        </Link>\n      </div>';
+ const actualJSX=after.slice(after.indexOf('  return ('));
+ assert.match(actualJSX,returnSlot,'Cockpit return occupies the title slot');
+ assert.equal(actualJSX.replace(returnSlot,historicalTitle),beforeJSX,'No change outside the approved Cockpit, account and search slots');
+ assert.ok(actualJSX.includes('{pathname !== "/" && ('),'Do not display return button on Cockpit');
+ assert.ok(actualJSX.includes('href="/"')&&actualJSX.includes('aria-label={tn("cockpit")}')&&actualJSX.includes('<ArrowLeft size={16}'),'Explicit accessible return to Cockpit');
+ assert.ok(actualJSX.includes('className="hidden sm:inline">{tn("cockpit")}</span>'),'Mobile retains arrow while desktop shows label');
  const menu=readFileSync('src/components/layout/UserAccountMenu.tsx','utf8');assert.ok(menu.includes('flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cyan-500 text-sm font-semibold text-white'));assert.ok(menu.includes('<UserRound size={19}'));
  for(const locale of ['fr','en','es','de','it']){
   const messages=JSON.parse(readFileSync('src/i18n/messages/'+locale+'/index.json','utf8'));assert.equal(Object.keys(messages.account).length,20);
