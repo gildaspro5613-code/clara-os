@@ -22,6 +22,7 @@ export default function NativeMailPanel({referencesOnly=false}:{referencesOnly?:
  const setupText=setupStrings[locale]??setupStrings.fr;
  const ionosAddresses=['clara@melodie.digital','gildas@melodie.digital','contact@melodie.digital','info@melodie.digital','support@melodie.digital'];
  const [setupAddress,setSetupAddress]=useState('clara@melodie.digital');
+ useEffect(()=>{if(connections.some(c=>c.address===setupAddress)){const next=ionosAddresses.find(a=>!connections.some(c=>c.address===a));if(next)setSetupAddress(next);}},[connections,setupAddress]);
  const [setupPassword,setSetupPassword]=useState('');
  const [setupConfirmed,setSetupConfirmed]=useState(false);
  const [setupBusy,setSetupBusy]=useState(false);
