@@ -60,11 +60,17 @@ export async function nativeOperationFence(request:Request,operation?:'google-ca
     if(operation==='google-calendar-read'){
       const {withNativeScope,nativeContext}=await import('./scoped-context');
       const {googleWorkCommand}=await import('./google-work');
+      const {googleAuthority}=await import('./google-authority');
       await withNativeScope(request,false,async()=>{
         const ctx=nativeContext()!,connectionId=ctx.session.googleConnectionId,calendarId=ctx.session.googleCalendarId;
         if(!connectionId)throw new RegistryError(503,'NATIVE_GOOGLE_CONNECTION_REQUIRED');
         if(!calendarId)throw new RegistryError(503,'NATIVE_GOOGLE_CALENDAR_REQUIRED');
-        const caps=await googleWorkCommand('capabilities',{connectionId});if(!caps.calendar)throw new RegistryError(403,'GOOGLE_CONSENT_REQUIRED');
+        const caps=await googleWorkCommand('capabilities',{connectionId});if(!caps.calendar){
+          // The same capability flag is false for missing scopes AND reconnect-required
+          // status. Reuse native authority to distinguish them; neither grants access.
+          await googleAuthority(connectionId);
+          throw new RegistryError(403,'GOOGLE_CONSENT_REQUIRED');
+        }
         const resources=await googleWorkCommand('resources',{connectionId});
         const bound=(resources.resources as Array<{kind:string;metadata:{id:string}}>).some(r=>r.kind==='calendar'&&r.metadata.id===calendarId);
         if(!bound)throw new RegistryError(403,'GOOGLE_RESOURCE_DENIED');

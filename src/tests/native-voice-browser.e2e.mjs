@@ -2,18 +2,20 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {chromium} from 'playwright';
 import {execFileSync} from 'node:child_process';
-import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
-import {createHash,X509Certificate} from 'node:crypto';
+import {readFileSync,writeFileSync,renameSync,mkdirSync} from 'node:fs';
+import {createHash,X509Certificate,randomUUID} from 'node:crypto';
 const origin=process.env.DOCUMENTS_E2E_ORIGIN,db=process.env.NATIVE_TEST_DATABASE;
 if(!origin||new URL(origin).hostname!=='127.0.0.1'||!/^native_browser_[a-f0-9]{32}$/.test(db??''))throw Error('Disposable HTTPS fixture only');
 const pg=sql=>execFileSync('docker',['exec','clara-canonical-test-postgres','psql','-U','postgres','-d',db,'-qAt','-v','ON_ERROR_STOP=1','-c',sql],{encoding:'utf8',stdio:'pipe'}).trim();
 const file='/tmp/native-fixture-voice-'+db;
 const state=()=>JSON.parse(readFileSync(file,'utf8'));
-const setState=patch=>writeFileSync(file,JSON.stringify({...state(),...patch}));
+// Atomic fixture writes: a concurrent provider stub must never expose a truncated JSON file.
+const writeState=value=>{const tmp=file+'.'+randomUUID();writeFileSync(tmp,JSON.stringify(value));renameSync(tmp,file);};
+const setState=patch=>writeState({...state(),...patch});
 const auth='clara_auth_session='+'A'.repeat(43);
 const call=(cookie,path,body)=>fetch(origin+path,{method:body?'POST':'GET',headers:{cookie,...(body?{origin,'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
 test('Hero native voice: actual microphone recorder, STT/chat/history/TTS, replay and SQL revocation stop recording/provider/audio',{timeout:240000},async()=>{
- writeFileSync(file,JSON.stringify({calls:[],seconds:30,audible:true}));
+ writeState({calls:[],seconds:30,audible:true});
  const created=await call(auth,'/api/native/runtime',{action:'createSession',workspaceId:'w',clientId:'c1',projectId:'p2'});assert.equal(created.status,200);
  const scope=(await created.json()).data,selection=created.headers.get('set-cookie').split(';')[0],cookie=auth+'; '+selection;
  assert.equal((await call(cookie,'/api/native/runtime',{action:'createMission',title:'Préparer la journée avec Clara',objective:'Retrouver les missions autorisées.'})).status,200);

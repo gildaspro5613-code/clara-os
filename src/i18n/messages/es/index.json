@@ -290,7 +290,8 @@
     "agendaConnectionRequired": "Selecciona una conexión Google autorizada en Agenda.",
     "agendaCalendarRequired": "Selecciona un calendario autorizado para este proyecto en Agenda.",
     "agendaSessionExpired": "Vuelve a iniciar sesión para ver tu agenda.",
-    "agendaAccessDenied": "Tus permisos actuales no permiten acceder a este calendario."
+    "agendaAccessDenied": "Tus permisos actuales no permiten acceder a este calendario.",
+    "agendaReconnectRequired": "Vuelve a conectar tu cuenta de Google desde Agenda para recuperar tu calendario."
   },
   "voice": {
     "connecting": "Conectando con Clara…",
