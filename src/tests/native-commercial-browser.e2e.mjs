@@ -17,7 +17,11 @@ test('commercial browser E2E: authenticated canonical selection → contact → 
   const page=await context.newPage();await page.goto(origin+'/clara');
   const selector=page.getByRole('region',{name:'Contexte canonique privé',exact:true});
   await revealContextSelection(page);await selector.locator('select').nth(0).selectOption('w');await selector.locator('select').nth(1).selectOption('c1');await selector.locator('select').nth(2).selectOption('p1');
-  await selector.getByRole('button',{name:'Créer un nouveau fil',exact:true}).click();await revealBusinessContext(page);await page.getByLabel('Contact / prospect',{exact:true}).selectOption('prospect-a');
+  // Creating a thread deliberately reloads the page. Wait for that navigation
+  // before opening the new context dialog; otherwise the old, unselected
+  // dialog can be queried while the browser is replacing the document.
+  await Promise.all([page.waitForEvent('load'),selector.getByRole('button',{name:'Créer un nouveau fil',exact:true}).click()]);
+  await revealBusinessContext(page);await page.getByLabel('Contact / prospect',{exact:true}).selectOption('prospect-a');
   await revealBusinessContext(page);assert.equal(await page.getByLabel('Contact / prospect',{exact:true}).locator('option').count(),2);
   await Promise.all([page.waitForEvent('framenavigated'),page.getByRole('button',{name:'Sélectionner le contact',exact:true}).click()]);await revealBusinessContext(page);await page.getByLabel('Contact / prospect',{exact:true}).waitFor();
   await revealMissionCreation(page);await page.getByLabel('Titre de la mission',{exact:true}).fill('LOT1_MISSION_A');await page.getByLabel('Objectif de la mission',{exact:true}).fill('Préparer une communication sans envoi');
