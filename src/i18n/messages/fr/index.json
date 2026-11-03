@@ -347,8 +347,8 @@
     "loading": "Clara consulte votre agenda…",
     "unavailable": "Agenda indisponible",
     "temporarilyUnavailable": "Agenda momentanément indisponible.",
-    "empty": "Aucun rendez-vous prévu aujourd’hui.",
-    "emptyHelp": "Votre journée semble dégagée.",
+    "empty": "Aucun rendez-vous aujourd’hui.",
+    "emptyHelp": "Le calendrier autorisé n’a retourné aucun rendez-vous pour cette journée.",
     "allDay": "Toute la journée",
     "untitled": "Événement sans titre",
     "context": "Contexte",
@@ -356,7 +356,16 @@
     "latestActivity": "Dernière activité",
     "identified": "Clara a identifié {count, plural, one {# événement} other {# événements}} dans votre agenda.",
     "noneRecorded": "Aucun rendez-vous enregistré aujourd’hui.",
-    "claraHelp": "L’agenda permet à Clara de tenir compte de votre journée dans ses actions et ses recommandations."
+    "claraHelp": "L’agenda permet à Clara de tenir compte de votre journée dans ses actions et ses recommandations.",
+    "settingsAndOperations": "Paramètres et opérations",
+    "advancedSettings": "Paramètres avancés de l’agenda",
+    "advancedHelp": "Choix du compte et du calendrier, autorisations et opérations existantes. Aucune modification sans ton action et les validations prévues.",
+    "chooseAccount": "Choisir mon compte Google",
+    "chooseCalendar": "Choisir mon calendrier",
+    "reconnectAccount": "Accéder à la reconnexion",
+    "reviewSettings": "Vérifier les paramètres",
+    "signIn": "Se connecter à Clara OS",
+    "appointments": "Rendez-vous du jour"
   },
   "voiceApi": {
     "operatorRequired": "Une session opérateur autorisée est requise.",

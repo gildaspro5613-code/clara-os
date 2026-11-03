@@ -1,3 +1,4 @@
+import {revealAgendaSettings} from './helpers/native-ui-disclosures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
@@ -26,7 +27,7 @@ test('Google reconnect UI: real status refusal, same connection and scopes, no p
    const ui=JSON.parse(readFileSync('src/i18n/messages/'+locale+'/consolidated-ui.json','utf8')),context=await browser.newContext({viewport:{width:locale==='fr'?1440:390,height:1000}});
    await context.addCookies([{name:'clara_auth_session',value:'A'.repeat(43),url:origin},{name:'clara_native_selection',value:encodeURIComponent(JSON.stringify(scope)),url:origin},{name:'NEXT_LOCALE',value:locale,url:origin}]);
    await context.route('**/*',r=>new URL(r.request().url()).origin===origin?r.continue():r.abort());
-   const page=await context.newPage();await page.goto(origin+'/agenda');const panel=page.locator('#native-google-document-authority');await panel.getByText(ui.googleReconnectHelp,{exact:true}).waitFor();
+   const page=await context.newPage();await page.goto(origin+'/agenda');await revealAgendaSettings(page);const panel=page.locator('#native-google-document-authority');await panel.getByText(ui.googleReconnectHelp,{exact:true}).waitFor();
    assert.equal(await panel.getByRole('button',{name:ui.nativeGoogleSelect,exact:true}).isDisabled(),true);assert.ok(!(await panel.innerText()).includes('google-work-a'));
    if(evidence)await panel.screenshot({path:evidence+'/'+locale+'-reconnect.png'});
    if(locale==='fr'){
@@ -43,7 +44,7 @@ test('Google reconnect UI: real status refusal, same connection and scopes, no p
   // A listed delegated connection is still not consent authority for the delegate.
   const other=await fetch(origin+'/api/native/runtime',{method:'POST',headers:{origin,cookie:'clara_auth_session='+'B'.repeat(43),'Content-Type':'application/json'},body:JSON.stringify({action:'createSession',workspaceId:'w',clientId:'c1',projectId:'p1'})});assert.equal(other.status,200);const b=(await other.json()).data;
   assert.equal((await post('/api/connections/google',{action:'delegate',connectionId:'google-work-a',userId:'b'})).status,200);pg("UPDATE clara_connections SET status='RECONNECT_REQUIRED' WHERE id='google-work-a'");
-  const context=await browser.newContext();await context.addCookies([{name:'clara_auth_session',value:'B'.repeat(43),url:origin},{name:'clara_native_selection',value:encodeURIComponent(JSON.stringify(b)),url:origin},{name:'NEXT_LOCALE',value:'fr',url:origin}]);await context.route('**/*',r=>new URL(r.request().url()).origin===origin?r.continue():r.abort());const page=await context.newPage();await page.goto(origin+'/agenda');const ui=JSON.parse(readFileSync('src/i18n/messages/fr/consolidated-ui.json','utf8'));await page.getByLabel(ui.nativeGoogleConnection,{exact:true}).selectOption('google-work-a');await page.getByText(ui.googleReconnectOwnerHelp,{exact:true}).waitFor();assert.equal(await page.getByRole('button',{name:ui.googleReconnectAction,exact:true}).count(),0);await context.close();
+  const context=await browser.newContext();await context.addCookies([{name:'clara_auth_session',value:'B'.repeat(43),url:origin},{name:'clara_native_selection',value:encodeURIComponent(JSON.stringify(b)),url:origin},{name:'NEXT_LOCALE',value:'fr',url:origin}]);await context.route('**/*',r=>new URL(r.request().url()).origin===origin?r.continue():r.abort());const page=await context.newPage();await page.goto(origin+'/agenda');await revealAgendaSettings(page);const ui=JSON.parse(readFileSync('src/i18n/messages/fr/consolidated-ui.json','utf8'));await page.getByLabel(ui.nativeGoogleConnection,{exact:true}).selectOption('google-work-a');await page.getByText(ui.googleReconnectOwnerHelp,{exact:true}).waitFor();assert.equal(await page.getByRole('button',{name:ui.googleReconnectAction,exact:true}).count(),0);await context.close();
   assert.equal(readFileSync('/tmp/native-fixture-global-attempts-'+db,'utf8'),'');
  }finally{await browser.close();}
 });

@@ -348,7 +348,7 @@
     "unavailable": "Kalender nicht verfügbar",
     "temporarilyUnavailable": "Kalender vorübergehend nicht verfügbar.",
     "empty": "Heute sind keine Termine geplant.",
-    "emptyHelp": "Ihr Tag scheint frei zu sein.",
+    "emptyHelp": "Der autorisierte Kalender hat für diesen Tag keine Termine zurückgegeben.",
     "allDay": "Ganztägig",
     "untitled": "Termin ohne Titel",
     "context": "Kontext",
@@ -356,7 +356,16 @@
     "latestActivity": "Letzte Aktivität",
     "identified": "Clara hat {count, plural, one {# Termin} other {# Termine}} in Ihrem Kalender gefunden.",
     "noneRecorded": "Heute wurden keine Termine eingetragen.",
-    "claraHelp": "Der Kalender hilft Clara, Ihren Tag bei Aktionen und Empfehlungen zu berücksichtigen."
+    "claraHelp": "Der Kalender hilft Clara, Ihren Tag bei Aktionen und Empfehlungen zu berücksichtigen.",
+    "settingsAndOperations": "Einstellungen und Vorgänge",
+    "advancedSettings": "Erweiterte Kalendereinstellungen",
+    "advancedHelp": "Bestehendes Konto, Kalender, Berechtigungen und Vorgänge. Keine Änderung ohne deine Aktion und die erforderlichen Bestätigungen.",
+    "chooseAccount": "Mein Google-Konto wählen",
+    "chooseCalendar": "Meinen Kalender wählen",
+    "reconnectAccount": "Einstellungen zur erneuten Verbindung öffnen",
+    "reviewSettings": "Einstellungen prüfen",
+    "signIn": "Bei Clara OS anmelden",
+    "appointments": "Heutige Termine"
   },
   "voiceApi": {
     "operatorRequired": "Eine autorisierte Bedienersitzung ist erforderlich.",

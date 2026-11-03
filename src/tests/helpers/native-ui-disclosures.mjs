@@ -41,3 +41,8 @@ export async function revealBusinessContext(page) {
   await panel.waitFor();
   if (!(await panel.evaluate(element => element.open))) await panel.locator(':scope > summary').click();
 }
+
+export async function revealAgendaSettings(page){
+ const settings=page.locator('[data-agenda-settings]');
+ if(await settings.count()&&!(await settings.evaluate(element=>element.open)))await settings.locator(':scope > summary').click();
+}
