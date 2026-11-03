@@ -4,7 +4,8 @@ import {readFileSync} from 'node:fs';
 const source=readFileSync(new URL('../app/api/native/mail/setup/route.ts',import.meta.url),'utf8');
 test('mail provisioning is production-gated and first mailbox only',()=>{
  assert.match(source,/CLARA_IONOS_PROVISIONING_ENABLED/);
- assert.match(source,/b\.address!=='clara@melodie\.digital'/);
+ assert.match(source,/IONOS_MAILBOX_ADDRESSES/);
+ assert.match(source,/includes\(b\.address\)/);
  assert.match(source,/w\.role='owner'/);
  assert.match(source,/ca\.can_read AND ca\.can_manage/);
  assert.match(source,/pa\.can_read AND pa\.can_manage/);
