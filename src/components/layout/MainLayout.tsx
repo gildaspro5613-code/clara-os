@@ -1,4 +1,3 @@
-import NativeScopeSelector from "@/components/native/NativeScopeSelector";
 /**
  * ============================================
  * CLARA OS
@@ -24,7 +23,7 @@ interface MainLayoutProps {
   hideContext?: boolean;
 }
 
-export default function MainLayout({ children, hideContext=false }: MainLayoutProps) {
+export default function MainLayout({ children }: MainLayoutProps) {
   return (
     <div className="min-h-screen bg-[#0B1120] text-white">
       {/* Sidebar */}
@@ -37,7 +36,7 @@ export default function MainLayout({ children, hideContext=false }: MainLayoutPr
 
         {/* Workspace */}
         <main id="main-workspace" tabIndex={-1} className="clara-workspace-scroll relative flex min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
-          <div className="clara-page-content min-w-0 w-full">{!hideContext&&<NativeScopeSelector />}{children}</div>
+          <div className="clara-page-content min-w-0 w-full">{children}</div>
         </main>
       </div>
     </div>

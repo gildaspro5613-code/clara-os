@@ -368,5 +368,9 @@
   "googleCalendarChoose": "Scegli un calendario autorizzato qui sotto.",
   "googleAgendaReadAvailable": "La lettura del calendario è disponibile. Solo le operazioni aziendali richiedono una missione.",
   "mailChooseAuthorized": "Scegli una casella autorizzata e aggiorna la panoramica.",
-  "mailCachedEmpty": "Nessun messaggio nella panoramica salvata. Questo non conferma una sincronizzazione recente."
+  "mailCachedEmpty": "Nessun messaggio nella panoramica salvata. Questo non conferma una sincronizzazione recente.",
+  "signInWelcome": "Benvenuto in Clara OS",
+  "signInDescription": "Accedi al tuo spazio di lavoro e ai tuoi strumenti con il tuo account Google autorizzato.",
+  "signInWithGoogle": "Accedi con Google",
+  "signInContextHelp": "Hai già effettuato l’accesso? Apri «Spazio di lavoro» nel menu per scegliere il progetto e la conversazione."
 }

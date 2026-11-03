@@ -368,5 +368,9 @@
   "googleCalendarChoose": "Elige abajo un calendario autorizado.",
   "googleAgendaReadAvailable": "La lectura del calendario está disponible. Solo las operaciones de negocio requieren una misión.",
   "mailChooseAuthorized": "Elige un buzón autorizado y actualiza su resumen.",
-  "mailCachedEmpty": "No hay mensajes en el resumen guardado de este buzón. Esto no confirma una sincronización reciente."
+  "mailCachedEmpty": "No hay mensajes en el resumen guardado de este buzón. Esto no confirma una sincronización reciente.",
+  "signInWelcome": "Te damos la bienvenida a Clara OS",
+  "signInDescription": "Accede a tu espacio de trabajo y tus herramientas con tu cuenta de Google autorizada.",
+  "signInWithGoogle": "Iniciar sesión con Google",
+  "signInContextHelp": "¿Ya has iniciado sesión? Abre «Espacio de trabajo» en el menú para elegir tu proyecto y conversación."
 }
