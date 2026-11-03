@@ -4,7 +4,7 @@ import {withNativeScope,nativeContext} from '@/lib/native/scoped-context';
 import {registryBody,sameOrigin,fields} from '@/lib/canonical/http';
 import {RegistryError,databaseError} from '@/lib/canonical/registry';
 import {encryptCredentialPayload} from '@/lib/connections/credential-store';
-import {validateMailConfig,type MailCredentials} from '@/lib/connectors/ionos/transport';
+import {validateMailConfig,IONOS_MAILBOX_ADDRESSES,type MailCredentials} from '@/lib/connectors/ionos/transport';
 
 // Provisioning stays disabled until the operator explicitly enables it in Production.
 // This endpoint has no IMAP or SMTP side effects and never returns credential material.
@@ -16,10 +16,10 @@ export async function POST(request:Request){
    throw new RegistryError(503,'MAIL_PROVISIONING_NOT_ENABLED');
   const b=await registryBody(request);
   fields(b,['address','password','confirmed']);
-  if(b.address!=='clara@melodie.digital'||b.confirmed!==true||typeof b.password!=='string')
+  if(typeof b.address!=='string'||!(IONOS_MAILBOX_ADDRESSES as readonly string[]).includes(b.address)||b.confirmed!==true||typeof b.password!=='string')
    throw new RegistryError(400,'MAIL_CONFIGURATION_REQUIRED');
   const credentials:MailCredentials={
-   address:'clara@melodie.digital',password:b.password,
+   address:b.address,password:b.password,
    imapHost:'imap.ionos.fr',imapPort:993,
    smtpHost:'smtp.ionos.fr',smtpPort:465,
    folders:['INBOX'],configurationReviewed:true
@@ -54,7 +54,7 @@ WITH eligible AS (
    AND c.revoked_at IS NULL AND p.revoked_at IS NULL
    AND NOT EXISTS(
     SELECT 1 FROM clara_native_mail_authority a
-    WHERE a.address='clara@melodie.digital' AND a.revoked_at IS NULL
+    WHERE a.address=${b.address} AND a.revoked_at IS NULL
    )
  LIMIT 1
 ), connection_insert AS (
@@ -67,7 +67,7 @@ WITH eligible AS (
 ), authority_insert AS (
  INSERT INTO clara_native_mail_authority
  (connection_id,workspace_id,owner_user_id,address,reviewed_by,review_reason)
- SELECT c.id,${workspaceId},e.user_id,'clara@melodie.digital',
+ SELECT c.id,${workspaceId},e.user_id,${b.address},
         e.user_id,'Explicit owner self-provisioning in Clara OS: initial IMAP-only mailbox connection'
  FROM connection_insert c CROSS JOIN eligible e
  JOIN credential_insert k ON k.connection_id=c.id
@@ -77,7 +77,7 @@ SELECT connection_id AS created_id FROM authority_insert` as Array<{created_id?:
    }catch(err){databaseError(err);}
    if(rows.length!==1||rows[0].created_id!==connectionId)
     throw new RegistryError(403,'MAIL_PROVISIONING_DENIED');
-   return Response.json({success:true,address:'clara@melodie.digital',status:'saved_awaiting_imap_verification'},{headers:{'Cache-Control':'no-store'}});
+   return Response.json({success:true,address:b.address,status:'saved_awaiting_imap_verification'},{headers:{'Cache-Control':'no-store'}});
   });
  }catch(error){return nativeFailure(error);}
 }
