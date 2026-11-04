@@ -1,0 +1,152 @@
+[
+  {
+    "locale": "fr",
+    "format": "desktop",
+    "reply": {
+      "x": 759,
+      "y": 654.28125,
+      "width": 204,
+      "height": 61.1875
+    }
+  },
+  {
+    "locale": "fr",
+    "format": "tablet",
+    "reply": {
+      "x": 471,
+      "y": 634.78125,
+      "width": 204,
+      "height": 61.1875
+    }
+  },
+  {
+    "locale": "fr",
+    "format": "mobile",
+    "reply": {
+      "x": 37,
+      "y": 984.8125,
+      "width": 227,
+      "height": 66.875
+    }
+  },
+  {
+    "locale": "en",
+    "format": "desktop",
+    "reply": {
+      "x": 759,
+      "y": 654.28125,
+      "width": 204,
+      "height": 61.1875
+    }
+  },
+  {
+    "locale": "en",
+    "format": "tablet",
+    "reply": {
+      "x": 471,
+      "y": 634.78125,
+      "width": 204,
+      "height": 61.1875
+    }
+  },
+  {
+    "locale": "en",
+    "format": "mobile",
+    "reply": {
+      "x": 37,
+      "y": 984.8125,
+      "width": 227,
+      "height": 66.875
+    }
+  },
+  {
+    "locale": "es",
+    "format": "desktop",
+    "reply": {
+      "x": 759,
+      "y": 654.28125,
+      "width": 204,
+      "height": 61.1875
+    }
+  },
+  {
+    "locale": "es",
+    "format": "tablet",
+    "reply": {
+      "x": 471,
+      "y": 634.78125,
+      "width": 204,
+      "height": 61.1875
+    }
+  },
+  {
+    "locale": "es",
+    "format": "mobile",
+    "reply": {
+      "x": 37,
+      "y": 984.8125,
+      "width": 227,
+      "height": 66.875
+    }
+  },
+  {
+    "locale": "de",
+    "format": "desktop",
+    "reply": {
+      "x": 759,
+      "y": 654.28125,
+      "width": 204,
+      "height": 61.1875
+    }
+  },
+  {
+    "locale": "de",
+    "format": "tablet",
+    "reply": {
+      "x": 471,
+      "y": 634.78125,
+      "width": 204,
+      "height": 61.1875
+    }
+  },
+  {
+    "locale": "de",
+    "format": "mobile",
+    "reply": {
+      "x": 37,
+      "y": 984.8125,
+      "width": 227,
+      "height": 66.875
+    }
+  },
+  {
+    "locale": "it",
+    "format": "desktop",
+    "reply": {
+      "x": 759,
+      "y": 654.28125,
+      "width": 204,
+      "height": 61.1875
+    }
+  },
+  {
+    "locale": "it",
+    "format": "tablet",
+    "reply": {
+      "x": 471,
+      "y": 634.78125,
+      "width": 204,
+      "height": 61.1875
+    }
+  },
+  {
+    "locale": "it",
+    "format": "mobile",
+    "reply": {
+      "x": 37,
+      "y": 984.8125,
+      "width": 227,
+      "height": 66.875
+    }
+  }
+]

@@ -379,5 +379,10 @@
   "googleReconnectOwnerHelp": "The owner must reconnect this Google connection before it can be used.",
   "googleConnectionDenied": "You cannot access this connection in the selected project. Check your workspace and project.",
   "googleConnectionUnavailable": "Google connections are temporarily unavailable. Try again later.",
-  "googleConnectionSignIn": "Sign in to Clara OS to view your Google connections."
+  "googleConnectionSignIn": "Sign in to Clara OS to view your Google connections.",
+  "mailVisualMessages": "Messages",
+  "mailVisualDraft": "Reply draft",
+  "mailVisualSignature": "Mélodie Digital signature",
+  "mailVisualSync": "Folders and synchronization",
+  "mailVisualApprovals": "Sending approval"
 }

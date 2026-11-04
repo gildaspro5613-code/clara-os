@@ -1,0 +1,19 @@
+/* Scoped to Messagerie: shared header, Cockpit and other native panels are unchanged. */
+.native-mail-presentation { min-width: 0; overflow-wrap: anywhere; }
+.native-mail-presentation .mail-section-title { margin: 1.5rem 0 .8rem; font-size: 1rem; font-weight: 600; color: #cffafe; }
+.native-mail-presentation .mail-message-list { max-height: 24rem; overflow-y: auto; }
+.native-mail-presentation .mail-message-list button { min-width: 0; overflow-wrap: anywhere; }
+.native-mail-presentation .mail-reader pre, .native-mail-presentation .mail-review pre { max-height: 28rem; overflow-y: auto; }
+.native-mail-presentation .mail-composer, .native-mail-presentation .mail-review { min-width: 0; margin-top: 1.5rem; padding: clamp(1rem, 2vw, 1.5rem); border: 1px solid #22d3ee30; border-radius: 1rem; background: #0b1628cc; }
+.native-mail-presentation .mail-composer > label { display: flex; width: 100%; margin-top: 1rem; gap: .5rem; }
+.native-mail-presentation .mail-composer :is(input:not([type=checkbox]), textarea) { width: 100%; box-sizing: border-box; }
+.native-mail-presentation .mail-reply { min-height: 24rem; resize: vertical; line-height: 1.75; }
+.native-mail-presentation .mail-signature textarea { min-height: 12rem; resize: vertical; line-height: 1.6; color: #cbd5e1; background: #0a1424; }
+.native-mail-presentation .mail-draft-sender { color: #94a3b8; }
+.native-mail-presentation details { border-radius: .75rem; }
+.native-mail-presentation fieldset { min-width: 0; }
+@media (max-width: 640px) {
+ .native-mail-presentation .mail-reply { min-height: 20rem; }
+ .native-mail-presentation .mail-composer > button { display: block; width: 100%; margin: 1rem 0 0; }
+ .native-mail-presentation .mail-message-list > li { padding: .75rem; }
+}
