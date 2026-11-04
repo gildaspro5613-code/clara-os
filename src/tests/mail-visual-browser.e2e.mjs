@@ -30,7 +30,7 @@ test('Messagerie visual receipt: real route, encrypted PostgreSQL draft, simulat
   await page.goto(origin+'/messagerie');
   // Branded mailbox picker uses a cyan listbox while preserving the native
   // controlled connection selection and the existing IMAP request contract.
-  const mailboxPicker=page.getByRole('combobox',{name:'Boîte email',exact:true});
+  const mailboxPicker=page.locator('button[role="combobox"][aria-expanded]');
   await mailboxPicker.click();
   const mailboxOptions=page.getByRole('listbox',{name:'Boîte email',exact:true});
   await mailboxOptions.waitFor();
