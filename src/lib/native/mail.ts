@@ -3,7 +3,7 @@ import {nativeContext,writableNativeContext,nativeMission,withNativeScope} from 
 import {nativeMailCommand,mailCredentialStore} from './mail-authority';
 import {RegistryError,type RegistryQuery} from '@/lib/canonical/registry';
 import {encryptCredentialPayload,decryptCredentialPayload} from '@/lib/connections/credential-store';
-import {createIonosTransport,mailAddress,type MailCredentials,type MailTransport,type MailContent,type MailEnvelope} from '@/lib/connectors/ionos/transport';
+import {createIonosTransport,createIonosInteractiveReadTransport,mailAddress,type MailCredentials,type MailTransport,type MailContent,type MailEnvelope} from '@/lib/connectors/ionos/transport';
 import type {MailboxCommunicationDraft} from '@/lib/acquisition/mailbox-communication-draft';
 import {Journal} from '@/lib/core/journal';
 import {writeActionEntry} from '@/lib/core/journal-writer';
@@ -28,7 +28,7 @@ export async function mailJournal(event:string,ids:Record<string,unknown>){await
 /** No credentials, email body, or attachment data in Journal/dashboard. */
 export class NativeMail {
  private revision=0;private address='';private owned=false;
- constructor(readonly connectionId:string,private factory:MailTransportFactory=createIonosTransport){}
+ constructor(readonly connectionId:string,private factory:MailTransportFactory=createIonosInteractiveReadTransport){}
  async initialize(){const p=await nativeMailCommand('authority',{connectionId:this.connectionId});this.revision=Number(p.revision);this.address=String(p.address);this.owned=p.owned===true;return this;}
  private proof(extra:Record<string,unknown>={}){return {connectionId:this.connectionId,revision:this.revision,...extra};}
  async transport(){await nativeMailCommand('authority',this.proof());const c=await mailCredentialStore(this.connectionId).get<MailCredentials>(this.connectionId);if(!c||c.address!==this.address)throw new RegistryError(503,'MAIL_CONFIGURATION_REQUIRED');return this.factory(c);}
