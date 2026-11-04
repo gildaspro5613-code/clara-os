@@ -81,12 +81,16 @@ test('IONOS browser: real handlers/services/PostgreSQL, simulated providers, rev
   await panel.getByRole('button',{name:'Préparer une réponse avec Clara',exact:true}).click();
   await panel.getByLabel('Objet',{exact:true}).waitFor();
   assert.equal(await panel.getByLabel('Objet',{exact:true}).inputValue(),'LOT2BIS_REPLY');
+  await panel.getByLabel('Réponse',{exact:true}).fill('STANDALONE_EDITED_DURABLE_BODY');
+  await panel.getByRole('button',{name:'Enregistrer le brouillon',exact:true}).click();
+  await page.waitForFunction(()=>document.querySelector('textarea[aria-label="Réponse"]')?.value==='STANDALONE_EDITED_DURABLE_BODY');
   assert.equal(await panel.getByRole('button',{name:'Soumettre le brouillon enregistré',exact:true}).count(),0);
   await page.reload();
   await panel.getByLabel('Boîte email',{exact:true}).selectOption('mail-clara');
   await panel.getByRole('button',{name:'Actualiser',exact:true}).click();
   await panel.getByLabel('Objet',{exact:true}).waitFor();
   assert.equal(await panel.getByLabel('Objet',{exact:true}).inputValue(),'LOT2BIS_REPLY');
+  assert.equal(await panel.getByLabel('Réponse',{exact:true}).inputValue(),'STANDALONE_EDITED_DURABLE_BODY');
   assert.equal(await panel.getByRole('button',{name:'Soumettre le brouillon enregistré',exact:true}).count(),0);
   assert.equal(provider.sent.length,1);
   const denied=await handlers.GET(new Request(origin+'/api/native/mail'));assert.equal(denied.status,401);
