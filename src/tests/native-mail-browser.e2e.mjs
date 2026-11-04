@@ -87,15 +87,30 @@ test('IONOS browser: real handlers/services/PostgreSQL, simulated providers, rev
    page.waitForResponse(r=>r.url().includes('/api/native/mail')&&r.request().method()==='POST'&&r.request().postDataJSON()?.action==='save'&&r.status()===200),
    panel.getByRole('button',{name:'Enregistrer le brouillon',exact:true}).click()
   ]);
-  assert.equal(await panel.getByRole('button',{name:'Soumettre le brouillon enregistré',exact:true}).count(),0);
+  assert.equal(await panel.getByRole('button',{name:'Soumettre le brouillon enregistré',exact:true}).count(),1);
   await page.reload();
   await panel.getByLabel('Boîte email',{exact:true}).selectOption('mail-clara');
   await panel.getByRole('button',{name:'Actualiser',exact:true}).click();
   await panel.getByLabel('Objet',{exact:true}).waitFor();
   assert.equal(await panel.getByLabel('Objet',{exact:true}).inputValue(),'LOT2BIS_REPLY');
   assert.equal(await panel.getByLabel('Réponse',{exact:true}).inputValue(),'STANDALONE_EDITED_DURABLE_BODY');
-  assert.equal(await panel.getByRole('button',{name:'Soumettre le brouillon enregistré',exact:true}).count(),0);
+  assert.equal(await panel.getByRole('button',{name:'Soumettre le brouillon enregistré',exact:true}).count(),1);
   assert.equal(provider.sent.length,1);
+  // No automatic send: a saved missionless reply must first be submitted,
+  // re-read as a frozen envelope and explicitly owner-approved.
+  await panel.getByRole('button',{name:'Soumettre le brouillon enregistré',exact:true}).click();
+  assert.equal(provider.sent.length,1);
+  await panel.getByRole('button',{name:'Relire le contenu figé',exact:true}).click();
+  await panel.getByText('STANDALONE_EDITED_DURABLE_BODY',{exact:true}).waitFor();
+  await panel.getByRole('button',{name:'Approuver en tant que propriétaire',exact:true}).click();
+  assert.equal(provider.sent.length,1);
+  await panel.getByRole('button',{name:'Envoyer le message approuvé',exact:true}).click();
+  await page.waitForFunction(()=>document.body.innerText.includes('Transmission SMTP acceptée'));
+  assert.equal(provider.sent.length,2);
+  assert.equal(provider.sent[1].from,'clara@melodie.digital');
+  assert.deepEqual(provider.sent[1].to,['correspondent@example.invalid']);
+  assert.equal(provider.sent[1].text,'STANDALONE_EDITED_DURABLE_BODY');
+  assert.equal(Number(pg("SELECT count(*) FROM clara_native_mail_operations WHERE connection_id='mail-clara' AND standalone_session_id IS NOT NULL AND mission_id IS NULL AND state='sent'")),1);
   const denied=await handlers.GET(new Request(origin+'/api/native/mail'));assert.equal(denied.status,401);
  }finally{await browser.close();}
 });
