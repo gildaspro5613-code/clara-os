@@ -379,5 +379,10 @@
   "googleReconnectOwnerHelp": "El propietario debe renovar esta conexión de Google antes de que pueda utilizarse.",
   "googleConnectionDenied": "No tienes acceso a esta conexión en el proyecto seleccionado. Comprueba tu espacio de trabajo y proyecto.",
   "googleConnectionUnavailable": "Las conexiones de Google no están disponibles temporalmente. Inténtalo más tarde.",
-  "googleConnectionSignIn": "Inicia sesión en Clara OS para consultar tus conexiones de Google."
+  "googleConnectionSignIn": "Inicia sesión en Clara OS para consultar tus conexiones de Google.",
+  "mailVisualMessages": "Mensajes",
+  "mailVisualDraft": "Borrador de respuesta",
+  "mailVisualSignature": "Firma Mélodie Digital",
+  "mailVisualSync": "Carpetas y sincronización",
+  "mailVisualApprovals": "Aprobación de envíos"
 }

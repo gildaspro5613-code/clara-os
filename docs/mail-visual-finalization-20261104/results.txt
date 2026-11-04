@@ -1,0 +1,223 @@
+
+Unitaires ciblés
+✔ signature UI roundtrip preserves the exact signed draft: fr (1.101697ms)
+✔ signature UI roundtrip preserves the exact signed draft: en (0.136822ms)
+✔ signature UI roundtrip preserves the exact signed draft: es (0.132175ms)
+✔ signature UI roundtrip preserves the exact signed draft: de (0.159055ms)
+✔ signature UI roundtrip preserves the exact signed draft: it (0.123132ms)
+✔ unsigned, malformed or ambiguous bodies are never truncated or reinterpreted (0.770467ms)
+✔ independent lexical verifier rejects evident FR/EN/ES/DE/IT mismatches (3.26316ms)
+✔ short and ambiguous replies never falsely claim confirmed language (0.288506ms)
+✔ native preparation performs check before saving any signed draft (0.330879ms)
+✔ signature registry sync requires explicit approval and never writes on drift by default (0.348425ms)
+✔ all 25 signed drafts yield matching HTML and retain original text (5.55209ms)
+✔ unsigned, switched identity or edited signature remains text only (0.376226ms)
+✔ HTML frozen before approval and transport uses only encrypted snapshot (0.366581ms)
+✔ declared reply language beats different interface locale (1.265388ms)
+✔ missing or untrusted reply language is not guessed from UI locale (0.593311ms)
+✔ mail preparation uses declared language, not the UI locale (0.249709ms)
+✔ all five signatures are resolved from site-managed shared snapshot (0.835494ms)
+✔ 25 mailbox/locale combinations insert exactly one signature without modifying authored content (2.144978ms)
+✔ unknown or lookalike mailbox is not assigned a signature (1.038714ms)
+✔ preview is isolated from native mail send, approval and transport (0.360212ms)
+✔ existing official preview remains text/plain; HTML is a separate rendition (0.19655ms)
+✔ 25 HTML signatures are separate presentational artifacts with text-only counterparts (1.304197ms)
+✔ native transport supports optional approved multipart HTML with text fallback (0.217161ms)
+✔ declared language parsing rejects invalid metadata but does not claim to independently detect language (0.185444ms)
+✔ five-language commercial messages are prioritized, independent of mailbox UI language (1.499725ms)
+✔ service incidents require attention without executing email content (0.182609ms)
+✔ newsletter and bulk content are low priority, quarantine remains separate (0.154769ms)
+✔ urgency claims alone do not trigger high priority or grant send approval (0.855954ms)
+✔ unknown correspondence is retained for review, not silently discarded (0.215358ms)
+✔ administrative deadlines inside message bodies are surfaced without authorizing actions (0.14869ms)
+ℹ tests 30
+ℹ suites 0
+ℹ pass 30
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 474.339205
+
+Navigateur avant
+✔ Messagerie visual receipt: real route, encrypted PostgreSQL draft, simulated IMAP and drafting; no sending (42938.575069ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 45280.388031
+
+Navigateur après final
+✔ Messagerie visual receipt: real route, encrypted PostgreSQL draft, simulated IMAP and drafting; no sending (41534.366807ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 44106.56982
+
+Navigateur métier historique
+✔ IONOS browser: real handlers/services/PostgreSQL, simulated providers, review/approve/send, Journal/Cockpit and fresh authenticated resume (75976.922718ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 78371.289045
+
+Sécurité PostgreSQL réelle
+▶ IONOS real PostgreSQL: two independent authorities, explicit bindings, exact approvals, concurrent single-use SMTP, revocation and durable restart
+  ✔ Cockpit projects pending canonical operations without transport, secrets or cross-project visibility (2131.913745ms)
+  ✔ Cockpit retains approved as recorded state, never SMTP acceptance (607.903579ms)
+✔ IONOS real PostgreSQL: two independent authorities, explicit bindings, exact approvals, concurrent single-use SMTP, revocation and durable restart (65533.549512ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 67923.149291
+
+TypeScript
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice
+
+Lint ciblé
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice
+
+Build Webpack
+
+> clara-os@0.1.0 build
+> next build --webpack
+
+▲ Next.js 16.4.3 (webpack)
+✓ Running next.config.ts took 61ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 21.2s
+  Running TypeScript ...
+  Finished TypeScript in 12.9s ...
+  Collecting page data using 4 workers ...
+  Generating static pages using 4 workers (0/29) ...
+  Generating static pages using 4 workers (7/29)
+  Generating static pages using 4 workers (14/29)
+  Generating static pages using 4 workers (21/29)
+✓ Generating static pages using 4 workers (29/29) in 856ms
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ƒ /
+├ ƒ /_not-found
+├ ƒ /agenda
+├ ƒ /api/auth/google/callback
+├ ƒ /api/auth/google/start
+├ ƒ /api/auth/microsoft/callback
+├ ƒ /api/auth/microsoft/start
+├ ƒ /api/auth/session/logout
+├ ƒ /api/auth/session/status
+├ ƒ /api/calendar
+├ ƒ /api/canonical/registry
+├ ƒ /api/clara/acquisition/commercial-draft
+├ ƒ /api/clara/acquisition/decision
+├ ƒ /api/clara/acquisition/decisions
+├ ƒ /api/clara/acquisition/status/[submissionId]
+├ ƒ /api/clara/actions/navigation
+├ ƒ /api/clara/approvals
+├ ƒ /api/clara/chat
+├ ƒ /api/clara/conversation
+├ ƒ /api/clara/physical-actions/approve
+├ ƒ /api/clara/session
+├ ƒ /api/connections/brevo
+├ ƒ /api/connections/brevo/callback
+├ ƒ /api/connections/brevo/connect
+├ ƒ /api/connections/google
+├ ƒ /api/connections/google/callback
+├ ƒ /api/connections/google/connect
+├ ƒ /api/connections/make/configure
+├ ƒ /api/connections/make/status
+├ ƒ /api/connections/make/verify
+├ ƒ /api/connections/microsoft
+├ ƒ /api/connections/microsoft/callback
+├ ƒ /api/connections/microsoft/cloud-pcs
+├ ƒ /api/connections/microsoft/connect
+├ ƒ /api/contacts
+├ ƒ /api/core/canonical/conversations
+├ ƒ /api/core/canonical/links
+├ ƒ /api/core/canonical/stage
+├ ƒ /api/documents
+├ ƒ /api/documents/live-archives
+├ ƒ /api/elevenlabs/session
+├ ƒ /api/external/capabilities
+├ ƒ /api/external/document-operations/recovery
+├ ƒ /api/external/document-operations/status
+├ ƒ /api/external/event-jobs
+├ ƒ /api/external/event-jobs/status
+├ ƒ /api/external/events
+├ ƒ /api/external/lighting/onboarding/configuration
+├ ƒ /api/external/lighting/onboarding/session
+├ ƒ /api/external/project-intake
+├ ƒ /api/external/sound/onboarding/configuration
+├ ƒ /api/internal/document-operations-purge
+├ ƒ /api/internal/event-jobs-run
+├ ƒ /api/internal/project-intake-worker
+├ ƒ /api/internal/prospect-e2e-trace/[submissionId]
+├ ƒ /api/missions/execute
+├ ƒ /api/missions/resume
+├ ƒ /api/native/conversation-links
+├ ƒ /api/native/documents/authorization
+├ ƒ /api/native/google/work
+├ ƒ /api/native/mail
+├ ƒ /api/native/mail/setup
+├ ƒ /api/native/runtime
+├ ƒ /api/native/stage
+├ ƒ /api/openai/test
+├ ƒ /api/telephony
+├ ƒ /api/voice/speak
+├ ƒ /api/voice/transcribe
+├ ƒ /api/waze
+├ ƒ /api/weather
+├ ƒ /api/webhooks/brevo
+├ ƒ /api/workspace/install
+├ ƒ /automatisations
+├ ƒ /brain
+├ ƒ /clara
+├ ƒ /connexions
+├ ƒ /contacts
+├ ƒ /conversations
+├ ƒ /documents
+├ ○ /icon.svg
+├ ƒ /journal
+├ ƒ /messagerie
+├ ƒ /missions
+├ ƒ /stage-approval
+└ ƒ /telephonie
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice
+
+Réserve préexistante : test source native-mail-signature-native-integration.test.ts, même échec de révision sur base c68683f2. 3/4 PASS. Aucun test supprimé ou désactivé.
