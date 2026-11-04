@@ -28,6 +28,12 @@ test('Messagerie visual receipt: real route, encrypted PostgreSQL draft, simulat
   const created=await context.request.post(origin+'/api/native/runtime',{headers:{origin},data:{action:'createSession',workspaceId:'w',clientId:'c1',projectId:'p1'}});assert.equal(created.status(),200);
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(origin+'/messagerie');
+  // Desktop search keeps its existing header input; the results panel must not
+  // duplicate it. The mobile dialog retains its own single responsive input.
+  await page.locator('header input[type="search"]').click();
+  await page.locator('[data-header-search]').waitFor({state:'visible'});
+  assert.equal(await page.locator('input[type="search"]:visible').count(),1);
+  await page.keyboard.press('Escape');
   await page.getByLabel('Boîte email',{exact:true}).selectOption('mail-clara');
   const sync=page.locator('.mail-sync-settings > summary');if(await sync.count())await sync.click();
   await page.getByRole('button',{name:'Dossiers autorisés',exact:true}).click();await page.getByLabel('Dossier',{exact:true}).selectOption('INBOX');await page.getByRole('button',{name:'Synchroniser',exact:true}).click();
