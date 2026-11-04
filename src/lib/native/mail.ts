@@ -107,15 +107,22 @@ export class NativeMail {
   await mailJournal('MAIL_DRAFT_SAVED',{connectionId:this.connectionId,messageId,revision:draft.revision,kind:bound?'mission':'standalone',...(bound?{missionId:mission!.id}:{})});
   return {success:true,draft,mode:bound?'mission':'standalone'};
  }
- async submit(){
-  const ctx=writableNativeContext(),stored=ctx.session.mission?.emailDraft;
+ async submit(mode:'mission'|'standalone'='mission'){
+  const ctx=writableNativeContext();
+  // Direct replies are owned by the actual mailbox owner, without introducing
+  // a synthetic mission or contact. SQL independently rechecks this authority.
+  if(mode==='standalone'&&!this.owned)throw new RegistryError(403,'MAIL_OWNER_REQUIRED');
+  const stored=mode==='standalone'?ctx.session.standaloneMailDraft:ctx.session.mission?.emailDraft;
   if(!stored||stored.connectionId!==this.connectionId)throw new RegistryError(409,'MAIL_DRAFT_REQUIRED');
   const draft=decryptCredentialPayload<MailboxCommunicationDraft>(stored.encryptedDraft);
+  if(draft.connectionId!==this.connectionId||draft.messageId!==stored.messageId||draft.sender.email!==this.address)throw new RegistryError(403,'MAIL_DRAFT_DENIED');
   const mail=await this.read(draft.messageId),operationId=randomUUID();
+  if(mail.quarantined||draft.attachmentIds.some(id=>!mail.attachments.some(a=>a.id===id)))throw new RegistryError(422,'MAIL_ATTACHMENT_DENIED');
   const html=htmlFromSignedDraft(this.address,draft.body);
   const envelope:MailEnvelope={from:this.address,to:draft.recipients,subject:draft.subject,text:draft.body,...(html?{html}:{}),messageId:`<${operationId}@melodie.digital>`,inReplyTo:mail.messageId||undefined,attachments:mail.attachments.filter(a=>draft.attachmentIds.includes(a.id))};
-  ctx.mailCommitProof=this.proof({operation:'submit',messageId:draft.messageId,operationId,encryptedSnapshot:encryptCredentialPayload(envelope)});
-  await mailJournal('MAIL_SEND_REQUESTED',{connectionId:this.connectionId,operationId,missionId:ctx.session.mission!.id,revision:draft.revision});return {success:true,operationId};
+  ctx.mailCommitProof=this.proof({operation:'submit',mode,messageId:draft.messageId,operationId,encryptedSnapshot:encryptCredentialPayload(envelope)});
+  await mailJournal('MAIL_SEND_REQUESTED',{connectionId:this.connectionId,operationId,mode,revision:draft.revision,...(mode==='mission'?{missionId:ctx.session.mission!.id}:{})});
+  return {success:true,operationId};
  }
  async draft(){
   const session=nativeContext()?.session;
