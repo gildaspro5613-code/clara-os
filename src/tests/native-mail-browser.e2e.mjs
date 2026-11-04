@@ -109,7 +109,7 @@ test('IONOS browser: real handlers/services/PostgreSQL, simulated providers, rev
   assert.equal(provider.sent.length,2);
   assert.equal(provider.sent[1].from,'clara@melodie.digital');
   assert.deepEqual(provider.sent[1].to,['correspondent@example.invalid']);
-  assert.equal(provider.sent[1].text,'STANDALONE_EDITED_DURABLE_BODY');
+  assert.equal(provider.sent[1].text,prepareSignedMailDraft({sender:'clara@melodie.digital',locale:'en',body:'STANDALONE_EDITED_DURABLE_BODY'}).body);
   assert.equal(Number(pg("SELECT count(*) FROM clara_native_mail_operations WHERE connection_id='mail-clara' AND standalone_session_id IS NOT NULL AND mission_id IS NULL AND state='sent'")),1);
   // Any subsequent edit must invalidate the old frozen approval snapshot.
   const standaloneOperation=pg("SELECT id FROM clara_native_mail_operations WHERE connection_id='mail-clara' AND standalone_session_id IS NOT NULL ORDER BY created_at DESC LIMIT 1").trim();
