@@ -1,6 +1,7 @@
 'use client';
 import {useEffect,useState} from 'react';
 import {splitMailSignature,joinMailSignature,displayMailText} from './mail-signature-presentation';
+import BrandedMailboxPicker from './BrandedMailboxPicker';
 import './native-mail-presentation.css';
 import {useTranslations,useLocale} from 'next-intl';
 import type {MailboxCommunicationDraft} from '@/lib/acquisition/mailbox-communication-draft';
@@ -85,7 +86,7 @@ export default function NativeMailPanel({referencesOnly=false}:{referencesOnly?:
   {setupError&&<p role="alert" className="mt-3 text-amber-300">{setupError}</p>}
   {setupResult&&<p role="status" className="mt-3 text-cyan-200">{setupResult}</p>}
  </details>}
- <div className="mb-5 flex flex-wrap items-end gap-3 rounded-2xl border border-white/10 bg-[#0b1628]/75 p-4"><label className="flex min-w-[235px] flex-col gap-2 text-slate-300">{t('mailAccount')} <select aria-label={t('mailAccount')} className="min-h-11 rounded-xl border border-white/15 bg-[#0a162b] px-3 py-2 text-white" value={connectionId} disabled={busy} onChange={e=>{setConnection(e.target.value);setMailboxLoaded(false);setNextCursor(null);setFolder('');setFolders([]);setMessages([]);setOpened(null);setMessage('');setDraft(null);setSavedDraft(null);setDraftMode(null);setOperations([]);setReview(null);setApproval(null);}}><option value="">{t('choose')}</option>{connections.map(c=><option key={c.id} value={c.id}>{c.address}</option>)}</select></label>
+ <div className="mb-5 flex flex-wrap items-end gap-3 rounded-2xl border border-white/10 bg-[#0b1628]/75 p-4"><BrandedMailboxPicker label={t('mailAccount')} placeholder={t('choose')} value={connectionId} options={connections.map(c=>({id:c.id,address:c.address}))} disabled={busy} onChange={value=>{setConnection(value);setMailboxLoaded(false);setNextCursor(null);setFolder('');setFolders([]);setMessages([]);setOpened(null);setMessage('');setDraft(null);setSavedDraft(null);setDraftMode(null);setOperations([]);setReview(null);setApproval(null);}}/>
  <button className="min-h-11 rounded-xl border border-cyan-400/30 bg-cyan-500/10 px-4 py-2 text-cyan-100 disabled:opacity-40" disabled={busy||!connectionId} onClick={()=>void perform(refresh)}>{t('mailRefresh')}</button></div>
  {!loading&&!error&&connections.length>0&&!connectionId&&<p role="status" className="my-3 text-white/65">{t('mailChooseAuthorized')}</p>}
  {mailboxLoaded&&!error&&messages.length===0&&<p role="status" className="my-3 text-white/65">{t('mailCachedEmpty')}</p>}
