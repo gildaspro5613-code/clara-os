@@ -16,9 +16,9 @@ export function prepareSignedMailDraft(input:{sender:string;locale:SignatureLoca
  const clean=pos===-1?input.body:input.body.slice(0,pos);
  // When Clara already signs the prose with her name, the canonical branded
  // signature supplies that name once. Keep the greeting and closing intact.
- const lines=clean.replace(/\\s+$/u,'').split(/\\r?\\n/u);
- const signer=signature.text.split('\\n')[0].trim();
+ const lines=clean.replace(/\s+$/u,'').split(/\r?\n/u);
+ const signer=signature.text.split('\n')[0].trim();
  if(lines.length>1&&lines[lines.length-1].trim()===signer)lines.pop();
- const body=lines.join('\\n').replace(/\\s+$/u,'')+BEGIN+signature.text+END;
+ const body=lines.join('\n').replace(/\s+$/u,'')+BEGIN+signature.text+END;
  return {body,signature,applied:true};
 }
