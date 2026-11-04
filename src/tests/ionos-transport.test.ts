@@ -2,12 +2,33 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import nodemailer from 'nodemailer';
 import {ImapFlow} from 'imapflow';
-import {parseMail,validateMailConfig,createIonosTransport,IonosTransport,MAIL_LIMIT,IONOS_MAILBOX_ADDRESSES,type MailCredentials,type MailEnvelope} from '@/lib/connectors/ionos/transport';
+import {readFileSync} from 'node:fs';
+import {parseMail,validateMailConfig,createIonosTransport,createIonosInteractiveReadTransport,IonosTransport,MAIL_LIMIT,IONOS_MAILBOX_ADDRESSES,type MailCredentials,type MailEnvelope} from '@/lib/connectors/ionos/transport';
 const config:MailCredentials={address:'clara@melodie.digital',password:'synthetic-only',imapHost:'imap.ionos.fr',imapPort:993,smtpHost:'smtp.ionos.fr',smtpPort:465,folders:['INBOX'],configurationReviewed:true};
 test('IONOS network is off by default, no self-activation or guessed configuration',()=>{
  assert.notEqual(process.env.CLARA_IONOS_NETWORK_ENABLED,'true');assert.throws(()=>createIonosTransport(config),/DISABLED/);
  for(const c of [{...config,configurationReviewed:false},{...config,imapHost:'127.0.0.1'},{...config,smtpHost:'attacker.invalid'},{...config,smtpPort:25},{...config,imapPort:143},{...config,address:'outside@melodie.digital'}])assert.throws(()=>validateMailConfig(c));
  for(const address of IONOS_MAILBOX_ADDRESSES)validateMailConfig({...config,address});
+});
+test('independent interactive IMAP read guard rejects access by default and never exposes SMTP',async()=>{
+ const before=process.env.CLARA_IONOS_IMAP_READ_ENABLED;
+ try{
+  delete process.env.CLARA_IONOS_IMAP_READ_ENABLED;
+  assert.throws(()=>createIonosInteractiveReadTransport(config),/MAIL_IMAP_READ_DISABLED/);
+  process.env.CLARA_IONOS_IMAP_READ_ENABLED='true';
+  const readOnly=createIonosInteractiveReadTransport(config);
+  await assert.rejects(()=>readOnly.send({from:config.address,to:[],subject:'x',text:'x',messageId:'x',attachments:[]}),/MAIL_SMTP_DISABLED/);
+  assert.notEqual(process.env.CLARA_IONOS_NETWORK_ENABLED,'true');
+  assert.throws(()=>createIonosTransport(config),/MAIL_PROVIDER_DISABLED/);
+ }finally{
+  if(before===undefined)delete process.env.CLARA_IONOS_IMAP_READ_ENABLED;
+  else process.env.CLARA_IONOS_IMAP_READ_ENABLED=before;
+ }
+});
+test('native mail reads use IMAP-only factory while explicit send retains SMTP gate',()=>{
+ const src=readFileSync('src/lib/native/mail.ts','utf8');
+ assert.match(src,/private factory:MailTransportFactory=createIonosInteractiveReadTransport/);
+ assert.match(src,/sendNativeMail\\([\\s\\S]*?factory:MailTransportFactory=createIonosTransport/);
 });
 test('MIME decoding: plain text only, HTML never rendered or executed; oversized source rejected',async()=>{
  const r=await parseMail(Buffer.from('From: Sender <sender@example.invalid>\r\nTo: clara@melodie.digital\r\nSubject: Hello\r\nContent-Type: text/html\r\n\r\n<script>sendMail()</script><img src="https://attacker.invalid/track">'));
