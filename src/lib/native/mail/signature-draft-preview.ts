@@ -14,6 +14,11 @@ export function prepareSignedMailDraft(input:{sender:string;locale:SignatureLoca
  // rather than appending a duplicate after a second preview.
  const pos=input.body.indexOf(BEGIN);
  const clean=pos===-1?input.body:input.body.slice(0,pos);
- const body=clean+BEGIN+signature.text+END;
+ // When Clara already signs the prose with her name, the canonical branded
+ // signature supplies that name once. Keep the greeting and closing intact.
+ const lines=clean.replace(/\\s+$/u,'').split(/\\r?\\n/u);
+ const signer=signature.text.split('\\n')[0].trim();
+ if(lines.length>1&&lines[lines.length-1].trim()===signer)lines.pop();
+ const body=lines.join('\\n').replace(/\\s+$/u,'')+BEGIN+signature.text+END;
  return {body,signature,applied:true};
 }
