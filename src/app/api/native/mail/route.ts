@@ -38,7 +38,7 @@ export async function GET(request:Request){try{return await withNativeScope(requ
  const connectionId=opaque(q.get('connectionId')),mail=await new NativeMail(connectionId).initialize();
  if(action==='messages')return ok(await mail.list(q.has('beforeId')?q.get('beforeId')!:undefined));
  if(action==='folders')return ok(await mail.folders());
- if(action==='draft')return ok({draft:await mail.draft()});
+ if(action==='draft')return ok(await mail.draft());
  if(action==='operations')return ok(await nativeMailCommand('operations',{connectionId}));
  if(action==='review')return ok(await mail.review(opaque(q.get('operationId'))));
  if(action==='message'||action==='attachment'){

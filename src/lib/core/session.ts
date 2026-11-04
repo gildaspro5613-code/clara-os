@@ -49,6 +49,8 @@ export interface ClaraSession {
   googleCalendarId?:string;
   googleFolderId?:string;
   documentReferences?:NativeDocumentReference[];
+  /** Encrypted standalone email draft for a consultation thread; never an SMTP authority. */
+  standaloneMailDraft?:{schema:string;connectionId:string;messageId:string;revision:number;encryptedDraft:string;updatedAt:string};
   /** Explicit canonical-authorized commercial selection; no historical inference. */
   acquisitionSubmissionId?: string;
   state: ClaraState;
