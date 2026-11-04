@@ -104,8 +104,14 @@ test('IONOS browser: real handlers/services/PostgreSQL, simulated providers, rev
   await panel.getByText(/STANDALONE_EDITED_DURABLE_BODY/).last().waitFor();
   await panel.getByRole('button',{name:'Approuver en tant que propriétaire',exact:true}).click();
   assert.equal(provider.sent.length,1);
-  await panel.getByRole('button',{name:'Envoyer le message approuvé',exact:true}).click();
-  await page.waitForFunction(()=>document.body.innerText.includes('Transmission SMTP acceptée'));
+  const [sendResponse]=await Promise.all([
+   page.waitForResponse(r=>r.url().includes('/api/native/mail')&&r.request().method()==='POST'&&r.request().postDataJSON()?.action==='send'),
+   panel.getByRole('button',{name:'Envoyer le message approuvé',exact:true}).click()
+  ]);
+  const sendResult=await sendResponse.json();
+  assert.equal(sendResponse.status(),200,JSON.stringify(sendResult));
+  assert.equal(sendResult.success,true,JSON.stringify(sendResult));
+  assert.equal(sendResult.state,'sent',JSON.stringify(sendResult));
   assert.equal(provider.sent.length,2);
   assert.equal(provider.sent[1].from,'clara@melodie.digital');
   assert.deepEqual(provider.sent[1].to,['correspondent@example.invalid']);
