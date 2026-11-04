@@ -17,15 +17,15 @@ import {nativeMailRouteFixture} from './helpers/native-mail-route-fixture';
 test('five branded mail signatures: closing name only once, frozen HTML and text fallback',()=>{
  for(const sender of ['clara','gildas','contact','info','support']){
   const address=sender+'@melodie.digital';
-  const signed=prepareSignedMailDraft({sender:address,locale:'fr',body:'Bonjour,\\n\\nBonne journée,\\nClara'});
+  const signed=prepareSignedMailDraft({sender:address,locale:'fr',body:'Bonjour,\n\nBonne journée,\nClara'});
   assert.equal(signed.applied,true);
   assert.match(signed.body,/Mélodie Digital/);
   const html=htmlFromSignedDraft(address,signed.body);
   assert.ok(html?.includes('melodie-m-master-rgba.png'));
   assert.ok(html?.includes(address));
  }
- const clara=prepareSignedMailDraft({sender:'clara@melodie.digital',locale:'fr',body:'Bonjour,\\n\\nBonne journée,\\nClara'});
- assert.equal((clara.body.match(/\\nClara\\n/g)??[]).length,1);
+ const clara=prepareSignedMailDraft({sender:'clara@melodie.digital',locale:'fr',body:'Bonjour,\n\nBonne journée,\nClara'});
+ assert.equal((clara.body.match(/\nClara\n/g)??[]).length,1);
  assert.ok(clara.body.includes('Bonne journée,'));
  assert.equal(htmlFromSignedDraft('clara@melodie.digital',clara.body)?.includes('<table'),true);
  const unsigned=prepareSignedMailDraft({sender:'outside@example.invalid',locale:'fr',body:'Bonjour'});
