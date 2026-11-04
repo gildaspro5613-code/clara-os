@@ -82,8 +82,10 @@ test('IONOS browser: real handlers/services/PostgreSQL, simulated providers, rev
   await panel.getByLabel('Objet',{exact:true}).waitFor();
   assert.equal(await panel.getByLabel('Objet',{exact:true}).inputValue(),'LOT2BIS_REPLY');
   await panel.getByLabel('Réponse',{exact:true}).fill('STANDALONE_EDITED_DURABLE_BODY');
-  await panel.getByRole('button',{name:'Enregistrer le brouillon',exact:true}).click();
-  await page.waitForFunction(()=>document.querySelector('textarea[aria-label="Réponse"]')?.value==='STANDALONE_EDITED_DURABLE_BODY');
+  await Promise.all([
+   page.waitForResponse(r=>r.url().includes('/api/native/mail')&&r.request().method()==='POST'&&r.request().postDataJSON()?.action==='save'&&r.status()===200),
+   panel.getByRole('button',{name:'Enregistrer le brouillon',exact:true}).click()
+  ]);
   assert.equal(await panel.getByRole('button',{name:'Soumettre le brouillon enregistré',exact:true}).count(),0);
   await page.reload();
   await panel.getByLabel('Boîte email',{exact:true}).selectOption('mail-clara');
