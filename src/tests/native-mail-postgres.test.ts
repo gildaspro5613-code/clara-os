@@ -22,6 +22,8 @@ test('IONOS real PostgreSQL: two independent authorities, explicit bindings, exa
  execFileSync('docker',['exec','-i',container,'psql','-U','postgres','-d',db,'-q','-v','ON_ERROR_STOP=1'],{input:readFileSync('db/migrations/021_native_mail_five_accounts.sql'),stdio:'pipe'});
  const monitorMigration=readFileSync('db/migrations/022_native_mail_monitor_authority.sql');
  execFileSync('docker',['exec','-i',container,'psql','-U','postgres','-d',db,'-q','-v','ON_ERROR_STOP=1'],{input:monitorMigration,stdio:'pipe'});
+ const standaloneMigration=readFileSync('db/migrations/031_native_mail_standalone_approval.sql');
+ execFileSync('docker',['exec','-i',container,'psql','-U','postgres','-d',db,'-q','-v','ON_ERROR_STOP=1'],{input:standaloneMigration,stdio:'pipe'});
  seedNativeMailFixture(pg);
  const query:RegistryQuery=async(strings,...values)=>{const statement=strings.reduce((s,part,i)=>s+part+(i<values.length?"'"+String(values[i]).replaceAll("'","''")+"'":''),'');try{const r=await promisify(execFile)('docker',['exec',container,'psql','-U','postgres','-d',db,'-qAt','-v','ON_ERROR_STOP=1','-v','VERBOSITY=verbose','-c',`SELECT row_to_json(r) FROM (${statement})r`]);return r.stdout.trim().split('\n').filter(Boolean).map(x=>JSON.parse(x));}catch(e){const stderr=String((e as {stderr:unknown}).stderr);const code=stderr.match(/ERROR:\s+([A-Z0-9]{5}):/)?.[1];if(!['42501','40001','23505'].includes(code??''))console.error(stderr.split('\n')[0]);throw {code};}};
  const digest=(s:string)=>createHash('sha256').update(s.repeat(43)).digest('hex'),commands=nativeCommands(query);

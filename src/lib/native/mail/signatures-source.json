@@ -1,6 +1,6 @@
 {
   "schema": "melodie.email-signatures.v1",
-  "status": "draft-visual-only",
+  "status": "native-mail-ready-pending-production-approval",
   "logoUrl": "https://melodie.digital/branding/melodie-m-master-rgba.png",
   "web": "https://melodie.digital",
   "locales": [
@@ -45,11 +45,11 @@
         "it": "Supporto tecnico"
       },
       "role": {
-        "fr": "Assistance Clara Live",
-        "en": "Clara Live support",
-        "es": "Asistencia Clara Live",
-        "de": "Clara Live Support",
-        "it": "Assistenza Clara Live"
+        "fr": "Assistance Clara OS et Clara Live",
+        "en": "Clara OS and Clara Live support",
+        "es": "Asistencia Clara OS y Clara Live",
+        "de": "Support für Clara OS und Clara Live",
+        "it": "Assistenza Clara OS e Clara Live"
       },
       "location": "paris"
     },
