@@ -54,6 +54,22 @@ export function createIonosReadTransport(credentials:MailCredentials):MailReadTr
  if(process.env.CLARA_IONOS_NETWORK_ENABLED!=='true')throw Error('MAIL_PROVIDER_DISABLED');
  return new IonosReadTransport(credentials);
 }
+/** Interactive IMAP reception is independently gated from SMTP and monitoring.
+ * Explicitly does not construct IonosTransport, so this factory has no SMTP path.
+ * The only exposed send() method is a permanent refusal satisfying MailTransport's
+ * existing type contract; the class itself has no nodemailer dependency.
+ */
+export function createIonosInteractiveReadTransport(credentials:MailCredentials):MailTransport {
+ if(process.env.CLARA_IONOS_IMAP_READ_ENABLED!=='true')throw Error('MAIL_IMAP_READ_DISABLED');
+ validateMailConfig(credentials);
+ const readOnly=new IonosReadTransport(credentials);
+ return {
+  folders:()=>readOnly.folders(),
+  sync:(folder,cursor)=>readOnly.sync(folder,cursor),
+  exists:(folder,validity,uid)=>readOnly.exists(folder,validity,uid),
+  send:async()=>{throw Error('MAIL_SMTP_DISABLED');}
+ };
+}
 /** No SMTP method exists on this class, even at runtime. */
 export class IonosReadTransport {
 
