@@ -111,6 +111,19 @@ test('IONOS browser: real handlers/services/PostgreSQL, simulated providers, rev
   assert.deepEqual(provider.sent[1].to,['correspondent@example.invalid']);
   assert.equal(provider.sent[1].text,'STANDALONE_EDITED_DURABLE_BODY');
   assert.equal(Number(pg("SELECT count(*) FROM clara_native_mail_operations WHERE connection_id='mail-clara' AND standalone_session_id IS NOT NULL AND mission_id IS NULL AND state='sent'")),1);
+  // Any subsequent edit must invalidate the old frozen approval snapshot.
+  const standaloneOperation=pg("SELECT id FROM clara_native_mail_operations WHERE connection_id='mail-clara' AND standalone_session_id IS NOT NULL ORDER BY created_at DESC LIMIT 1").trim();
+  await panel.getByLabel('Réponse',{exact:true}).fill('CHANGED_AFTER_OWNER_SEND');
+  await Promise.all([
+   page.waitForResponse(r=>r.url().includes('/api/native/mail')&&r.request().method()==='POST'&&r.request().postDataJSON()?.action==='save'&&r.status()===200),
+   panel.getByRole('button',{name:'Enregistrer le brouillon',exact:true}).click()
+  ]);
+  const staleStatus=await page.evaluate(async op=>{
+   const r=await fetch('/api/native/mail?'+new URLSearchParams({action:'review',connectionId:'mail-clara',operationId:op}));
+   return r.status;
+  },standaloneOperation);
+  assert.equal(staleStatus,403,'Edited standalone draft must invalidate previous frozen approval');
+  assert.equal(provider.sent.length,2);
   const denied=await handlers.GET(new Request(origin+'/api/native/mail'));assert.equal(denied.status,401);
  }finally{await browser.close();}
 });
