@@ -25,10 +25,6 @@ export default function BrandedMailboxPicker({
   const selectedIndex=Math.max(0,choices.findIndex(option=>option.id===value));
 
   useEffect(()=>{
-    if(disabled&&open)setOpen(false);
-  },[disabled,open]);
-
-  useEffect(()=>{
     if(!open)return;
     const onPointerDown=(event:PointerEvent)=>{
       if(root.current&&!root.current.contains(event.target as Node))setOpen(false);
