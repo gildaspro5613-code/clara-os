@@ -87,18 +87,18 @@ test('IONOS browser: real handlers/services/PostgreSQL, simulated providers, rev
    page.waitForResponse(r=>r.url().includes('/api/native/mail')&&r.request().method()==='POST'&&r.request().postDataJSON()?.action==='save'&&r.status()===200),
    panel.getByRole('button',{name:'Enregistrer le brouillon',exact:true}).click()
   ]);
-  assert.equal(await panel.getByRole('button',{name:'Soumettre le brouillon enregistré',exact:true}).count(),1);
+  assert.equal(await panel.getByRole('button',{name:'Valider la réponse',exact:true}).count(),1);
   await page.reload();
   await panel.getByLabel('Boîte email',{exact:true}).selectOption('mail-clara');
   await panel.getByRole('button',{name:'Actualiser',exact:true}).click();
   await panel.getByLabel('Objet',{exact:true}).waitFor();
   assert.equal(await panel.getByLabel('Objet',{exact:true}).inputValue(),'LOT2BIS_REPLY');
   assert.equal(await panel.getByLabel('Réponse',{exact:true}).inputValue(),'STANDALONE_EDITED_DURABLE_BODY');
-  assert.equal(await panel.getByRole('button',{name:'Soumettre le brouillon enregistré',exact:true}).count(),1);
+  assert.equal(await panel.getByRole('button',{name:'Valider la réponse',exact:true}).count(),1);
   assert.equal(provider.sent.length,1);
   // No automatic send: a saved missionless reply must first be submitted,
   // re-read as a frozen envelope and explicitly owner-approved.
-  await panel.getByRole('button',{name:'Soumettre le brouillon enregistré',exact:true}).click();
+  await panel.getByRole('button',{name:'Valider la réponse',exact:true}).click();
   assert.equal(provider.sent.length,1);
   await panel.locator('li button:not([disabled])').filter({hasText:'Relire le contenu figé'}).click();
   await panel.getByText(/STANDALONE_EDITED_DURABLE_BODY/).last().waitFor();
