@@ -67,6 +67,28 @@ test('IONOS browser: real handlers/services/PostgreSQL, simulated providers, rev
   assert.equal(await page.locator('[data-cockpit-context], [data-context-loading]').count(),0);assert.equal(await page.locator('[data-cockpit-widgets] nav').count(),0);
   await context.route('**/api/native/mail?action=overview',route=>route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({success:false})}));await page.reload();await hero.getByText('Aperçu du courrier indisponible',{exact:true}).filter({visible:true}).waitFor();assert.equal(await hero.getByText('Aucune boîte autorisée',{exact:true}).count(),0);
   await hero.locator('a[href="/messagerie"]').filter({visible:true}).click();await page.waitForURL(origin+'/messagerie');
+  // Standalone draft: an authenticated consultation without contact or mission.
+  await page.goto(origin+'/clara');await revealContextSelection(page);
+  const standaloneScope=page.getByRole('region',{name:'Contexte canonique privé',exact:true});
+  await standaloneScope.locator('select').nth(0).selectOption('w');
+  await standaloneScope.locator('select').nth(1).selectOption('c1');
+  await standaloneScope.locator('select').nth(2).selectOption('p1');
+  await Promise.all([page.waitForEvent('load'),standaloneScope.getByRole('button',{name:'Créer un nouveau fil',exact:true}).click()]);
+  await page.goto(origin+'/messagerie');
+  await panel.getByLabel('Boîte email',{exact:true}).selectOption('mail-clara');
+  await panel.getByRole('button',{name:'Actualiser',exact:true}).click();
+  await panel.getByRole('button',{name:/correspondent@example.invalid/}).first().click();
+  await panel.getByRole('button',{name:'Préparer une réponse avec Clara',exact:true}).click();
+  await panel.getByLabel('Objet',{exact:true}).waitFor();
+  assert.equal(await panel.getByLabel('Objet',{exact:true}).inputValue(),'LOT2BIS_REPLY');
+  assert.equal(await panel.getByRole('button',{name:'Soumettre le brouillon enregistré',exact:true}).count(),0);
+  await page.reload();
+  await panel.getByLabel('Boîte email',{exact:true}).selectOption('mail-clara');
+  await panel.getByRole('button',{name:'Actualiser',exact:true}).click();
+  await panel.getByLabel('Objet',{exact:true}).waitFor();
+  assert.equal(await panel.getByLabel('Objet',{exact:true}).inputValue(),'LOT2BIS_REPLY');
+  assert.equal(await panel.getByRole('button',{name:'Soumettre le brouillon enregistré',exact:true}).count(),0);
+  assert.equal(provider.sent.length,1);
   const denied=await handlers.GET(new Request(origin+'/api/native/mail'));assert.equal(denied.status,401);
  }finally{await browser.close();}
 });
