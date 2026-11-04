@@ -1,6 +1,6 @@
 'use client';
 import {useEffect,useState} from 'react';
-import {splitMailSignature,joinMailSignature,displayMailText} from './mail-signature-presentation';
+import {splitMailSignature,joinMailSignature} from './mail-signature-presentation';
 import BrandedMailboxPicker from './BrandedMailboxPicker';
 import './native-mail-presentation.css';
 import {useTranslations,useLocale} from 'next-intl';
@@ -9,7 +9,7 @@ type Connection={id:string;address:string;owned:boolean};
 type Message={id:string;subject:string;from:string;quarantined:boolean;triage:{priority:'high'|'normal'|'low'|'quarantine';category:string;reason:string;requiresAttention:boolean}};
 type OpenMail={subject:string;from:string;text:string;quarantined:boolean;attachments:Array<{id:string;name:string;size:number}>};
 type Operation={id:string;state:string};
-type Review={from:string;to:string[];subject:string;text:string;attachments:Array<{name:string;sha256:string}>};
+type Review={from:string;to:string[];subject:string;text:string;html?:string;attachments:Array<{name:string;sha256:string}>};
 export default function NativeMailPanel({referencesOnly=false}:{referencesOnly?:boolean}){
  const t=useTranslations('ui'),locale=useLocale();
  const [loading,setLoading]=useState(true),[mailboxLoaded,setMailboxLoaded]=useState(false);
@@ -115,7 +115,7 @@ export default function NativeMailPanel({referencesOnly=false}:{referencesOnly?:
  {owned&&<details className="my-3"><summary>{t("documentAuthoritySettings")}</summary><div className="mt-3 flex flex-wrap gap-2"><label>{t('nativeDelegateUser')} <input className="bg-slate-900" value={delegate} onChange={e=>setDelegate(e.target.value)}/></label>{(['delegate','revokeDelegation'] as const).map(action=><button disabled={busy||!delegate} key={action} onClick={()=>void perform(async()=>{await post(action,{userId:delegate});})}>{t(action==='delegate'?'nativeDelegate':'nativeRevokeDelegate')}</button>)}<button disabled={busy} onClick={()=>void perform(async()=>{await post('revoke');location.reload();})}>{t('mailRevoke')}</button></div></details>}
  </>}
  {operations.length>0&&<h3 className="mail-section-title">{t('mailVisualApprovals')}</h3>}<ul>{operations.map(op=><li key={op.id} className="my-2"><span>{op.id} · {t('mailState_'+op.state)}</span>{!referencesOnly&&<button className="mx-2 border p-2" disabled={busy||!['pending','approved'].includes(op.state)} onClick={()=>void perform(async()=>{const r=await get('review',{operationId:op.id});setReview({id:op.id,envelope:r.envelope});setApproval(null);})}>{t('mailReview')}</button>}</li>)}</ul>
- {review&&!referencesOnly&&<div className="mail-review my-3 border p-3"><p>{t('mailFrom')}: {review.envelope.from}</p><p>{t('mailTo')}: {review.envelope.to.join(', ')}</p><h3>{review.envelope.subject}</h3><pre className="whitespace-pre-wrap [overflow-wrap:anywhere] font-sans leading-7">{displayMailText(review.envelope.text)}</pre>{review.envelope.attachments.map(a=><p key={a.sha256}>{a.name} · SHA256 {a.sha256}</p>)}<p>{t('mailApprovalHelp')}</p>
+ {review&&!referencesOnly&&<div className="mail-review my-3 border p-3"><p>{t('mailFrom')}: {review.envelope.from}</p><p>{t('mailTo')}: {review.envelope.to.join(', ')}</p><h3>{review.envelope.subject}</h3>{review.envelope.html?<div className="my-4 overflow-hidden rounded-xl border border-cyan-400/20 bg-white"><iframe title={locale==='fr'?'Aperçu HTML de l’email':locale==='en'?'HTML email preview':locale==='es'?'Vista previa HTML':locale==='de'?'HTML-E-Mail-Vorschau':'Anteprima HTML'} srcDoc={review.envelope.html} sandbox="" referrerPolicy="no-referrer" className="block h-[360px] w-full border-0 bg-white" /></div>:<pre className="my-4 max-h-80 overflow-y-auto whitespace-pre-wrap [overflow-wrap:anywhere] rounded-lg bg-slate-950/40 p-4 font-sans leading-6">{review.envelope.text}</pre>}{review.envelope.attachments.map(a=><p key={a.sha256}>{a.name} · SHA256 {a.sha256}</p>)}<p>{t('mailApprovalHelp')}</p>
  <button className="m-2 border p-2" disabled={busy||!owned} onClick={()=>void perform(async()=>{const b=await post('approve',{operationId:review.id});await refresh();setApproval({id:review.id,token:b.token});})}>{t('mailApprove')}</button>
  <button className="m-2 border p-2" disabled={busy||!owned||approval?.id!==review.id} onClick={()=>void perform(async()=>{const a=approval!;setApproval(null);await post('send',{operationId:a.id,token:a.token});setReview(null);await refresh();})}>{t('mailSend')}</button></div>}
  {error&&<p role="alert">{error}</p>}
