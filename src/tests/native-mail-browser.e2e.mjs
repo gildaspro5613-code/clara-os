@@ -100,7 +100,7 @@ test('IONOS browser: real handlers/services/PostgreSQL, simulated providers, rev
   // re-read as a frozen envelope and explicitly owner-approved.
   await panel.getByRole('button',{name:'Soumettre le brouillon enregistré',exact:true}).click();
   assert.equal(provider.sent.length,1);
-  await panel.getByRole('button',{name:'Relire le contenu figé',exact:true}).click();
+  await panel.locator('li button:not([disabled])').filter({hasText:'Relire le contenu figé'}).click();
   await panel.getByText(/STANDALONE_EDITED_DURABLE_BODY/).last().waitFor();
   await panel.getByRole('button',{name:'Approuver en tant que propriétaire',exact:true}).click();
   assert.equal(provider.sent.length,1);
