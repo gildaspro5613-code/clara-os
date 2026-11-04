@@ -8,10 +8,29 @@ import {withNativeScope,nativeCommands,nativeMission,writableNativeContext} from
 import {nativeMailCommand} from '@/lib/native/mail-authority';
 import {NativeMail,sendNativeMail} from '@/lib/native/mail';
 import {prepareSignedMailDraft} from '@/lib/native/mail/signature-draft-preview';
+import {htmlFromSignedDraft} from '@/lib/native/mail/signed-html';
 import {OpenAIResponsesEngine} from '@/lib/connectors/internal/openai/responses/openai-responses-engine';
 import type {RegistryQuery} from '@/lib/canonical/registry';
 import {seedNativeMailFixture,SimulatedMail} from './helpers/native-mail-fixture';
 import {nativeMailRouteFixture} from './helpers/native-mail-route-fixture';
+
+test('five branded mail signatures: closing name only once, frozen HTML and text fallback',()=>{
+ for(const sender of ['clara','gildas','contact','info','support']){
+  const address=sender+'@melodie.digital';
+  const signed=prepareSignedMailDraft({sender:address,locale:'fr',body:'Bonjour,\\n\\nBonne journée,\\nClara'});
+  assert.equal(signed.applied,true);
+  assert.match(signed.body,/Mélodie Digital/);
+  const html=htmlFromSignedDraft(address,signed.body);
+  assert.ok(html?.includes('melodie-m-master-rgba.png'));
+  assert.ok(html?.includes(address));
+ }
+ const clara=prepareSignedMailDraft({sender:'clara@melodie.digital',locale:'fr',body:'Bonjour,\\n\\nBonne journée,\\nClara'});
+ assert.equal((clara.body.match(/\\nClara\\n/g)??[]).length,1);
+ assert.ok(clara.body.includes('Bonne journée,'));
+ assert.equal(htmlFromSignedDraft('clara@melodie.digital',clara.body)?.includes('<table'),true);
+ const unsigned=prepareSignedMailDraft({sender:'outside@example.invalid',locale:'fr',body:'Bonjour'});
+ assert.equal(unsigned.applied,false);
+});
 
 test('IONOS real PostgreSQL: two independent authorities, explicit bindings, exact approvals, concurrent single-use SMTP, revocation and durable restart',{skip:!process.env.CANONICAL_TEST_CONTAINER},async t=>{
  assert.equal(process.env.CANONICAL_TEST_CONTAINER,'clara-canonical-test-postgres');const db='native_browser_'+randomUUID().replaceAll('-',''),container='clara-canonical-test-postgres';
