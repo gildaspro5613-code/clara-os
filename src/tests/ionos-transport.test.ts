@@ -28,7 +28,7 @@ test('independent interactive IMAP read guard rejects access by default and neve
 test('native mail reads use IMAP-only factory while explicit send retains SMTP gate',()=>{
  const src=readFileSync('src/lib/native/mail.ts','utf8');
  assert.match(src,/private factory:MailTransportFactory=createIonosInteractiveReadTransport/);
- assert.match(src,/sendNativeMail\\([\\s\\S]*?factory:MailTransportFactory=createIonosTransport/);
+ assert.match(src,/sendNativeMail\([\s\S]*?factory:MailTransportFactory=createIonosTransport/);
 });
 test('MIME decoding: plain text only, HTML never rendered or executed; oversized source rejected',async()=>{
  const r=await parseMail(Buffer.from('From: Sender <sender@example.invalid>\r\nTo: clara@melodie.digital\r\nSubject: Hello\r\nContent-Type: text/html\r\n\r\n<script>sendMail()</script><img src="https://attacker.invalid/track">'));
