@@ -137,6 +137,14 @@ BEGIN
         OR m->>'schema' IS DISTINCT FROM 'clara.mailbox-communication-draft.v2'
         OR op.authority_revision<>a.revision
         OR op.draft_hash IS DISTINCT FROM encode(sha256(convert_to(m::text,'UTF8')),'hex')
+        OR NOT EXISTS(
+          SELECT 1 FROM clara_native_resource_authority sb
+          JOIN clara_sessions ns ON ns.id=sb.resource_id
+          WHERE sb.resource_kind='session' AND sb.resource_id=op.standalone_session_id
+           AND sb.owner_user_id=op.prepared_by AND sb.workspace_id=w
+           AND sb.client_id=c AND sb.project_id=p AND sb.revoked_at IS NULL
+           AND sb.snapshot_sha256=encode(sha256(convert_to(ns.data::text,'UTF8')),'hex')
+        )
         OR NOT EXISTS(SELECT 1 FROM clara_auth_identities WHERE user_id=op.prepared_by)
         OR NOT EXISTS(SELECT 1 FROM clara_workspace_memberships WHERE user_id=op.prepared_by AND workspace_id=w AND revoked_at IS NULL)
         OR NOT EXISTS(SELECT 1 FROM clara_registry_client_access ca JOIN clara_registry_project_access pa ON pa.user_id=ca.user_id AND pa.workspace_id=ca.workspace_id WHERE ca.user_id=op.prepared_by AND ca.workspace_id=w AND ca.client_id=c AND pa.project_id=p AND ca.can_read AND ca.can_manage AND pa.can_read AND pa.can_manage AND ca.revoked_at IS NULL AND pa.revoked_at IS NULL)
