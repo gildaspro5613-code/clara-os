@@ -28,6 +28,22 @@ test('Messagerie visual receipt: real route, encrypted PostgreSQL draft, simulat
   const created=await context.request.post(origin+'/api/native/runtime',{headers:{origin},data:{action:'createSession',workspaceId:'w',clientId:'c1',projectId:'p1'}});assert.equal(created.status(),200);
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(origin+'/messagerie');
+  // Branded mailbox picker uses a cyan listbox while preserving the native
+  // controlled connection selection and the existing IMAP request contract.
+  const mailboxPicker=page.getByRole('combobox',{name:'Boîte email',exact:true});
+  await mailboxPicker.click();
+  const mailboxOptions=page.getByRole('listbox',{name:'Boîte email',exact:true});
+  await mailboxOptions.waitFor();
+  await mailboxOptions.getByRole('option',{name:'support@melodie.digital',exact:true}).click();
+  assert.equal(await page.getByLabel('Boîte email',{exact:true}).inputValue(),'mail-support');
+  await mailboxPicker.focus();
+  await page.keyboard.press('ArrowDown');
+  await page.getByRole('listbox',{name:'Boîte email',exact:true}).waitFor();
+  await page.keyboard.press('Escape');
+  await page.getByRole('listbox',{name:'Boîte email',exact:true}).waitFor({state:'hidden'});
+  await mailboxPicker.click();
+  await page.getByRole('option',{name:'clara@melodie.digital',exact:true}).click();
+  assert.equal(await page.getByLabel('Boîte email',{exact:true}).inputValue(),'mail-clara');
   // Desktop search keeps its existing header input; the results panel must not
   // duplicate it. The mobile dialog retains its own single responsive input.
   await page.locator('header input[type="search"]').click();
