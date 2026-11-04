@@ -51,7 +51,7 @@ export async function GET(request:Request){try{return await withNativeScope(requ
  });}catch(error){return nativeFailure(error);}}
 export async function POST(request:Request){try{
  sameOrigin(request);const b=await registryBody(request.clone()),action=opaque(b.action),connectionId=opaque(b.connectionId);
- const allowed:Record<string,string[]>={sync:['folder'],bind:['messageId'],createContact:['messageId','name','email','locale'],prepare:['messageId','locale'],save:['messageId','subject','body','recipients','attachmentIds'],submit:[],approve:['operationId'],send:['operationId','token'],delegate:['userId'],revokeDelegation:['userId'],revoke:[]};
+ const allowed:Record<string,string[]>={sync:['folder'],bind:['messageId'],createContact:['messageId','name','email','locale'],prepare:['messageId','locale'],save:['messageId','subject','body','recipients','attachmentIds'],submit:['mode'],approve:['operationId'],send:['operationId','token'],delegate:['userId'],revokeDelegation:['userId'],revoke:[]};
  if(!allowed[action])throw new RegistryError(400,'MAIL_UNKNOWN_ACTION');fields(b,['action','connectionId',...allowed[action]]);
  if(action==='send')return ok(await sendNativeMail(request,connectionId,opaque(b.operationId),opaque(b.token)));
  return await nativeRequest(request,async()=>{const mail=await new NativeMail(connectionId).initialize();
@@ -66,7 +66,7 @@ export async function POST(request:Request){try{
   if(typeof b.subject!=='string'||typeof b.body!=='string'||!Array.isArray(b.recipients)||!b.recipients.every(x=>typeof x==='string')||!Array.isArray(b.attachmentIds)||!b.attachmentIds.every(x=>typeof x==='string'))throw new RegistryError(400,'MAIL_INVALID_DRAFT');
   return ok(await mail.saveDraft(opaque(b.messageId),{subject:b.subject,body:b.body,recipients:b.recipients,attachmentIds:b.attachmentIds}));
  }
- if(action==='submit')return ok(await mail.submit());
+ if(action==='submit'){if(b.mode!==undefined&&b.mode!=='mission'&&b.mode!=='standalone')throw new RegistryError(400,'MAIL_INVALID_DRAFT_MODE');return ok(await mail.submit(b.mode==='standalone'?'standalone':'mission'));}
  if(action==='approve')return ok(await mail.approve(opaque(b.operationId)));
  return ok(await nativeMailCommand(action,{connectionId,...(b.userId?{userId:opaque(b.userId)}:{})}));
  });
