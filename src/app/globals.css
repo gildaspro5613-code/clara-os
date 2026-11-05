@@ -78,6 +78,18 @@ body {
   background: #22b8d6;
 }
 
+/* Native textarea scrollbars/resizer match Clara's navy/cyan theme, including Chrome. */
+.clara-chat-input {
+  color-scheme: dark;
+  scrollbar-width: thin;
+  scrollbar-color: #22b8d6 #0b1524;
+}
+.clara-chat-input::-webkit-scrollbar { width: 7px; height: 7px; }
+.clara-chat-input::-webkit-scrollbar-track { background: #0b1524; }
+.clara-chat-input::-webkit-scrollbar-thumb { background: #22b8d6; border-radius: 9999px; }
+.clara-chat-input::-webkit-scrollbar-corner,
+.clara-chat-input::-webkit-resizer { background: #0b1524; }
+
 /* Existing dark/cyan identity; consistent controls for the canonical panels. */
 .clara-page-content { overflow-wrap: anywhere; }
 .clara-page-content > :not(.native-context) { min-width: 0; }
