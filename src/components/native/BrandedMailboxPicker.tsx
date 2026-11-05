@@ -65,7 +65,7 @@ export default function BrandedMailboxPicker({
         <option value="">{placeholder}</option>
         {options.map(option=><option key={option.id} value={option.id}>{option.address}</option>)}
       </select>
-      <button ref={trigger} type="button" role="combobox" aria-label={label}
+      <button ref={trigger} type="button" role="combobox" aria-label={label+' — '+(kind==='folder'?'choisir un dossier':'choisir une boîte')}
         aria-expanded={open} aria-haspopup="listbox" aria-controls={id+'-list'}
         disabled={disabled}
         onClick={()=>open?setOpen(false):show()}
