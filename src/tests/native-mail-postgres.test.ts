@@ -40,11 +40,23 @@ test('five branded mail signatures: closing name only once, frozen HTML and text
   const html=htmlFromSignedDraft(address,signed.body);
   assert.ok(html?.includes('melodie-m-master-rgba.png'));
   assert.ok(html?.includes(address));
+  assert.ok(html?.includes('bgcolor="#081526"'));
+  assert.ok(html?.includes('background-color:#0b1b30'));
+  assert.ok(html?.includes('color:#35d4f2'));
+  assert.ok(html?.includes('color:#e6f7ff'));
  }
  const clara=prepareSignedMailDraft({sender:'clara@melodie.digital',locale:'fr',body:'Bonjour,\n\nBonne journée,\nClara'});
  assert.equal((clara.body.match(/\nClara\n/g)??[]).length,1);
  assert.ok(clara.body.includes('Bonne journée,'));
  assert.equal(htmlFromSignedDraft('clara@melodie.digital',clara.body)?.includes('<table'),true);
+ for(const locale of ['fr','en','es','de','it'] as const){
+  const signed=prepareSignedMailDraft({sender:'support@melodie.digital',locale,body:'Hello <visitor> & team'});
+  const html=htmlFromSignedDraft('support@melodie.digital',signed.body);
+  assert.match(html??'',/Hello &lt;visitor&gt; &amp; team/);
+  assert.ok(html?.includes('bgcolor="#081526"'));
+  assert.ok(html?.includes('melodie-m-master-rgba.png'));
+  assert.equal(signed.body.includes('bgcolor='),false); // plaintext fallback unchanged
+ }
  const unsigned=prepareSignedMailDraft({sender:'outside@example.invalid',locale:'fr',body:'Bonjour'});
  assert.equal(unsigned.applied,false);
 });
