@@ -48,6 +48,8 @@ test('actual IMAP adapter uses read-only locking, bounded partial fetch and UIDV
  t.mock.method(ImapFlow.prototype,'fetch',async function*(range,query,options){assert.deepEqual(range,[2]);assert.equal(options?.uid,true);fetched=query.source;yield {seq:2,uid:2,source:Buffer.from('From: sender@example.invalid\r\nSubject: Approved source\r\n\r\nSafe text')};});
  t.mock.method(ImapFlow.prototype,'fetchOne',async()=>({seq:2,uid:2}));
  const adapter=new IonosTransport(config),result=await adapter.sync('INBOX',{uidValidity:'17',lastUid:1});assert.deepEqual(fetched,{start:0,maxLength:MAIL_LIMIT+1});assert.equal(result.messages.length,1);assert.equal(result.lastUid,2);assert.equal(result.uidValidity,'17');assert.equal(await adapter.exists('INBOX','old-validity',2),false);assert.equal(await adapter.exists('INBOX','17',2),true);assert.ok(closed>=3);assert.equal(released,3);
+ // Non-INBOX folder authorization is checked against the provider LIST response.
+ t.mock.method(ImapFlow.prototype,'list',async()=>[{path:'INBOX',specialUse:null}] as unknown as Awaited<ReturnType<ImapFlow['list']>>);
  await assert.rejects(()=>adapter.sync('private-folder',{lastUid:0}),/FOLDER_DENIED/);
 });
 test('actual SMTP adapter freezes identity and bytes, enforces verified TLS, no URL/file access, no retry',async t=>{
