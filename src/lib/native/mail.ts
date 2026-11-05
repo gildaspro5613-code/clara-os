@@ -102,8 +102,8 @@ export class NativeMail {
   const signed=prepareSignedMailDraft({sender:this.address,locale:replyLocale,body});
   if(!signed.applied)throw new RegistryError(403,'MAIL_SIGNATURE_IDENTITY_UNRECOGNIZED');
   const result=await this.saveDraft(messageId,{subject,body:signed.body,recipients:[mailAddress(mail.from)],attachmentIds:[]});
-  const notices:Record<Locale,string>={fr:'Brouillon email préparé. Choisissez la boîte autorisée pour le relire ; aucun envoi effectué.',en:'Email draft prepared. Select the authorized mailbox to review it; nothing has been sent.',es:'Borrador preparado. Seleccione el buzón autorizado para revisarlo; no se ha enviado nada.',de:'E-Mail-Entwurf vorbereitet. Wählen Sie das autorisierte Postfach zur Prüfung; nichts wurde gesendet.',it:'Bozza email preparata. Seleziona la casella autorizzata per verificarla; nessun invio effettuato.'};
-  ctx.session.conversation=[...ctx.session.conversation,{id:randomUUID(),role:'clara' as const,content:notices[locale],createdAt:new Date().toISOString()}].slice(-100);
+  // Keep mail workflow notices in Messagerie; preparing a draft must not append
+  // synthetic Clara dialogue turns to the shared Cockpit conversation.
   return result;
  }
  async saveDraft(messageId:string,input:{subject:string;body:string;recipients:string[];attachmentIds:string[]}){
