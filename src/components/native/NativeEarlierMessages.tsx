@@ -1,5 +1,6 @@
 'use client';
 import {useState} from 'react';
+import {isLegacyMailDraftChatNotice} from '@/lib/native/mail/chat-notice-filter';
 import {useTranslations} from 'next-intl';
 import type {ClaraConversationMessage} from '@/lib/core/session';
 /** Paginate the same Session's durable store; never switch to another thread implicitly. */
@@ -16,5 +17,5 @@ export default function NativeEarlierMessages({sessionId,firstMessageId,windowSi
  }
  if(!sessionId)return null;
  return <div>{more&&<button type="button" disabled={busy} onClick={()=>void load()}>{t('nativeEarlierMessages')}</button>}{error&&<p role="alert">{t('nativeHistoryUnavailable')}</p>}
- <ol data-native-earlier-messages>{messages.map(m=><li key={m.id} className="my-2 whitespace-pre-wrap rounded border border-white/10 p-3"><strong>{m.role==='clara'?'Clara':t('user')}</strong><p>{m.content}</p></li>)}</ol></div>;
+ <ol data-native-earlier-messages>{messages.filter(m=>!isLegacyMailDraftChatNotice(m)).map(m=><li key={m.id} className="my-2 whitespace-pre-wrap rounded border border-white/10 p-3"><strong>{m.role==='clara'?'Clara':t('user')}</strong><p>{m.content}</p></li>)}</ol></div>;
 }
