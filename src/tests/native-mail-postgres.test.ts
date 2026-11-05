@@ -9,10 +9,26 @@ import {nativeMailCommand} from '@/lib/native/mail-authority';
 import {NativeMail,sendNativeMail} from '@/lib/native/mail';
 import {prepareSignedMailDraft} from '@/lib/native/mail/signature-draft-preview';
 import {htmlFromSignedDraft} from '@/lib/native/mail/signed-html';
+import {mailFolderKind,authorizedMailFolders} from '@/lib/connectors/ionos/folder-policy';
 import {OpenAIResponsesEngine} from '@/lib/connectors/internal/openai/responses/openai-responses-engine';
 import type {RegistryQuery} from '@/lib/canonical/registry';
 import {seedNativeMailFixture,SimulatedMail} from './helpers/native-mail-fixture';
 import {nativeMailRouteFixture} from './helpers/native-mail-route-fixture';
+
+test('IONOS read-only folder policy exposes only recognized IMAP folders',()=>{
+ const listed=[
+  {path:'INBOX'},{path:'INBOX.Sent',specialUse:'\\\\Sent'},
+  {path:'Spam',specialUse:'\\\\Junk'},{path:'Entwürfe',specialUse:'\\\\Drafts'},
+  {path:'Archive',specialUse:'\\\\Archive'},{path:'Private Notes'},{path:'Unknown.Projects'}];
+ const authorized=authorizedMailFolders(listed);
+ assert.deepEqual(authorized.map(x=>x.kind),['inbox','sent','junk','drafts','archive']);
+ assert.equal(mailFolderKind({path:'INBOX/Sent'}),'sent');
+ assert.equal(mailFolderKind({path:'INBOX/Spam'}),'junk');
+ assert.equal(mailFolderKind({path:'Custom'}),null);
+ assert.equal(mailFolderKind({path:'INBOX/Private'}),null);
+ assert.equal(mailFolderKind({path:'INBOX.Junk/Not-Authorized'}),null);
+ assert.throws(()=>authorizedMailFolders(Array.from({length:101},(_,i)=>({path:'Unknown'+i}))),/MAIL_FOLDER_LIMIT/);
+});
 
 test('five branded mail signatures: closing name only once, frozen HTML and text fallback',()=>{
  for(const sender of ['clara','gildas','contact','info','support']){
