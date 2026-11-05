@@ -1,5 +1,6 @@
 "use client";
 
+import {isLegacyMailDraftChatNotice} from "@/lib/native/mail/chat-notice-filter";
 import NativeEarlierMessages from '@/components/native/NativeEarlierMessages';
 
 import { FormEvent, useEffect, useState } from "react";
@@ -240,7 +241,7 @@ export default function ClaraChatWidget({
 
       <div role="log" aria-label={t("title")} tabIndex={0} className="clara-workspace-scroll max-h-[60dvh] min-h-40 space-y-4 overflow-y-auto pr-2">
       <NativeEarlierMessages sessionId={nativeSessionId} firstMessageId={initialMessages[0]?.id} windowSize={initialMessages.length}/>
-        {messages.map((message) => (
+        {messages.filter(message=>!isLegacyMailDraftChatNotice(message)).map((message) => (
           <div
             key={message.id}
             className={
@@ -369,7 +370,7 @@ export default function ClaraChatWidget({
           disabled={loading||!!pending||nativeThreadReadOnly}
           autoFocus={autoFocus}
           placeholder={t("placeholder")}
-          className="clara-workspace-scroll min-h-12 min-w-0 flex-1 resize-y rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-cyan-400/40"
+          className="clara-workspace-scroll clara-chat-input min-h-12 min-w-0 flex-1 resize-y rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-cyan-400/40"
         />
 
         <button
