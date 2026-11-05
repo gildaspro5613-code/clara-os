@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {CapabilityRegistry} from '@/lib/capabilities/capability-registry';
 import {GitHubReadExecutor} from '@/lib/capabilities/github-read/executor';
+import {CapabilityEngine} from '@/lib/capabilities/capability-engine';
 import {GitHubConnectorDefinition,GITHUB_CAPABILITIES} from '@/lib/connectors/github/definition';
 import {ConnectionResolver,ConnectionResolutionError} from '@/lib/connections/connection-resolver';
 import {ConnectionStatus,type Connection} from '@/lib/connections/connection';
@@ -63,6 +64,19 @@ test('existing READ executor dispatches only declared operations and refuses WRI
  assert.equal(unscoped.success,false);
  assert.equal(unscoped.error?.code,'WORKSPACE_REQUIRED');
  assert.deepEqual(events,[GITHUB_CAPABILITIES.REPOSITORY_READ]);
+});
+
+test('CapabilityEngine forwards server workspace to READ executor, without external provider calls',async()=>{
+ let authenticatedWorkspace='';
+ const stub={async execute(_capability:string,_context:unknown,workspaceId?:string){
+  authenticatedWorkspace=workspaceId??'';
+  return {capabilityId:GITHUB_CAPABILITIES.REPOSITORY_READ,success:true,provider:'github',status:'completed' as const,data:{certified:'isolated'}};
+ }};
+ const engine=new CapabilityEngine(stub as unknown as GitHubReadExecutor);
+ const result=await engine.execute({capabilityId:GITHUB_CAPABILITIES.REPOSITORY_READ,context:{connectionId:'read-only-connection',input:{owner:'fixture',repo:'fixture'}},workspaceId:'isolated-workspace'});
+ assert.equal(result.success,true);
+ assert.equal(authenticatedWorkspace,'isolated-workspace');
+ assert.deepEqual(result.operationalResult?.data,{certified:'isolated'});
 });
 
 test('existing ConnectorEngine rejects disabled and undeclared capability before handler',async()=>{
