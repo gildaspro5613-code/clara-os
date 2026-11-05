@@ -17,7 +17,16 @@ export function htmlFromSignedDraft(sender:string,body:string):string|undefined{
   const message=body.slice(0,-suffix.length);
   if(message.includes(start)||message.includes(end))return undefined;
   const safe=escapeHtml(message).replace(/\r\n|\r|\n/g,'<br>');
-  return '<div style="font-family:Arial,Helvetica,sans-serif;white-space:normal;">'+safe+'</div><br><br>'+signature.html;
+  // Table layouts, explicit bgcolor and inline colors survive most email clients.
+  // The plaintext MIME alternative and frozen approval envelope remain unchanged.
+  return '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#081526" style="width:100%;border-collapse:collapse;background-color:#081526;color:#e6f7ff;font-family:Arial,Helvetica,sans-serif;">'
+   +'<tr><td align="center" style="padding:24px 12px;">'
+   +'<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#0b1b30" style="width:100%;max-width:680px;border-collapse:separate;border-spacing:0;background-color:#0b1b30;border:1px solid #24465b;">'
+   +'<tr><td style="padding:28px 26px;color:#e6f7ff;font-size:15px;line-height:1.75;font-family:Arial,Helvetica,sans-serif;">'
+   +'<div style="color:#e6f7ff;font-family:Arial,Helvetica,sans-serif;white-space:normal;">'+safe+'</div>'
+   +'<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;margin-top:24px;border-top:1px solid #24465b;"><tr><td style="padding-top:24px;">'
+   +signature.html+'</td></tr></table>'
+   +'</td></tr></table></td></tr></table>';
  }
  return undefined;
 }
