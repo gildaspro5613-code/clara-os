@@ -17,7 +17,9 @@ export function htmlFromSignedDraft(sender:string,body:string):string|undefined{
   const message=body.slice(0,-suffix.length);
   if(message.includes(start)||message.includes(end))return undefined;
   const safe=escapeHtml(message).replace(/\r\n|\r|\n/g,'<br>');
-  return '<div style="font-family:Arial,Helvetica,sans-serif;white-space:normal;">'+safe+'</div><br><br>'+signature.html;
+  // Inline table colors intentionally work in common email clients without external CSS.
+  // The HTML is generated exclusively from escaped body text and canonical signature data.
+  return '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#081526" style="width:100%;border-collapse:collapse;background-color:#081526;color:#e6f7ff;font-family:Arial,Helvetica,sans-serif;"><tr><td bgcolor="#081526" style="padding:28px 24px;background-color:#081526;color:#e6f7ff;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:680px;border-collapse:collapse;"><tr><td style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.65;color:#e6f7ff;word-wrap:break-word;">'+safe+'</td></tr><tr><td style="padding-top:28px;border-top:0;">'+signature.html+'</td></tr></table></td></tr></table>';
  }
  return undefined;
 }
