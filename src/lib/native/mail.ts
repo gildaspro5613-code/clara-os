@@ -37,11 +37,12 @@ export class NativeMail {
   if(!this.owned)throw new RegistryError(403,'MAIL_OWNER_REQUIRED');
   const cursor=await nativeMailCommand('cursor',this.proof({folder}));
   const result=await (await this.transport()).sync(folder,{uidValidity:typeof cursor.uid_validity==='string'?cursor.uid_validity:undefined,lastUid:Number(cursor.last_uid??0)});
-  const messages=result.messages.map(m=>({uid:m.uid,id:hash([this.connectionId,folder,result.uidValidity,m.uid].join('\0')),encryptedPayload:encryptCredentialPayload(m.content)}));
+  const kind=result.folderKind??'inbox';
+   const messages=result.messages.map(m=>({uid:m.uid,id:hash([this.connectionId,folder,result.uidValidity,m.uid].join('\0')),encryptedPayload:encryptCredentialPayload(kind==='junk'?{...m.content,folder,folderKind:kind,text:'',attachments:[],quarantined:true}:{...m.content,folder,folderKind:kind})}));
   const ctx=writableNativeContext();ctx.mailCommitProof=this.proof({operation:'sync',folder,...result,messages,cursorRevision:Number(cursor.revision??0)});
   await mailJournal('MAIL_SYNC',{connectionId:this.connectionId,folder,count:messages.length});return {success:true,count:messages.length};
  }
- async list(beforeId?:string){if(beforeId!==undefined&&!/^[a-f0-9]{64}$/.test(beforeId))throw new RegistryError(400,'MAIL_INVALID_CURSOR');const r=await nativeMailCommand('messages',this.proof(beforeId?{beforeId}:{}));if(!Object.hasOwn(r,'nextCursor'))throw new RegistryError(503,'MAIL_PAGINATION_MIGRATION_REQUIRED');return {nextCursor:r.nextCursor as string|null,messages:(r.messages as Array<{id:string;encrypted_payload:string}>).map(m=>{const content=decryptCredentialPayload<MailContent>(m.encrypted_payload);return {id:m.id,subject:content.subject,from:content.from,quarantined:content.quarantined,triage:triageMail(content,this.address)};})};}
+ async list(beforeId?:string){if(beforeId!==undefined&&!/^[a-f0-9]{64}$/.test(beforeId))throw new RegistryError(400,'MAIL_INVALID_CURSOR');const r=await nativeMailCommand('messages',this.proof(beforeId?{beforeId}:{}));if(!Object.hasOwn(r,'nextCursor'))throw new RegistryError(503,'MAIL_PAGINATION_MIGRATION_REQUIRED');return {nextCursor:r.nextCursor as string|null,messages:(r.messages as Array<{id:string;encrypted_payload:string}>).map(m=>{const content=decryptCredentialPayload<MailContent>(m.encrypted_payload);return {id:m.id,subject:content.subject,from:content.from,folder:content.folder??'INBOX',folderKind:content.folderKind??'inbox',quarantined:content.quarantined,triage:triageMail(content,this.address)};})};}
  async read(messageId:string){
   const m=await nativeMailCommand('message',this.proof({messageId}));
   if(!await (await this.transport()).exists(String(m.folder),String(m.uid_validity),Number(m.uid)))throw new RegistryError(409,'MAIL_MESSAGE_UNAVAILABLE');
@@ -63,7 +64,8 @@ export class NativeMail {
   ctx.mailCommitProof=this.proof({operation:'createContact',messageId,intake,qualification,decisionBrief,lifecycle,eventId:randomUUID()});await mailJournal('MAIL_CONTACT_CREATED',{connectionId:this.connectionId,messageId,submissionId});return {success:true,submissionId};
  }
  async prepare(messageId:string,locale:Locale){
-  const mail=await this.read(messageId);if(mail.quarantined)throw new RegistryError(422,'MAIL_QUARANTINED');
+  const mail=await this.read(messageId);if(mail.quarantined||mail.folderKind==='junk')throw new RegistryError(422,'MAIL_QUARANTINED');
+   if(mail.folderKind==='sent'||mail.folderKind==='drafts')throw new RegistryError(403,'MAIL_READ_ONLY_FOLDER');
   const ctx=writableNativeContext(),mission=ctx.session.mission;
   const bound=!!mission?.mailReferences?.some(r=>r.messageId===messageId&&r.connectionId===this.connectionId&&r.contactId===ctx.session.acquisitionSubmissionId);
   const previous={session:structuredClone(ctx.session),missions:structuredClone(ctx.missions),writes:structuredClone(ctx.writes),entries:structuredClone(ctx.entries),source:ctx.documentSource};
@@ -90,7 +92,8 @@ export class NativeMail {
   const mail=await this.read(messageId);
   if(!input.subject.trim()||input.subject.length>300||/[\r\n]/.test(input.subject)||!input.body.trim()||input.body.length>12000||!Array.isArray(input.recipients)||input.recipients.length<1||input.recipients.length>10||!Array.isArray(input.attachmentIds)||input.attachmentIds.length>8)throw new RegistryError(400,'MAIL_INVALID_DRAFT');
   const recipients=[...new Set(input.recipients.map(mailAddress))];
-  if(mail.quarantined||input.attachmentIds.some(id=>!mail.attachments.some(a=>a.id===id)))throw new RegistryError(422,'MAIL_ATTACHMENT_DENIED');
+  if(mail.folderKind==='sent'||mail.folderKind==='drafts')throw new RegistryError(403,'MAIL_READ_ONLY_FOLDER');
+   if(mail.quarantined||mail.folderKind==='junk'||input.attachmentIds.some(id=>!mail.attachments.some(a=>a.id===id)))throw new RegistryError(422,'MAIL_ATTACHMENT_DENIED');
   const existingStandalone=ctx.session.standaloneMailDraft;
   const standaloneRevision=existingStandalone?.connectionId===this.connectionId&&existingStandalone.messageId===messageId?existingStandalone.revision:0;
   const draft:MailboxCommunicationDraft={schema:'clara.mailbox-communication-draft.v2',connectionId:this.connectionId,messageId,sender:{email:this.address},recipients,subject:input.subject,body:input.body,attachmentIds:input.attachmentIds,revision:(bound?mission!.emailDraft?.revision??0:standaloneRevision)+1,updatedAt:new Date().toISOString()};
