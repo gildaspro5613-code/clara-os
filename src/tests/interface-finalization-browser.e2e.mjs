@@ -69,7 +69,7 @@ test('interface receipt: explicit business flow, responsive navigation, five lan
      assert.equal(await page.locator('[data-document-authority-settings]').evaluate(e=>e.open),false);
      const search=await page.locator('#document-search').boundingBox(),admin=await page.locator('#native-google-document-authority').boundingBox();assert.ok(search.y<admin.y);
     }
-    if(path==='automatisations'){const configure=page.getByRole('button',{name:'Modifier',exact:true});await configure.waitFor({state:'attached'});assert.equal(await configure.isDisabled(),true);}
+    if(path==='automatisations'){const cards=page.locator('[data-automation-card]');await cards.first().waitFor();assert.equal(await cards.count(),5);for(const [key,href] of [['calendar','/agenda'],['documents','/documents'],['email','/messagerie'],['brevo','/connexions'],['make','/connexions']]){const card=page.locator(`[data-automation-card="${key}"]`);assert.equal(await card.getByRole('link').getAttribute('href'),href);assert.equal(await card.getByRole('button').count(),0);}await page.getByText(/Ouvrir une carte ne lance aucune automatisation/).first().waitFor();}
     await page.screenshot({path:`${out}/${path||'cockpit'}-${device}.png`});
     matrix.push({page:'/'+path,locale:'fr',device,status:'PASS',proof:'real Next page/native PostgreSQL context; provider availability not certified'});
    }
