@@ -39,7 +39,7 @@ test('Closure UI: contacts create/edit/reload, scoped Mission/Journal, Messageri
   await page.goto(origin+'/');assert.ok((await page.locator('body').innerText()).includes('CLOSURE_MISSION'));
   await page.goto(origin+'/journal');assert.ok((await page.locator('body').innerText()).includes('CONTACT_CREATED'));
   await page.goto(origin+'/telephonie');await page.getByText(/Indisponible — capacité non certifiée/).waitFor();assert.equal(await page.getByRole('button',{name:/Appeler/}).isDisabled(),true);
-  await page.goto(origin+'/automatisations');await page.getByText(/Exécution des automatisations indisponible/).waitFor();assert.equal(provider.sent.length,0);
+  await page.goto(origin+'/automatisations');await page.getByText(/Ouvrir une carte ne lance aucune automatisation/).first().waitFor();assert.equal(await page.locator('[data-automation-card]').count(),5);assert.equal(provider.sent.length,0);
   await context.close();
  }finally{await browser.close();}
 });
