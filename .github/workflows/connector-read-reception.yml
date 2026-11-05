@@ -1,0 +1,32 @@
+name: Connector READ isolated reception
+
+on:
+  pull_request:
+    paths:
+      - 'src/lib/connectors/github/**'
+      - 'src/lib/connections/connection-resolver.ts'
+      - 'src/lib/capabilities/github-read/**'
+      - 'src/lib/capabilities/capability-engine.ts'
+      - 'src/tests/connector-builder-read-reception.test.ts'
+      - 'src/tests/github-connector.test.ts'
+      - '.github/workflows/connector-read-reception.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  connector-read:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Isolated Connector Core and GitHub READ tests (no provider credentials)
+        run: node --import tsx --test src/tests/connector-builder-read-reception.test.ts src/tests/github-connector.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit --pretty false
