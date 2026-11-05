@@ -369,7 +369,7 @@ export default function ClaraChatWidget({
           disabled={loading||!!pending||nativeThreadReadOnly}
           autoFocus={autoFocus}
           placeholder={t("placeholder")}
-          className="min-h-12 min-w-0 flex-1 resize-y rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-cyan-400/40"
+          className="clara-workspace-scroll min-h-12 min-w-0 flex-1 resize-y rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-cyan-400/40"
         />
 
         <button
