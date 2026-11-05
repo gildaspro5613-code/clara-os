@@ -17,13 +17,14 @@ import {nativeMailRouteFixture} from './helpers/native-mail-route-fixture';
 
 test('IONOS read-only folder policy exposes only recognized IMAP folders',()=>{
  const listed=[
-  {path:'INBOX'},{path:'INBOX.Sent',specialUse:'\\\\Sent'},
-  {path:'Spam',specialUse:'\\\\Junk'},{path:'Entwürfe',specialUse:'\\\\Drafts'},
-  {path:'Archive',specialUse:'\\\\Archive'},{path:'Private Notes'},{path:'Unknown.Projects'}];
+  {path:'INBOX'},{path:'INBOX.Sent',specialUse:'\\Sent'},
+  {path:'Spam',specialUse:'\\Junk'},{path:'Entwürfe',specialUse:'\\Drafts'},
+  {path:'Archive',specialUse:'\\Archive'},{path:'Private Notes'},{path:'Unknown.Projects'}];
  const authorized=authorizedMailFolders(listed);
  assert.deepEqual(authorized.map(x=>x.kind),['inbox','sent','junk','drafts','archive']);
  assert.equal(mailFolderKind({path:'INBOX/Sent'}),'sent');
  assert.equal(mailFolderKind({path:'INBOX/Spam'}),'junk');
+ assert.equal(mailFolderKind({path:'Folder With No Standard Name',specialUse:'\\Sent'}),'sent');
  assert.equal(mailFolderKind({path:'Custom'}),null);
  assert.equal(mailFolderKind({path:'INBOX/Private'}),null);
  assert.equal(mailFolderKind({path:'INBOX.Junk/Not-Authorized'}),null);
