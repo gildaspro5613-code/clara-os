@@ -78,6 +78,8 @@ export class IonosReadTransport {
  private client(){const c=this.credentials;return new ImapFlow({host:c.imapHost,port:c.imapPort,secure:true,auth:{user:c.address,pass:c.password},tls:{rejectUnauthorized:true,minVersion:'TLSv1.2'},logger:false,disableAutoIdle:true,connectionTimeout:10000,greetingTimeout:10000,socketTimeout:15000});}
  private async imap<T>(work:(client:ImapFlow)=>Promise<T>){assertRecetteExternalExecutionBlocked('ionos.imap');const client=this.client();let timer:ReturnType<typeof setTimeout>|undefined;try{return await Promise.race([(async()=>{await client.connect();return work(client);})(),new Promise<never>((_,reject)=>{timer=setTimeout(()=>{client.close();reject(Error('MAIL_IMAP_TIMEOUT'));},30000);})]);}finally{clearTimeout(timer);client.close();}}
  private async folderKind(client:ImapFlow,folder:string):Promise<MailFolderKind>{
+  // Preserve the already authorized INBOX path without an extra IMAP LIST.
+  if(folder==='INBOX'&&this.credentials.folders.includes('INBOX'))return 'inbox';
   const allowed=authorizedMailFolders((await client.list()).map(f=>({path:f.path,specialUse:typeof f.specialUse==='string'?f.specialUse:null})));
   const match=allowed.find(f=>f.path===folder);
   if(!match)throw Error('MAIL_FOLDER_DENIED');
