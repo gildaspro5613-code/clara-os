@@ -7,7 +7,7 @@ export type { OperationalCapabilityResult } from "../operational-result";
 
 export interface GitHubReadContext { readonly connectionId: string; readonly input: unknown }
 export interface GitHubReadAdapter {
-  execute(connectionId: string, request: GitHubCapabilityInput): Promise<{ provider: "github"; capability: GitHubCapabilityInput["capability"]; data: unknown }>;
+  execute(connectionId: string, request: GitHubCapabilityInput, workspaceId?: string): Promise<{ provider: "github"; capability: GitHubCapabilityInput["capability"]; data: unknown }>;
 }
 
 const readCapabilities = new Set(GitHubConnectorDefinition.capabilities
@@ -28,17 +28,19 @@ async function defaultAdapter(): Promise<GitHubReadAdapter> {
 export class GitHubReadExecutor {
   constructor(private readonly adapterFactory: () => GitHubReadAdapter | Promise<GitHubReadAdapter> = defaultAdapter) {}
 
-  async execute(capabilityId: string, context: unknown): Promise<OperationalCapabilityResult> {
+  async execute(capabilityId: string, context: unknown, workspaceId?: string): Promise<OperationalCapabilityResult> {
     const candidate = context as Partial<GitHubReadContext> | null;
     const connectionId = typeof candidate?.connectionId === "string" ? candidate.connectionId.trim() : "";
     if (!readCapabilities.has(capabilityId)) return this.failure(capabilityId, connectionId, "UNSUPPORTED_CAPABILITY", "This execution path supports GitHub READ capabilities only.");
     if (!connectionId) return this.failure(capabilityId, undefined, "CONNECTION_REQUIRED", "An active GitHub connection is required.");
+    if (!workspaceId) return this.failure(capabilityId, connectionId, "WORKSPACE_REQUIRED", "An authenticated workspace is required for GitHub READ.");
     try {
       const adapter = await this.adapterFactory();
-      const result = await adapter.execute(connectionId, { capability: capabilityId, input: candidate?.input ?? {} } as GitHubCapabilityInput);
+      const result = await adapter.execute(connectionId, { capability: capabilityId, input: candidate?.input ?? {} } as GitHubCapabilityInput, workspaceId);
       return { capabilityId, success: true, provider: "github", connectionId, status: "completed", data: result.data };
     } catch (error) {
       if (error instanceof ConnectionResolutionError) return this.failure(capabilityId, connectionId, error.code, "The GitHub connection is unavailable or incompatible.");
+      if (error instanceof Error && error.message === "GITHUB_WORKSPACE_DENIED") return this.failure(capabilityId, connectionId, "WORKSPACE_DENIED", "The GitHub connection does not belong to this workspace.");
       if (error instanceof GitHubApiError) return this.failure(capabilityId, connectionId, error.code, error.message);
       return this.failure(capabilityId, connectionId, "GITHUB_EXECUTION_FAILED", "GitHub could not complete the read operation.");
     }
