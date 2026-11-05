@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useId,useRef,useState} from 'react';
-import {Check,ChevronDown,Mail} from 'lucide-react';
+import {Check,ChevronDown,FolderOpen,Mail} from 'lucide-react';
 
 type MailboxOption={id:string;address:string};
 
@@ -11,10 +11,10 @@ type MailboxOption={id:string;address:string};
  * with the fully branded listbox. No provider or permission logic lives here.
  */
 export default function BrandedMailboxPicker({
-  label,placeholder,value,options,disabled=false,onChange,
+  label,placeholder,value,options,disabled=false,kind='mailbox',onChange,
 }:{
   label:string;placeholder:string;value:string;options:MailboxOption[];
-  disabled?:boolean;onChange:(connectionId:string)=>void;
+  disabled?:boolean;kind?:'mailbox'|'folder';onChange:(connectionId:string)=>void;
 }){
   const [open,setOpen]=useState(false),[active,setActive]=useState(0);
   const root=useRef<HTMLDivElement>(null),trigger=useRef<HTMLButtonElement>(null);
@@ -65,7 +65,7 @@ export default function BrandedMailboxPicker({
         <option value="">{placeholder}</option>
         {options.map(option=><option key={option.id} value={option.id}>{option.address}</option>)}
       </select>
-      <button ref={trigger} type="button" role="combobox" aria-label={label+' — choisir une boîte'}
+      <button ref={trigger} type="button" role="combobox" aria-label={label}
         aria-expanded={open} aria-haspopup="listbox" aria-controls={id+'-list'}
         disabled={disabled}
         onClick={()=>open?setOpen(false):show()}
@@ -77,7 +77,7 @@ export default function BrandedMailboxPicker({
           }
         }}
         className="flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-cyan-400/40 bg-[#0a162b] px-3 py-2 text-left text-white transition hover:border-cyan-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 disabled:opacity-40">
-        <span className="flex min-w-0 items-center gap-2"><Mail size={17} className="shrink-0 text-cyan-300" aria-hidden="true"/>
+        <span className="flex min-w-0 items-center gap-2">{kind==='folder'?<FolderOpen size={17} className="shrink-0 text-cyan-300" aria-hidden="true"/>:<Mail size={17} className="shrink-0 text-cyan-300" aria-hidden="true"/>}
           <span className="truncate">{selected?.address??placeholder}</span>
         </span>
         <ChevronDown size={18} className={`shrink-0 text-cyan-300 transition-transform ${open?'rotate-180':''}`} aria-hidden="true"/>
