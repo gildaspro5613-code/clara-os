@@ -32,7 +32,7 @@ export class NativeMail {
  async initialize(){const p=await nativeMailCommand('authority',{connectionId:this.connectionId});this.revision=Number(p.revision);this.address=String(p.address);this.owned=p.owned===true;return this;}
  private proof(extra:Record<string,unknown>={}){return {connectionId:this.connectionId,revision:this.revision,...extra};}
  async transport(){await nativeMailCommand('authority',this.proof());const c=await mailCredentialStore(this.connectionId).get<MailCredentials>(this.connectionId);if(!c||c.address!==this.address)throw new RegistryError(503,'MAIL_CONFIGURATION_REQUIRED');return this.factory(c);}
- async folders(){return {folders:await (await this.transport()).folders()};}
+ async folders(){if(!this.owned)throw new RegistryError(403,'MAIL_OWNER_REQUIRED');return {folders:await (await this.transport()).folders()};}
  async sync(folder:string){
   if(!this.owned)throw new RegistryError(403,'MAIL_OWNER_REQUIRED');
   const cursor=await nativeMailCommand('cursor',this.proof({folder}));
