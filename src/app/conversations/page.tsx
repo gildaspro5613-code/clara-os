@@ -1,3 +1,4 @@
+import {isLegacyMailDraftChatNotice} from '@/lib/native/mail/chat-notice-filter';
 import NativeEarlierMessages from '@/components/native/NativeEarlierMessages';
 import {nativeContext} from '@/lib/native/scoped-context';
 import { nativePage } from "@/lib/native/page-fence";
@@ -18,7 +19,8 @@ export default async function ConversationsPage() {
     getLocale(),
     resolveOperationalContext(),
   ]);
-  const messages = session.session.conversation;
+  // Preserve durable history; remove only the five known synthetic mail receipts from display.
+  const messages = session.session.conversation.filter(message=>!isLegacyMailDraftChatNotice(message));
 
   return (
     <MainLayout>
