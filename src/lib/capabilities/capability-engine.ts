@@ -120,7 +120,7 @@ export class CapabilityEngine {
       case "github.pull_request.list":
       case "github.pull_request.read":
       case "github.checks.read": {
-        const result = await this.githubRead.execute(request.capabilityId, request.context);
+        const result = await this.githubRead.execute(request.capabilityId, request.context, request.workspaceId);
         return {
           success: result.success,
           message: result.success
