@@ -38,6 +38,8 @@ test('existing connection resolver validates provider, connection state and cred
  assert.equal(reads,1);
  await assert.rejects(resolver.resolve('read-only-connection','google'),(e:unknown)=>e instanceof ConnectionResolutionError&&e.code==='CONNECTION_PROVIDER_MISMATCH');
  assert.equal(reads,1,'provider mismatch must never touch credentials');
+ await assert.rejects(resolver.resolve('read-only-connection','github','another-workspace'),(e:unknown)=>e instanceof ConnectionResolutionError&&e.code==='CONNECTION_WORKSPACE_MISMATCH');
+ assert.equal(reads,1,'workspace mismatch must be rejected before any credential read');
  connection.status=ConnectionStatus.DISABLED;
  await assert.rejects(resolver.resolve('read-only-connection','github'),(e:unknown)=>e instanceof ConnectionResolutionError&&e.code==='CONNECTION_INACTIVE');
  assert.equal(reads,1);
