@@ -3,12 +3,13 @@ import {ImapFlow} from 'imapflow';
 import nodemailer from 'nodemailer';
 import {simpleParser} from 'mailparser';
 import {createHash} from 'node:crypto';
+import {authorizedMailFolders,type MailFolderKind} from './folder-policy';
 
 export interface MailAttachment {id:string;name:string;type:string;size:number;sha256:string;content:string}
-export interface MailContent {subject:string;from:string;to:string[];text:string;messageId:string;attachments:MailAttachment[];quarantined:boolean}
+export interface MailContent {subject:string;from:string;to:string[];text:string;messageId:string;attachments:MailAttachment[];quarantined:boolean;folder?:string;folderKind?:MailFolderKind}
 export interface MailCredentials {address:string;password:string;imapHost:string;imapPort:number;smtpHost:string;smtpPort:number;folders:string[];configurationReviewed:boolean}
 export interface MailCursor {uidValidity?:string;lastUid:number}
-export interface MailSync {uidValidity:string;uids:number[];lastUid:number;messages:Array<{uid:number;content:MailContent}>}
+export interface MailSync {uidValidity:string;uids:number[];lastUid:number;folderKind?:MailFolderKind;messages:Array<{uid:number;content:MailContent}>}
 export interface MailEnvelope {from:string;to:string[];subject:string;text:string;html?:string;messageId:string;inReplyTo?:string;attachments:MailAttachment[]}
 export interface MailTransport {
  folders():Promise<string[]>;
@@ -76,18 +77,27 @@ export class IonosReadTransport {
  constructor(protected readonly credentials:MailCredentials){validateMailConfig(credentials);}
  private client(){const c=this.credentials;return new ImapFlow({host:c.imapHost,port:c.imapPort,secure:true,auth:{user:c.address,pass:c.password},tls:{rejectUnauthorized:true,minVersion:'TLSv1.2'},logger:false,disableAutoIdle:true,connectionTimeout:10000,greetingTimeout:10000,socketTimeout:15000});}
  private async imap<T>(work:(client:ImapFlow)=>Promise<T>){assertRecetteExternalExecutionBlocked('ionos.imap');const client=this.client();let timer:ReturnType<typeof setTimeout>|undefined;try{return await Promise.race([(async()=>{await client.connect();return work(client);})(),new Promise<never>((_,reject)=>{timer=setTimeout(()=>{client.close();reject(Error('MAIL_IMAP_TIMEOUT'));},30000);})]);}finally{clearTimeout(timer);client.close();}}
- async folders(){return this.imap(async client=>(await client.list()).map(f=>f.path).filter(f=>this.credentials.folders.includes(f)));}
- async exists(folder:string,validity:string,uid:number){if(!this.credentials.folders.includes(folder))throw Error('MAIL_FOLDER_DENIED');return this.imap(async client=>{const lock=await client.getMailboxLock(folder,{readOnly:true});try{if(!client.mailbox||String(client.mailbox.uidValidity)!==validity)return false;const found=await client.fetchOne(String(uid),{uid:true},{uid:true});return !!found&&found.uid===uid;}finally{lock.release();}});}
+ private async folderKind(client:ImapFlow,folder:string):Promise<MailFolderKind>{
+  const allowed=authorizedMailFolders((await client.list()).map(f=>({path:f.path,specialUse:typeof f.specialUse==='string'?f.specialUse:null})));
+  const match=allowed.find(f=>f.path===folder);
+  if(!match)throw Error('MAIL_FOLDER_DENIED');
+  return match.kind;
+ }
+ async folders(){return this.imap(async client=>authorizedMailFolders((await client.list()).map(f=>({path:f.path,specialUse:typeof f.specialUse==='string'?f.specialUse:null}))).map(f=>f.path));}
+ async exists(folder:string,validity:string,uid:number){return this.imap(async client=>{await this.folderKind(client,folder);const lock=await client.getMailboxLock(folder,{readOnly:true});try{if(!client.mailbox||String(client.mailbox.uidValidity)!==validity)return false;const found=await client.fetchOne(String(uid),{uid:true},{uid:true});return !!found&&found.uid===uid;}finally{lock.release();}});}
  async sync(folder:string,cursor:MailCursor):Promise<MailSync>{
-  if(!this.credentials.folders.includes(folder))throw Error('MAIL_FOLDER_DENIED');
-  return this.imap(async client=>{const lock=await client.getMailboxLock(folder,{readOnly:true});try{
+  return this.imap(async client=>{const folderKind=await this.folderKind(client,folder);const lock=await client.getMailboxLock(folder,{readOnly:true});try{
    if(!client.mailbox||client.mailbox.exists>5000)throw Error('MAIL_FOLDER_LIMIT');
    const uidValidity=String(client.mailbox.uidValidity),uids=(await client.search({all:true},{uid:true}))||[];
    if(uids.length>5000)throw Error('MAIL_FOLDER_LIMIT');
    const start=cursor.uidValidity===uidValidity?cursor.lastUid:0,selected=uids.filter(u=>u>start).sort((a,b)=>a-b).slice(0,25),messages:MailSync['messages']=[];
-   if(selected.length)for await(const item of client.fetch(selected,{uid:true,source:{start:0,maxLength:MAIL_LIMIT+1}},{uid:true})){if(!item.source||item.source.length>MAIL_LIMIT)throw Error('MAIL_SOURCE_LIMIT');messages.push({uid:item.uid,content:await parseMail(item.source)});}
+   if(selected.length)for await(const item of client.fetch(selected,{uid:true,source:{start:0,maxLength:MAIL_LIMIT+1}},{uid:true})){if(!item.source||item.source.length>MAIL_LIMIT)throw Error('MAIL_SOURCE_LIMIT');{
+    const content=await parseMail(item.source);
+    // Never put untrusted junk bodies or attachments into searchable native mail.
+    messages.push({uid:item.uid,content:folderKind==='junk'?{...content,folder,folderKind,text:'',attachments:[],quarantined:true}:{...content,folder,folderKind}});
+   }}
    if(messages.length!==selected.length||new Set(messages.map(m=>m.uid)).size!==selected.length||messages.some(m=>!selected.includes(m.uid)))throw Error('MAIL_IMAP_INCOMPLETE_BATCH');
-   return {uidValidity,uids,lastUid:selected.length?Math.max(...selected):start,messages};
+   return {uidValidity,uids,lastUid:selected.length?Math.max(...selected):start,folderKind,messages};
   }finally{lock.release();}});
  }
 }
