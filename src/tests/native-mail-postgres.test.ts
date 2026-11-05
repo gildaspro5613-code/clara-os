@@ -40,10 +40,23 @@ test('five branded mail signatures: closing name only once, frozen HTML and text
   const html=htmlFromSignedDraft(address,signed.body);
   assert.ok(html?.includes('melodie-m-master-rgba.png'));
   assert.ok(html?.includes(address));
+  assert.ok(html?.includes('bgcolor="#081526"'));
+  assert.ok(html?.includes('color:#e6f7ff'));
+  assert.ok(html?.includes('color:#35d4f2'));
+  assert.ok(html?.includes('color:#ffffff'));
+  assert.ok(!html?.includes('background-color:#ffffff'));
+  assert.ok(!html?.includes('color:#071f32'));
+  assert.ok(html?.includes('Bonjour,'));
  }
  const clara=prepareSignedMailDraft({sender:'clara@melodie.digital',locale:'fr',body:'Bonjour,\n\nBonne journée,\nClara'});
  assert.equal((clara.body.match(/\nClara\n/g)??[]).length,1);
  assert.ok(clara.body.includes('Bonne journée,'));
+ assert.ok(htmlFromSignedDraft('clara@melodie.digital','Message non signé')===undefined);
+ const escaped=prepareSignedMailDraft({sender:'clara@melodie.digital',locale:'fr',body:'Bonjour <script>alert(1)</script>'});
+ const escapedHtml=htmlFromSignedDraft('clara@melodie.digital',escaped.body)!;
+ assert.ok(escapedHtml.includes('&lt;script&gt;alert(1)&lt;/script&gt;'));
+ assert.ok(!escapedHtml.includes('<script>'));
+ assert.ok(escapedHtml.includes('background-color:#081526'));
  assert.equal(htmlFromSignedDraft('clara@melodie.digital',clara.body)?.includes('<table'),true);
  const unsigned=prepareSignedMailDraft({sender:'outside@example.invalid',locale:'fr',body:'Bonjour'});
  assert.equal(unsigned.applied,false);
