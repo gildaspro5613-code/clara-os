@@ -46,17 +46,20 @@ test('existing connection resolver validates provider, connection state and cred
 test('existing READ executor dispatches only declared operations and refuses WRITE',async()=>{
  const events:string[]=[];
  const executor=new GitHubReadExecutor(()=>({
-  async execute(connectionId,request){events.push(request.capability);assert.equal(connectionId,'read-only-connection');return {provider:'github',capability:request.capability,data:{source:'isolated-read',ok:true}};}
+  async execute(connectionId,request,workspaceId){assert.equal(workspaceId,'isolated-workspace');events.push(request.capability);assert.equal(connectionId,'read-only-connection');return {provider:'github',capability:request.capability,data:{source:'isolated-read',ok:true}};}
  }));
- const success=await executor.execute(GITHUB_CAPABILITIES.REPOSITORY_READ,{connectionId:'read-only-connection',input:{owner:'fixture',repo:'fixture'}});
+ const success=await executor.execute(GITHUB_CAPABILITIES.REPOSITORY_READ,{connectionId:'read-only-connection',input:{owner:'fixture',repo:'fixture'}},'isolated-workspace');
  assert.equal(success.success,true);
  assert.deepEqual(success.data,{source:'isolated-read',ok:true});
- const denied=await executor.execute(GITHUB_CAPABILITIES.ISSUE_CREATE,{connectionId:'read-only-connection',input:{}});
+ const denied=await executor.execute(GITHUB_CAPABILITIES.ISSUE_CREATE,{connectionId:'read-only-connection',input:{}},'isolated-workspace');
  assert.equal(denied.success,false);
  assert.equal(denied.error?.code,'UNSUPPORTED_CAPABILITY');
- const noConnection=await executor.execute(GITHUB_CAPABILITIES.REPOSITORY_READ,{input:{}});
+ const noConnection=await executor.execute(GITHUB_CAPABILITIES.REPOSITORY_READ,{input:{}},'isolated-workspace');
  assert.equal(noConnection.success,false);
  assert.equal(noConnection.error?.code,'CONNECTION_REQUIRED');
+ const unscoped=await executor.execute(GITHUB_CAPABILITIES.REPOSITORY_READ,{connectionId:'read-only-connection',input:{} });
+ assert.equal(unscoped.success,false);
+ assert.equal(unscoped.error?.code,'WORKSPACE_REQUIRED');
  assert.deepEqual(events,[GITHUB_CAPABILITIES.REPOSITORY_READ]);
 });
 
