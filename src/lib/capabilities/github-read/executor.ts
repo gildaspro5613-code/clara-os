@@ -40,7 +40,6 @@ export class GitHubReadExecutor {
       return { capabilityId, success: true, provider: "github", connectionId, status: "completed", data: result.data };
     } catch (error) {
       if (error instanceof ConnectionResolutionError) return this.failure(capabilityId, connectionId, error.code, "The GitHub connection is unavailable or incompatible.");
-      if (error instanceof Error && error.message === "GITHUB_WORKSPACE_DENIED") return this.failure(capabilityId, connectionId, "WORKSPACE_DENIED", "The GitHub connection does not belong to this workspace.");
       if (error instanceof GitHubApiError) return this.failure(capabilityId, connectionId, error.code, error.message);
       return this.failure(capabilityId, connectionId, "GITHUB_EXECUTION_FAILED", "GitHub could not complete the read operation.");
     }
