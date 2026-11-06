@@ -71,6 +71,10 @@ test("production Make native authority stays fail-closed until a reviewed owner/
  const source=readFileSync("src/lib/native/make-read-authority.ts","utf8");
  assert.match(source,/clara_native_make_read_authority/);
  assert.match(source,/clara_native_read_session/);
+ assert.match(source,/clara_native_make_scenario_catalog/);
+ assert.match(source,/catalog\.effect='READ'/);
+ assert.match(source,/catalog\.enabled=TRUE/);
+ assert.match(source,/catalog\.revoked_at IS NULL/);
  assert.match(source,/grant_\.owner_user_id/);
  assert.match(source,/grant_\.revoked_at IS NULL/);
  assert.match(source,/conn\.status='ACTIVE'/);
