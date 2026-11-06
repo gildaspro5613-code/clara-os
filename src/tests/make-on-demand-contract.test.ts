@@ -26,16 +26,17 @@ test("existing on-demand READ scenario uses Make v2 API with secret from credent
  assert.equal(calls[0].url,url);
  assert.equal(new Headers(calls[0].init?.headers).get("authorization"),"Token "+makeApi.token);
  assert.deepEqual(JSON.parse(String(calls[0].init?.body)),{data:invocation.payload,responsive:true});
- assert.equal(result.data.executionStatus,"completed");
- assert.equal(result.data.executionId,"mock-exec-1");
- assert.deepEqual(result.data.data,{status:"completed",provider:"google-drive",fileId:null});
+ const receipt=result.data as {executionStatus:string;executionId?:string;data:unknown};
+ assert.equal(receipt.executionStatus,"completed");
+ assert.equal(receipt.executionId,"mock-exec-1");
+ assert.deepEqual(receipt.data,{status:"completed",provider:"google-drive",fileId:null});
 });
 
 test("on-demand PREPARE makes no credential request and no provider call",async()=>{
  let called=false;
  const adapter=new MakeConnectorAdapter({async resolve(){called=true;throw Error("unsafe");}} as unknown as ConnectionResolver,async()=>{called=true;throw Error("unsafe");});
  const result=await adapter.execute("fixture",{capability:MAKE_CAPABILITIES.SCENARIO_PREPARE,input:invocation});
- assert.equal(result.data.prepared,true);assert.equal(called,false);
+ assert.equal((result.data as {prepared:boolean}).prepared,true);assert.equal(called,false);
 });
 
 test("on-demand mode refuses invalid zone, ID, missing token and payload without making requests",async()=>{
@@ -68,7 +69,7 @@ test("webhook compatibility stays unchanged for previously configured scenarios"
  const adapter=new MakeConnectorAdapter(resolver,async(input)=>{captured=String(input);return Response.json({executionStatus:"accepted"});});
  const result=await adapter.execute("fixture",{capability:MAKE_CAPABILITIES.SCENARIO_EXECUTE,input:{scenarioKey:"old-webhook"}});
  assert.equal(captured,"https://hook.eu2.make.com/fixture");
- assert.equal(result.data.executionStatus,"accepted");
+ assert.equal((result.data as {executionStatus:string}).executionStatus,"accepted");
 });
 
 test("unknown on-demand scenario key cannot dispatch to arbitrary scenario IDs",async()=>{
