@@ -39,7 +39,7 @@ test('native conversation: immutable Mission, atomic receipts, durable paginated
  await t.test('concurrent identical submissions execute once; lost acknowledgement replays after fresh adapter instantiation',async()=>{
   const op=randomUUID(),body={operationId:op,message:'ACK_LOST'};
   const results=await Promise.all([nativeChatRequest(request(a,body),()=>render('ACK_LOST'),query),nativeChatRequest(request(a,body),()=>render('ACK_LOST'),query)]);
-  assert.deepEqual(results.map(r=>r.status).sort(),[200,202]);assert.equal(rendered,1);
+  assert.deepEqual(results.map(r=>r.status).sort(),[200,202]);assert.equal(results.find(r=>r.status===202)?.headers.get('X-Clara-Operation-Completed'),null);assert.equal(results.find(r=>r.status===200)?.headers.get('X-Clara-Operation-Completed'),'1');assert.equal(rendered,1);
   const after=await command(scope(a),'read');assert.equal((after.journal as unknown[]).length,1);
   const replay=await nativeChatRequest(request(a,body),async()=>{throw Error('MUST NOT REPLAY');},query);assert.equal(replay.status,200);assert.equal(replay.headers.get('X-Clara-Operation-Replayed'),'1');
   const reauthenticated=await nativeChatRequest(request(a,body,'E'),async()=>{throw Error('Fresh canonical session must replay');},query);assert.equal(reauthenticated.status,200);assert.equal(reauthenticated.headers.get('X-Clara-Operation-Replayed'),'1');
@@ -79,13 +79,13 @@ test('native conversation: immutable Mission, atomic receipts, durable paginated
  await t.test('lost SQL acknowledgement after actual commit replays the same receipt without a second cycle',async()=>{
   const sid=await create();await bind(sid,'SQL acknowledgement');const body={operationId:randomUUID(),message:'SQL_ACK_LOST'};let lost=false,calls=0;
   const losingQuery:RegistryQuery=async(strings,...values)=>{const rows=await query(strings,...values);if(values.includes('finish')&&!lost){lost=true;throw Error('Synthetic acknowledgement loss after commit');}return rows;};
-  const first=await nativeChatRequest(request(sid,body),()=>{calls++;return render('SQL_ACK_LOST');},losingQuery);assert.equal(first.status,503);
+  const first=await nativeChatRequest(request(sid,body),()=>{calls++;return render('SQL_ACK_LOST');},losingQuery);assert.equal(first.status,503);assert.equal(first.headers.get('X-Clara-Operation-Completed'),null);
   const replay=await nativeChatRequest(request(sid,body),async()=>{calls++;throw Error('No replay');},query);assert.equal(replay.status,200);assert.equal(calls,1);
   assert.equal(((await command(scope(sid),'history')).messages as {role:string}[]).filter(m=>m.role==='user').length,1);
  });
  await t.test('generation failure is persisted with its notice and replay never recomposes it',async()=>{
   const sid=await create();await bind(sid,'Failure');const body={operationId:randomUUID(),message:'PROVIDER_FAILURE'};
-  const response=await nativeChatRequest(request(sid,body),async()=>{const ctx=writableNativeContext();ctx.commitOnFailure=true;ctx.session.conversation.push({id:randomUUID(),role:'user',content:'PROVIDER_FAILURE',createdAt:new Date().toISOString()},{id:randomUUID(),role:'clara',content:'Provider unavailable',createdAt:new Date().toISOString(),generation:{status:'failed',failureCategory:'provider_server',recoverable:false}});return Response.json({success:false,message:'Provider unavailable'},{status:502});},query);assert.equal(response.status,502);
+  const response=await nativeChatRequest(request(sid,body),async()=>{const ctx=writableNativeContext();ctx.commitOnFailure=true;ctx.session.conversation.push({id:randomUUID(),role:'user',content:'PROVIDER_FAILURE',createdAt:new Date().toISOString()},{id:randomUUID(),role:'clara',content:'Provider unavailable',createdAt:new Date().toISOString(),generation:{status:'failed',failureCategory:'provider_server',recoverable:false}});return Response.json({success:false,message:'Provider unavailable'},{status:502});},query);assert.equal(response.status,502);assert.equal(response.headers.get('X-Clara-Operation-Completed'),'1');
   assert.equal((await nativeChatRequest(request(sid,body),async()=>{throw Error('MUST NOT RECOMPOSE');},query)).status,502);
   assert.ok(JSON.stringify(await command(scope(sid),'history')).includes('Provider unavailable'));
  });

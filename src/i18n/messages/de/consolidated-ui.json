@@ -384,5 +384,6 @@
   "mailVisualDraft": "Antwortentwurf",
   "mailVisualSignature": "Mélodie Digital Signatur",
   "mailVisualSync": "Ordner und Synchronisierung",
-  "mailVisualApprovals": "Versandfreigabe"
+  "mailVisualApprovals": "Versandfreigabe",
+  "nativeChatFinishedWithError": "Diese Anfrage wurde nicht abgeschlossen. Du kannst in diesem Gespräch fortfahren."
 }

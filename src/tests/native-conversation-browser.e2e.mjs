@@ -62,8 +62,8 @@ test('native conversation UI: immutable Mission/client, lost acknowledgement + r
   const form=page.locator('form').filter({has:page.locator('textarea[placeholder]')}).last();await form.locator('textarea').fill('LOT4BIS_ACK_LOST');await form.locator('button[type="submit"]').click();await committed;
   await page.getByRole('alert').filter({hasText:'Un traitement est en cours'}).waitFor();await page.unroute('**/api/clara/chat');
   const journalBefore=pg(`SELECT count(*) FROM clara_native_journal_scope WHERE session_id='${a.sessionId}'`);
-  await page.reload();await page.getByRole('button',{name:'Vérifier la réponse',exact:true}).waitFor();
-  const [replayed]=await Promise.all([page.waitForResponse(r=>new URL(r.url()).pathname==='/api/clara/chat'),page.getByRole('button',{name:'Vérifier la réponse',exact:true}).click()]);assert.equal(replayed.status(),200);assert.equal(replayed.headers()['x-clara-operation-replayed'],'1');
+  const recovered=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/clara/chat'&&r.headers()['x-clara-operation-replayed']==='1');
+  await page.reload();const replayed=await recovered;assert.equal(replayed.status(),200);assert.equal(replayed.headers()['x-clara-operation-replayed'],'1');
   await page.getByRole('button',{name:'Vérifier la réponse',exact:true}).waitFor({state:'hidden'});
   assert.equal(pg(`SELECT count(*) FROM clara_native_journal_scope WHERE session_id='${a.sessionId}'`),journalBefore);
   assert.equal(pg(`SELECT count(*) FROM clara_native_conversation_messages WHERE session_id='${a.sessionId}' AND message->>'role'='user' AND message->>'content'='LOT4BIS_ACK_LOST'`).trim(),'1');
