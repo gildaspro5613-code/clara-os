@@ -34,6 +34,12 @@ export class MakeOnDemandClient {
   const result=reply as Record<string,unknown>;
   // Make Scenario API responsive status: 1 success, 2 warning, 3 error.
   if(result.status!==1&&result.status!=="1")throw new MakeWebhookError("Make did not certify successful completion.",response.status,"HTTP_ERROR",false);
+  const outputs=result.outputs;
+  if(outputs&&typeof outputs==="object"&&!Array.isArray(outputs)){
+   const value=outputs as Record<string,unknown>;
+   const state=typeof value.status==="string"?value.status.trim().toLowerCase():"";
+   if(value.ok===false||value.success===false||["failed","error","rejected","cancelled"].includes(state))throw new MakeWebhookError("Make scenario output reports a failed business operation.",response.status,"HTTP_ERROR",false);
+  }
   const executionId=typeof result.executionId==="string"&&result.executionId.trim()?result.executionId.trim():undefined;
   return {ok:true,scenarioKey:invocation.scenarioKey,status:response.status,executionStatus:"completed",...(executionId?{executionId}:{}),data:result.outputs??null};
  }
