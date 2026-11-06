@@ -1,6 +1,8 @@
 -- Clone-only reception proposal for PR #249.
 -- Native-scope read resolver; no raw SELECT on clara_connections for the app role.
 -- The owner of this function must be trusted, and public schema CREATE denied.
+-- Installed on Neon clone br-nameless-dew-b2v6asgj on 2026-11-06.
+-- SECURITY DEFINER/ACL/negative-session verified. NOT installed in Production.
 -- Review separately before any Production installation.
 CREATE OR REPLACE FUNCTION public.clara_native_make_read_resolve(
   digest TEXT, w TEXT, c TEXT, p TEXT, s TEXT, requested_key TEXT
@@ -44,6 +46,8 @@ BEGIN
 END;
 $make_read$;
 REVOKE ALL ON FUNCTION public.clara_native_make_read_resolve(TEXT,TEXT,TEXT,TEXT,TEXT,TEXT) FROM PUBLIC;
--- On clone only, after role review:
--- GRANT EXECUTE ON FUNCTION public.clara_native_make_read_resolve(TEXT,TEXT,TEXT,TEXT,TEXT,TEXT)
--- TO clara_make_runtime_test;
+-- Applied on clone only: GRANT EXECUTE to fixture clara_make_runtime_test.
+-- Fixture is NOLOGIN, NOINHERIT; never assume it is the real application role.
+-- Clone verification: EXECUTE resolver/admin true, direct SELECT connections false,
+-- INSERT/UPDATE authority false, public EXECUTE absent. Invalid session denied.
+-- Positive authenticated grant -> READ -> revoke still NOT certified.
