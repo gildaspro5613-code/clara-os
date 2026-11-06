@@ -4,8 +4,8 @@ import {createElement} from 'react';
 import {renderToString} from 'react-dom/server';
 import {NextIntlClientProvider} from 'next-intl';
 import {readFileSync} from 'node:fs';
-import {businessDayKey,businessDayWindow,formatBusinessDate,todayCalendarUrl} from '@/modules/agenda/calendar-window';
-import {calendarReadErrorKey} from '@/modules/agenda/calendar-read-state';
+import {businessDayKey,businessDayWindow,formatBusinessDate,todayCalendarUrl,agendaCalendarUrl} from '@/modules/agenda/calendar-window';
+import {calendarReadErrorKey,agendaPageReadErrorKey} from '@/modules/agenda/calendar-read-state';
 import AgendaWidget from '@/components/cockpit/widgets/agenda/AgendaWidget';
 import AgendaStage from '@/modules/agenda/AgendaStage';
 
@@ -38,4 +38,19 @@ test('SSR has a deterministic date placeholder and closed settings; no provider 
   assert.match(utc,/data-business-date="true">—<\/time>/);assert.ok(!utc.includes('MISSING_MESSAGE'));
   if(component===AgendaStage){assert.match(utc,/<details[^>]*data-agenda-settings/);assert.ok(!/<details[^>]*\bopen=""/.test(utc));assert.ok(!utc.includes('id="native-google-document-authority"'));}
  }}finally{if(previous===undefined)delete process.env.TZ;else process.env.TZ=previous;}
+});
+
+test('Agenda periods reuse bounded Paris windows across DST and weeks',()=>{
+ const params=(period:'today'|'week'|'upcoming',date:string)=>new URL(agendaCalendarUrl(period,new Date(date)),'https://local.invalid').searchParams;
+ assert.equal(params('today','2026-11-06T12:00:00Z').get('timeMin'),'2026-11-05T23:00:00.000Z');
+ assert.equal(params('week','2026-11-06T12:00:00Z').get('timeMin'),'2026-11-01T23:00:00.000Z');
+ assert.equal(params('week','2026-11-06T12:00:00Z').get('timeMax'),'2026-11-08T23:00:00.000Z');
+ assert.equal(params('week','2026-03-29T12:00:00Z').get('timeMax'),'2026-03-29T22:00:00.000Z');
+ assert.equal(params('upcoming','2026-10-24T12:00:00Z').get('timeMax'),'2026-11-22T23:00:00.000Z');
+});
+test('Agenda consent wording changes no Cockpit state and never hides a refusal',()=>{
+ assert.equal(agendaPageReadErrorKey(403,'GOOGLE_CONSENT_REQUIRED'),'agendaConsentRequired');
+ assert.equal(calendarReadErrorKey(403,'GOOGLE_CONSENT_REQUIRED'),'agendaAccessDenied');
+ assert.equal(agendaPageReadErrorKey(403,'REGISTRY_ACCESS_DENIED'),'agendaAccessDenied');
+ assert.equal(agendaPageReadErrorKey(401,'AUTHENTICATED_OS_SESSION_REQUIRED'),'agendaSessionExpired');
 });
