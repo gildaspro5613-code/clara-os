@@ -19,6 +19,10 @@ export const nativeMakeReadAuthority:MakeReadAuthority={
     FROM clara_native_make_read_authority grant_
     JOIN clara_connections conn ON conn.id=grant_.connection_id AND conn.workspace_id=${s.workspaceId}
        AND conn.provider='make' AND conn.status='ACTIVE'
+    JOIN clara_native_make_scenario_catalog catalog
+      ON catalog.scenario_key=grant_.scenario_key AND catalog.effect='READ'
+       AND catalog.enabled=TRUE AND catalog.reviewed_by IS NOT NULL
+       AND catalog.reviewed_at IS NOT NULL AND catalog.revoked_at IS NULL
     WHERE grant_.workspace_id=${s.workspaceId} AND grant_.client_id=${s.clientId}
        AND grant_.project_id=${s.projectId} AND grant_.owner_user_id=${ctx.userId}
        AND grant_.scenario_key=${input.scenarioKey} AND grant_.revoked_at IS NULL
