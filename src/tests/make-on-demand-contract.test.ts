@@ -49,7 +49,7 @@ test("on-demand mode refuses invalid zone, ID, missing token and payload without
 });
 
 test("Make status warning/error/unconfirmed and HTTP failures never certify completion",async()=>{
- for(const result of [{status:2},{status:3},{status:"success"},{status:"completed"},{outputs:{ok:true}},null]){
+ for(const result of [{status:2},{status:3},{status:"success"},{status:"completed"},{outputs:{ok:true}},null,{status:1,outputs:{status:"failed"}},{status:"1",outputs:{ok:false}}]){
   let calls=0;
   const client=new MakeOnDemandClient(async()=>{calls++;return Response.json(result);});
   await assert.rejects(()=>client.execute(scenario,makeApi,invocation),e=>e instanceof MakeWebhookError&&!e.retryable);
