@@ -23,7 +23,7 @@ CREATE OR REPLACE FUNCTION public.clara_native_make_admin_command(
 ) RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = pg_catalog, pg_temp
+SET search_path = pg_catalog, public, pg_temp
 AS $make$
 DECLARE
   view JSONB;
@@ -161,7 +161,9 @@ REVOKE ALL ON TABLE public.clara_native_make_read_authority FROM PUBLIC;
 -- - After review, grant EXECUTE only to that exact role; keep direct table DML
 --   denied. Do not grant EXECUTE to PUBLIC or any shared Neon service role.
 -- - SECURITY DEFINER must retain canonical-session verification, fully-qualified
---   object references and a restricted search_path.
+--   object references and a restricted search_path. Existing native
+--   functions still require public in search_path; untrusted role's CREATE
+--   on public must be denied.
 -- - This file has not yet been applied in this SECURITY DEFINER form on Neon.
 -- - Do not grant the real application role access without an authenticated
 --   positive + negative review of the complete command and durable audit.
