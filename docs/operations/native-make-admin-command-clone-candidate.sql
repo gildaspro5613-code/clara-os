@@ -145,6 +145,10 @@ BEGIN
 END;
 $make$;
 
+REVOKE ALL ON FUNCTION public.clara_native_make_admin_command(TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,JSONB) FROM PUBLIC;
+REVOKE ALL ON TABLE public.clara_native_make_admin_audit FROM PUBLIC;
+REVOKE ALL ON TABLE public.clara_native_make_read_authority FROM PUBLIC;
+
 -- Reviewer must ensure only the server's trusted role may call this function.
 -- Direct grants-table DML must NOT be exposed to untrusted application roles.
 -- Do NOT execute on the Production branch.
