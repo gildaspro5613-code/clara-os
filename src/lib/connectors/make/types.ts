@@ -13,6 +13,9 @@ export interface MakeWebhookScenarioConfiguration {
 export interface MakeOnDemandScenarioConfiguration {
   transport: "api";
   scenarioId: number;
+  url?: never;
+  headers?: never;
+  timeoutMs?: never;
 }
 
 export type MakeScenarioConfiguration =
