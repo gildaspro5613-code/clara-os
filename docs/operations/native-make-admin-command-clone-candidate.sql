@@ -28,10 +28,10 @@ AS $make$
 DECLARE
   view JSONB;
   actor TEXT;
-  connection_id TEXT;
-  recipient TEXT;
-  scenario_key TEXT;
-  reason TEXT;
+  v_connection_id TEXT;
+  v_recipient TEXT;
+  v_scenario_key TEXT;
+  v_reason TEXT;
   revision_out BIGINT;
 BEGIN
   -- Existing native command certifies the authenticated session / requested scope.
@@ -57,16 +57,16 @@ BEGIN
       AND pa.can_manage AND pa.revoked_at IS NULL
   ) THEN RAISE EXCEPTION 'NATIVE_MAKE_ADMIN_DENIED' USING ERRCODE='42501'; END IF;
 
-  connection_id := payload->>'connectionId';
-  recipient := payload->>'ownerUserId';
-  scenario_key := payload->>'scenarioKey';
-  reason := payload->>'reason';
-  IF connection_id IS NULL OR length(connection_id) NOT BETWEEN 1 AND 256
-     OR recipient IS NULL OR length(recipient) NOT BETWEEN 1 AND 256
-     OR scenario_key IS NULL
-     OR length(scenario_key) NOT BETWEEN 1 AND 120
-     OR scenario_key !~ '^[a-zA-Z0-9._:-]+$'
-     OR scenario_key IN ('__proto__','prototype','constructor')
+  v_connection_id := payload->>'connectionId';
+  v_recipient := payload->>'ownerUserId';
+  v_scenario_key := payload->>'scenarioKey';
+  v_reason := payload->>'reason';
+  IF v_connection_id IS NULL OR length(v_connection_id) NOT BETWEEN 1 AND 256
+     OR v_recipient IS NULL OR length(v_recipient) NOT BETWEEN 1 AND 256
+     OR v_scenario_key IS NULL
+     OR length(v_scenario_key) NOT BETWEEN 1 AND 120
+     OR v_scenario_key !~ '^[a-zA-Z0-9._:-]+$'
+     OR v_scenario_key IN ('__proto__','prototype','constructor')
      OR (payload - 'connectionId' - 'ownerUserId' - 'scenarioKey' - 'reason') <> '{}'::jsonb
      OR NOT EXISTS (
        SELECT 1 FROM public.clara_registry_projects pr
@@ -79,40 +79,40 @@ BEGIN
 
   -- Serialization for the same grant key, including retries.
   PERFORM pg_advisory_xact_lock(hashtextextended(
-    jsonb_build_array(connection_id,w,c,p,recipient,scenario_key)::text,0));
+    jsonb_build_array(v_connection_id,w,c,p,v_recipient,v_scenario_key)::text,0));
 
   IF operation = 'grant' THEN
-    IF reason IS NULL OR length(btrim(reason)) NOT BETWEEN 20 AND 2000
-       OR scenario_key NOT IN ('find-drive-document','check-calendar-availability','search-calendar-events')
+    IF v_reason IS NULL OR length(btrim(v_reason)) NOT BETWEEN 20 AND 2000
+       OR v_scenario_key NOT IN ('find-drive-document','check-calendar-availability','search-calendar-events')
        OR NOT EXISTS (
-         SELECT 1 FROM public.clara_auth_identities ai WHERE ai.user_id=recipient
+         SELECT 1 FROM public.clara_auth_identities ai WHERE ai.user_id=v_recipient
        )
        OR NOT EXISTS (
          SELECT 1 FROM public.clara_workspace_memberships wm
-         WHERE wm.user_id=recipient AND wm.workspace_id=w AND wm.revoked_at IS NULL
+         WHERE wm.user_id=v_recipient AND wm.workspace_id=w AND wm.revoked_at IS NULL
        )
        OR NOT EXISTS (
          SELECT 1 FROM public.clara_registry_client_access ca
-         WHERE ca.user_id=recipient AND ca.workspace_id=w AND ca.client_id=c
+         WHERE ca.user_id=v_recipient AND ca.workspace_id=w AND ca.client_id=c
            AND ca.can_read AND ca.revoked_at IS NULL
        )
        OR NOT EXISTS (
          SELECT 1 FROM public.clara_registry_project_access pa
-         WHERE pa.user_id=recipient AND pa.workspace_id=w AND pa.project_id=p
+         WHERE pa.user_id=v_recipient AND pa.workspace_id=w AND pa.project_id=p
            AND pa.can_read AND pa.revoked_at IS NULL
        )
        OR NOT EXISTS (
          SELECT 1 FROM public.clara_connections co
-         WHERE co.id=connection_id AND co.provider='make'
+         WHERE co.id=v_connection_id AND co.provider='make'
            AND co.workspace_id=w AND co.status='ACTIVE'
-           AND co.scopes @> jsonb_build_array('make:scenario:'||scenario_key)
+           AND co.scopes @> jsonb_build_array('make:scenario:'||v_scenario_key)
        )
     THEN RAISE EXCEPTION 'NATIVE_MAKE_GRANT_DENIED' USING ERRCODE='42501'; END IF;
 
     INSERT INTO public.clara_native_make_read_authority (
       connection_id,owner_user_id,workspace_id,client_id,project_id,
       scenario_key,revision,approved_by,review_reason
-    ) VALUES (connection_id,recipient,w,c,p,scenario_key,1,actor,reason)
+    ) VALUES (v_connection_id,v_recipient,w,c,p,v_scenario_key,1,actor,v_reason)
     ON CONFLICT (connection_id,owner_user_id,client_id,project_id,scenario_key)
     DO UPDATE SET revision=clara_native_make_read_authority.revision+1,
       revoked_at=NULL,approved_by=EXCLUDED.approved_by,
@@ -121,9 +121,9 @@ BEGIN
   ELSE
     UPDATE public.clara_native_make_read_authority a
        SET revision=a.revision+1,revoked_at=NOW()
-     WHERE a.connection_id=connection_id AND a.workspace_id=w
+     WHERE a.connection_id=v_connection_id AND a.workspace_id=w
        AND a.client_id=c AND a.project_id=p
-       AND a.owner_user_id=recipient AND a.scenario_key=scenario_key
+       AND a.owner_user_id=v_recipient AND a.scenario_key=v_scenario_key
        AND a.revoked_at IS NULL
     RETURNING revision INTO revision_out;
     IF revision_out IS NULL THEN
@@ -136,11 +136,11 @@ BEGIN
     connection_id,workspace_id,client_id,project_id,owner_user_id,
     actor_user_id,scenario_key,operation,revision
   ) VALUES (
-    connection_id,w,c,p,recipient,actor,scenario_key,operation,revision_out
+    v_connection_id,w,c,p,v_recipient,actor,v_scenario_key,operation,revision_out
   );
 
   RETURN jsonb_build_object(
-    'operation',operation,'scenarioKey',scenario_key,'revision',revision_out
+    'operation',operation,'scenarioKey',v_scenario_key,'revision',revision_out
   );
 END;
 $make$;
