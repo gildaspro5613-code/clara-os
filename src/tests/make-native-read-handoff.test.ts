@@ -69,17 +69,19 @@ test("pending result, wrong provider, connection or failed business receipt are 
 
 test("production Make native authority stays fail-closed until a reviewed owner/project grant exists",()=>{
  const source=readFileSync("src/lib/native/make-read-authority.ts","utf8");
- assert.match(source,/clara_native_make_read_authority/);
- assert.match(source,/clara_native_read_session/);
- assert.match(source,/clara_native_make_scenario_catalog/);
- assert.match(source,/catalog\.effect='READ'/);
- assert.match(source,/catalog\.enabled=TRUE/);
- assert.match(source,/catalog\.revoked_at IS NULL/);
- assert.match(source,/grant_\.owner_user_id/);
- assert.match(source,/grant_\.revoked_at IS NULL/);
- assert.match(source,/conn\.status='ACTIVE'/);
- assert.match(source,/make:scenario:/);
+ assert.match(source,/clara_native_make_read_resolve/);
+ assert.doesNotMatch(source,/JOIN clara_connections/);
  assert.match(source,/catch\s*\{[\s\S]*return null;/);
+ const narrow=readFileSync("docs/operations/native-make-read-resolver-clone-candidate.sql","utf8");
+ assert.match(narrow,/SECURITY DEFINER/);
+ assert.match(narrow,/REVOKE ALL ON FUNCTION/);
+ assert.match(narrow,/clara_native_runtime_command/);
+ assert.match(narrow,/g\.owner_user_id=actor/);
+ assert.match(narrow,/g\.revoked_at IS NULL/);
+ assert.match(narrow,/cat\.effect='READ'/);
+ assert.match(narrow,/cat\.enabled/);
+ assert.match(narrow,/conn\.status='ACTIVE'/);
+ assert.match(narrow,/make:scenario:/);
  const proposal=readFileSync("docs/operations/native-make-read-authority-proposal.sql","utf8");
  assert.match(proposal,/DRAFT ONLY/);
  assert.match(proposal,/revoked_at TIMESTAMPTZ/);
