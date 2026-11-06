@@ -384,5 +384,6 @@
   "mailVisualDraft": "Bozza di risposta",
   "mailVisualSignature": "Firma Mélodie Digital",
   "mailVisualSync": "Cartelle e sincronizzazione",
-  "mailVisualApprovals": "Approvazione invii"
+  "mailVisualApprovals": "Approvazione invii",
+  "nativeChatFinishedWithError": "Questa richiesta non è stata completata. Puoi continuare in questa conversazione."
 }

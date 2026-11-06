@@ -3,7 +3,7 @@
 import {isLegacyMailDraftChatNotice} from "@/lib/native/mail/chat-notice-filter";
 import NativeEarlierMessages from '@/components/native/NativeEarlierMessages';
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -81,6 +81,7 @@ export default function ClaraChatWidget({
   );
 
   const [pending,setPending]=useState<{operationId:string;message:string;sessionId?:string}|null>(null);
+  const recovery=useRef({operationId:'',attempts:0});
   const [chatError,setChatError]=useState('');
   const pendingKey=nativeSessionId?'clara.pending-chat:'+nativeSessionId:null;
   useEffect(()=>{if(!pendingKey)return;try{const saved=sessionStorage.getItem(pendingKey);if(saved){const value=JSON.parse(saved);if(typeof value.operationId==='string'&&typeof value.message==='string'&&value.sessionId===nativeSessionId)setPending(value);}}catch{/* unavailable browser storage does not authorize execution */}},[pendingKey,nativeSessionId]);
@@ -137,7 +138,7 @@ export default function ClaraChatWidget({
     setPending(operation);if(pendingKey)try{sessionStorage.setItem(pendingKey,JSON.stringify(operation));}catch{/* memory-only pending identity */}
     await submitOperation(operation);
   }
-  async function submitOperation(operation:{operationId:string;message:string;sessionId?:string}){
+  const submitOperation=useCallback(async(operation:{operationId:string;message:string;sessionId?:string})=>{
     setLoading(true);setChatError('');
     try{
       const response=await fetch('/api/clara/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(operation)});
@@ -145,16 +146,27 @@ export default function ClaraChatWidget({
       if(response.status===202){
         const original=data.pendingRequest??operation;setPending(original);if(pendingKey)try{sessionStorage.setItem(pendingKey,JSON.stringify(original));}catch{/* keep the in-memory reservation */}setChatError(ui('nativeChatPending'));return;
       }
+      const finalized=!nativeSessionId||response.headers.get('X-Clara-Operation-Completed')==='1'||response.headers.get('X-Clara-Operation-Replayed')==='1';
+      if(!finalized){setChatError(ui('nativeChatPending'));return;}
       if(nativeSessionId){
         const history=await fetch('/api/clara/conversation?'+new URLSearchParams({thread:nativeSessionId,limit:'100'}));const current=await history.json();
         if(!history.ok||!current.success)throw Error(ui('nativeHistoryUnavailable'));setMessages(current.messages);
       }else if(Array.isArray(data.conversation))setMessages(data.conversation);
       if(pendingKey)try{sessionStorage.removeItem(pendingKey);}catch{/* acknowledged receipt remains server-owned */}setPending(null);
-      if(!response.ok||!data.success){setChatError(['NATIVE_THREAD_MISSION_BOUND','NATIVE_NEW_SESSION_REQUIRED'].includes(data.code)?ui('nativeThreadMissionBound'):data.code==='NATIVE_CONSULTATION_MIGRATION_REQUIRED'?`${ui('nativeChatFailed')} [NATIVE_CONSULTATION_MIGRATION_REQUIRED]`:data.message??ui('nativeChatFailed'));router.refresh();return;}
+      if(!response.ok||!data.success){setChatError(['NATIVE_THREAD_MISSION_BOUND','NATIVE_NEW_SESSION_REQUIRED'].includes(data.code)?ui('nativeThreadMissionBound'):data.code==='NATIVE_CONSULTATION_MIGRATION_REQUIRED'?`${ui('nativeChatFailed')} [NATIVE_CONSULTATION_MIGRATION_REQUIRED]`:ui('nativeChatFinishedWithError'));router.refresh();return;}
       setApprovals(current=>[...current,...(data.approvals??[])]);setPhysicalActions(data.physicalActions??[]);router.refresh();
     }catch{setChatError(ui('nativeChatPending'));}
     finally{setLoading(false);}
-  }
+  },[nativeSessionId,pendingKey,router,ui]);
+
+  useEffect(()=>{
+    if(!pending||loading||nativeThreadReadOnly||!nativeSessionId||pending.sessionId!==nativeSessionId)return;
+    if(recovery.current.operationId!==pending.operationId)recovery.current={operationId:pending.operationId,attempts:0};
+    if(recovery.current.attempts>=8)return;
+    const delay=Math.min(1000*2**recovery.current.attempts,10000);
+    const timer=setTimeout(()=>{recovery.current.attempts++;void submitOperation(pending);},delay);
+    return()=>clearTimeout(timer);
+  },[pending,loading,nativeThreadReadOnly,nativeSessionId,submitOperation]);
 
   async function cancelPending(){
     if(!pending||!nativeSessionId||!window.confirm(ui('nativeCancelChatConfirm')))return;

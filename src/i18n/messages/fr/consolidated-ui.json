@@ -384,5 +384,6 @@
   "mailVisualDraft": "Brouillon de réponse",
   "mailVisualSignature": "Signature Mélodie Digital",
   "mailVisualSync": "Dossiers et synchronisation",
-  "mailVisualApprovals": "Validation des envois"
+  "mailVisualApprovals": "Validation des envois",
+  "nativeChatFinishedWithError": "Cette demande n’a pas abouti. Tu peux poursuivre dans ce fil."
 }

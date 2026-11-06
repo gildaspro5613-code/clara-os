@@ -48,10 +48,11 @@ describe("Acquisition decision brief", () => {
     expect(brief.claraCanContinue.length).toBeGreaterThan(0);
   });
 
-  it("surfaces specialist routing as a decision when qualification is ready", () => {
+  it("keeps preparatory specialist routing autonomous while committing actions still require human approval", () => {
     const brief = buildAcquisitionDecisionBrief(qualification());
 
-    expect(brief.decision.required).toBe(true);
+    expect(brief.decision.required).toBe(false);
+    expect(qualification().governance.humanApproval).toBe("required-for-committing-actions");
     expect(brief.decision.kind).toBe("review-specialist-routing");
     expect(brief.proposedSpecialistReview).toEqual(["Lighting", "Sound"]);
   });

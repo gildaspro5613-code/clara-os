@@ -384,5 +384,6 @@
   "mailVisualDraft": "Reply draft",
   "mailVisualSignature": "Mélodie Digital signature",
   "mailVisualSync": "Folders and synchronization",
-  "mailVisualApprovals": "Sending approval"
+  "mailVisualApprovals": "Sending approval",
+  "nativeChatFinishedWithError": "This request did not complete. You can continue in this thread."
 }

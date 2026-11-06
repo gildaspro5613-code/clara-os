@@ -72,15 +72,18 @@ export async function nativeChatRequest(request:Request,render:()=>Promise<Respo
     if(ctx.session.mission?.documentReferences?.length||ctx.session.documentReferences?.length){const {selectedNativeDocuments}=await import('./documents');await (await selectedNativeDocuments()).brainSource();}
     if(receipt.missionReadProof!==undefined)await verifyNativeMissionReadProof(receipt.missionReadProof);
    },query);
-   return Response.json(receipt.body,{status:receipt.status,headers:{'Cache-Control':'no-store','X-Clara-Operation-Replayed':'1'}});
+   return Response.json(receipt.body,{status:receipt.status,headers:{'Cache-Control':'no-store','X-Clara-Operation-Replayed':'1','X-Clara-Operation-Completed':'1'}});
   }
   if(reserved.state!=='owned')return Response.json({success:false,code:'NATIVE_CHAT_PENDING',operationId:body.operationId,...(reserved.request?{pendingRequest:reserved.request}:{})},{status:202,headers:{'Cache-Control':'no-store'}});
   try{
-   return await withNativeScope(request,true,async()=>{
+   const finalized=await withNativeScope(request,true,async()=>{
     const response=await render();response.headers.set('Cache-Control','no-store');
     nativeContext()!.chatCommitProof={jobId:reserved.jobId,ownerToken:reserved.ownerToken,...(nativeContext()!.missionReadRows?{missionReads:nativeContext()!.missionReadRows}:{}),result:{status:response.status,body:await response.clone().json(),...(nativeContext()!.missionReadProof?{missionReadProof:nativeContext()!.missionReadProof}:{})}};
     return response;
    },query);
+   // This acknowledgement is emitted only after the existing SQL finish commits.
+   finalized.headers.set('X-Clara-Operation-Completed','1');
+   return finalized;
   }catch(error){
    // Only a confirmed PostgreSQL rollback is terminalized. Network ambiguity pins ownership.
    if(error instanceof RegistryError&&error.status===409){
