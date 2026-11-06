@@ -1,5 +1,10 @@
 import {writeFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
+const calendarInstant=value=>{
+ if(!value?.date)return Date.parse(value?.dateTime??'');
+ const target=Date.parse(value.date+'T00:00:00Z');let instant=target;
+ for(let i=0;i<3;i++){const p=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Paris',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(instant).map(p=>[p.type,p.value]));instant-=Date.UTC(+p.year,+p.month-1,+p.day,+p.hour,+p.minute)-target;}return instant;
+};
 /** Exact disposable Google provider boundary only. Never forwards any network. */
 export function googleWorkHttp(url,init,state,stateFile,actor){
  const work=state.workspace;if(!work)return undefined;
@@ -14,7 +19,7 @@ export function googleWorkHttp(url,init,state,stateFile,actor){
  if(!eventsPath&&!drivePath)return undefined;
  if(url.pathname==='/drive/v3/files/generateIds'){const id='work-file-'+(++work.generated);save();return Response.json({ids:[id]});}
  if(method==='GET'){
-  if(eventsPath){const cal=decodeURIComponent(eventsPath[1]),id=eventsPath[2];if(!work.calendars[cal])return fail(403);if(id){const e=work.events[cal+'/'+id];return e?Response.json(e):fail(404);}const from=Date.parse(url.searchParams.get('timeMin')),until=Date.parse(url.searchParams.get('timeMax'));const events=Object.entries(work.events).filter(([key,e])=>key.startsWith(cal+'/')&&Date.parse(e.start.dateTime)>=from&&Date.parse(e.start.dateTime)<until).map(([,e])=>e),offset=Number(url.searchParams.get('pageToken')??0),size=work.eventPageSize??50;return Response.json({items:events.slice(offset,offset+size),...(offset+size<events.length?{nextPageToken:String(offset+size)}:{})});}
+  if(eventsPath){const cal=decodeURIComponent(eventsPath[1]),id=eventsPath[2];if(!work.calendars[cal])return fail(403);if(id){const e=work.events[cal+'/'+id];return e?Response.json(e):fail(404);}const from=Date.parse(url.searchParams.get('timeMin')),until=Date.parse(url.searchParams.get('timeMax'));const events=Object.entries(work.events).filter(([key,e])=>key.startsWith(cal+'/')&&calendarInstant(e.start)<until&&calendarInstant(e.end)>from).map(([,e])=>e).sort((a,b)=>calendarInstant(a.start)-calendarInstant(b.start)),offset=Number(url.searchParams.get('pageToken')??0),size=work.eventPageSize??50;return Response.json({items:events.slice(offset,offset+size),...(offset+size<events.length?{nextPageToken:String(offset+size)}:{})});}
   const id=drivePath[1],file=work.files[id];if(!file)return undefined;
   if(drivePath[2])return Response.json({permissions:[{id:'permission-a',type:'user',role:'owner'}]});
   if(url.searchParams.get('alt')==='media')return new Response(Buffer.from(file.content??'','base64'),{headers:{'Content-Type':file.mimeType}});

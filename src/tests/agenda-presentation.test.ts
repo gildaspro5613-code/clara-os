@@ -35,8 +35,8 @@ test('SSR has a deterministic date placeholder and closed settings; no provider 
  const previous=process.env.TZ;
  try{for(const component of [AgendaWidget,AgendaStage])for(const locale of ['fr','en','es','de','it']){
   process.env.TZ='UTC';const utc=render(component,locale);process.env.TZ='America/Los_Angeles';assert.equal(render(component,locale),utc);
-  assert.match(utc,/data-business-date="true">—<\/time>/);assert.ok(!utc.includes('MISSING_MESSAGE'));
-  if(component===AgendaStage){assert.match(utc,/<details[^>]*data-agenda-settings/);assert.ok(!/<details[^>]*\bopen=""/.test(utc));assert.ok(!utc.includes('id="native-google-document-authority"'));}
+  if(component===AgendaWidget)assert.match(utc,/data-business-date="true">—<\/time>/);assert.ok(!utc.includes('MISSING_MESSAGE'));
+  if(component===AgendaStage){assert.ok(!utc.includes('<details'));assert.ok(!utc.includes('id="native-google-document-authority"'));assert.ok(utc.includes('data-agenda-view="week"'));assert.ok(utc.includes('/connexions#google-agenda-administration'));}
  }}finally{if(previous===undefined)delete process.env.TZ;else process.env.TZ=previous;}
 });
 
