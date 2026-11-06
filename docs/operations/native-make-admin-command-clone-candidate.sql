@@ -85,6 +85,12 @@ BEGIN
     IF v_reason IS NULL OR length(btrim(v_reason)) NOT BETWEEN 20 AND 2000
        OR v_scenario_key NOT IN ('find-drive-document','check-calendar-availability','search-calendar-events')
        OR NOT EXISTS (
+         SELECT 1 FROM public.clara_native_make_scenario_catalog catalog
+         WHERE catalog.scenario_key=v_scenario_key AND catalog.effect='READ'
+           AND catalog.enabled=TRUE AND catalog.reviewed_by IS NOT NULL
+           AND catalog.reviewed_at IS NOT NULL AND catalog.revoked_at IS NULL
+       )
+       OR NOT EXISTS (
          SELECT 1 FROM public.clara_auth_identities ai WHERE ai.user_id=v_recipient
        )
        OR NOT EXISTS (
