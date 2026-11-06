@@ -43,6 +43,11 @@ export async function revealBusinessContext(page) {
 }
 
 export async function revealAgendaSettings(page){
- const settings=page.locator('[data-agenda-settings]');
+ if(await page.locator('[data-agenda-view]').count()){
+  await page.locator('.agenda-calendar-source a').click();
+  await page.waitForFunction(()=>document.getElementById('google-agenda-administration')?.open===true);
+  return;
+ }
+ const settings=page.locator('[data-agenda-settings], #google-agenda-administration');
  if(await settings.count()&&!(await settings.evaluate(element=>element.open)))await settings.locator(':scope > summary').click();
 }

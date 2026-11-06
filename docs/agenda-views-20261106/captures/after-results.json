@@ -1,0 +1,277 @@
+{
+  "results": [
+    {
+      "locale": "fr",
+      "device": "desktop",
+      "view": "week",
+      "result": "PASS"
+    },
+    {
+      "locale": "fr",
+      "device": "desktop",
+      "view": "day",
+      "result": "PASS"
+    },
+    {
+      "locale": "fr",
+      "device": "desktop",
+      "view": "month",
+      "result": "PASS"
+    },
+    {
+      "locale": "fr",
+      "device": "tablet",
+      "view": "week",
+      "result": "PASS"
+    },
+    {
+      "locale": "fr",
+      "device": "tablet",
+      "view": "day",
+      "result": "PASS"
+    },
+    {
+      "locale": "fr",
+      "device": "tablet",
+      "view": "month",
+      "result": "PASS"
+    },
+    {
+      "locale": "fr",
+      "device": "mobile",
+      "view": "week",
+      "result": "PASS"
+    },
+    {
+      "locale": "fr",
+      "device": "mobile",
+      "view": "day",
+      "result": "PASS"
+    },
+    {
+      "locale": "fr",
+      "device": "mobile",
+      "view": "month",
+      "result": "PASS"
+    },
+    {
+      "locale": "en",
+      "device": "desktop",
+      "view": "week",
+      "result": "PASS"
+    },
+    {
+      "locale": "en",
+      "device": "desktop",
+      "view": "day",
+      "result": "PASS"
+    },
+    {
+      "locale": "en",
+      "device": "desktop",
+      "view": "month",
+      "result": "PASS"
+    },
+    {
+      "locale": "en",
+      "device": "tablet",
+      "view": "week",
+      "result": "PASS"
+    },
+    {
+      "locale": "en",
+      "device": "tablet",
+      "view": "day",
+      "result": "PASS"
+    },
+    {
+      "locale": "en",
+      "device": "tablet",
+      "view": "month",
+      "result": "PASS"
+    },
+    {
+      "locale": "en",
+      "device": "mobile",
+      "view": "week",
+      "result": "PASS"
+    },
+    {
+      "locale": "en",
+      "device": "mobile",
+      "view": "day",
+      "result": "PASS"
+    },
+    {
+      "locale": "en",
+      "device": "mobile",
+      "view": "month",
+      "result": "PASS"
+    },
+    {
+      "locale": "es",
+      "device": "desktop",
+      "view": "week",
+      "result": "PASS"
+    },
+    {
+      "locale": "es",
+      "device": "desktop",
+      "view": "day",
+      "result": "PASS"
+    },
+    {
+      "locale": "es",
+      "device": "desktop",
+      "view": "month",
+      "result": "PASS"
+    },
+    {
+      "locale": "es",
+      "device": "tablet",
+      "view": "week",
+      "result": "PASS"
+    },
+    {
+      "locale": "es",
+      "device": "tablet",
+      "view": "day",
+      "result": "PASS"
+    },
+    {
+      "locale": "es",
+      "device": "tablet",
+      "view": "month",
+      "result": "PASS"
+    },
+    {
+      "locale": "es",
+      "device": "mobile",
+      "view": "week",
+      "result": "PASS"
+    },
+    {
+      "locale": "es",
+      "device": "mobile",
+      "view": "day",
+      "result": "PASS"
+    },
+    {
+      "locale": "es",
+      "device": "mobile",
+      "view": "month",
+      "result": "PASS"
+    },
+    {
+      "locale": "de",
+      "device": "desktop",
+      "view": "week",
+      "result": "PASS"
+    },
+    {
+      "locale": "de",
+      "device": "desktop",
+      "view": "day",
+      "result": "PASS"
+    },
+    {
+      "locale": "de",
+      "device": "desktop",
+      "view": "month",
+      "result": "PASS"
+    },
+    {
+      "locale": "de",
+      "device": "tablet",
+      "view": "week",
+      "result": "PASS"
+    },
+    {
+      "locale": "de",
+      "device": "tablet",
+      "view": "day",
+      "result": "PASS"
+    },
+    {
+      "locale": "de",
+      "device": "tablet",
+      "view": "month",
+      "result": "PASS"
+    },
+    {
+      "locale": "de",
+      "device": "mobile",
+      "view": "week",
+      "result": "PASS"
+    },
+    {
+      "locale": "de",
+      "device": "mobile",
+      "view": "day",
+      "result": "PASS"
+    },
+    {
+      "locale": "de",
+      "device": "mobile",
+      "view": "month",
+      "result": "PASS"
+    },
+    {
+      "locale": "it",
+      "device": "desktop",
+      "view": "week",
+      "result": "PASS"
+    },
+    {
+      "locale": "it",
+      "device": "desktop",
+      "view": "day",
+      "result": "PASS"
+    },
+    {
+      "locale": "it",
+      "device": "desktop",
+      "view": "month",
+      "result": "PASS"
+    },
+    {
+      "locale": "it",
+      "device": "tablet",
+      "view": "week",
+      "result": "PASS"
+    },
+    {
+      "locale": "it",
+      "device": "tablet",
+      "view": "day",
+      "result": "PASS"
+    },
+    {
+      "locale": "it",
+      "device": "tablet",
+      "view": "month",
+      "result": "PASS"
+    },
+    {
+      "locale": "it",
+      "device": "mobile",
+      "view": "week",
+      "result": "PASS"
+    },
+    {
+      "locale": "it",
+      "device": "mobile",
+      "view": "day",
+      "result": "PASS"
+    },
+    {
+      "locale": "it",
+      "device": "mobile",
+      "view": "month",
+      "result": "PASS"
+    }
+  ],
+  "providerCertified": false,
+  "automaticWrites": 0,
+  "hydrationErrors": 0
+}
