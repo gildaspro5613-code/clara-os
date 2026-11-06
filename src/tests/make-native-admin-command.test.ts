@@ -36,7 +36,7 @@ test("clone-only SQL candidate requires canonical authority and explicit READ-on
   assert.match(candidate, /revision=a\.revision\+1,revoked_at=NOW\(\)/);
   assert.match(candidate, /clara_native_make_admin_audit/);
   assert.match(candidate, /SECURITY DEFINER/);
-  assert.match(candidate, /SET search_path = pg_catalog, pg_temp/);
+  assert.match(candidate, /SET search_path = pg_catalog, public, pg_temp/);
   assert.match(candidate, /REVOKE ALL ON FUNCTION/);
   assert.match(candidate, /REVOKE ALL ON TABLE/);
   assert.match(candidate, /NOT A PRODUCTION MIGRATION/);
