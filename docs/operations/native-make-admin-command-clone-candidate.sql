@@ -22,8 +22,8 @@ CREATE OR REPLACE FUNCTION public.clara_native_make_admin_command(
   operation TEXT, payload JSONB
 ) RETURNS JSONB
 LANGUAGE plpgsql
-SECURITY INVOKER
-SET search_path = public, pg_temp
+SECURITY DEFINER
+SET search_path = pg_catalog, pg_temp
 AS $make$
 DECLARE
   view JSONB;
@@ -155,6 +155,14 @@ REVOKE ALL ON FUNCTION public.clara_native_make_admin_command(TEXT,TEXT,TEXT,TEX
 REVOKE ALL ON TABLE public.clara_native_make_admin_audit FROM PUBLIC;
 REVOKE ALL ON TABLE public.clara_native_make_read_authority FROM PUBLIC;
 
--- Reviewer must ensure only the server's trusted role may call this function.
--- Direct grants-table DML must NOT be exposed to untrusted application roles.
+-- SECURITY REVIEW REQUIRED BEFORE APPLYING THIS REVISION:
+-- - A trusted owner owns the function and its Make tables; the HTTP runtime MUST
+--   be connected through a separate, non-owner, non-superuser role.
+-- - After review, grant EXECUTE only to that exact role; keep direct table DML
+--   denied. Do not grant EXECUTE to PUBLIC or any shared Neon service role.
+-- - SECURITY DEFINER must retain canonical-session verification, fully-qualified
+--   object references and a restricted search_path.
+-- - This file has not yet been applied in this SECURITY DEFINER form on Neon.
+-- - Do not grant the real application role access without an authenticated
+--   positive + negative review of the complete command and durable audit.
 -- Do NOT execute on the Production branch.
