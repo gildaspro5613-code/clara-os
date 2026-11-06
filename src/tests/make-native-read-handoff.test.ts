@@ -81,3 +81,19 @@ test("production Make native authority stays fail-closed until a reviewed owner/
  assert.match(proposal,/revoked_at TIMESTAMPTZ/);
  assert.match(proposal,/PRIMARY KEY \(connection_id,owner_user_id,client_id,project_id,scenario_key\)/);
 });
+
+test("in-flight READ result is rejected when grant is revoked before the provider reply",async()=>{
+ let releaseProvider!:()=>void;
+ let notifyStarted!:()=>void;
+ const started=new Promise<void>(resolve=>{notifyStarted=resolve;});
+ const pending=new Promise<void>(resolve=>{releaseProvider=resolve;});
+ let revoked=false,checks=0;
+ const authority:MakeReadAuthority={async authorize(){checks++;return revoked?null:proof;}};
+ const capability:MakeReadCapability={async execute(){notifyStarted();await pending;return receipt;}};
+ const inFlight=executeScopedMakeRead(scope,principal,"mission-a",selection,input,authority,capability);
+ await started;
+ revoked=true;
+ releaseProvider();
+ await assert.rejects(inFlight,denied("NATIVE_MAKE_AUTHORITY_REVOKED"));
+ assert.equal(checks,2);
+});
