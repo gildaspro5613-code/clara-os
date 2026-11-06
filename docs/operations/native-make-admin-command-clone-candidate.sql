@@ -165,6 +165,8 @@ REVOKE ALL ON TABLE public.clara_native_make_read_authority FROM PUBLIC;
 --   functions still require public in search_path; untrusted role's CREATE
 --   on public must be denied.
 -- - This file has not yet been applied in this SECURITY DEFINER form on Neon.
+-- - Only clara_make_runtime_test (NOLOGIN) was given EXECUTE on the clone;
+--   this is a privilege-isolation fixture, not an application runtime.
 -- - Do not grant the real application role access without an authenticated
 --   positive + negative review of the complete command and durable audit.
 -- Do NOT execute on the Production branch.
