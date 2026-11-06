@@ -16,3 +16,13 @@ export function formatBusinessDate(day:string,locale:string){
  return text[0].toLocaleUpperCase(locale)+text.slice(1);
 }
 export function todayCalendarUrl(date:Date=new Date()){const {start,end}=businessDayWindow(date);return '/api/calendar?'+new URLSearchParams({timeMin:start.toISOString(),timeMax:end.toISOString()});}
+
+/** Reuse the existing bounded Calendar read API; civil-day arithmetic keeps Paris DST. */
+export type AgendaPeriod='today'|'week'|'upcoming';
+export function agendaCalendarUrl(period:AgendaPeriod,date:Date=new Date()){
+ const day=businessDayKey(date),civil=new Date(day+'T12:00:00Z');
+ const first=new Date(civil);
+ if(period==='week')first.setUTCDate(first.getUTCDate()-((first.getUTCDay()+6)%7));
+ const last=new Date(first);last.setUTCDate(last.getUTCDate()+(period==='today'?1:period==='week'?7:30));
+ return '/api/calendar?'+new URLSearchParams({timeMin:businessDayWindow(first).start.toISOString(),timeMax:businessDayWindow(last).start.toISOString()});
+}

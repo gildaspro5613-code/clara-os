@@ -1,0 +1,82 @@
+{
+  "providerCertified": false,
+  "results": [
+    {
+      "locale": "fr",
+      "device": "desktop",
+      "result": "PASS"
+    },
+    {
+      "locale": "fr",
+      "device": "tablet",
+      "result": "PASS"
+    },
+    {
+      "locale": "fr",
+      "device": "mobile",
+      "result": "PASS"
+    },
+    {
+      "locale": "en",
+      "device": "desktop",
+      "result": "PASS"
+    },
+    {
+      "locale": "en",
+      "device": "tablet",
+      "result": "PASS"
+    },
+    {
+      "locale": "en",
+      "device": "mobile",
+      "result": "PASS"
+    },
+    {
+      "locale": "es",
+      "device": "desktop",
+      "result": "PASS"
+    },
+    {
+      "locale": "es",
+      "device": "tablet",
+      "result": "PASS"
+    },
+    {
+      "locale": "es",
+      "device": "mobile",
+      "result": "PASS"
+    },
+    {
+      "locale": "de",
+      "device": "desktop",
+      "result": "PASS"
+    },
+    {
+      "locale": "de",
+      "device": "tablet",
+      "result": "PASS"
+    },
+    {
+      "locale": "de",
+      "device": "mobile",
+      "result": "PASS"
+    },
+    {
+      "locale": "it",
+      "device": "desktop",
+      "result": "PASS"
+    },
+    {
+      "locale": "it",
+      "device": "tablet",
+      "result": "PASS"
+    },
+    {
+      "locale": "it",
+      "device": "mobile",
+      "result": "PASS"
+    }
+  ],
+  "hydrationErrors": 0,
+  "automaticMutations": 0
+}

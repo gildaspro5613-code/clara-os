@@ -27,7 +27,8 @@
       "fix/header-login-cleanup-20261103": false,
       "fix/google-reconnect-ionos-reception-20261103": false,
       "fix/agenda-presentation-date-20261103": false,
-      "fix/mail-visual-finalization-20261104": false
+      "fix/mail-visual-finalization-20261104": false,
+      "fix/agenda-operational-clarity-20261106": false
     }
   }
 }
