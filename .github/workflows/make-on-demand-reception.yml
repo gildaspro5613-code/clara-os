@@ -6,6 +6,8 @@ on:
       - 'src/tests/make-on-demand-contract.test.ts'
       - 'src/tests/make-native-read-handoff.test.ts'
       - 'src/lib/native/make-read-handoff.ts'
+      - 'src/lib/native/make-read-authority.ts'
+      - 'docs/operations/native-make-read-authority-proposal.sql'
       - '.github/workflows/make-on-demand-reception.yml'
   workflow_dispatch:
 permissions:
@@ -26,4 +28,4 @@ jobs:
       - name: TypeScript
         run: npx tsc --noEmit --pretty false
       - name: Lint changed files
-        run: npx eslint src/lib/connectors/make/types.ts src/lib/connectors/make/client.ts src/lib/connectors/make/on-demand-client.ts src/lib/connectors/make/adapter.ts src/tests/make-on-demand-contract.test.ts src/tests/make-native-read-handoff.test.ts src/lib/native/make-read-handoff.ts
+        run: npx eslint src/lib/connectors/make/types.ts src/lib/connectors/make/client.ts src/lib/connectors/make/on-demand-client.ts src/lib/connectors/make/adapter.ts src/tests/make-on-demand-contract.test.ts src/tests/make-native-read-handoff.test.ts src/lib/native/make-read-handoff.ts src/lib/native/make-read-authority.ts
