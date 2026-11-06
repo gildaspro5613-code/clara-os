@@ -33,6 +33,15 @@
 | Ajout d'un nouveau scénario READ par configuration sans migration/PR | Disponible seulement après certification | NON CERTIFIÉ |
 | Conversation Clara → Brain → Autonomy Gate → Make → Brain | Réponse journalisée | NON CERTIFIÉ |
 
+## Réception complémentaire du 6 novembre 2026 (clone uniquement)
+
+- **SQL installé :** `clara_native_make_admin_command` est `SECURITY DEFINER` sur le clone `br-nameless-dew-b2v6asgj`, avec `search_path=pg_catalog,public,pg_temp`. Les rôles non fiables vérifiés ne possèdent pas `CREATE` dans `public`. La fonction n'est pas installée en Production.
+- **Droits de la fonction :** `EXECUTE` pour `neondb_owner` et pour la fixture `clara_make_runtime_test`; accès `PUBLIC` révoqué. Cette fixture est `NOLOGIN/NOINHERIT` et ne représente **pas** le rôle du serveur Clara.
+- **Isolation démontrée :** la fixture peut invoquer la fonction mais ne peut pas insérer/modifier directement les grants, le catalogue ou l'audit. `neon_service` conserve des droits élevés par son appartenance à des rôles Neon et ne doit pas devenir l'identité applicative.
+- **Test négatif réellement exécuté :** commande `grant` avec une session invalide ⇒ `NATIVE_SCOPE_DENIED`. À la fin de cette recette : zéro grant actif, zéro audit administratif, zéro scénario activé.
+- **Catalogue :** neuf scénarios enregistrés sur clone, classés 3 READ, 5 WRITE, 1 SEND, tous `enabled=false`. Les nouvelles autorisations READ exigent `effect='READ'`, certification et activation du catalogue ; cette configuration ne délivre aucune permission automatiquement.
+- **Manque toujours :** rôle **LOGIN** réel du runtime recette (déterminé par `DATABASE_URL` / `POSTGRES_URL`), chaîne complète d'accès SQL pour ce rôle, connexion Make ACTIVE avec credentials autorisés, session native authentifiée réellement envoyée à l'adaptateur puis attribution/révocation contrôlées. Le raccordement au chat/Brain reste non certifié. Ne pas présenter les validations SQL sur clone comme recette positive du produit.
+
 ## Limites observées
 La proposition `native-make-read-authority-proposal.sql` a bien ses FKs et contraintes de révision, mais ne prouve pas les permissions de `approved_by` ; sans commande native/trigger certifié, le rôle propriétaire peut insérer une ligne arbitraire. Elle contient toujours une liste de trois scénarios READ fixe, incompatible avec l'objectif d'extension par configuration. Les routes `/api/connections/make/{configure,verify,status}` restent bloquées par `nativeOperationFence` et la configuration héritée ne prend en charge que le webhook. **Ne pas utiliser ces routes pour contourner la session.**
 
