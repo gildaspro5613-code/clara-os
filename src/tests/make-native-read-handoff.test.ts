@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import {readFileSync} from "node:fs";
 import {executeScopedMakeRead,MakeNativeReadUnavailable} from "@/lib/native/make-read-handoff";
 import {MAKE_CAPABILITIES} from "@/lib/connectors/make/definition";
 import type {MakeReadAuthority,MakeReadCapability,MakeReadProof} from "@/lib/native/make-read-handoff";
@@ -64,4 +65,19 @@ test("pending result, wrong provider, connection or failed business receipt are 
  ]){
   await assert.rejects(()=>executeScopedMakeRead(scope,principal,"mission-a",selection,input,authority,{execute:async()=>({...receipt,...changed})}),e=>e instanceof MakeNativeReadUnavailable);
  }
+});
+
+test("production Make native authority stays fail-closed until a reviewed owner/project grant exists",()=>{
+ const source=readFileSync("src/lib/native/make-read-authority.ts","utf8");
+ assert.match(source,/clara_native_make_read_authority/);
+ assert.match(source,/clara_native_read_session/);
+ assert.match(source,/grant_\.owner_user_id/);
+ assert.match(source,/grant_\.revoked_at IS NULL/);
+ assert.match(source,/conn\.status='ACTIVE'/);
+ assert.match(source,/make:scenario:/);
+ assert.match(source,/catch\s*\{[\s\S]*return null;/);
+ const proposal=readFileSync("docs/operations/native-make-read-authority-proposal.sql","utf8");
+ assert.match(proposal,/DRAFT ONLY/);
+ assert.match(proposal,/revoked_at TIMESTAMPTZ/);
+ assert.match(proposal,/PRIMARY KEY \(connection_id,owner_user_id,client_id,project_id,scenario_key\)/);
 });
