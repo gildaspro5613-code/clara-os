@@ -13,6 +13,7 @@ export async function GET(request:Request){try{return await withNativeScope(requ
  if(action==='capabilities')return ok(await work.capabilities());
  if(action==='resources')return ok(await work.resources());
  if(action==='calendars')return ok(await work.calendars(q.get('pageToken')??undefined));
+ if(action==='folders')return ok(await work.folders(q.get('pageToken')??undefined));
  if(action==='events')return ok(await work.events(q.get('pageToken')??undefined,q.get('timeMin')??undefined,q.get('timeMax')??undefined));
  if(action==='operations')return ok(await googleWorkCommand('list',{connectionId}));
  if(action==='review')return ok(await work.review(opaque(q.get('operationId'))));
