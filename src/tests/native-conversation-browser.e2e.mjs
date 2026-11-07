@@ -73,6 +73,18 @@ test('native conversation UI: immutable Mission/client, lost acknowledgement + r
   await page.locator('[data-native-authority="scope"]').waitFor();
   assert.equal(await page.locator('[data-google-sign-in-card]').count(),0);
   await page.locator('[data-native-resume-open]').waitFor();
+  // Reopen an existing, authorized conversation through the existing dialog.
+  await page.locator('[data-native-resume-open]').click();
+  const recoveryDialog=page.locator('[data-native-context-dialog]');
+  await recoveryDialog.waitFor({state:'visible'});
+  const recoverySelects=recoveryDialog.locator('[data-native-context] select');
+  await recoverySelects.nth(0).selectOption('w');
+  await recoverySelects.nth(1).selectOption('c1');
+  await recoverySelects.nth(2).selectOption('p2');
+  await recoverySelects.nth(3).selectOption(a.sessionId);
+  await Promise.all([page.waitForEvent('load'),recoveryDialog.getByRole('button',{name:'Ouvrir ce fil',exact:true}).click()]);
+  const selectedAfterRecovery=await (await ctx.request.get(origin+'/api/native/runtime')).json();
+  assert.equal(selectedAfterRecovery.data.sessionId,a.sessionId,'Recovery must reuse an existing thread without creating a session');
   await select(a.cookie);await page.goto(origin+'/clara');
   let acknowledged;const committed=new Promise(r=>{acknowledged=r;});
   await page.route('**/api/clara/chat',async route=>{const req=route.request();const response=await fetch(req.url(),{method:'POST',headers:await req.allHeaders(),body:req.postData()});assert.equal(response.status,200,await response.clone().text());await response.json();await route.abort('failed');acknowledged();});
