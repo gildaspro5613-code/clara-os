@@ -24,6 +24,7 @@ export default getRequestConfig(async () => {
     automationsMakeMessagesModule,
     missionsMessagesModule,
     uiMessagesModule,
+    dailyDocumentsModule,
   ] = await Promise.all([
     import(`./messages/${locale}/index.json`),
     import(`./messages/${locale}/journal.json`),
@@ -31,6 +32,7 @@ export default getRequestConfig(async () => {
     import(`./messages/${locale}/automations-make.json`),
     import(`./messages/${locale}/missions.json`),
     import(`./messages/${locale}/consolidated-ui.json`),
+    import(`./messages/${locale}/documents-daily.json`),
   ]);
 
   const baseMessages = baseMessagesModule.default as Record<string, unknown>;
@@ -43,6 +45,7 @@ export default getRequestConfig(async () => {
     locale,
     messages: {
       ...baseMessages,
+      documents: {...(baseMessages.documents as Record<string, unknown>), ...dailyDocumentsModule.default},
       journalPage: journalMessages,
       automationsBrevo: automationsBrevoMessages,
       automationsMake: automationsMakeMessages,
