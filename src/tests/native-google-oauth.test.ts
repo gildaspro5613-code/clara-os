@@ -8,6 +8,7 @@ import {OAuthProviderRegistry} from '@/lib/auth/oauth/registry';
 import {CredentialStore} from '@/lib/connections/credential-store';
 import {ConnectionStatus} from '@/lib/connections/connection';
 import {googleConsentScopes,googleConsentRedirectPath} from '@/lib/native/google-consent-plan';
+import {canRequestAgendaConsentOnExisting,hasRecordedAgendaConsent,preventAccidentalAgendaConnection} from '@/lib/native/google-existing-consent-ui';
 
 test('Google connector reuses canonical RS256 issuer/subject validation; nonce, audience, expiry, forged keys and account substitution are rejected before credential mutation',async t=>{
  const pair=generateKeyPairSync('rsa',{modulusLength:2048}),jwk={...pair.publicKey.export({format:'jwk'}),kid:'isolated-key',use:'sig'};
@@ -45,4 +46,23 @@ test('Google Agenda/Drive consent: new grants are separate, old grants and refre
  assert.equal(googleConsentRedirectPath('reconnect','drive'),'/documents');
  for(const path of ['/api/connections/google/callback','//attacker.invalid','https://attacker.invalid','/agenda?token=secret','../'])assert.throws(()=>googleConsentRedirectPath('reconnect',path));
  assert.throws(()=>googleConsentScopes('reconnect',undefined));
+});
+
+
+test('Google Agenda selection reuses a recorded connection and never invites a duplicate OAuth identity',()=>{
+ const driveOnly={status:'ACTIVE',owned:true,scopes:['openid','https://www.googleapis.com/auth/drive.readonly']};
+ const agendaScopes=['https://www.googleapis.com/auth/calendar.calendarlist.readonly','https://www.googleapis.com/auth/calendar.events'];
+ assert.equal(hasRecordedAgendaConsent(driveOnly),false);
+ assert.equal(canRequestAgendaConsentOnExisting(driveOnly),true);
+ assert.equal(canRequestAgendaConsentOnExisting({...driveOnly,scopes:[...driveOnly.scopes,...agendaScopes]}),false);
+ assert.equal(canRequestAgendaConsentOnExisting({...driveOnly,status:'RECONNECT_REQUIRED'}),true);
+ assert.equal(canRequestAgendaConsentOnExisting({...driveOnly,owned:false}),false);
+ assert.equal(canRequestAgendaConsentOnExisting({...driveOnly,status:'REVOKED'}),false);
+ assert.equal(canRequestAgendaConsentOnExisting({...driveOnly,scopes:['openid',agendaScopes[0]]}),true);
+ assert.equal(canRequestAgendaConsentOnExisting(undefined),false);
+ assert.equal(preventAccidentalAgendaConnection('agenda',5,''),true);
+ assert.equal(preventAccidentalAgendaConnection('agenda',5,'registered-google-1'),false);
+ assert.equal(preventAccidentalAgendaConnection('agenda',0,''),false);
+ assert.equal(preventAccidentalAgendaConnection('drive',5,''),false);
+ assert.deepEqual(googleConsentScopes('agenda',driveOnly.scopes),[...driveOnly.scopes,...agendaScopes]);
 });
