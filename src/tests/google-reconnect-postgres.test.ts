@@ -9,6 +9,7 @@ import {createRequire} from 'node:module';
 import {resolve} from 'node:path';
 function moduleFrom(file:string,modules:Record<string,unknown>){const exports:Record<string,unknown>={},require=createRequire(resolve(file));vm.runInNewContext(ts.transpileModule(readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{exports,require:(name:string)=>modules[name]??require(name),Response,Request,URL,console,process,crypto:globalThis.crypto});return exports;}
 import {seedGoogleWork,workScopes} from './helpers/native-google-work-fixture';
+import {verifyOAuthState} from '@/lib/auth/oauth/state';
 import * as scoped from '@/lib/native/scoped-context';
 import {nativeFailure} from '@/lib/native/authority';
 import {googleConfig} from '@/lib/config/google';
@@ -37,11 +38,12 @@ test('Google reconnect: real PostgreSQL status gate, unchanged rights, existing 
  // Same real owner, identity and full project rights. Status alone triggers this denial.
  const denied=await pick();assert.equal(denied.status,403);assert.deepEqual(await denied.json(),{success:false,code:'NATIVE_GOOGLE_REAUTH_REQUIRED'});
  assert.equal(pg("SELECT data ? 'googleConnectionId' FROM clara_sessions WHERE id='"+a+"'"),'f');
- const consent=await connect.POST(request({connectionId:'google-work-a',capability:'reconnect'}));assert.equal(consent.status,200);const url=new URL((await consent.json()).authorizationUrl);
+ const consent=await connect.POST(request({connectionId:'google-work-a',capability:'reconnect',returnTo:'agenda'}));assert.equal(consent.status,200);const url=new URL((await consent.json()).authorizationUrl);assert.equal(verifyOAuthState(url.searchParams.get('state')!,{provider:'google',nonce:url.searchParams.get('nonce')!}).redirectPath,'/agenda');
  assert.deepEqual(url.searchParams.get('scope')!.split(' ').sort(),[...workScopes].sort());assert.ok(!url.searchParams.get('scope')!.split(' ').includes('https://www.googleapis.com/auth/drive'));
  assert.equal(pg("SELECT COUNT(*) FROM clara_connections WHERE provider='google'"),'3');
  assert.equal(pg("SELECT jsonb_build_object('scope',scopes,'credential_hash',encode(sha256(convert_to(encrypted_payload,'UTF8')),'hex')) FROM clara_connections JOIN clara_connection_credentials ON connection_id=id WHERE id='google-work-a'"),before,'Preparing consent changes neither status/scopes nor encrypted credentials');
  assert.equal((await connect.POST(request({capability:'reconnect'}))).status,400);
+ assert.equal((await connect.POST(request({connectionId:'google-work-a',capability:'reconnect',returnTo:'//attacker.invalid'}))).status,400);
  assert.equal((await connect.POST(request({connectionId:'google-work-a',capability:'reconnect',scopes:['https://www.googleapis.com/auth/drive']}))).status,400);
  pg("UPDATE clara_workspace_memberships SET role='member' WHERE user_id='a' AND workspace_id='w'");assert.equal((await connect.POST(request({connectionId:'google-work-a',capability:'reconnect'}))).status,403);pg("UPDATE clara_workspace_memberships SET role='owner' WHERE user_id='a' AND workspace_id='w'");
  assert.equal((await connect.POST(request({connectionId:'unknown-connection',capability:'reconnect'}))).status,403);
