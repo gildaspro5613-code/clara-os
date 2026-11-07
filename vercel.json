@@ -35,7 +35,8 @@
       "fix/google-agenda-drive-operational-20261107": false,
       "fix/google-existing-agenda-consent-20261107": false,
       "fix/agenda-business-calendar-choice-20261107": false,
-      "fix/operational-brevo-make-stripe-20261107": false
+      "fix/operational-brevo-make-stripe-20261107": false,
+      "fix/brevo-read-status-reception-20261107": false
     }
   }
 }

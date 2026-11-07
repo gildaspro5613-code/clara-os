@@ -13,7 +13,7 @@ type Provider = "google" | "microsoft" | "brevo" | "make";
 const providers = [
   { id: "google" as const, title: "Google Workspace", endpoint: "/api/connections/google", icon: Cloud },
   { id: "microsoft" as const, title: "Microsoft 365 · Windows 365", endpoint: "/api/connections/microsoft", icon: Building2 },
-  { id: "brevo" as const, title: "Brevo", endpoint: "/api/connections/brevo", icon: Cloud },
+  { id: "brevo" as const, title: "Brevo", endpoint: "/api/native/brevo/status", icon: Cloud },
   { id: "make" as const, title: "Make", endpoint: "/api/connections/make/status", icon: Workflow },
 ];
 
@@ -30,7 +30,7 @@ function label(ui: ReturnType<typeof useTranslations>, status?: Status) {
 function detail(ui: ReturnType<typeof useTranslations>, id: Provider, state?: Status) {
   if (!state) return ui("checkingConnection");
   if (id === "google" && state.nativeGoogle) return ui(`googleHub_${state.nativeGoogle}_help`);
-  if (id === "brevo") return state.apiKeyConfigured ? ui("brevoApiKeyPendingVerification") : state.connected ? ui("brevoReadNotCertified") : state.oauthReady ? ui("brevoReadyToAuthorize") : ui("brevoApiKeyMissing");
+  if (id === "brevo") return state.status==="UNAVAILABLE" || state.connected===undefined ? ui("unavailable") : state.apiKeyConfigured ? ui("brevoApiKeyPendingVerification") : state.connected ? ui("brevoReadNotCertified") : state.oauthReady ? ui("brevoReadyToAuthorize") : ui("brevoApiKeyMissing");
   if (state.error?.includes("AUTH_REQUIRED")) return ui("signInWorkspace");
   if (state.status === "RECONNECT_REQUIRED") return ui("checkConfiguration");
   if (state.status === "UNAVAILABLE" || state.connected===undefined) return ui("unavailable");
