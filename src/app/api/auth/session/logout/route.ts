@@ -30,5 +30,7 @@ export async function POST(request: NextRequest) {
   });
   response.cookies.set(expiredSessionCookie(true));
   response.cookies.set(expiredGoogleDisplayCookie(true));
+  // A previous user's project/thread preference must never survive logout.
+  response.cookies.set('clara_native_selection','',{path:'/',httpOnly:true,secure:true,sameSite:'lax',maxAge:0});
   return response;
 }
