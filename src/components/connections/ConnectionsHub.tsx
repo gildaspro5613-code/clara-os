@@ -7,17 +7,20 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Cloud, Workflow, CreditCard, Building2, ExternalLink, Settings2, ShieldCheck } from "lucide-react";
 
-type Status = { nativeGoogle?: NativeGoogleHubState; connected?: boolean; status?: string; error?: string; connectUrl?: string; scopes?: string[]; scenarioKeys?: string[] };
-type Provider = "google" | "microsoft" | "make";
+type Status = { nativeGoogle?: NativeGoogleHubState; connected?: boolean; status?: string; error?: string; connectUrl?: string; scopes?: string[]; scenarioKeys?: string[]; oauthReady?: boolean; apiKeyConfigured?: boolean; provider?: string };
+type Provider = "google" | "microsoft" | "brevo" | "make";
 
 const providers = [
   { id: "google" as const, title: "Google Workspace", endpoint: "/api/connections/google", icon: Cloud },
   { id: "microsoft" as const, title: "Microsoft 365 · Windows 365", endpoint: "/api/connections/microsoft", icon: Building2 },
+  { id: "brevo" as const, title: "Brevo", endpoint: "/api/native/brevo/status", icon: Cloud },
   { id: "make" as const, title: "Make", endpoint: "/api/connections/make/status", icon: Workflow },
 ];
 
 function label(ui: ReturnType<typeof useTranslations>, status?: Status) {
   if (status?.nativeGoogle) return ui(`googleHub_${status.nativeGoogle}`);
+  if (status?.provider === "brevo" && status.apiKeyConfigured) return ui("brevoApiKeyConfigured");
+  if (status?.provider === "brevo" && status.connected) return ui("brevoRegistered");
   if (status?.connected) return ui("connected");
   if (status?.error?.includes("AUTH_REQUIRED")) return ui("authRequired");
   if (status?.status === "RECONNECT_REQUIRED") return ui("reconnectRequired");
@@ -27,6 +30,7 @@ function label(ui: ReturnType<typeof useTranslations>, status?: Status) {
 function detail(ui: ReturnType<typeof useTranslations>, id: Provider, state?: Status) {
   if (!state) return ui("checkingConnection");
   if (id === "google" && state.nativeGoogle) return ui(`googleHub_${state.nativeGoogle}_help`);
+  if (id === "brevo") return state.status==="UNAVAILABLE" || state.connected===undefined ? ui("unavailable") : state.apiKeyConfigured ? ui("brevoApiKeyPendingVerification") : state.connected ? ui("brevoReadNotCertified") : state.oauthReady ? ui("brevoReadyToAuthorize") : ui("brevoApiKeyMissing");
   if (state.error?.includes("AUTH_REQUIRED")) return ui("signInWorkspace");
   if (state.status === "RECONNECT_REQUIRED") return ui("checkConfiguration");
   if (state.status === "UNAVAILABLE" || state.connected===undefined) return ui("unavailable");
@@ -41,7 +45,8 @@ export default function ConnectionsHub() {
   const searchParams = useSearchParams();
   const googleResult = searchParams.get("google");
   const microsoftResult = searchParams.get("microsoft");
-  const oauthResult = googleResult ? { provider: "Google Workspace", status: googleResult } : microsoftResult ? { provider: "Microsoft", status: microsoftResult } : null;
+  const brevoResult = searchParams.get("brevo");
+  const oauthResult = googleResult ? { provider: "Google Workspace", status: googleResult } : microsoftResult ? { provider: "Microsoft", status: microsoftResult } : brevoResult ? {provider:"Brevo",status:brevoResult} : null;
   const oauthSuccess = oauthResult?.status === "connected";
   const googleReturnReceived = Boolean(googleResult) && oauthSuccess;
 
@@ -70,7 +75,7 @@ export default function ConnectionsHub() {
       <div className="grid gap-4 md:grid-cols-2">
       {providers.map(({ id, title, icon: Icon }) => {
         const state = states[id];
-        const connectUrl = id === "microsoft" ? "/api/connections/microsoft/connect" : state?.connectUrl;
+        const connectUrl = id === "microsoft" ? "/api/connections/microsoft/connect" : id === "brevo" ? (state?.apiKeyConfigured ? undefined : state?.oauthReady ? "/api/connections/brevo/connect" : undefined) : state?.connectUrl;
         return (
           <article key={id} className="flex min-h-[285px] flex-col rounded-2xl border border-white/10 bg-white/[0.025] p-6 transition hover:border-cyan-400/20">
             <div className="flex items-start justify-between gap-4">
@@ -78,7 +83,7 @@ export default function ConnectionsHub() {
               <span className={`rounded-full border px-3 py-1 text-[11px] ${state?.connected ? "border-emerald-400/20 bg-emerald-400/[0.08] text-emerald-300" : "border-white/10 text-white/45"}`}>{state ? label(ui,state) : ui("checkingConnection")}</span>
             </div>
             <h2 className="mt-5 text-lg font-medium text-white">{title}</h2>
-            <p className="mt-2 text-sm leading-6 text-white/45">{ui(id==="google"?"googleHubDescription":`${id}Description`)}</p>
+            <p className="mt-2 text-sm leading-6 text-white/45">{ui(id==="google"?"googleHubDescription":id==="brevo"?"brevoDescription":`${id}Description`)}</p>
             <p className="mt-3 text-xs leading-5 text-white/35">{detail(ui,id, state)}</p>
             <div className="mt-auto flex flex-wrap gap-2 pt-5">
               {!state?.connected && connectUrl && !state?.error?.includes("AUTH_REQUIRED") && (
@@ -94,11 +99,11 @@ export default function ConnectionsHub() {
       <article className="flex min-h-[285px] flex-col rounded-2xl border border-white/10 bg-white/[0.018] p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03]"><CreditCard className="text-white/55" size={21} strokeWidth={1.6} /></div>
-          <span className="rounded-full border border-white/10 px-3 py-1 text-[11px] text-white/45">{ui("dependingOnTheProduct")}</span>
+          <span className="rounded-full border border-white/10 px-3 py-1 text-[11px] text-white/45">{ui("studioStripeUncertified")}</span>
         </div>
         <h2 className="mt-5 text-lg font-medium text-white">Stripe</h2>
         <p className="mt-2 text-sm leading-6 text-white/45">{ui("paymentsForClaraLiveAndMLodieDigitalServices")}</p>
-        <p className="mt-3 text-xs leading-5 text-white/35">{ui("claraOSIsNotAPaymentInterfaceThisConnection")}</p>
+        <p className="mt-3 text-xs leading-5 text-white/35">{ui("studioStripeReadPending")}</p>
       </article>
       </div>
     </>
