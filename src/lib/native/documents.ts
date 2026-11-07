@@ -6,6 +6,8 @@ import {googleAuthority,nativeGoogleCommand,type NativeGoogleProof} from './goog
 import {nativeContext,writableNativeContext,nativeMission} from './scoped-context';
 import {RegistryError} from '@/lib/canonical/registry';
 import {DocumentReadError} from '@/lib/documents/document-read-error';
+import {readDocumentStream} from '@/lib/documents/bounded-document-stream';
+import type {Readable} from 'node:stream';
 import {dispatchEvent} from '@/lib/core/event-bus';
 import {Clara} from '@/lib/core/clara';
 import {EventType} from '@/types';
@@ -158,6 +160,25 @@ export class NativeDocuments {
   await this.rights(fileId,b.version);await nativeGoogleCommand('document',{connectionId:this.connectionId,bindingId:b.bindingId,version:b.version,revision:this.proof.revision});
   if(!(result.content instanceof Uint8Array))throw new RegistryError(503,'NATIVE_DOCUMENT_CONTENT_UNAVAILABLE');
   return new Response(new Uint8Array(result.content),{headers:{'Content-Type':m.mimeType??'application/octet-stream','Content-Disposition':`attachment; filename*=UTF-8''${encodeURIComponent(m.name??fileId)}`,'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'}});
+ }
+ /** PDF/Word/text exports remain bound to the current mission and Google revision. */
+ async exportGoogleDoc(fileId:string,format:'pdf'|'docx'|'txt'){
+  const allowed={pdf:{mime:'application/pdf',extension:'.pdf'},docx:{mime:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',extension:'.docx'},txt:{mime:'text/plain',extension:'.txt'}} as const;
+  if(!Object.prototype.hasOwnProperty.call(allowed,format))throw new RegistryError(400,'DOCUMENT_EXPORT_FORMAT_INVALID');
+  const b=await this.binding(fileId),metadata=await this.rights(fileId,b.version);
+  if(metadata.mimeType!=='application/vnd.google-apps.document')throw new RegistryError(422,'DOCUMENT_EXPORT_NATIVE_DOC_REQUIRED');
+  const selected=allowed[format];
+  const result=await this.drive.files.export({fileId,mimeType:selected.mime},{responseType:'stream',timeout:15_000,retry:false});
+  const content=await readDocumentStream(result.data as Readable,10*1024*1024);
+  await this.rights(fileId,b.version);
+  await nativeGoogleCommand('document',{connectionId:this.connectionId,bindingId:b.bindingId,version:b.version,revision:this.proof.revision});
+  const name=(metadata.name??'Document').replace(/\.(pdf|docx|txt)$/i,'').replace(/[\r\n]/g,' ').slice(0,150)||'Document';
+  return new Response(new Uint8Array(content),{headers:{
+    'Content-Type':selected.mime,
+    'Content-Disposition':`attachment; filename*=UTF-8''${encodeURIComponent(name+selected.extension)}`,
+    'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff',
+    'Content-Security-Policy':"sandbox; default-src 'none'",
+  }});
  }
  async references(){
   const refs=this.refs(),results=[] as Array<{fileId:string;version:string;name?:string|null;available:boolean;analysis?:Analysis}>;
