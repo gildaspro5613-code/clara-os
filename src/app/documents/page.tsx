@@ -3,9 +3,8 @@ import { documentDiagnostic } from "@/lib/documents/document-read-error";
 import {readNativeDocument} from "@/lib/documents/native-read-request";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { ArrowLeft, Brain, Download, ExternalLink, FileText, Folder, FolderPlus, Search, Upload } from "lucide-react";
+import { Brain, Download, ExternalLink, FileText, Folder, FolderPlus, Search, Upload } from "lucide-react";
 
 import NativeDocumentsPanel from "@/components/native/NativeDocumentsPanel";
 import {useLocale} from "next-intl";
@@ -37,9 +36,7 @@ export default function DocumentsPage() {
   const ui = useTranslations("ui");
   const locale=useLocale();
 
-  const router = useRouter();
   const t = useTranslations("documents");
-  const tp = useTranslations("pages");
   const fileInput = useRef<HTMLInputElement>(null);
   const listGeneration = useRef(0);
   const destinationGeneration = useRef(0);
@@ -269,29 +266,24 @@ export default function DocumentsPage() {
     <MainLayout>
       <div className="w-full px-8 py-10 text-white">
         <div className="mx-auto max-w-6xl">
-          <button type="button" onClick={() => router.back()} className="mb-6 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.035] px-3 py-2 text-sm text-white/60 transition hover:border-white/20 hover:bg-white/[0.06] hover:text-white">
-            <ArrowLeft size={15} strokeWidth={1.8} />{tp("back")}
-          </button>
-
           <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-[11px] uppercase tracking-[0.22em] text-cyan-400">{tp("sectionKnow")}</p>
-              <h1 className="mt-2 text-3xl font-semibold tracking-tight">{t("title")}</h1>
+              <h1 className="text-3xl font-semibold tracking-tight">{t("title")}</h1>
               <p className="mt-2 text-sm text-white/45">{t("subtitle")}</p>
             </div>
             <div>
               <input ref={fileInput} type="file" className="hidden" onChange={(event) => void handleUpload(event.target.files?.[0])} />
-              <button type="button" disabled={working !== null} onClick={() => readOnly?(document.getElementById("native-drive-writes")??document.getElementById("native-google-document-authority"))?.scrollIntoView({behavior:"smooth"}):fileInput.current?.click()} className="inline-flex items-center gap-2 rounded-xl border border-cyan-300/20 bg-cyan-300/[0.08] px-4 py-2.5 text-sm text-cyan-50 transition hover:bg-cyan-300/[0.12] disabled:opacity-50">
+              {!readOnly&&<button type="button" disabled={working !== null} onClick={() => fileInput.current?.click()} className="inline-flex items-center gap-2 rounded-xl border border-cyan-300/20 bg-cyan-300/[0.08] px-4 py-2.5 text-sm text-cyan-50 transition hover:bg-cyan-300/[0.12] disabled:opacity-50">
                 <Upload size={15} />{working === "upload" ? ui("uploading") : ui("uploadADocument")}
-              </button>
+              </button>}
             </div>
           </div>
 
-          {readOnly&&<p role="status" className="mb-4 text-amber-200">{ui("driveReadOnlyAuthority")}</p>}
+          {readOnly&&<p className="mb-5 text-sm text-slate-400">{t("scopeNote")}</p>}
           <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
             <button type="button" disabled={working !== null} onClick={() => navigateTo(-1)} className="text-cyan-300">{readOnly?ui("nativeDocuments"):ui("myDrive")}</button>
             {folderTrail.map((folder, index) => <span key={folder.id} className="flex items-center gap-2"><span className="text-white/30">/</span><button type="button" disabled={working !== null} onClick={() => navigateTo(index)} className="text-cyan-300">{folder.name}</button></span>)}
-            <button type="button" onClick={() => void createFolder()} disabled={working !== null||readOnly} className="ml-auto flex items-center gap-2 rounded-lg border border-white/15 px-3 py-2"><FolderPlus size={15}/>{ui("newFolder")}</button>
+            {!readOnly&&<button type="button" onClick={() => void createFolder()} disabled={working !== null} className="ml-auto flex items-center gap-2 rounded-lg border border-white/15 px-3 py-2"><FolderPlus size={15}/>{ui("newFolder")}</button>}
           </div>
           {moveTarget && <section role="dialog" aria-label={ui("chooseTheDestinationFolder")} className="mb-6 rounded-xl border border-cyan-300/25 bg-[#101827] p-5">
             <div className="flex items-center justify-between gap-4"><h2 className="font-semibold">{ui("move")}{" "}{moveTarget.name} »</h2><button type="button" disabled={working !== null} onClick={() => { destinationGeneration.current++; setMoveTarget(null); }}>{ui("cancel")}</button></div>
@@ -303,7 +295,7 @@ export default function DocumentsPage() {
             <button type="button" disabled={destinationLoading || (destinationTrail.at(-1)?.id ?? "root") === moveTarget.parentId || working !== null} onClick={() => void confirmMove()} className="mt-4 rounded-lg bg-cyan-800 px-4 py-2 text-sm disabled:opacity-40">{ui("confirmMoveToThisFolder")}</button>
           </section>}
           {selected && <section className="mb-6 rounded-xl border border-cyan-300/20 p-5"><div className="flex justify-between gap-4"><h2 className="font-semibold">{selected.name}</h2><button type="button" onClick={() => setSelected(null)}>{ui("close")}</button></div>{selected.recommendation && <p className="mt-3 text-cyan-200">{selected.recommendation}</p>}<pre className="mt-4 max-h-80 overflow-auto whitespace-pre-wrap text-sm text-white/70">{selected.content}</pre></section>}
-          {activeSearch && <p className="mb-3 text-sm text-white/60">{ui("googleDriveSearchResults")}{" "}{activeSearch}</p>}
+          {activeSearch && <p className="mb-3 text-sm text-white/60">{t("searchResults",{query:activeSearch})}</p>}
           <form id="document-search" onSubmit={handleSubmit} className="mb-6 flex max-w-2xl gap-2">
             <div className="relative flex-1">
               <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-white/35" />
@@ -315,7 +307,7 @@ export default function DocumentsPage() {
           {status && <div className="mb-6 rounded-xl border border-cyan-300/15 bg-cyan-300/[0.04] px-4 py-3 text-sm text-cyan-50/80">{status}</div>}
           {loading && <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-8 text-sm text-white/40">{t("loading")}</div>}
           {error && <div className="mb-6 rounded-2xl border border-amber-200/20 bg-amber-200/[0.04] p-5 text-sm text-amber-50/75">{error}</div>}
-          {!loading && !error && files.length === 0 && <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-8 text-sm text-white/40">{t("empty")}</div>}
+          {!loading && !error && files.length === 0 && <div className="rounded-2xl border border-white/10 bg-white/[0.025] px-7 py-10 text-center text-sm text-slate-400">{activeSearch?t("emptySearch"):t("emptyAuthorized")}</div>}
 
           {!loading && files.length > 0 && (
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -326,7 +318,7 @@ export default function DocumentsPage() {
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">{file.mimeType === "application/vnd.google-apps.folder" ? <Folder size={18} className="text-cyan-300" /> : <FileText size={18} strokeWidth={1.7} className="text-white/55" />}</div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-white/85">{file.name}</p>
-                      {file.mimeType && <p className="mt-1 truncate text-xs text-white/30">{file.mimeType}</p>}
+
                     </div>
                   </div>
 
@@ -337,7 +329,7 @@ export default function DocumentsPage() {
                     </button>
                     <a href={downloadHref(file)} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-xs text-white/60 transition hover:bg-white/[0.06] hover:text-white">{ui("download")}<Download size={14} /></a>
                     {file.url && <a href={file.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-xs text-white/60 transition hover:bg-white/[0.06] hover:text-white">{t("open")}<ExternalLink size={14} /></a>}
-                    </>}<button type="button" disabled={working !== null||readOnly} onClick={() => startMove(file)} className="rounded-xl border border-white/10 px-4 py-2.5 text-left text-xs text-white/60">{ui("moveToAFolder")}</button>
+                    </>}{!readOnly&&<button type="button" disabled={working !== null} onClick={() => startMove(file)} className="rounded-xl border border-white/10 px-4 py-2.5 text-left text-xs text-white/60">{ui("moveToAFolder")}</button>}
                   </div>
                 </article>
               ))}
