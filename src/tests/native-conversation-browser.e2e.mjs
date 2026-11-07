@@ -77,7 +77,7 @@ test('native conversation UI: immutable Mission/client, lost acknowledgement + r
   await page.locator('[data-native-resume-open]').click();
   const recoveryDialog=page.locator('[data-native-context-dialog]');
   await recoveryDialog.waitFor({state:'visible'});
-  const recoverySelects=recoveryDialog.locator('[data-native-context] select');
+  const recoverySelects=recoveryDialog.locator('[data-native-context-switch] select');
   await recoverySelects.nth(0).selectOption('w');
   await recoverySelects.nth(1).selectOption('c1');
   await recoverySelects.nth(2).selectOption('p2');
