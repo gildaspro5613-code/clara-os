@@ -378,6 +378,7 @@
   "nativeResumeChoose": "Wähle eine bestehende Unterhaltung, um fortzufahren. Du musst keinen neuen Chat erstellen.",
   "nativeResumeUnavailable": "Clara kann deinen Arbeitsbereich derzeit nicht prüfen. Dafür ist keine erneute Google-Anmeldung nötig.",
   "nativeResumeRetry": "Erneut versuchen",
+  "nativeResumeOpen": "Bestehende Unterhaltung auswählen",
   "googleAccountNumber": "Google-Konto {number}",
   "googleReconnectHelp": "Erneuere diese Google-Verbindung, bevor du sie verwendest. Deine bestehenden Berechtigungen bleiben erhalten.",
   "googleReconnectAction": "Dieses Google-Konto erneut verbinden",
