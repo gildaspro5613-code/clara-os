@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { DatabaseConnectionRepository } from "@/lib/connections/connection-repository";
 import { CURRENT_WORKSPACE_ID } from "@/lib/connections/current-workspace";
 import { toPublicBrevoConnection } from "@/lib/connections/brevo-connection-public";
+import {brevoReadOAuthStatus} from "@/lib/connectors/brevo/read-oauth-status";
 
 export const dynamic = "force-dynamic";
 
@@ -11,5 +12,5 @@ export async function GET(request: Request) {
   if (denied) return denied;
   const connection = await new DatabaseConnectionRepository()
     .findByWorkspaceAndProvider(CURRENT_WORKSPACE_ID, "brevo");
-  return NextResponse.json(toPublicBrevoConnection(connection));
+  return NextResponse.json({ ...toPublicBrevoConnection(connection), oauthReady: brevoReadOAuthStatus().ready }, {headers:{'Cache-Control':'no-store'}});
 }

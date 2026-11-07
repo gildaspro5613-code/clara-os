@@ -1,0 +1,71 @@
+{
+  "status": "review-only",
+  "zone": "eu1",
+  "classification": "explicit-review-required",
+  "note": "Metadata inventory only. No credentials, permission grant, Brain auto-discovery or runtime registration.",
+  "scenarios": [
+    {
+      "key": "find-drive-document",
+      "makeScenarioId": 7295042,
+      "effect": "READ",
+      "service": "google-drive",
+      "executionAuthorization": "NOT_GRANTED"
+    },
+    {
+      "key": "check-calendar-availability",
+      "makeScenarioId": 7295055,
+      "effect": "READ",
+      "service": "google-calendar",
+      "executionAuthorization": "NOT_GRANTED"
+    },
+    {
+      "key": "search-calendar-events",
+      "makeScenarioId": 7295113,
+      "effect": "READ",
+      "service": "google-calendar",
+      "executionAuthorization": "NOT_GRANTED"
+    },
+    {
+      "key": "archive-document",
+      "makeScenarioId": 7294781,
+      "effect": "WRITE",
+      "service": "google-drive",
+      "executionAuthorization": "NOT_GRANTED"
+    },
+    {
+      "key": "create-calendar-event",
+      "makeScenarioId": 7294787,
+      "effect": "WRITE",
+      "service": "google-calendar",
+      "executionAuthorization": "NOT_GRANTED"
+    },
+    {
+      "key": "create-drive-folder",
+      "makeScenarioId": 7295842,
+      "effect": "WRITE",
+      "service": "google-drive",
+      "executionAuthorization": "NOT_GRANTED"
+    },
+    {
+      "key": "move-drive-document",
+      "makeScenarioId": 7300737,
+      "effect": "WRITE",
+      "service": "google-drive",
+      "executionAuthorization": "NOT_GRANTED"
+    },
+    {
+      "key": "sync-brevo-contact",
+      "makeScenarioId": 7294540,
+      "effect": "WRITE",
+      "service": "brevo",
+      "executionAuthorization": "NOT_GRANTED"
+    },
+    {
+      "key": "notify-team",
+      "makeScenarioId": 7291299,
+      "effect": "SEND",
+      "service": "brevo",
+      "executionAuthorization": "NOT_GRANTED"
+    }
+  ]
+}

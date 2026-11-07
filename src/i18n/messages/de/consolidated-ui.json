@@ -399,5 +399,12 @@
   "mailVisualSignature": "Mélodie Digital Signatur",
   "mailVisualSync": "Ordner und Synchronisierung",
   "mailVisualApprovals": "Versandfreigabe",
-  "nativeChatFinishedWithError": "Diese Anfrage wurde nicht abgeschlossen. Du kannst in diesem Gespräch fortfahren."
+  "nativeChatFinishedWithError": "Diese Anfrage wurde nicht abgeschlossen. Du kannst in diesem Gespräch fortfahren.",
+  "brevoRegistered": "Verbindung gespeichert",
+  "brevoReadNotCertified": "Brevo-Datenlesungen aus Clara müssen vor Kampagnen oder Versand noch zertifiziert werden.",
+  "brevoReadyToAuthorize": "Brevo OAuth ist eingerichtet. Dieses Konto kann zum Lesen autorisiert werden.",
+  "brevoOAuthMissing": "Richte Brevo OAuth in Vercel ein, bevor du das Konto verbindest.",
+  "brevoDescription": "Kontakte, Listen, Vorlagen und Kampagnen: nur nach Berechtigungsprüfung lesbar.",
+  "studioStripeUncertified": "Studio Stripe: nicht zertifiziert",
+  "studioStripeReadPending": "Studio-Zahlungen sind erst nach Prüfung des Journals und der Rechte lesbar. Hier werden keine Zahlungen ausgelöst."
 }

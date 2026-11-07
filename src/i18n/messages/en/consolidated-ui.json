@@ -399,5 +399,12 @@
   "mailVisualSignature": "Mélodie Digital signature",
   "mailVisualSync": "Folders and synchronization",
   "mailVisualApprovals": "Sending approval",
-  "nativeChatFinishedWithError": "This request did not complete. You can continue in this thread."
+  "nativeChatFinishedWithError": "This request did not complete. You can continue in this thread.",
+  "brevoRegistered": "Connection registered",
+  "brevoReadNotCertified": "Brevo data reads from a Clara conversation still require certification before any campaign or sending.",
+  "brevoReadyToAuthorize": "Brevo OAuth is configured. You can authorize this account for reading.",
+  "brevoOAuthMissing": "Configure Brevo OAuth in Vercel before connecting the account.",
+  "brevoDescription": "Contacts, lists, templates and campaigns: read access only after authorization checks.",
+  "studioStripeUncertified": "Studio Stripe: not certified",
+  "studioStripeReadPending": "Studio payment reads remain unavailable until its ledger and authorization are verified. No payment can be initiated here."
 }
