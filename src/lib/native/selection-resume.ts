@@ -19,7 +19,10 @@ export async function restoreNativeSelection(request:Request):Promise<Response>{
  const {digest}=registryContext(request.headers.get('cookie'),'workspace-selector');
  const workspaces=await canonicalRegistry.workspaces(digest) as Array<{workspace_id:string}>;
  const choose=()=>Response.json({success:true,restored:false},{headers:{'Cache-Control':'no-store'}});
- if(workspaces.length!==1)return choose();
+ // A previously selected but now invalid/revoked context must not silently
+ // switch to a different project or thread. The owner chooses explicitly.
+ const hadSelection=(request.headers.get('cookie')??'').split(';').some(part=>part.trim().startsWith(NATIVE_SELECTION_COOKIE+'='));
+ if(hadSelection||workspaces.length!==1)return choose();
  const workspaceId=opaque(workspaces[0].workspace_id);
  const authority={digest,workspaceId};
  const clients=await canonicalRegistry.command(authority,'list',{after:'',limit:2}) as Array<{id:string}>;
