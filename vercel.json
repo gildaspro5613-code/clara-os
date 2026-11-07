@@ -33,7 +33,8 @@
       "fix/operational-chat-recovery-252-20261106": false,
       "fix/native-session-entry-recovery-20261107": false,
       "fix/google-agenda-drive-operational-20261107": false,
-      "fix/google-existing-agenda-consent-20261107": false
+      "fix/google-existing-agenda-consent-20261107": false,
+      "fix/agenda-business-calendar-choice-20261107": false
     }
   }
 }

@@ -3,6 +3,7 @@ import {useEffect,useRef,useState} from 'react';
 import {useLocale,useTranslations} from 'next-intl';
 import {CalendarDays,ChevronLeft,ChevronRight,MessageCircle,X,MapPin} from 'lucide-react';
 import {useBusinessDay} from './useBusinessDay';
+import AgendaCalendarSetup from './AgendaCalendarSetup';
 import {BUSINESS_TIME_ZONE,formatBusinessDate} from './calendar-window';
 import {agendaPageReadErrorKey} from './calendar-read-state';
 import {calendarRange,addCivilDays,navigateCalendar,eventsOnDay,isCalendarBanner,timeSegments,eventKey,eventTime,type CalendarView,type GoogleCalendarEvent} from './calendar-view';
@@ -29,6 +30,7 @@ export default function AgendaStage(){
  const [events,setEvents]=useState<GoogleCalendarEvent[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState<ReadError|null>(null);
  const [pageToken,setPageToken]=useState<string|null>(null),[moreBusy,setMoreBusy]=useState(false),[refresh,setRefresh]=useState(0);
  const [calendarName,setCalendarName]=useState(''),[selectedKey,setSelectedKey]=useState<string|null>(null);
+ const [calendarPickerOpen,setCalendarPickerOpen]=useState(false);
  const generation=useRef(0),scroll=useRef<HTMLDivElement>(null);
  useEffect(()=>{const update=()=>setRefresh(value=>value+1);window.addEventListener('clara:google-work-updated',update);return()=>window.removeEventListener('clara:google-work-updated',update);},[]);
  useEffect(()=>{
@@ -85,8 +87,9 @@ export default function AgendaStage(){
     <button type="button" disabled={!today} onClick={()=>setAnchor(null)}>{t('today')}</button><button type="button" disabled={!day} aria-label={t('previous')} onClick={()=>day&&setAnchor(navigateCalendar(day,view,-1))}><ChevronLeft size={18}/></button><button type="button" disabled={!day} aria-label={t('next')} onClick={()=>day&&setAnchor(navigateCalendar(day,view,1))}><ChevronRight size={18}/></button>
     <div role="group" aria-label={t('view')} className="agenda-mode">{(['day','week','month'] as const).map(value=><button key={value} type="button" aria-pressed={view===value} onClick={()=>setView(value)}>{t(value)}</button>)}</div>
    </div></div>
-   <div className="agenda-calendar-source"><span>{calendarName&&!error?calendarName:'Google Agenda'}</span><a href={administration}>{t('manageCalendar')}</a></div>
-   {loading?<p role="status" className="agenda-state">{t('loading')}</p>:error?<div data-agenda-read-state={error} className="agenda-state"><p role="status">{errorText}</p><a className="agenda-primary" href={error==='agendaSessionExpired'?'/api/auth/google/start':administration}>{t(error==='agendaSessionExpired'?'signIn':error==='agendaCalendarRequired'?'chooseCalendar':error==='agendaConnectionRequired'?'chooseAccount':'reviewConnection')}</a></div>:<>
+   <div className="agenda-calendar-source"><span>{calendarName&&!error?calendarName:'Google Agenda'}</span>{!error&&!loading&&<button type="button" aria-expanded={calendarPickerOpen} onClick={()=>setCalendarPickerOpen(open=>!open)}>{t('chooseCalendar')}</button>}</div>
+   {calendarPickerOpen&&!error&&!loading&&<AgendaCalendarSetup/>}
+   {loading?<p role="status" className="agenda-state">{t('loading')}</p>:error?<div data-agenda-read-state={error} className="agenda-state"><p role="status">{errorText}</p>{error==='agendaCalendarRequired'?<AgendaCalendarSetup/>:<a className="agenda-primary" href={error==='agendaSessionExpired'?'/api/auth/google/start':administration}>{t(error==='agendaSessionExpired'?'signIn':error==='agendaConnectionRequired'?'chooseAccount':'reviewConnection')}</a>}</div>:<>
     {events.length===0&&!pageToken&&<p role="status" className="agenda-empty">{t('empty')}</p>}
     {range&&(view==='month'?<div role="grid" aria-label={title} className="agenda-month">
      <div role="row" className="agenda-month-row">{range.days.slice(0,7).map(date=><div key={date} role="columnheader" className="agenda-weekday">{new Intl.DateTimeFormat(locale,{timeZone:BUSINESS_TIME_ZONE,weekday:'short'}).format(new Date(date+'T12:00:00Z'))}</div>)}</div>

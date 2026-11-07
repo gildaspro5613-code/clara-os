@@ -70,3 +70,33 @@
 
 .agenda-calendar .agenda-event { align-content:start; }
 .agenda-event span, .agenda-event strong { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+
+/* Business-first one-time Calendar choice; no technical IDs, writes or OAuth forms. */
+.agenda-simple-setup {
+  margin:1rem 1.25rem 1.4rem;
+  padding:1.25rem;
+  max-width:45rem;
+  border:1px solid #22d3ee40;
+  border-radius:1rem;
+  background:#0b1e2d;
+  color:#e2e8f0;
+}
+.agenda-simple-setup p { margin-bottom:.85rem; line-height:1.55; }
+.agenda-simple-setup-controls { display:grid; gap:.7rem; max-width:34rem; }
+.agenda-simple-setup-controls label {font-size:.82rem; color:#a5f3fc; }
+.agenda-simple-setup-controls select {
+  min-width:0; width:100%; min-height:3rem;
+  border:1px solid #22d3ee66; border-radius:.7rem;
+  padding:.6rem .8rem; background:#081421; color:#f1f5f9;
+}
+.agenda-simple-setup button {width:fit-content; max-width:100%;}
+.agenda-simple-setup a {color:#a5f3fc; text-decoration:underline; text-underline-offset:.25rem;}
+.agenda-simple-setup [role="alert"] {color:#fcd34d;}
+.agenda-calendar-source button {
+  min-height:auto; padding:0;
+  border:0; background:none; color:#a5f3fc;
+  text-decoration:underline; text-underline-offset:.25rem;
+}
+.agenda-calendar-source button:hover {background:none; color:white;}
+@media(max-width:640px){.agenda-simple-setup{margin:.75rem; padding:1rem;}}
