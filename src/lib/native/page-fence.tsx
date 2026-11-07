@@ -1,6 +1,7 @@
 import {cookies} from 'next/headers';
 import {getTranslations} from 'next-intl/server';
 import MainLayout from '@/components/layout/MainLayout';
+import Link from 'next/link';
 import NativeScopeRecovery from '@/components/native/NativeScopeRecovery';
 import {RegistryError} from '@/lib/canonical/registry';
 import {withNativeScope} from './scoped-context';
@@ -23,7 +24,7 @@ export async function nativePageFence(mode:FenceMode='signIn'){
     <a href="/api/auth/google/start" className="mt-7 flex min-h-12 w-full items-center justify-center rounded-xl border border-cyan-300/30 bg-cyan-400/10 px-4 py-3 font-medium text-cyan-100 transition hover:bg-cyan-400/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-200">{t('signInWithGoogle')}</a>
     <p className="mt-5 text-sm leading-6 text-slate-400">{t('signInContextHelp')}</p>
    </>:mode==='scope'?<NativeScopeRecovery/>:<div role="alert" className="mt-5 text-sm text-slate-300">
-     <p>{t('nativeResumeUnavailable')}</p><a className="mt-3 inline-block underline" href="/">{t('nativeResumeRetry')}</a>
+     <p>{t('nativeResumeUnavailable')}</p><Link className="mt-3 inline-block underline" href="/">{t('nativeResumeRetry')}</Link>
    </div>}
   </div>
  </section></MainLayout>;
