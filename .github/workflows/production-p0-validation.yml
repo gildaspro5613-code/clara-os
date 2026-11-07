@@ -6,6 +6,9 @@ on:
     paths:
       - 'src/lib/brain/**'
       - 'src/lib/core/**'
+      - 'src/lib/native/**'
+      - 'src/app/api/clara/session/**'
+      - 'db/migrations/012_native_resource_authority.sql'
       - 'src/lib/external-capabilities/**'
       - 'src/lib/connectors/internal/openai/responses/**'
       - 'src/tests/production-p0*'

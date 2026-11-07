@@ -1,0 +1,7 @@
+✖ document continuity browser E2E: canonical selection → mission → pinned OAuth → explicit Google selection → project attestation → PDF/Core/Brain → Journal/Cockpit → fresh resume and revocation (201360.273614ms)
+ℹ tests 1
+ℹ pass 0
+ℹ fail 1
+✖ document continuity browser E2E: canonical selection → mission → pinned OAuth → explicit Google selection → project attestation → PDF/Core/Brain → Journal/Cockpit → fresh resume and revocation (201360.273614ms)
+  locator.click: Timeout 30000ms exceeded.
+      at firstDayBrowser (/workspace/clara-os-delivery/src/tests/helpers/first-day-browser.ts:44:90)

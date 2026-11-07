@@ -1,0 +1,14 @@
+{
+  "greeting": "Hola {name},",
+  "anonymousGreeting": "Hola,",
+  "intro": "Gracias por contactar con Mélodie Digital. He comenzado a estructurar su proyecto para continuar evaluando su solicitud.",
+  "missing": "Necesito algunos detalles adicionales:",
+  "location": "¿Podría indicar el lugar previsto (ciudad y, si es posible, recinto o establecimiento)?",
+  "schedule": "¿Podría confirmar la fecha o el período previsto para el evento?",
+  "disciplines": "¿Podría indicar las áreas técnicas de su proyecto?",
+  "contactName": "¿Podría confirmar el nombre de la persona de contacto para esta solicitud?",
+  "scheduleConflict": "También hay una fecha por confirmar: la fecha indicada es {schedule}, pero su mensaje menciona un plazo relativo. ¿Podría confirmar la fecha correcta?",
+  "closing": "Cuando reciba estos detalles, podré continuar preparando su solicitud.",
+  "regards": "Atentamente,",
+  "subject": "Su proyecto {projectType} — detalles adicionales"
+}

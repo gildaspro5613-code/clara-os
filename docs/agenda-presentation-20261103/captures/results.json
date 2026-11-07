@@ -1,0 +1,248 @@
+{
+  "providerCertified": false,
+  "results": [
+    "Paris midnight and tab resume PASS, independent of Google",
+    {
+      "locale": "fr",
+      "device": "desktop",
+      "path": "/",
+      "date": "Mardi 3 novembre 2026",
+      "result": "PASS, native PostgreSQL; Google simulated"
+    },
+    {
+      "locale": "fr",
+      "device": "desktop",
+      "path": "/agenda",
+      "date": "Mardi 3 novembre 2026",
+      "result": "PASS, native PostgreSQL; Google simulated"
+    },
+    {
+      "locale": "fr",
+      "device": "tablet",
+      "path": "/",
+      "date": "Mardi 3 novembre 2026",
+      "result": "PASS, native PostgreSQL; Google simulated"
+    },
+    {
+      "locale": "fr",
+      "device": "tablet",
+      "path": "/agenda",
+      "date": "Mardi 3 novembre 2026",
+      "result": "PASS, native PostgreSQL; Google simulated"
+    },
+    {
+      "locale": "fr",
+      "device": "mobile",
+      "path": "/",
+      "date": "Mardi 3 novembre 2026",
+      "result": "PASS, native PostgreSQL; Google simulated"
+    },
+    {
+      "locale": "fr",
+      "device": "mobile",
+      "path": "/agenda",
+      "date": "Mardi 3 novembre 2026",
+      "result": "PASS, native PostgreSQL; Google simulated"
+    },
+    {
+      "locale": "en",
+      "device": "desktop",
+      "path": "/",
+      "date": "Tuesday, November 3, 2026",
+      "result": "PASS, native PostgreSQL; Google simulated"
+    },
+    {
+      "locale": "en",
+      "device": "desktop",
+      "path": "/agenda",
+      "date": "Tuesday, November 3, 2026",
+      "result": "PASS, native PostgreSQL; Google simulated"
+    },
+    {
+      "locale": "en",
+      "device": "tablet",
+      "path": "/",
+      "date": "Tuesday, November 3, 2026",
+      "result": "PASS, native PostgreSQL; Google simulated"
+    },
+    {
+      "locale": "en",
+      "device": "tablet",
+      "path": "/agenda",
+      "date": "Tuesday, November 3, 2026",
+      "result": "PASS, native PostgreSQL; Google simulated"
+    },
+    {
+      "locale": "en",
+      "device": "mobile",
+      "path": "/",
+      "date": "Tuesday, November 3, 2026",
+      "result": "PASS, native PostgreSQL; Google simulated"
+    },
+    {
+      "locale": "en",
+      "device": "mobile",
+      "path": "/agenda",
+      "date": "Tuesday, November 3, 2026",
+      "result": "PASS, native PostgreSQL; Google simulated"
+    },
+    {
+      "locale": "es",
+      "device": "desktop",
+      "path": "/",
+      "date": "Martes, 3 de noviembre de 2026",
+      "result": "PASS, native PostgreSQL; Google simulated"
+    },
+    {
+      "locale": "es",
+      "device": "desktop",
+      "path": "/agenda",
+      "date": "Martes, 3 de noviembre de 2026",
+      "result": "PASS, native PostgreSQL; Google simulated"
+    },
+    {
+      "locale": "es",
+      "device": "tablet",
+      "path": "/",
+      "date": "Martes, 3 de noviembre de 2026",
+      "result": "PASS, native PostgreSQL; Google simulated"
+    },
+    {
+      "locale": "es",
+      "device": "tablet",
+      "path": "/agenda",
+      "date": "Martes, 3 de noviembre de 2026",
+      "result": "PASS, native PostgreSQL; Google simulated"
+    },
+    {
+      "locale": "es",
+      "device": "mobile",
+      "path": "/",
+      "date": "Martes, 3 de noviembre de 2026",
+      "result": "PASS, native PostgreSQL; Google simulated"
+    },
+    {
+      "locale": "es",
+      "device": "mobile",
+      "path": "/agenda",
+      "date": "Martes, 3 de noviembre de 2026",
+      "result": "PASS, native PostgreSQL; Google simulated"
+    },
+    {
+      "locale": "de",
+      "device": "desktop",
+      "path": "/",
+      "date": "Dienstag, 3. November 2026",
+      "result": "PASS, native PostgreSQL; Google simulated"
+    },
+    {
+      "locale": "de",
+      "device": "desktop",
+      "path": "/agenda",
+      "date": "Dienstag, 3. November 2026",
+      "result": "PASS, native PostgreSQL; Google simulated"
+    },
+    {
+      "locale": "de",
+      "device": "tablet",
+      "path": "/",
+      "date": "Dienstag, 3. November 2026",
+      "result": "PASS, native PostgreSQL; Google simulated"
+    },
+    {
+      "locale": "de",
+      "device": "tablet",
+      "path": "/agenda",
+      "date": "Dienstag, 3. November 2026",
+      "result": "PASS, native PostgreSQL; Google simulated"
+    },
+    {
+      "locale": "de",
+      "device": "mobile",
+      "path": "/",
+      "date": "Dienstag, 3. November 2026",
+      "result": "PASS, native PostgreSQL; Google simulated"
+    },
+    {
+      "locale": "de",
+      "device": "mobile",
+      "path": "/agenda",
+      "date": "Dienstag, 3. November 2026",
+      "result": "PASS, native PostgreSQL; Google simulated"
+    },
+    {
+      "locale": "it",
+      "device": "desktop",
+      "path": "/",
+      "date": "Martedì 3 novembre 2026",
+      "result": "PASS, native PostgreSQL; Google simulated"
+    },
+    {
+      "locale": "it",
+      "device": "desktop",
+      "path": "/agenda",
+      "date": "Martedì 3 novembre 2026",
+      "result": "PASS, native PostgreSQL; Google simulated"
+    },
+    {
+      "locale": "it",
+      "device": "tablet",
+      "path": "/",
+      "date": "Martedì 3 novembre 2026",
+      "result": "PASS, native PostgreSQL; Google simulated"
+    },
+    {
+      "locale": "it",
+      "device": "tablet",
+      "path": "/agenda",
+      "date": "Martedì 3 novembre 2026",
+      "result": "PASS, native PostgreSQL; Google simulated"
+    },
+    {
+      "locale": "it",
+      "device": "mobile",
+      "path": "/",
+      "date": "Martedì 3 novembre 2026",
+      "result": "PASS, native PostgreSQL; Google simulated"
+    },
+    {
+      "locale": "it",
+      "device": "mobile",
+      "path": "/agenda",
+      "date": "Martedì 3 novembre 2026",
+      "result": "PASS, native PostgreSQL; Google simulated"
+    },
+    {
+      "state": "no-connection",
+      "status": 503,
+      "result": "PASS real native route, simulated provider only where accessed"
+    },
+    {
+      "state": "no-calendar",
+      "status": 503,
+      "result": "PASS real native route, simulated provider only where accessed"
+    },
+    {
+      "state": "reconnect",
+      "status": 403,
+      "result": "PASS real native route, simulated provider only where accessed"
+    },
+    {
+      "state": "denied",
+      "status": 403,
+      "result": "PASS real native route, simulated provider only where accessed"
+    },
+    {
+      "state": "unavailable",
+      "status": 503,
+      "result": "PASS real native route, simulated provider only where accessed"
+    },
+    {
+      "state": "empty",
+      "status": 200,
+      "result": "PASS real native route, simulated provider only where accessed"
+    }
+  ],
+  "hydrationErrors": 0,
+  "automaticMutations": 0
+}

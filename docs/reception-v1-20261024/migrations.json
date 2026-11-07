@@ -1,0 +1,127 @@
+[
+  {
+    "file": "db/migrations/001_authenticated_workspaces.sql",
+    "sha256": "6068d9cf875b6ba7e57dc2c6bfe62bf8db910d25397af2b991cdae59c42346a9",
+    "executedRemotelyByThisMission": false
+  },
+  {
+    "file": "db/migrations/002_verified_auth_identities.sql",
+    "sha256": "456f7a41817f1d34758f08ffdf0e9af4bc902551465f8fc238fb47bd0c91d09b",
+    "executedRemotelyByThisMission": false
+  },
+  {
+    "file": "db/migrations/003_auth_sign_in_transactions.sql",
+    "sha256": "acda49beada3b0a8f7f45d0af99d68c160e27ab4bf83c6a7510bcbef3b02fc17",
+    "executedRemotelyByThisMission": false
+  },
+  {
+    "file": "db/migrations/004_physical_action_proposals.sql",
+    "sha256": "670c7dae9f0d4840700b30c3e03d361a0aeef47557ea951759e4ebb00ba6968f",
+    "executedRemotelyByThisMission": false
+  },
+  {
+    "file": "db/migrations/005_document_operations.sql",
+    "sha256": "1e9954f2287ff24b7fe42d881990b5fed0b651563ade2da5d8cfecf148d7b2c3",
+    "executedRemotelyByThisMission": false
+  },
+  {
+    "file": "db/migrations/006_document_operation_retries.sql",
+    "sha256": "fe6a5b8416d5931f7f6c74b330cefc86db100e422b9c3aaf9d54b246db487e4f",
+    "executedRemotelyByThisMission": false
+  },
+  {
+    "file": "db/migrations/007_external_event_jobs.sql",
+    "sha256": "302035563bc5d37525dad6cd90d783fae2790bf6f2bc89c9dda1cf91fbf3d977",
+    "executedRemotelyByThisMission": false
+  },
+  {
+    "file": "db/migrations/008_canonical_client_project_registry.sql",
+    "sha256": "179b99d2ad550ad85444ed182725513190f6384609e8f4d23e8a36ae137dd02d",
+    "executedRemotelyByThisMission": false
+  },
+  {
+    "file": "db/migrations/009_canonical_archive_authority.sql",
+    "sha256": "9fc4b5ca2e69220347dd405376ef4f69580bc86400cc9723644ec3866336daa2",
+    "executedRemotelyByThisMission": false
+  },
+  {
+    "file": "db/migrations/010_canonical_archive_serialization.sql",
+    "sha256": "c6b5106407bd3bd2eed1863244337853fd5e6a3792e9cbe250f4ede863ea0870",
+    "executedRemotelyByThisMission": false
+  },
+  {
+    "file": "db/migrations/012_native_resource_authority.sql",
+    "sha256": "2d2865da1663dfae72a3aea3688ee437aedf08ff91c8fc2df786c058e3257f0f",
+    "executedRemotelyByThisMission": false
+  },
+  {
+    "file": "db/migrations/013_native_scoped_runtime.sql",
+    "sha256": "2a73f67c056575249d1eb43da315583d29fb2a4311a84953f7d73ef5b715fead",
+    "executedRemotelyByThisMission": false
+  },
+  {
+    "file": "db/migrations/014_native_commercial_continuity.sql",
+    "sha256": "db4af2406f401fc7c0c16358791010d52c4ab7d24d827892ea949ec1630265c1",
+    "executedRemotelyByThisMission": false
+  },
+  {
+    "file": "db/migrations/015_native_google_document_authority.sql",
+    "sha256": "401681bc0b1b7a10af8137b85fb19d961b58affaabb08c3dd7773b0e01f70f5d",
+    "executedRemotelyByThisMission": false
+  },
+  {
+    "file": "db/migrations/016_native_ionos_mail.sql",
+    "sha256": "83a4c1c295c4f7fe6f062d00436ad50dba4f5fa4bc0777f40f7a2d4cfa3131c7",
+    "executedRemotelyByThisMission": false
+  },
+  {
+    "file": "db/migrations/017_native_conversation_continuity.sql",
+    "sha256": "c31f6096dfa44c98efc8786a40af2a3695926c5f1aec36cc33014eaad259ba85",
+    "executedRemotelyByThisMission": false
+  },
+  {
+    "file": "db/migrations/018_native_mail_pagination.sql",
+    "sha256": "88b5c3eced172b9859ad076070e4dabb9e47397b70cf93ba0bfc98866eb512e0",
+    "executedRemotelyByThisMission": false
+  },
+  {
+    "file": "db/migrations/019_native_contact_editing.sql",
+    "sha256": "7cfaf458f259766dae7f7a8bcec3bf35ee55e57353cbb105df917d0ace986fa2",
+    "executedRemotelyByThisMission": false
+  },
+  {
+    "file": "db/migrations/020_native_google_workspace.sql",
+    "sha256": "9e35c6df70288bb57544d8d3375cc406b8a219f4b733a3464c3af1e203eb5b9d",
+    "executedRemotelyByThisMission": false
+  },
+  {
+    "file": "db/migrations/021_native_mail_five_accounts.sql",
+    "sha256": "f8311cf210c8a5a1a80764fbfa9f01f3147b3116cd2f4a3ddf7e0dc12942b1b6",
+    "executedRemotelyByThisMission": false
+  },
+  {
+    "file": "db/migrations/022_native_mail_monitor_authority.sql",
+    "sha256": "12f07d990f20be31bb0f4ff470ea0b535854f40887636d8ba774b07a17030cd5",
+    "executedRemotelyByThisMission": false
+  },
+  {
+    "file": "db/migrations/023_native_mail_monitor_runtime.sql",
+    "sha256": "d023bd9035eb4d74b5cdfd9dc9a61b614592b4bba35dd4d3ee9cd8f3310a6a4b",
+    "executedRemotelyByThisMission": false
+  },
+  {
+    "file": "db/migrations/025_native_mission_contact_association.sql",
+    "sha256": "c2311a8136f8dd0b05770fb1325f950b5286d79fff6f4e7be52f795b2a4b43c7",
+    "executedRemotelyByThisMission": false
+  },
+  {
+    "file": "db/migrations/026_native_document_continuity.sql",
+    "sha256": "07ee79882ad3a1e1bc2eeeb3dfead9409b703b54e2ed18a14f7651f22baf9f11",
+    "executedRemotelyByThisMission": false
+  },
+  {
+    "file": "db/migrations/028_native_job_kind_compatibility.sql",
+    "sha256": "ab3e6004074348500d5f2fd1d511f7afcea28a9c374f6f1d4d2029fc241642b9",
+    "executedRemotelyByThisMission": false
+  }
+]

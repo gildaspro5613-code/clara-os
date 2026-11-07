@@ -1,0 +1,37 @@
+element,etat_isole,preuve,production,limite
+Identité et compte Google,FONCTIONNEL,PG + OAuth signé navigateur,NON CERTIFIÉ,Identité issuer/sub existante ; aucun nom/email comme autorité
+Consentement Agenda,FONCTIONNEL,Scopes réellement accordés ; consentement partiel refusé,NON CERTIFIÉ,Compte autorisé et APIs Google à certifier
+Consentement Drive.file,FONCTIONNEL,"OAuth réel OS, fournisseur simulé",NON CERTIFIÉ,Fichiers et dossiers déjà autorisés à cette application
+Consentement Drive existant,FONCTIONNEL,Contrats scopes/contrôles PG,NON CERTIFIÉ,"Profil large distinct, choix explicite et vérification administrateur"
+Sélection calendrier explicite,FONCTIONNEL,"Liste paginée, inspection, rattachement et sélection",NON CERTIFIÉ,primary interdit
+Calendrier en lecture seule,FONCTIONNEL,PG lecture admise/écriture refusée ; contrôle navigateur,NON CERTIFIÉ,Préparation et exécution désactivées
+Événements : intervalle et consultation,FONCTIONNEL,SDK/routes OS ; ISO avec offset ; fenêtre locale Cockpit,NON CERTIFIÉ,"Maximum 366 jours par requête, 50 résultats par page"
+Création rendez-vous,FONCTIONNEL,Confirmation humaine et reçu PG dans le navigateur,NON CERTIFIÉ,Sans participant ni rappel ; aucune invitation
+Modification rendez-vous,FONCTIONNEL,"Version et If-Match, état vérifié",NON CERTIFIÉ,Événements simples avec horaire uniquement
+"Participants, séries et événements annulés",HORS PÉRIMÈTRE,Refus backend testé ; instance récurrente indisponible dans UI,HORS PÉRIMÈTRE,Pas de fonction avancée présentée comme disponible
+Destination Drive,FONCTIONNEL,"Inspection/binding/sélection explicites, droits Google",NON CERTIFIÉ,root et ressource étrangère refusés
+Import de fichier,FONCTIONNEL,"Base64 borné, SHA256 proposé, SDK/HTTP puis checksum",NON CERTIFIÉ,2 Mio ; pas de conversion Google Apps
+Création de texte,FONCTIONNEL,Contrat et préparation navigateur ; refus simulé,NON CERTIFIÉ,Même registre et transport que import
+Modification de texte,FONCTIONNEL,"UI, contenu relu, version et If-Match",NON CERTIFIÉ,text/plain attesté uniquement
+Classement/déplacement,FONCTIONNEL,"UI, ID conservé et parents vérifiés ; conflit concurrent PG",NON CERTIFIÉ,Dossiers attestés dans le même contexte
+Documents : lecture/téléchargement/analyse,FONCTIONNEL,Parcours natif PDF historique et nouvel import relu avec Clara,NON CERTIFIÉ,Limites documentaires historiques conservées
+Proposition enregistrée,FONCTIONNEL,"PG chiffré, mission/connexion/destination/contenu figés",FONCTIONNEL SOUS PRÉREQUIS,Aucune mutation Google à cette étape ; génération ID seulement
+Téléchargement du contenu proposé,FONCTIONNEL,Vraie route OS et vérification des octets,FONCTIONNEL SOUS PRÉREQUIS,ACL courantes ; contenu téléchargé comme pièce jointe
+Confirmation exacte,FONCTIONNEL,Mauvaise empreinte et absence de confirmation refusées,FONCTIONNEL SOUS PRÉREQUIS,Pas de relance POST automatique
+Soumissions concurrentes,FONCTIONNEL,Deux exécutions SQL concurrentes : un propriétaire/un effet,FONCTIONNEL SOUS PRÉREQUIS,PostgreSQL et Google non atomiques
+Acquittement OS perdu,FONCTIONNEL,"Requête navigateur annulée après commit, relecture du reçu",FONCTIONNEL SOUS PRÉREQUIS,Même opération et même contexte
+Acquittement Google perdu,FONCTIONNEL,Effet simulé + erreur réseau ; réconciliation en lecture seule,NON CERTIFIÉ,Issue non prouvable maintenue incertaine
+Absence d’effet et ambiguïté,FONCTIONNEL,"PG : verrou durable, aucun renvoi, nouvelles remises bloquées",FONCTIONNEL SOUS PRÉREQUIS,Investigation administrative sans effacement de reçu
+Refus Google certain,FONCTIONNEL,Transport unique et reçu FAILED ; interface distincte,NON CERTIFIÉ,400/401/403/404/412/413 ; pas de renvoi même opération
+Annulation avant transfert,FONCTIONNEL,Contrat SQL queued seulement ; barrière sur processing,FONCTIONNEL SOUS PRÉREQUIS,Annulation impossible après remise HTTP
+Panne et actualisation,FONCTIONNEL,"Google 503 simulé, contrôles fermés puis actualisation explicite",NON CERTIFIÉ,Aucun effet ni renvoi pendant indisponibilité
+Reprise serveur/navigateur,FONCTIONNEL,"Nouveau processus Next et nouveau navigateur, reçu durable",FONCTIONNEL SOUS PRÉREQUIS,"Même base restaurée/saine, autorisations courantes"
+Session absente/invalide/expirée,FONCTIONNEL,Routes OS négatives sans consultation de secrets,FONCTIONNEL SOUS PRÉREQUIS,Cookie mal formé 401 ; session canonique expirée 403
+Autre utilisateur/client/projet,FONCTIONNEL,"Deux utilisateurs, deux clients, trois projets ; refus PG/UI",FONCTIONNEL SOUS PRÉREQUIS,Aucune réattribution historique
+Révocation et délégation,FONCTIONNEL,PG : propriétaire/délégué/lecture seule/révocation,NON CERTIFIÉ,Délégation de lecture jamais promue en écriture
+Mission et Journal,FONCTIONNEL,Commit natif atomique avec reçu ; identifiants sans corps privés,FONCTIONNEL SOUS PRÉREQUIS,Pas de second moteur ni journal
+Cockpit et Agenda,FONCTIONNEL,"Sélection persistée, événement confirmé et rafraîchissement",NON CERTIFIÉ,Aucun primary ni widget actif sans calendrier autorisé
+"Contacts, conversations, IONOS, emails/Documents",FONCTIONNEL,Recettes historiques et suites natives préservées,NON CERTIFIÉ,Fournisseurs simulés ; aucun envoi réel
+Migration 020 et restauration,FONCTIONNEL,Application/réapplication et pg_dump/psql jetables,NON CERTIFIÉ,"Rôles, cible Neon et sauvegarde réelles à autoriser"
+Téléphonie et automatisations,HORS PÉRIMÈTRE,Indisponibilité explicite conservée,NON CERTIFIÉ,Aucune activation dans ce lot
+Clara Live,HORS PÉRIMÈTRE,Contrats OS existants testés ; dépôt Live intact,NON CERTIFIÉ,Aucun appel réel ni modification Live

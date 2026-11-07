@@ -48,7 +48,7 @@ export interface CapabilityToolBridgeResult {
   readonly message: string;
   readonly content?: string;
   readonly completedAt: Date;
-  readonly code?: "PLAN_REQUIRED" | "APPROVAL_REQUIRED";
+  readonly code?: "PLAN_REQUIRED" | "APPROVAL_REQUIRED" | "RECETTE_EXTERNAL_EXECUTION_DENIED";
   readonly approvalRequest?: ToolApprovalRequest;
 }
 
@@ -163,12 +163,16 @@ export class CapabilityToolBridge {
         workspaceId: principal.workspaceId,
       });
 
+    // An acknowledged Make POST is not yet evidence of business completion.
+    // Keep the existing audit state pending; do not invent a success receipt.
+    const makeAwaitingEvidence = capabilityId === "make.scenario.execute"
+      && result.success && result.operationalResult?.status !== "completed";
     await this.audit.record({
       callId: toolCall.callId,
       capabilityId,
       actorId: principal.actorId,
       workspaceId: principal.workspaceId,
-      status: result.success ? "SUCCEEDED" : "FAILED",
+      status: result.success ? makeAwaitingEvidence ? "REQUESTED" : "SUCCEEDED" : "FAILED",
       message: result.message,
     });
 

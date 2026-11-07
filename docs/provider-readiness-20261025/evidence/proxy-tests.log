@@ -1,0 +1,12 @@
+✔ isolated proxy: a pooled connection can reset, fresh forwarding preserves one request per socket (39.016182ms)
+ISOLATED_PROXY_UPSTREAM_ERROR ECONNRESET
+✔ isolated proxy: an upstream reset is explicit 503 and never causes a second handoff (9.110075ms)
+✔ isolated proxy: losing a response after headers cannot become a false complete receipt or retry (16.908372ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 420.378591

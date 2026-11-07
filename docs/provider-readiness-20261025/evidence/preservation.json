@@ -1,0 +1,40 @@
+{
+  "base": "b40386f4673c5e7cc26e0d2938c5bef06a2324d5",
+  "cleanAtStart": true,
+  "proofs137Unchanged": true,
+  "ionosV1WorktreePresent": false,
+  "archives": [
+    {
+      "name": "clara-os-lot5a-preproduction.zip",
+      "v1SourcePaths": []
+    },
+    {
+      "name": "clara-os-v1-reception-20261024.zip",
+      "v1SourcePaths": []
+    },
+    {
+      "name": "clara-os-reception-finale-176.zip",
+      "v1SourcePaths": []
+    },
+    {
+      "name": "clara-os-agenda-drive-176.zip",
+      "v1SourcePaths": []
+    },
+    {
+      "name": "clara-os-v1-first-day-20261024.zip",
+      "v1SourcePaths": []
+    },
+    {
+      "name": "clara-os-lot5-production.zip",
+      "v1SourcePaths": []
+    },
+    {
+      "name": "clara-canonical-stage-reception-20261022.zip",
+      "v1SourcePaths": []
+    },
+    {
+      "name": "clara-os-fermeture-fonctionnelle-176.zip",
+      "v1SourcePaths": []
+    }
+  ]
+}

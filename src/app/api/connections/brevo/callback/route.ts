@@ -1,3 +1,4 @@
+import { nativeOperationFence } from "@/lib/native/authority";
 import { NextResponse } from "next/server";
 import { DatabaseConnectionRepository } from "@/lib/connections/connection-repository";
 import { CredentialStore } from "@/lib/connections/credential-store";
@@ -11,7 +12,7 @@ const BREVO_OAUTH_COOKIE = "clara_brevo_oauth_nonce";
 
 function finishRedirect(request: Request, status: string): NextResponse {
   const base = process.env.NEXT_PUBLIC_APP_URL ?? request.url;
-  const response = NextResponse.redirect(new URL(`/?brevo=${status}`, base));
+  const response = NextResponse.redirect(new URL(`/connexions?brevo=${status}`, base));
   response.cookies.set(BREVO_OAUTH_COOKIE, "", {
     httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production",
     maxAge: 0, path: "/api/connections/brevo/callback",
@@ -20,6 +21,8 @@ function finishRedirect(request: Request, status: string): NextResponse {
 }
 
 export async function GET(request: Request) {
+  const denied = await nativeOperationFence(request);
+  if (denied) return denied;
   const url = new URL(request.url);
   if (url.searchParams.get("error")) return finishRedirect(request, "access_denied");
   const state = url.searchParams.get("state");

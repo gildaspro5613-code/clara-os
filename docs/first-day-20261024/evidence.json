@@ -1,0 +1,47 @@
+{
+  "decision": "GO réception utilisateur en environnement isolé — parcours guidé synthétique uniquement",
+  "production": "NO-GO",
+  "baseCommit": "fff3fb2384b88c9830e5f22a29bed1110130b791",
+  "compiledApplicationCommit": "2e5af6872b82585770b498d0045ef4c3f077b9e0",
+  "testedHarnessCommit": "dd1ff5a9414924090d62b69f213c04c0d9deb75c",
+  "branch": "reception/os-v1-first-day-20261024",
+  "newTests": {
+    "targeted": 19,
+    "security": 30,
+    "i18n": 7,
+    "totalPass": 56,
+    "fail": 0,
+    "skip": 0
+  },
+  "newBrowserRecipes": {
+    "main": "PASS",
+    "actualServerRestartAndFreshBrowser": "PASS",
+    "totalPass": 2
+  },
+  "historicalTests": {
+    "pass": 125,
+    "rerunWholesale": false,
+    "notAddedToNewTotal": true
+  },
+  "historicalBrowserRecipes": 4,
+  "matrix34": {
+    "PASS": 24,
+    "PARTIEL": 8,
+    "BLOQUÉ": 2
+  },
+  "typeScript": "PASS",
+  "targetedLint": "PASS",
+  "build": "PASS Next 16.4.3",
+  "realProvidersCertified": false,
+  "firstDaySmtpAttempts": 0,
+  "firstDayGoogleWrites": 0,
+  "deployments": 0,
+  "publications": 0,
+  "remoteMigrations": 0,
+  "historicalProofsPreserved": 137,
+  "globalLintHistorical": "9 errors, 9 warnings, unchanged source; not claimed fixed",
+  "globalVitest": "historical failures retained, not rerun",
+  "http503Historical": "reservation maintained; no new business 503 observed in final acceptance",
+  "dependencyAudit": "unchanged lock: previous 7 residual packages, 4 high/3 moderate, not clean",
+  "sourceReuse": "Tests/build on 2e5af68; subsequent commits only browser harness. Application sources byte-identical. No real Google login or provider semantics attested."
+}

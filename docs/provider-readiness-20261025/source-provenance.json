@@ -1,0 +1,38 @@
+{
+  "base": "b40386f4673c5e7cc26e0d2938c5bef06a2324d5",
+  "candidate": "5b24d20bf6c17439bb7844ec01a4379a19e9b6d8",
+  "changedTrackedFiles": [
+    "package-lock.json",
+    "package.json",
+    "src/app/telephonie/page.tsx",
+    "src/lib/capabilities/capability-tool-bridge.ts",
+    "src/lib/connectors/internal/telephony/telephony-engine.ts",
+    "src/lib/connectors/make/client.ts",
+    "src/tests/capability-tool-approval.test.ts",
+    "src/tests/helpers/native-runtime-tls-proxy.mjs",
+    "src/tests/make-connector.test.ts",
+    "src/tests/provider-surface-browser.e2e.mjs",
+    "src/tests/telephony-provider-receipt.test.ts"
+  ],
+  "migrationsChanged": false,
+  "canonicalContractsChanged": false,
+  "oldCandidatePreserved": true,
+  "priorProofCount": 137,
+  "notRerunningAllHistoricalCampaigns": true,
+  "bundleBase": "01e3d253ea435d99462e5f80ba68c9c5e0582986",
+  "applicationCommit": "e0753e640c1562f46b9ff522cdcb05909cde3b4a",
+  "harnessCommit": "5b24d20bf6c17439bb7844ec01a4379a19e9b6d8",
+  "compiledSourceHashes": {
+    "package-lock.json": "807f297315926f84627e914f98405381f7c38345d5852e32aa30cba5503e465a",
+    "package.json": "6b142586a8b4da23251bd1c2f5f94f000f85d2f856f69067df4576cad9864a5f",
+    "src/app/telephonie/page.tsx": "aa7d057d0e625bb25253a869e6ce34f8f14e94344457e19c25989c2bed31cb43",
+    "src/lib/capabilities/capability-tool-bridge.ts": "9d73c7f35713175d1ac3550059028e2a6be7e3dd0202247dbd70766f82261a5e",
+    "src/lib/connectors/internal/telephony/telephony-engine.ts": "fd931bef4f04dc152c7d9429f804fe0aee0124454cf9d6a0e3cc8c458fb7b17b",
+    "src/lib/connectors/make/client.ts": "b8563176d886b894b3c072dc4199ce2dcc5d552e3da20b5338f66cecf8324539",
+    "src/tests/capability-tool-approval.test.ts": "f09a6b51575725d0bdd4d7b9756904bd0b7dfcdaffc72fcda64fb35ab68f5564",
+    "src/tests/helpers/native-runtime-tls-proxy.mjs": "027d98e85dd5dcce9006d4cbe8dd741ccd70385d4c25c4748927833d70bcad77",
+    "src/tests/make-connector.test.ts": "a4b5e7aee93ad4352abb42df69c2754779b0cd379bf9c271b4b9e22da67195dc",
+    "src/tests/provider-surface-browser.e2e.mjs": "8b46fc7ab717b1d97413e8de16043b0bb220383d60c553dfd747d7611167a9e4",
+    "src/tests/telephony-provider-receipt.test.ts": "5dd5c5f4082a4cfaa892aa4958718e308222465523e7df93b97956ce91504242"
+  }
+}

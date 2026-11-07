@@ -1,0 +1,82 @@
+✔ native cognitive scope uses explicit authorized selectors without inventing a mission (8.756769ms)
+✔ native context never falls back to a different request or to global context (7.134343ms)
+▶ native conversation: immutable Mission, atomic receipts, durable paginated history and actual concurrent/restart recovery
+  ✔ Mission reassignment, foreign user/client/project and unbound historical context fail closed (16837.755616ms)
+  ✔ concurrent identical submissions execute once; lost acknowledgement replays after fresh adapter instantiation (22548.489339ms)
+  ✔ ambiguous abandoned processing pins the Session and never steals/retries ownership (3631.663114ms)
+  ✔ more than 100 messages survive in the same store with bounded pages and stable cursors (13179.264517ms)
+  ✔ revocation at finish rolls back receipt and business state; concurrent context update yields cached conflict (17133.280021ms)
+  ✔ lost SQL acknowledgement after actual commit replays the same receipt without a second cycle (11107.312466ms)
+  ✔ generation failure is persisted with its notice and replay never recomposes it (12677.759363ms)
+  ✔ pre-migration Mission history is preserved read-only, never silently certified (2739.977404ms)
+  ✔ explicit cancellation fences a delayed owner; an already committed result is never overwritten (6977.490073ms)
+  ✔ the existing inbound worker still claims its jobs but never expires native receipts or steals their owners (2010.014576ms)
+  ✔ missing upgraded runtime refuses new writes before entering business code (928.175639ms)
+  ✔ migration reapplication and backup/restore preserve receipts, history and invoker security (3386.121991ms)
+✔ native conversation: immutable Mission, atomic receipts, durable paginated history and actual concurrent/restart recovery (129131.176761ms)
+▶ native document continuity: existing structured contract, real ledger, atomic Journal and scoped cognition
+  ✔ structured proposal preserves evidence, rejects invented locators and flags hypotheses (4608.326851ms)
+  ✔ lost acknowledgement/restart replay returns encrypted receipt without another analysis or Journal (3188.78038ms)
+  ✔ a new explicit operation is journaled, conflicts remain unresolved across two documents (11167.029825ms)
+  ✔ ordinary Brain replanning preserves the mission documentary references (4498.10099ms)
+  ✔ fresh thread explicitly resuming the same mission restores documentary knowledge (3992.144358ms)
+  ✔ another project, another owner and revoked rights cannot consume stored evidence or receipts (3834.435078ms)
+  ✔ verified provider failure is a durable failed receipt; replay never calls the model again (5975.523386ms)
+  ✔ concurrent submission has one owner; SQL revocation at commit cannot leak a cached result (22770.42634ms)
+  ✔ migration 026 reapplies without discarding receipts/history and never grants PUBLIC execution (2453.213081ms)
+✔ native document continuity: existing structured contract, real ledger, atomic Journal and scoped cognition (76903.806476ms)
+▶ Google native workspace: real PostgreSQL, exact confirmations, immutable scopes, single handoff, recovery and existing stores
+  ✔ consent transactions retain actual grants and reject missing or partial scopes (24033.316255ms)
+  ✔ explicit resource binding, two users/clients/projects and historical/primary/root refusals (58200.212951ms)
+  ✔ prepared encrypted file, exact human confirmation and concurrent one-time execution/replay (102968.853928ms)
+  ✔ lost provider acknowledgement, read-only reconciliation, fresh service/reconnect and no automatic resend (35585.850509ms)
+  ✔ conditional calendar update and Drive content/move preserve IDs, metadata, rights and versions (136800.7384ms)
+  ✔ project and Google resource revocation, read-only delegations, expired consent/proposals (18279.202895ms)
+  ✔ read delegation never becomes write authority; second owner retains independent mailbox/project resources (36431.890584ms)
+  ✔ single HTTP handoff never retries errors; explicit precondition and refusal receipt release scope (79193.291176ms)
+  ✔ uncertain no-effect blocks new handoffs and inbound maintenance cannot consume or expire native Google receipts (56138.352325ms)
+  ✔ 020 additive reapplication and pg_dump restoration preserve every operation/attestation/receipt (7099.725761ms)
+✔ Google native workspace: real PostgreSQL, exact confirmations, immutable scopes, single handoff, recovery and existing stores (575045.138354ms)
+✔ Google import validation rejects oversized bodies, ambiguous identities, native document conversion and offset-less times (14.405469ms)
+▶ IONOS real PostgreSQL: two independent authorities, explicit bindings, exact approvals, concurrent single-use SMTP, revocation and durable restart
+  ✔ Cockpit projects pending canonical operations without transport, secrets or cross-project visibility (4463.688469ms)
+  ✔ Cockpit retains approved as recorded state, never SMTP acceptance (1104.007501ms)
+✔ IONOS real PostgreSQL: two independent authorities, explicit bindings, exact approvals, concurrent single-use SMTP, revocation and durable restart (148297.773385ms)
+▶ mission contact: real PostgreSQL business association, immutable conversation, CAS and revoke
+  ✔ mission first: explicit association activates an empty context, same IDs, one durable event and replay after fresh adapter (3219.437582ms)
+  ✔ existing turns: business link only; old history, active context, Brain and receipts stay unchanged (2202.933903ms)
+ERROR:  42501: NATIVE_SCOPE_DENIED
+  ✔ foreign owner/client/project, unbound history, foreign session and replacing an existing contact are refused (2214.463693ms)
+ERROR:  40001: NATIVE_MISSION_CONTACT_CONFLICT
+  ✔ genuine concurrent different contacts: one commit, one CAS conflict, no overwritten association (2037.955249ms)
+ERROR:  40001: NATIVE_MISSION_CONTACT_CONFLICT
+  ✔ identical concurrent requests and lost-ack replay never duplicate the association event (2083.418835ms)
+ERROR:  42501: NATIVE_ACQUISITION_DENIED
+  ✔ contact revoked after preparation rolls back business link, session activation and audit together (2157.552351ms)
+ERROR:  40001: NATIVE_MISSION_CONTACT_CONFLICT
+ERROR:  40001: NATIVE_NEW_SESSION_REQUIRED
+  ✔ SQL refuses a missing association proof or a forged active context on historical conversation (2515.936488ms)
+  ✔ migration preserves explicit runtime EXECUTE authority without granting PUBLIC or ownership (695.418485ms)
+  ✔ migration reapplication preserves the existing runtime and persisted association (2749.629597ms)
+✔ mission contact: real PostgreSQL business association, immutable conversation, CAS and revoke (27702.942607ms)
+Native positive creation/write/reopen, two-user three-project isolation, provider-denial and commit-time revocation verified.
+✔ native runtime on real PostgreSQL: two users, clients, projects, atomic versions, revocation, histories and isolation (15745.446973ms)
+✔ Recette blocks write/execute capabilities even with premium approval (4.385757ms)
+✔ Recette denies physical execution before credentials and transport (0.953455ms)
+✔ Recette denies direct Brevo client transport (2.224278ms)
+✔ Recette denies Google OAuth client before repository and provider access (2426.19932ms)
+✔ Recette denies native Google work before DB claim or HTTP (28.631484ms)
+✔ Recette denies ElevenLabs API before API key access and network (21.322721ms)
+✔ Recette denies Make webhook without invoking injected fetch (2.76361ms)
+✔ Recette denies telephony outbound call without provider credentials (18.50445ms)
+✔ Recette project identity denies external execution even with missing or incorrect runtime mode (0.634653ms)
+✔ Recette dedicated deployment marker denies external execution without runtime mode or project id (0.668425ms)
+✔ Recette IONOS IMAP and SMTP are denied before network (221.476426ms)
+ℹ tests 62
+ℹ suites 0
+ℹ pass 62
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 999999.162503

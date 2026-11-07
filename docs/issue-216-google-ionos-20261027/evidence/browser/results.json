@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "productionOrProviderCertified": false,
+  "googleAuthority": "real native handlers and disposable PostgreSQL; provider clients not invoked",
+  "legacyCards": "status fixtures only, not provider certification",
+  "results": [
+    "real native SQL: owner, foreign-owner denial, delegate, revocation, reload and no automatic fallback",
+    "presentation fixture selected HTTP 200",
+    "presentation fixture selectionRequired HTTP 200",
+    "presentation fixture selectionUnavailable HTTP 200",
+    "presentation fixture reconnect HTTP 200",
+    "presentation fixture pending HTTP 200",
+    "presentation fixture none HTTP 200",
+    "presentation fixture authRequired HTTP 401",
+    "presentation fixture denied HTTP 403",
+    "presentation fixture unavailable HTTP 503",
+    "presentation fixture unavailable HTTP 200"
+  ]
+}

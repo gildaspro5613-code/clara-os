@@ -1,0 +1,12 @@
+Native browser fixture initialized; no production connections.
+PASS: two consultations, durable history, no mission mutation, explicit creation, reload, safe Drive diagnostic
+✔ browser: consultation history without mission, exact Drive diagnostic, explicit mission and reload (33142.971231ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 34262.457001
+/tmp/run-ui-continuity.sh: line 21: t: command not found

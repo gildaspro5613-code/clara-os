@@ -9,5 +9,34 @@
       "path": "/api/internal/event-jobs-run",
       "schedule": "* * * * *"
     }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "integration/p0-stage-approval-ui": false,
+      "fix/canonical-stage-authority-20261022": false,
+      "proposal/stage-multidomain-contract": false,
+      "reception/stage-multidomain-authority": false,
+      "fix/magicq-config-revision": false,
+      "fix/clara-os-operational-recovery-20261027": false,
+      "fix/clara-os-operational-delivery-20261027": false,
+      "fix/google-native-hub-216": false,
+      "fix/clara-os-interface-finalization-20261027": false,
+      "fix/production-existing-capabilities-20261101": false,
+      "fix/cockpit-operational-finalization-20261101": false,
+      "fix/native-voice-startup-20261102": false,
+      "fix/header-login-cleanup-20261103": false,
+      "fix/google-reconnect-ionos-reception-20261103": false,
+      "fix/agenda-presentation-date-20261103": false,
+      "fix/mail-visual-finalization-20261104": false,
+      "fix/agenda-operational-clarity-20261106": false,
+      "fix/agenda-calendar-views-20261106": false,
+      "fix/operational-chat-recovery-252-20261106": false,
+      "fix/native-session-entry-recovery-20261107": false,
+      "fix/google-agenda-drive-operational-20261107": false,
+      "fix/google-existing-agenda-consent-20261107": false,
+      "fix/agenda-business-calendar-choice-20261107": false,
+      "fix/operational-brevo-make-stripe-20261107": false,
+      "fix/brevo-read-status-reception-20261107": false
+    }
+  }
 }

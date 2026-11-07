@@ -1,0 +1,49 @@
+Source Production 06c16d114a1a9ad938c26d9071023b9c602ea6f3
+Hook SHA256: 4e74c5db6a9564d712d3020a33ac5abde14ccfc3af4ffadc96318d6b6e087034
+
+✖ voice startup: a pre-start readiness response cannot undo a newer authority refusal (161.215582ms)
+✖ voice startup: periodic and foreground checks share one pending authority read without changing the 3 s bound (48.061071ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 854.613274
+
+✖ failing tests:
+
+test at src/tests/native-voice.test.ts:2:11777
+✖ voice startup: a pre-start readiness response cannot undo a newer authority refusal (161.215582ms)
+  AssertionError [ERR_ASSERTION]: Late readiness must not reauthorize after the active denial
+  
+  true !== false
+  
+      at TestContext.<anonymous> (/workspace/clara-os-voice-startup/src/tests/native-voice.test.ts:103:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at src/tests/native-voice.test.ts:2:15929
+✖ voice startup: periodic and foreground checks share one pending authority read without changing the 3 s bound (48.061071ms)
+  AssertionError [ERR_ASSERTION]: The periodic check must not duplicate the foreground authority request
+  
+  3 !== 2
+  
+      at TestContext.<anonymous> (/workspace/clara-os-voice-startup/src/tests/native-voice.test.ts:131:36)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 3,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

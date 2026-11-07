@@ -1,0 +1,47 @@
+{
+  "base": "b40386f4673c5e7cc26e0d2938c5bef06a2324d5",
+  "applicationCommit": "e0753e640c1562f46b9ff522cdcb05909cde3b4a",
+  "harnessCommit": "5b24d20bf6c17439bb7844ec01a4379a19e9b6d8",
+  "branch": "finalization/os-v1-provider-readiness-20261025",
+  "finalNodeTests": {
+    "providersSecurityMimeI18n": 56,
+    "nativePostgres": 25,
+    "auditPolicy": 5,
+    "proxyTcp": 3,
+    "totalPass": 89,
+    "fail": 0,
+    "skip": 0
+  },
+  "finalBrowserRecipes": {
+    "main": "PASS",
+    "restart": "PASS",
+    "providerSurfaces": "PASS",
+    "totalPass": 3
+  },
+  "realProviderBusinessCalls": 0,
+  "productionMigrations": 0,
+  "remoteMigrations": 0,
+  "deployments": 0,
+  "publications": 0,
+  "runtimeAuditBefore": 7,
+  "runtimeAuditAfter": 0,
+  "fullAuditAfter": {
+    "high": 1,
+    "moderate": 2,
+    "scope": "preexisting development-only packages; unchanged versions"
+  },
+  "npmCi": "PASS",
+  "typeScript": "PASS",
+  "targetedLint": "PASS",
+  "build": "PASS Next16.4.3",
+  "historicalProofs137": "preserved",
+  "historicalLintVitest503": "reserved, not claimed fixed",
+  "decision": {
+    "isolatedCore": "GO maintained",
+    "requestAuthorizationForR1R4": "prepared",
+    "fullRealTransverseExploitation": "NO-GO",
+    "production": "NO-GO"
+  },
+  "providerDeclarations": "Google and voice real historically confirmed by owner, exact historical deployed SHA unknown; not downgraded to broken",
+  "sourceReuse": "Provider tests on 70a160c; subsequent application difference is audit projection, separately tested by five policy/audit tests. Native SQL paths unchanged. Final build e0753e6; browser uses that build with diagnostic-only harness 5b24d20."
+}

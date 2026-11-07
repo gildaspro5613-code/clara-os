@@ -12,7 +12,7 @@ after(async () => { await browser?.close(); });
 
 const folder = { id: "folder-a", name: "Dossier A", mimeType: "application/vnd.google-apps.folder", parentId: "root" };
 const pdf = { id: "pdf", name: "Rapport.pdf", mimeType: "application/pdf", parentId: "root" };
-async function fixture(handler) {
+async function fixture(handler, documentScope = { success: true, missionId: "synthetic-document-mission", connectionId: "synthetic-google-connection" }) {
   const context = await browser.newContext({ locale: "fr-FR" });
   await context.addCookies([{ name: "NEXT_LOCALE", value: "fr", url: origin }]);
   const page = await context.newPage();
@@ -24,6 +24,11 @@ async function fixture(handler) {
     if (!url.pathname.startsWith("/api/")) return route.continue();
     if (url.pathname !== "/api/documents") return route.fulfill({ json: { success: false, authenticated: false, connected: false } });
     requests.push(request);
+    // This component fixture must model the existing explicit context preflight.
+    // It does not grant any server authority or bypass the native handlers.
+    if (request.method() === "GET" && url.searchParams.get("action") === "references") {
+      return route.fulfill({ json: documentScope });
+    }
     const response = await handler(url, request);
     return route.fulfill(response ?? { json: { success: true, files: [folder, pdf] } });
   });
@@ -50,8 +55,8 @@ test("browser: folder navigation, breadcrumb and pagination", async () => {
   } finally { await h.close(); }
 });
 test("browser: search and document reading display text and Brain recommendation", async () => {
-  const h = await fixture(async url => {
-    if (url.searchParams.get("action") === "read") return { json: { success: true, textContent: "Texte PDF extrait", brain: { recommendation: "Recommandation documentaire" } } };
+  const h = await fixture(async (url,request) => {
+    if (request.method()==="POST" && request.postDataJSON()?.action === "read") return { json: { success: true, textContent: "Texte PDF extrait", brain: { recommendation: "Recommandation documentaire" } } };
     if (url.searchParams.get("query")) return { json: { success: true, files: [pdf] } };
   });
   try {
@@ -61,11 +66,15 @@ test("browser: search and document reading display text and Brain recommendation
     await article(h.page, "Rapport.pdf").getByRole("button", { name: "Lire avec Clara" }).click();
     await h.page.locator("pre").getByText("Texte PDF extrait").waitFor();
     assert.equal(await h.page.getByText("Recommandation documentaire", { exact: true }).isVisible(), true);
+    const reads = h.requests.filter(request => request.method() === "POST" && request.postDataJSON()?.action === "read");
+    assert.equal(reads.length, 1);
+    assert.match(reads[0].postDataJSON().operationId, /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i);
+    assert.ok(h.requests.findIndex(request => new URL(request.url()).searchParams.get("action") === "references") < h.requests.indexOf(reads[0]));
   } finally { await h.close(); }
 });
 test("browser: non-extractible, invalid and oversized PDF errors remain explicit and ignore provider secrets", async () => {
   let code = "PDF_NO_TEXT";
-  const h = await fixture(async url => url.searchParams.get("action") === "read" ? { status: 422, json: { success: false, code, message: "PRIVATE_PROVIDER_SECRET" } } : undefined);
+  const h = await fixture(async (url,request) => request.method()==="POST" && request.postDataJSON()?.action === "read" ? { status: 422, json: { success: false, code, message: "PRIVATE_PROVIDER_SECRET" } } : undefined);
   try {
     for (const [next, expected] of [["PDF_NO_TEXT", "PDF sans texte extractible. Aucun OCR n’est effectué."], ["PDF_INVALID", "PDF invalide ou corrompu."], ["PDF_TOO_LARGE", "PDF trop volumineux (10 Mo maximum)."], ["PDF_ENCRYPTED", "PDF protégé par un mot de passe."]]) {
       code = next;
@@ -155,4 +164,13 @@ test("browser: a late folder response cannot overwrite the current folder", asyn
     assert.equal(await h.page.getByText("Réponse obsolète.pdf", { exact: true }).count(), 0);
     assert.equal(await h.page.getByText("Réponse actuelle.pdf", { exact: true }).isVisible(), true);
   } finally { release(); await h.close(); }
+});
+
+test("browser: missing explicit documentary scope refuses before read POST", async () => {
+  const h = await fixture(async () => undefined, { success: true, missionId: null, connectionId: null });
+  try {
+    await article(h.page, "Rapport.pdf").getByRole("button", { name: "Lire avec Clara" }).click();
+    await h.page.getByText("Lecture impossible.", { exact: true }).waitFor();
+    assert.equal(h.requests.filter(request => request.method() === "POST").length, 0);
+  } finally { await h.close(); }
 });

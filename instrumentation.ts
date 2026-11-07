@@ -1,7 +1,5 @@
+/** Startup has no authenticated principal or selected project. Never hydrate
+ * default/global business data here; Core runtimes run in authorized requests. */
 export async function register() {
-  console.log("[CLARA] instrumentation.register()");
-  if (process.env.NEXT_RUNTIME === "nodejs") {
-    const { startRuntime } = await import("./src/lib/core/runtime");
-    await startRuntime();
-  }
+  console.info("[CLARA] instrumentation ready; business runtime is request-scoped");
 }

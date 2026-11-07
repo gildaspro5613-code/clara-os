@@ -1,5 +1,6 @@
+import { assertRecetteExternalExecutionBlocked } from "@/lib/recette/external-execution-guard";
 import type {
-  MakeScenarioConfiguration,
+  MakeWebhookScenarioConfiguration,
   MakeScenarioExecutionResult,
   MakeScenarioExecutionStatus,
   MakeScenarioInvocation,
@@ -66,11 +67,20 @@ async function readResponse(response: Response): Promise<unknown> {
 }
 
 function readExecutionMetadata(response: Response, data: unknown): { executionStatus: MakeScenarioExecutionStatus; executionId?: string } {
-  let executionStatus: MakeScenarioExecutionStatus = response.status === 202 ? "accepted" : "completed";
+  // HTTP success attests a handoff, not completion of the scenario or its
+  // downstream business operation. Only an explicit contract status may do so.
+  let executionStatus: MakeScenarioExecutionStatus = "accepted";
   let executionId: string | undefined;
   if (data && typeof data === "object") {
     const record = data as Record<string, unknown>;
     const status = record.executionStatus ?? record.execution_status ?? record.status;
+    // A successful HTTP transport is not a successful business operation.
+    // Do not expose provider content (which may contain personal data/secrets).
+    if (record.ok === false || record.success === false ||
+        [record.executionStatus, record.execution_status, record.status].some(value =>
+          typeof value === "string" && ["failed", "error", "rejected", "cancelled"].includes(value.toLowerCase()))) {
+      throw new MakeWebhookError("Make reported an unsuccessful scenario execution.", response.status, "HTTP_ERROR", false);
+    }
     if (status === "accepted" || status === "pending" || status === "completed") executionStatus = status;
     const id = record.executionId ?? record.execution_id;
     if (typeof id === "string" && id.trim()) executionId = id.trim();
@@ -86,7 +96,8 @@ function isAbortError(error: unknown): boolean {
 export class MakeWebhookClient {
   constructor(private readonly fetcher: MakeFetch = fetch) {}
 
-  async execute(configuration: MakeScenarioConfiguration, invocation: MakeScenarioInvocation): Promise<MakeScenarioExecutionResult> {
+  async execute(configuration: MakeWebhookScenarioConfiguration, invocation: MakeScenarioInvocation): Promise<MakeScenarioExecutionResult> {
+    assertRecetteExternalExecutionBlocked('make.webhook');
     const url = assertWebhookUrl(configuration.url);
     const headers = assertHeaders(configuration.headers);
     const controller = new AbortController();
@@ -102,9 +113,9 @@ export class MakeWebhookClient {
       });
     } catch (error) {
       if (isAbortError(error) || controller.signal.aborted) {
-        throw new MakeWebhookError("Make scenario execution timed out.", undefined, "TIMEOUT", true);
+        throw new MakeWebhookError("Make outcome is unconfirmed after timeout; do not resend automatically.", undefined, "TIMEOUT", false);
       }
-      throw new MakeWebhookError("Make scenario execution failed because the provider could not be reached.", undefined, "NETWORK_ERROR", true);
+      throw new MakeWebhookError("Make outcome is unconfirmed after a network error; do not resend automatically.", undefined, "NETWORK_ERROR", false);
     } finally { clearTimeout(timeout); }
 
     const data = await readResponse(response);
@@ -113,7 +124,7 @@ export class MakeWebhookClient {
         `Make scenario execution failed with status ${response.status}.`,
         response.status,
         "HTTP_ERROR",
-        response.status === 408 || response.status === 429 || response.status >= 500,
+        false, // A POST may already have produced an effect, even on HTTP failure.
       );
     }
     const metadata = readExecutionMetadata(response, data);

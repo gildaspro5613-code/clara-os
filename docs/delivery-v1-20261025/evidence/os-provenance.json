@@ -1,0 +1,290 @@
+[
+  {
+    "baseRefName": "reception/stage-multidomain-authority",
+    "headRefName": "fix/magicq-config-revision",
+    "headRefOid": "99b246f80cd4ac7ebbaf64e7c9dcaad950b1ea63",
+    "isDraft": true,
+    "number": 208,
+    "title": "fix(magicq): preserve mapping with scoped revisioned configuration",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "fix/ionos-draft-ui-reliability-20261021",
+    "headRefName": "feat/native-mail-signatures-20261024",
+    "headRefOid": "243a56f94f09c6df8003c83cb23f1d3afdbeb36f",
+    "isDraft": true,
+    "number": 207,
+    "title": "feat(mail): registre signatures M\u00e9lodie Digital \u2014 pr\u00e9paration isol\u00e9e",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "proposal/stage-multidomain-contract",
+    "headRefName": "reception/stage-multidomain-authority",
+    "headRefOid": "727e0d17ceed2d7635067f1e1ea570ed8d15e384",
+    "isDraft": true,
+    "number": 206,
+    "title": "feat(stage): autorit\u00e9 multim\u00e9tier explicite et r\u00e9vocation sans r\u00e9activation",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "integration/p0-stage-approval-ui",
+    "headRefName": "proposal/stage-multidomain-contract",
+    "headRefOid": "e4b55fc400cfc74812a58c41c83fc0485f9a3e41",
+    "isDraft": true,
+    "number": 205,
+    "title": "docs(stage): contrat multim\u00e9tier propos\u00e9 sans activation d\u2019autorit\u00e9",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "fix/canonical-stage-authority-20261022",
+    "headRefName": "integration/p0-stage-approval-ui",
+    "headRefOid": "cbb683d85e291415b4616aab6eb28eb7692c77a6",
+    "isDraft": true,
+    "number": 204,
+    "title": "feat(stage): explicit native approval window for Live placement revisions",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "fix/native-documents-brain-continuity-20261022",
+    "headRefName": "fix/canonical-stage-authority-20261022",
+    "headRefOid": "7e7b1ce7607e4fd70b9e5da06f9d527dd745a683",
+    "isDraft": true,
+    "number": 203,
+    "title": "feat(core): canonical authority for versioned Light stage mutations",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "fix/ionos-draft-ui-reliability-20261021",
+    "headRefName": "fix/native-documents-brain-continuity-20261022",
+    "headRefOid": "01e3d253ea435d99462e5f80ba68c9c5e0582986",
+    "isDraft": true,
+    "number": 202,
+    "title": "fix(native): consolider les associations mission/contact et la continuit\u00e9 documentaire",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "fix/os-operational-reception-175",
+    "headRefName": "fix/os-responsive-restoration-20261022",
+    "headRefOid": "d3e66c8e04b20bb26ef0a889c10c61e5766b27aa",
+    "isDraft": true,
+    "number": 201,
+    "title": "fix(cockpit): restaurer la disposition mobile en flux \u2014 r\u00e9ception isol\u00e9e",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "fix/os-operational-reception-175",
+    "headRefName": "feat/canonical-conversation-link-v1",
+    "headRefOid": "fa9007f322ce8db6610731fad3af49d010d84fce",
+    "isDraft": true,
+    "number": 200,
+    "title": "feat(canonical): approve scoped OS Live conversation associations",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "fix/os-operational-reception-175",
+    "headRefName": "fix/ionos-draft-ui-reliability-20261021",
+    "headRefOid": "d3dbe8effb9812ad3b07c4287550172ec9a72d49",
+    "isDraft": true,
+    "number": 199,
+    "title": "fix(ionos): fiabiliser la soumission de brouillons et l'approbation UI",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "chore/recette-effective-binding-attestation",
+    "headRefName": "fix/recette-operational-auth-context-197",
+    "headRefOid": "1d2a53eeb91f1b786bd53a216cd4ec8794f7d20c",
+    "isDraft": true,
+    "number": 198,
+    "title": "fix(recette): r\u00e9tablir la connexion Google canonique et la s\u00e9lection du contexte",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "chore/recette-176-integration-audit-20261018",
+    "headRefName": "chore/recette-effective-binding-attestation",
+    "headRefOid": "2b676e7a002508f9d29ceea4e297c19772d1bb11",
+    "isDraft": true,
+    "number": 197,
+    "title": "docs(recette): cadrer l'attestation des bindings Vercel effectifs sans faux PASS",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "fix/os-operational-reception-175",
+    "headRefName": "chore/recette-176-integration-audit-20261018",
+    "headRefOid": "dd7b2056a06421e9fd778c3f40441eee573f3119",
+    "isDraft": true,
+    "number": 196,
+    "title": "[Recette] Isolation fournisseurs et tests offline PR #176",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "fix/recette-expired-fixture-renewal-20261018",
+    "headRefName": "fix/recette-renewal-http-contract-20261018",
+    "headRefOid": "d5eddebe564418d76d71ca78d0c66301518775ba",
+    "isDraft": true,
+    "number": 195,
+    "title": "test(recette): align HTTP contract with renewal transaction",
+    "includedByAncestry": false
+  },
+  {
+    "baseRefName": "chore/recette-renewal-review-base-20261018",
+    "headRefName": "fix/recette-expired-fixture-renewal-20261018",
+    "headRefOid": "efd1e1b5d67ee99a9b1e6c239494db1a763c53f4",
+    "isDraft": false,
+    "number": 193,
+    "title": "fix(recette): renew expired fictional session without revocation bypass",
+    "includedByAncestry": false
+  },
+  {
+    "baseRefName": "chore/recette-session-diagnostic-base-20261018",
+    "headRefName": "fix/recette-session-denial-diagnostics-20261018",
+    "headRefOid": "c5409ff312ffada418ceec5c920849964bed9308",
+    "isDraft": true,
+    "number": 192,
+    "title": "fix(recette): diagnostic serveur du refus de session (1 fichier)",
+    "includedByAncestry": false
+  },
+  {
+    "baseRefName": "fix/recette-canonical-session-onboarding",
+    "headRefName": "fix/recette-neon-readonly-preflight",
+    "headRefOid": "9914604af9c8898ed9cb28dfe746972e63e71c63",
+    "isDraft": true,
+    "number": 184,
+    "title": "ci(recette): pr\u00e9contr\u00f4le Neon Cloud manuel en lecture seule",
+    "includedByAncestry": false
+  },
+  {
+    "baseRefName": "fix/recette-database-diagnostics",
+    "headRefName": "fix/recette-canonical-session-onboarding",
+    "headRefOid": "044ac71ce3a339f0e8f2ab729f65d1117ad94924",
+    "isDraft": true,
+    "number": 183,
+    "title": "fix(recette): pr\u00e9parer les sessions fictives canoniques et expliciter le s\u00e9lecteur Espace",
+    "includedByAncestry": false
+  },
+  {
+    "baseRefName": "fix/os-176-isolated-recette",
+    "headRefName": "fix/recette-database-diagnostics",
+    "headRefOid": "5a97bdb60dc9284c4e11d18f3ec5103901c6778b",
+    "isDraft": true,
+    "number": 179,
+    "title": "fix(recette): identifier les refus SQL dans les logs serveur sans secrets",
+    "includedByAncestry": false
+  },
+  {
+    "baseRefName": "fix/os-operational-reception-175",
+    "headRefName": "chore/recette-177-manual-cloud-deploy",
+    "headRefOid": "688d08d852b7c04e9532ea63dea16a7b50bcefa2",
+    "isDraft": true,
+    "number": 178,
+    "title": "ci: manual cloud deployment for isolated Clara OS recette #177",
+    "includedByAncestry": false
+  },
+  {
+    "baseRefName": "fix/os-operational-reception-175",
+    "headRefName": "fix/os-176-isolated-recette",
+    "headRefOid": "ef4a2215d5a9470ea32561374c47b818e2cf69d3",
+    "isDraft": true,
+    "number": 177,
+    "title": "feat(recette): isoler les transports et reprendre les sessions canoniques de test",
+    "includedByAncestry": false
+  },
+  {
+    "baseRefName": "consolidation/clara-os-clean-base",
+    "headRefName": "fix/os-operational-reception-175",
+    "headRefOid": "22ee77e03701c6d581678a5b309a431074d7e7b7",
+    "isDraft": true,
+    "number": 176,
+    "title": "R\u00e9ception #175 \u2014 continuit\u00e9s natives et conversations durables",
+    "includedByAncestry": true
+  },
+  {
+    "baseRefName": "consolidation/clara-os-clean-base",
+    "headRefName": "fix/external-product-auth-contract-check-20261009",
+    "headRefOid": "c6d508171dd15b2135795e732fcd3ce9f6905b82",
+    "isDraft": true,
+    "number": 162,
+    "title": "test: verify Clara Live external product authentication contract offline",
+    "includedByAncestry": false
+  },
+  {
+    "baseRefName": "consolidation/clara-os-clean-base",
+    "headRefName": "codex/audit-historique-de-clara-os-knl6g1",
+    "headRefOid": "9612c37ba7e9a7b68798a5bd5971f2a32ceb5fa1",
+    "isDraft": true,
+    "number": 144,
+    "title": "Add commercial-email flow, operational context, journaling and cockpit UI integrations",
+    "includedByAncestry": false
+  },
+  {
+    "baseRefName": "clara-os-commercial-finish",
+    "headRefName": "feat/make-capability-layer-v2",
+    "headRefOid": "a0b66dbcedb458e58cfe00c92b15f2256d465ba3",
+    "isDraft": true,
+    "number": 96,
+    "title": "feat(make): consolidate Make Capability Layer V2",
+    "includedByAncestry": false
+  },
+  {
+    "baseRefName": "clara-os-commercial-finish",
+    "headRefName": "feat/partner-management-v1",
+    "headRefOid": "666fda34059ea71b608e2f60eb3cebd03f401336",
+    "isDraft": true,
+    "number": 94,
+    "title": "Partner Management V1 \u2014 foundation",
+    "includedByAncestry": false
+  },
+  {
+    "baseRefName": "clara-os-commercial-finish",
+    "headRefName": "brain-gpt-architecture-v1",
+    "headRefOid": "350b9bee89c84157c7322e2bddc102ac8455aa4e",
+    "isDraft": true,
+    "number": 72,
+    "title": "Brain \u2194 GPT Architecture V1 \u2014 restore Clara orchestration authority",
+    "includedByAncestry": false
+  },
+  {
+    "baseRefName": "clara-os-commercial-finish",
+    "headRefName": "codex/fix-mission-store-schema-init",
+    "headRefOid": "61b2a35106e4e18b420a08deba09c5dd2482bcae",
+    "isDraft": false,
+    "number": 71,
+    "title": "fix: complete GPT action flow with schema fixes and in-app Google reauth",
+    "includedByAncestry": false
+  },
+  {
+    "baseRefName": "main",
+    "headRefName": "copilot/sprint-10-cockpit",
+    "headRefOid": "7613ba3bd38da0b69192f49b78cea87c18378993",
+    "isDraft": false,
+    "number": 47,
+    "title": "fix(google-auth): trim OAuth credentials before validation and use",
+    "includedByAncestry": false
+  },
+  {
+    "baseRefName": "main",
+    "headRefName": "copilot/visual-regression-fix",
+    "headRefOid": "623b5b6426a7842772f8d572d37f9c8385583221",
+    "isDraft": true,
+    "number": 40,
+    "title": "Restoring visual appearance of Hero in Cockpit",
+    "includedByAncestry": false
+  },
+  {
+    "baseRefName": "main",
+    "headRefName": "copilot/sprint-09-fidelite-maquette-officielle",
+    "headRefOid": "b431cc8a2402ed5dff616d6635adf3033c28ea99",
+    "isDraft": false,
+    "number": 36,
+    "title": "Align cockpit composition to the official master mockup",
+    "includedByAncestry": false
+  },
+  {
+    "baseRefName": "main",
+    "headRefName": "copilot/create-google-drive-client",
+    "headRefOid": "b24a254998241d3156e9d77ca4c94a6796bef171",
+    "isDraft": false,
+    "number": 10,
+    "title": "feat: add GoogleDriveClient \u2014 thin Drive v3 client wrapper",
+    "includedByAncestry": false
+  }
+]

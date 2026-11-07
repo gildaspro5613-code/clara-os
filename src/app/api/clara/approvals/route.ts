@@ -1,3 +1,4 @@
+import { nativeOperationFence } from "@/lib/native/authority";
 import { NextResponse } from "next/server";
 import { CapabilityToolBridge } from "@/lib/capabilities/capability-tool-bridge";
 import { DatabaseToolApprovalRepository } from "@/lib/capabilities/tool-approval-repository";
@@ -92,6 +93,9 @@ async function recordCommercialOutcome(
 }
 
 export async function POST(request: Request) {
+  const nativeDenied=await nativeOperationFence(request);
+  if(nativeDenied)return nativeDenied;
+
   let processingApprovalId: string | undefined;
   try {
     const origin = request.headers.get("origin");

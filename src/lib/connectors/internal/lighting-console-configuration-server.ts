@@ -18,6 +18,11 @@ export type LightingConsoleConfigurationInput = {
   provider: SupportedLightingConsoleProvider;
   host: string;
   port?: number;
+  expectedRevision?: number;
+  connectionId?: string;
+  fixtureChannels?: Record<string,number>;
+  clearMapping?: boolean;
+  confirmMapping?: boolean;
 };
 
 export type LightingConsoleConfigurationResult = {
@@ -59,6 +64,10 @@ export class ServerLightingConsoleConfigurationService {
   private readonly titan = new DatabaseTitanConnectionConfigurationRepository();
 
   async configure(input: LightingConsoleConfigurationInput): Promise<LightingConsoleConfigurationResult> {
+    if(input.provider===MAGICQ_CONNECTION_PROVIDER) {
+      const fields: Record<string,unknown>={...input};delete fields.workspaceId;delete fields.provider;
+      return (await this.magicQ.configured(input.workspaceId,"SAVE",fields))!;
+    }
     const host = normalizeHost(input.host);
     const port = assertPort(normalizePort(input.provider, input.port));
 
@@ -86,9 +95,6 @@ export class ServerLightingConsoleConfigurationService {
     await this.connections.save(connection);
 
     switch (input.provider) {
-      case MAGICQ_CONNECTION_PROVIDER:
-        await this.magicQ.save(connection.id, { host, port, fixtureChannels: {} });
-        break;
       case GRANDMA3_CONNECTOR_ID:
         await this.grandMA3.save(connection.id, { host, port, fixtureNumbers: {} });
         break;

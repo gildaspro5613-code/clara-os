@@ -1,0 +1,152 @@
+[
+  {
+    "locale": "fr",
+    "format": "desktop",
+    "reply": {
+      "x": 370,
+      "y": 985.671875,
+      "width": 988,
+      "height": 384
+    }
+  },
+  {
+    "locale": "fr",
+    "format": "tablet",
+    "reply": {
+      "x": 74.390625,
+      "y": 978.0625,
+      "width": 671.21875,
+      "height": 384
+    }
+  },
+  {
+    "locale": "fr",
+    "format": "mobile",
+    "reply": {
+      "x": 54,
+      "y": 1150.921875,
+      "width": 282,
+      "height": 320
+    }
+  },
+  {
+    "locale": "en",
+    "format": "desktop",
+    "reply": {
+      "x": 370,
+      "y": 985.671875,
+      "width": 988,
+      "height": 384
+    }
+  },
+  {
+    "locale": "en",
+    "format": "tablet",
+    "reply": {
+      "x": 74.390625,
+      "y": 978.0625,
+      "width": 671.21875,
+      "height": 384
+    }
+  },
+  {
+    "locale": "en",
+    "format": "mobile",
+    "reply": {
+      "x": 54,
+      "y": 1130.921875,
+      "width": 282,
+      "height": 320
+    }
+  },
+  {
+    "locale": "es",
+    "format": "desktop",
+    "reply": {
+      "x": 370,
+      "y": 985.671875,
+      "width": 988,
+      "height": 384
+    }
+  },
+  {
+    "locale": "es",
+    "format": "tablet",
+    "reply": {
+      "x": 74.390625,
+      "y": 978.0625,
+      "width": 671.21875,
+      "height": 384
+    }
+  },
+  {
+    "locale": "es",
+    "format": "mobile",
+    "reply": {
+      "x": 54,
+      "y": 1150.921875,
+      "width": 282,
+      "height": 320
+    }
+  },
+  {
+    "locale": "de",
+    "format": "desktop",
+    "reply": {
+      "x": 370,
+      "y": 985.671875,
+      "width": 988,
+      "height": 384
+    }
+  },
+  {
+    "locale": "de",
+    "format": "tablet",
+    "reply": {
+      "x": 74.390625,
+      "y": 978.0625,
+      "width": 671.21875,
+      "height": 384
+    }
+  },
+  {
+    "locale": "de",
+    "format": "mobile",
+    "reply": {
+      "x": 54,
+      "y": 1130.921875,
+      "width": 282,
+      "height": 320
+    }
+  },
+  {
+    "locale": "it",
+    "format": "desktop",
+    "reply": {
+      "x": 370,
+      "y": 985.671875,
+      "width": 988,
+      "height": 384
+    }
+  },
+  {
+    "locale": "it",
+    "format": "tablet",
+    "reply": {
+      "x": 74.390625,
+      "y": 978.0625,
+      "width": 671.21875,
+      "height": 384
+    }
+  },
+  {
+    "locale": "it",
+    "format": "mobile",
+    "reply": {
+      "x": 54,
+      "y": 1130.921875,
+      "width": 282,
+      "height": 320
+    }
+  }
+]

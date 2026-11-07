@@ -1,16 +1,21 @@
+import type {NativeSelectors} from "@/lib/native/authority";
+import {nativeThreadCertified} from "@/lib/native/scoped-context";
 import type { ClaraSession } from "@/lib/core/session";
 import type { AcquisitionRecord } from "@/lib/acquisition/acquisition-store";
 
 import BriefPanel from "@/components/cockpit/panels/BriefPanel";
 import TasksPanel from "@/components/cockpit/panels/TasksPanel";
-import AgendaPanel from "@/components/cockpit/panels/AgendaPanel";
+import MailOverviewPanel from "@/components/cockpit/panels/MailOverviewPanel";
 import ClaraVoiceWidget from "@/components/cockpit/widgets/voice/ClaraVoiceWidget";
 import GlassPanel from "@/components/ui/GlassPanel";
 import { getTranslations } from "next-intl/server";
 
 interface StageProps {
+  nativeVoiceScope?:NativeSelectors;
   session: ClaraSession;
   acquisition?: AcquisitionRecord | null;
+  nativeScope?:boolean;
+  displayFirstName?:string|null;
 }
 
 async function EmptyMissionPanel() {
@@ -35,37 +40,35 @@ async function MissionPanel({ mission }: MissionPanelProps) {
   return mission ? <TasksPanel mission={mission} /> : <EmptyMissionPanel />;
 }
 
-export default async function Stage({ session, acquisition }: StageProps) {
+export default async function Stage({ session, acquisition,nativeScope=false,nativeVoiceScope,displayFirstName=null }: StageProps) {
   const mission = session.mission;
+  const selected=nativeScope?nativeVoiceScope:undefined;
+  const scope=selected?{workspaceId:selected.workspaceId,clientId:selected.clientId,projectId:selected.projectId,sessionId:selected.sessionId}:undefined;
+  const voiceDisabled=!scope||!nativeThreadCertified(session);
 
   return (
     <>
-      <div className="pointer-events-auto absolute left-[5%] top-[12%] z-20 hidden w-[25%] max-w-[360px] lg:block">
-        <BriefPanel session={session} acquisition={acquisition} />
+      <div data-historical-brief className="pointer-events-auto absolute left-[5%] top-[12%] z-20 hidden w-[25%] max-w-[360px] max-h-[45%] overflow-y-auto lg:block">
+        <BriefPanel session={session} acquisition={acquisition} displayFirstName={displayFirstName}/>
       </div>
 
-      <div className="pointer-events-auto absolute left-[6%] top-[61%] z-20 hidden w-[23%] max-w-[330px] lg:block">
-        <ClaraVoiceWidget />
+      <div data-historical-voice className="pointer-events-auto absolute left-[6%] top-[61%] z-20 hidden w-[23%] max-w-[330px] max-h-[35%] overflow-y-auto lg:block">
+        <ClaraVoiceWidget key={scope?.sessionId??"voice-locked"} disabled={voiceDisabled} scope={scope}/>
       </div>
 
-      <div className="pointer-events-auto absolute right-[5%] top-[7%] z-20 hidden w-[28%] max-w-[420px] lg:block">
-        <AgendaPanel />
+      <div data-historical-mail className="pointer-events-auto absolute right-[5%] top-[7%] z-20 hidden w-[28%] max-w-[420px] max-h-[35%] overflow-y-auto lg:block">
+        {nativeScope&&<MailOverviewPanel />}
       </div>
 
-      <div className="pointer-events-auto absolute right-[5%] top-[61%] z-20 hidden w-[28%] max-w-[420px] lg:block">
+      <div data-historical-tasks className="pointer-events-auto absolute right-[5%] top-[61%] z-20 hidden w-[28%] max-w-[420px] max-h-[35%] overflow-y-auto lg:block">
         <MissionPanel mission={mission} />
       </div>
 
-      <div className="pointer-events-none absolute left-4 right-4 top-[12%] z-20 flex flex-col gap-3 lg:hidden">
-        <div className="pointer-events-auto">
-          <BriefPanel session={session} acquisition={acquisition} />
-        </div>
-      </div>
-
-      <div className="pointer-events-none absolute left-4 right-4 top-[58%] z-20 flex flex-col gap-3 lg:hidden">
-        <div className="pointer-events-auto">
-          <MissionPanel mission={mission} />
-        </div>
+      <div className="relative z-20 flex min-w-0 flex-col gap-4 px-4 py-6 sm:px-6 lg:hidden">
+        <BriefPanel session={session} acquisition={acquisition} displayFirstName={displayFirstName}/>
+        {nativeScope&&<MailOverviewPanel />}
+        <MissionPanel mission={mission}/>
+        <ClaraVoiceWidget key={scope?.sessionId??"voice-locked"} disabled={voiceDisabled} scope={scope}/>
       </div>
     </>
   );

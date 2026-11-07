@@ -1,0 +1,28 @@
+name: Automation cards localized reception
+on:
+  pull_request:
+    paths:
+      - 'src/app/automatisations/page.tsx'
+      - 'src/lib/automations/automation-cards.ts'
+      - 'src/tests/automations-md-cards.test.ts'
+      - '.github/workflows/automations-md-cards.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Five-language catalog and navigation audit
+        run: node --import tsx --test src/tests/automations-md-cards.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit --pretty false
+      - name: Changed file lint
+        run: npx eslint src/app/automatisations/page.tsx src/lib/automations/automation-cards.ts src/tests/automations-md-cards.test.ts

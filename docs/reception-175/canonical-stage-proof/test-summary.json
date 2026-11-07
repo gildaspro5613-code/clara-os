@@ -1,0 +1,11 @@
+{
+  "oldCases": 337,
+  "oldCasesReplayed": 337,
+  "backendPass": 353,
+  "backendSkip": 1,
+  "backendFail": 0,
+  "frontendPass": 91,
+  "osTestsPass": 23,
+  "finalBilateralCases": 3,
+  "notes": "Counts deduplicate classname/name across campaigns. Ten initial harness configuration errors were rerun with the required disposable Mongo URL; no assertions removed."
+}

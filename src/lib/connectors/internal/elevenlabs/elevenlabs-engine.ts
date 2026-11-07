@@ -1,3 +1,4 @@
+import { assertRecetteExternalExecutionBlocked } from "@/lib/recette/external-execution-guard";
 /**
  * ============================================
  * CLARA OS
@@ -64,6 +65,7 @@ export class ElevenLabsEngine {
     options?: RequestInit,
   ): Promise<Response> {
 
+    assertRecetteExternalExecutionBlocked("elevenlabs.api");
     const apiKey = this.getApiKey();
 
     const headers = new Headers();
@@ -134,6 +136,7 @@ export class ElevenLabsEngine {
    */
   public async textToSpeech(
     context: ElevenLabsContext,
+    signal?: AbortSignal,
   ): Promise<ElevenLabsResult> {
 
     if (!context.text) {
@@ -164,6 +167,7 @@ export class ElevenLabsEngine {
         `?output_format=${encodeURIComponent(outputFormat)}`,
         {
           method: "POST",
+          signal,
           body: JSON.stringify({
             text: context.text,
             model_id: modelId,

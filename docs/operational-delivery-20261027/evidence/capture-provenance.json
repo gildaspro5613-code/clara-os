@@ -1,0 +1,88 @@
+{
+  "base": "56ac97fa8fe9d3225fef3c1fb036b256f13923b5",
+  "applicationCommit": "9929b4eef1b7bbd77aee197aa8db6c0c8aeba23a",
+  "businessReceiptApplicationCommit": "d3b2cf39124af38fbbe565f468594eaba2f4e7b9",
+  "difference": "Between business receipt and final UI build: only browser icon assets; same handlers, stores, contracts and business UI components.",
+  "environment": "local optimized Next, disposable PostgreSQL, synthetic users; providers simulated; Microsoft status UI stubbed 403; no Production certification",
+  "applicationFiles": {
+    "src/components/native/NativeDocumentsPanel.tsx": "44156039b2ca2227ee80b9bb549461b7150bba7f46e1ec013227b03198205edf",
+    "src/components/native/NativeScopeSelector.tsx": "54e4ad7de0a734cfb12d9c56638cab3373825e12563e0d3d8b88d96f641941b2",
+    "public/brand/clara-os-symbol.svg": "12065771011973e476ac35b80f0d50fc5ff05314240841e332074325a9237406",
+    "src/app/icon.svg": "12065771011973e476ac35b80f0d50fc5ff05314240841e332074325a9237406",
+    "src/i18n/messages/fr/consolidated-ui.json": "d9d22b2a7c3b26cb3bba649c198512b5c3e559e466bd03f7a61bdf1a63643475",
+    "src/i18n/messages/en/consolidated-ui.json": "d943ea34dec6ef363101df05d31bb4a8b2c1928376d0d6955168c2e9bc86d1ba",
+    "src/i18n/messages/es/consolidated-ui.json": "1a801ed80d5ff8505dd942cb0f12343d369d203e94f7840fb3a9df68df802d46",
+    "src/i18n/messages/de/consolidated-ui.json": "62f9da254ae7e699cfb10a7a205f876947afc0e41b28324ff17181f828aeb2bb",
+    "src/i18n/messages/it/consolidated-ui.json": "fbc7a251b328c7fb7d50978fb810583b8d1fa50994e8bb6bbe20c19a2c4e6734"
+  },
+  "screenshots": {
+    "agenda-desktop.png": {
+      "sha256": "fb96c356a45eafc810c2eb92e59013f9e12f89e017cfbbf2816c13cda055cb77",
+      "applicationCommit": "9929b4eef1b7bbd77aee197aa8db6c0c8aeba23a"
+    },
+    "automatisations-desktop.png": {
+      "sha256": "0c333d74c0afed66288db798d7a9713c3d8f70badcb24b1901c6eda004d82aaa",
+      "applicationCommit": "9929b4eef1b7bbd77aee197aa8db6c0c8aeba23a"
+    },
+    "brain-desktop.png": {
+      "sha256": "26ca99ea79d16f12f8d67059c8e54a70a4d2832850671f77cd835cc11df7cd61",
+      "applicationCommit": "9929b4eef1b7bbd77aee197aa8db6c0c8aeba23a"
+    },
+    "clara-desktop.png": {
+      "sha256": "1e5ddb3fad8c3a4aa671fbba4d5d20417810a485a068315882343fdd02df271b",
+      "applicationCommit": "9929b4eef1b7bbd77aee197aa8db6c0c8aeba23a"
+    },
+    "cockpit-after-restart.png": {
+      "sha256": "64f168c9c03b492548129dffbf25f1be6e4f706e976e40cb76b3116a958bf405",
+      "applicationCommit": "d3b2cf39124af38fbbe565f468594eaba2f4e7b9"
+    },
+    "cockpit-desktop.png": {
+      "sha256": "5eeb7619f69ffc6a47f7e44f54f2b0ed18e09f29de39a89b76ccc51a29d62016",
+      "applicationCommit": "9929b4eef1b7bbd77aee197aa8db6c0c8aeba23a"
+    },
+    "connexions-desktop.png": {
+      "sha256": "0c83fe5536b6623684d3ebc5b8de1ce3c3fda3810ba95c2b48c4f585eb3e0a32",
+      "applicationCommit": "9929b4eef1b7bbd77aee197aa8db6c0c8aeba23a"
+    },
+    "contacts-desktop.png": {
+      "sha256": "17e90ab34ae3d7a40b1ff394cfd58d5869ca8e111a350baad5532d01633e7a99",
+      "applicationCommit": "9929b4eef1b7bbd77aee197aa8db6c0c8aeba23a"
+    },
+    "conversations-desktop.png": {
+      "sha256": "3598ec01140590386d9dbd447d839974e6d58a97180ecab07716a6ec71034058",
+      "applicationCommit": "9929b4eef1b7bbd77aee197aa8db6c0c8aeba23a"
+    },
+    "documents-desktop.png": {
+      "sha256": "f4fd0151b19d5f2ee469db3465712169a21c31c1f9f58cfba805a0c6aed9901d",
+      "applicationCommit": "9929b4eef1b7bbd77aee197aa8db6c0c8aeba23a"
+    },
+    "documents.png": {
+      "sha256": "44857b1021d1b08c800750a6e0e868db3b72f5563b04bf9c65888e1cdc516150",
+      "applicationCommit": "d3b2cf39124af38fbbe565f468594eaba2f4e7b9"
+    },
+    "filtered-diagnostic.png": {
+      "sha256": "9386304c73cb4d50fe3512ed3c3e37fad60673a1978b889b64944ceb7617e016",
+      "applicationCommit": "9929b4eef1b7bbd77aee197aa8db6c0c8aeba23a"
+    },
+    "journal-desktop.png": {
+      "sha256": "4914513eed65f4185451d4f6fe0231781a11081393f9482c59b86013ae2cacc1",
+      "applicationCommit": "9929b4eef1b7bbd77aee197aa8db6c0c8aeba23a"
+    },
+    "messagerie-desktop.png": {
+      "sha256": "7ac5a005a176c0315fa6b36bdcf029628d35b5920722b7924ca2e17a436ff5c9",
+      "applicationCommit": "9929b4eef1b7bbd77aee197aa8db6c0c8aeba23a"
+    },
+    "missions-desktop.png": {
+      "sha256": "7d85aecfcb4d7b24956e6cdeb8714732ff1a3cb61f78d1792e765b5e406cb813",
+      "applicationCommit": "9929b4eef1b7bbd77aee197aa8db6c0c8aeba23a"
+    },
+    "missions-mobile.png": {
+      "sha256": "f070fccf85a0e4e66e6d73b43e35e7ac8dda0abb15d15d4484465e6b5ce02000",
+      "applicationCommit": "9929b4eef1b7bbd77aee197aa8db6c0c8aeba23a"
+    },
+    "navigation-mobile.png": {
+      "sha256": "934a11c39292a97cc554b74986e0ef5faf4824fbbb97e207b1fa313c1d2ae1e8",
+      "applicationCommit": "9929b4eef1b7bbd77aee197aa8db6c0c8aeba23a"
+    }
+  }
+}

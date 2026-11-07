@@ -1,3 +1,4 @@
+import {nativeContext} from "@/lib/native/scoped-context";
 /**
  * ============================================
  * CLARA OS
@@ -39,6 +40,7 @@ export async function executeMissionTask(
   workspaceId?: string,
 ): Promise<RuntimeResult> {
 
+  if(nativeContext())return {success:false,message:"NATIVE_CAPABILITY_NOT_CERTIFIED",runtimeId:"native",eventId:"native",cycles:[],experienceCount:0,completedAt:new Date()};
   const runtime =
     RuntimeFactory.create();
 

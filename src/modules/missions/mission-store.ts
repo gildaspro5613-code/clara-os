@@ -1,3 +1,5 @@
+import {RegistryError} from "@/lib/canonical/registry";
+import {nativeContext,nativeMission} from "@/lib/native/scoped-context";
 /**
  * ============================================
  * CLARA OS
@@ -49,6 +51,8 @@ async function ensureMissionSchema(): Promise<void> {
 export async function saveMission(
   mission: Mission,
 ): Promise<void> {
+  if(nativeContext()){nativeMission(mission);return;}
+  if(mission.id.startsWith("native:"))throw new RegistryError(403,"NATIVE_SCOPE_REQUIRED");
   await ensureMissionSchema();
   await sql`
     INSERT INTO clara_missions (
@@ -72,10 +76,12 @@ export async function saveMission(
  * Loads all operational Missions.
  */
 export async function loadMissions(): Promise<Mission[]> {
+  const native=nativeContext();if(native)return [...native.missions.values()];
   await ensureMissionSchema();
   const rows = await sql`
     SELECT data
     FROM clara_missions
+    WHERE id NOT LIKE 'native:%'
     ORDER BY updated_at DESC
   `;
 
@@ -100,6 +106,8 @@ export async function loadMissions(): Promise<Mission[]> {
 export async function loadMission(
   missionId: string,
 ): Promise<Mission | null> {
+  const native=nativeContext();if(native)return native.missions.get(missionId)??null;
+  if(missionId.startsWith("native:"))throw new RegistryError(403,"NATIVE_SCOPE_REQUIRED");
   await ensureMissionSchema();
   const rows = await sql`
     SELECT data

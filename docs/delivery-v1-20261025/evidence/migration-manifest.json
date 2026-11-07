@@ -1,0 +1,124 @@
+{
+  "status": "PASS",
+  "application": [
+    {
+      "file": "001_authenticated_workspaces.sql",
+      "apply": "PASS"
+    },
+    {
+      "file": "002_verified_auth_identities.sql",
+      "apply": "PASS"
+    },
+    {
+      "file": "003_auth_sign_in_transactions.sql",
+      "apply": "PASS"
+    },
+    {
+      "file": "004_physical_action_proposals.sql",
+      "apply": "PASS"
+    },
+    {
+      "file": "005_document_operations.sql",
+      "apply": "PASS"
+    },
+    {
+      "file": "006_document_operation_retries.sql",
+      "apply": "PASS"
+    },
+    {
+      "file": "007_external_event_jobs.sql",
+      "apply": "PASS"
+    },
+    {
+      "file": "008_canonical_client_project_registry.sql",
+      "apply": "PASS"
+    },
+    {
+      "file": "009_canonical_archive_authority.sql",
+      "apply": "PASS"
+    },
+    {
+      "file": "010_canonical_archive_serialization.sql",
+      "apply": "PASS"
+    },
+    {
+      "file": "012_native_resource_authority.sql",
+      "apply": "PASS"
+    },
+    {
+      "file": "013_native_scoped_runtime.sql",
+      "apply": "PASS"
+    },
+    {
+      "file": "014_native_commercial_continuity.sql",
+      "apply": "PASS"
+    },
+    {
+      "file": "015_native_google_document_authority.sql",
+      "apply": "PASS"
+    },
+    {
+      "file": "016_native_ionos_mail.sql",
+      "apply": "PASS"
+    },
+    {
+      "file": "017_native_conversation_continuity.sql",
+      "apply": "PASS"
+    },
+    {
+      "file": "018_native_mail_pagination.sql",
+      "apply": "PASS"
+    },
+    {
+      "file": "019_native_contact_editing.sql",
+      "apply": "PASS"
+    },
+    {
+      "file": "020_native_google_workspace.sql",
+      "apply": "PASS"
+    },
+    {
+      "file": "021_native_mail_five_accounts.sql",
+      "apply": "PASS"
+    },
+    {
+      "file": "022_native_mail_monitor_authority.sql",
+      "apply": "PASS"
+    },
+    {
+      "file": "023_native_mail_monitor_runtime.sql",
+      "apply": "PASS"
+    },
+    {
+      "file": "024_canonical_conversation_links.sql",
+      "apply": "PASS"
+    },
+    {
+      "file": "025_native_mission_contact_association.sql",
+      "apply": "PASS"
+    },
+    {
+      "file": "026_native_document_continuity.sql",
+      "apply": "PASS"
+    },
+    {
+      "file": "027_canonical_stage_decisions.sql",
+      "apply": "PASS"
+    },
+    {
+      "file": "028_canonical_stage_multidomain.sql",
+      "apply": "PASS"
+    },
+    {
+      "file": "028_native_job_kind_compatibility.sql",
+      "apply": "PASS"
+    },
+    {
+      "file": "029_magicq_configuration_revision.sql",
+      "apply": "PASS"
+    }
+  ],
+  "restore": "PASS: pg_dump restored into another disposable database; public table and function counts equal",
+  "two_028": "Different objects; both complete filenames applied. No migration renamed.",
+  "remoteSQL": false
+}

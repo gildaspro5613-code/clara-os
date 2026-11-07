@@ -1,0 +1,12 @@
+✔ real PostgreSQL: explicit registry, double consent, conflicts, revocation and isolation (32242.815703ms)
+✔ canonical PostgreSQL commands and tickets share workspace-first lock order (6608.140255ms)
+✔ canonical Stage: real PostgreSQL explicit Light ACL, nonce, expiry, revocation, scope and restart (26667.920164ms)
+✔ Stage HTTP authority fails before SQL/transport for missing product/native identity, read/archive scopes and foreign origins (80.587457ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 39585.522239

@@ -1,0 +1,70 @@
+-- TEMPLATE ONLY: no execution authorized, not a migration or runtime endpoint.
+-- Approved operator uses an existing secure server-side PostgreSQL client and
+-- bound parameters, never SQL Editor literals or logged bind values.
+-- Before BEGIN: attest effective DB + fresh recovery point; freeze mail usage;
+-- verify network/monitoring remain disabled; obtain owner-approved manifest;
+-- securely decrypt/validate historical credentials or encrypt supplied credentials
+-- with the EXISTING encryptCredentialPayload and existing runtime key.
+-- Do not call mailCredentialStore.save, add a vault, or guess a connection ID.
+-- $1 approved connection ID (never derived from email), $2 workspace,
+-- $3 canonical mailbox owner, $4 canonical reviewer, $5 exact mailbox address,
+-- $6 review reason/evidence reference (no secret), $7 sealed credential payload,
+-- $8 approved client ID, $9 approved project ID.
+-- This case creates a missing native triple; it does NOT overwrite/reassign an
+-- existing connection/authority/credential. Reuse requires separate row review.
+BEGIN;
+SET LOCAL lock_timeout='3s';
+SET LOCAL statement_timeout='15s';
+WITH manifest AS (
+ SELECT $1::text AS id,$2::text AS workspace,$3::text AS owner_id,
+        $4::text AS reviewer_id,$5::text AS address,$6::text AS reason,
+        $7::text AS sealed,$8::text AS client,$9::text AS project
+), approved AS (
+ SELECT m.* FROM manifest m
+ WHERE m.workspace='melodie-digital' AND length(m.id) BETWEEN 1 AND 512
+ AND m.id<>m.address AND length(trim(m.reason)) BETWEEN 20 AND 2000
+ AND m.address IN ('clara@melodie.digital','gildas@melodie.digital',
+                   'contact@melodie.digital','info@melodie.digital','support@melodie.digital')
+ AND m.sealed IS NOT NULL AND m.sealed<>''
+ AND NOT EXISTS(SELECT 1 FROM clara_connections c WHERE c.id=m.id)
+ AND NOT EXISTS(SELECT 1 FROM clara_native_mail_authority a
+                WHERE a.address=m.address AND a.revoked_at IS NULL)
+ AND EXISTS(SELECT 1 FROM clara_auth_identities i WHERE i.user_id=m.owner_id)
+ AND EXISTS(SELECT 1 FROM clara_auth_identities i WHERE i.user_id=m.reviewer_id)
+ AND EXISTS(SELECT 1 FROM clara_registry_clients c
+             JOIN clara_registry_projects p ON p.workspace_id=c.workspace_id AND p.client_id=c.id
+             WHERE c.workspace_id=m.workspace AND c.id=m.client AND p.id=m.project
+               AND c.revoked_at IS NULL AND p.revoked_at IS NULL)
+ AND NOT EXISTS(
+  SELECT 1 FROM (VALUES(m.owner_id),(m.reviewer_id)) AS who(user_id)
+  WHERE NOT EXISTS(SELECT 1 FROM clara_workspace_memberships w
+                    JOIN clara_registry_client_access ca ON ca.workspace_id=w.workspace_id
+                      AND ca.user_id=w.user_id AND ca.client_id=m.client
+                    JOIN clara_registry_project_access pa ON pa.workspace_id=w.workspace_id
+                      AND pa.user_id=w.user_id AND pa.project_id=m.project
+                    WHERE w.workspace_id=m.workspace AND w.user_id=who.user_id
+                      AND w.revoked_at IS NULL
+                      AND ca.can_read AND ca.can_manage AND ca.revoked_at IS NULL
+                      AND pa.can_read AND pa.can_manage AND pa.revoked_at IS NULL))
+), connection_insert AS (
+ INSERT INTO clara_connections(id,workspace_id,provider,status,scopes)
+ SELECT id,workspace,'ionos','ACTIVE','[]'::jsonb FROM approved RETURNING id
+), credential_insert AS (
+ INSERT INTO clara_connection_credentials(connection_id,encrypted_payload)
+ SELECT c.id,a.sealed FROM approved a JOIN connection_insert c ON c.id=a.id
+ RETURNING connection_id
+), authority_insert AS (
+ INSERT INTO clara_native_mail_authority(connection_id,workspace_id,owner_user_id,address,reviewed_by,review_reason)
+ SELECT c.id,a.workspace,a.owner_id,a.address,a.reviewer_id,a.reason FROM approved a
+ JOIN connection_insert c ON c.id=a.id JOIN credential_insert k ON k.connection_id=c.id
+ RETURNING connection_id
+)
+-- Refuse zero/partial eligibility. Any conflict/error aborts the entire statement
+-- and transaction, never retries. Parameters must not be printed by the client.
+SELECT 1 / CASE WHEN (SELECT count(*) FROM connection_insert)=1
+                      AND (SELECT count(*) FROM credential_insert)=1
+                      AND (SELECT count(*) FROM authority_insert)=1 THEN 1 ELSE 0 END
+       AS verified_triple_created;
+-- Operator verifies only IDs/booleans/authority fields and exactly one triple.
+-- COMMIT is deliberately NOT included. On failure or unapproved scope: ROLLBACK.
+-- Only an explicitly approved operator can COMMIT after verification.

@@ -1,0 +1,48 @@
+
+> frontend@0.1.0 build
+> craco build
+
+(node:1690436) [DEP0176] DeprecationWarning: fs.F_OK is deprecated, use fs.constants.F_OK instead
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Creating an optimized production build...
+Compiled successfully.
+
+File sizes after gzip:
+
+  211.24 kB  build/static/js/main.1f661be2.js
+  164.69 kB  build/static/js/525.aad6bf27.chunk.js
+  100.44 kB  build/static/js/116.28fd35df.chunk.js
+  89.73 kB   build/static/js/886.08f2a83e.chunk.js
+  27.43 kB   build/static/js/936.8d9fa2a6.chunk.js
+  20.96 kB   build/static/js/287.e492fc4e.chunk.js
+  17.12 kB   build/static/js/224.218b559b.chunk.js
+  16.95 kB   build/static/js/976.7ba04dad.chunk.js
+  13.57 kB   build/static/js/817.88630649.chunk.js
+  13.37 kB   build/static/css/main.1819ffde.css
+  8.4 kB     build/static/js/245.d03eac85.chunk.js
+  5.49 kB    build/static/js/536.15bce919.chunk.js
+  5.44 kB    build/static/js/417.24373687.chunk.js
+  5.24 kB    build/static/js/315.a85108c3.chunk.js
+  3.81 kB    build/static/js/620.683c7b29.chunk.js
+  2.82 kB    build/static/js/751.781b8079.chunk.js
+  2.76 kB    build/static/js/385.71fdbc38.chunk.js
+  2.3 kB     build/static/js/571.265aad5e.chunk.js
+  1.98 kB    build/static/js/779.9b021da6.chunk.js
+  1.17 kB    build/static/js/158.c8e88107.chunk.js
+  1.07 kB    build/static/js/136.0e42d7cc.chunk.js
+  917 B      build/static/css/886.384b57be.chunk.css
+  609 B      build/static/css/245.1102d536.chunk.css
+  609 B      build/static/css/832.1102d536.chunk.css
+
+The project was built assuming it is hosted at /.
+You can control this with the homepage field in your package.json.
+
+The build folder is ready to be deployed.
+You may serve it with a static server:
+
+  npm install -g serve
+  serve -s build
+
+Find out more about deployment here:
+
+  https://cra.link/deployment

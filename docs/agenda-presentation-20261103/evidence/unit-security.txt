@@ -1,0 +1,29 @@
+✔ business date is Paris day independently of the host and browser timezone (16.917107ms)
+✔ full dates use the five existing locales, including weekday and year (4.63036ms)
+✔ Calendar windows use actual Paris midnight, including 23/25-hour DST days (4.020377ms)
+✔ presentation preserves missing selection, reconnect, denied, expired and unavailable states (0.255817ms)
+✔ SSR has a deterministic date placeholder and closed settings; no provider data or writes on render (63.928376ms)
+✔ historical Tasks uses the authorized mission rather than the old 82 percent fixture (3.810557ms)
+✔ native historical microphone stays disabled and honest in all five languages (12.292441ms)
+✔ the historical action bar navigates existing pages instead of decorative buttons (7.119204ms)
+✔ Mission GlassPanel interface labels are translated in all five languages while stored titles and next actions remain verbatim (14.919011ms)
+Checked 38 native handler refusals.
+[CLARA] instrumentation ready; business runtime is request-scoped
+✔ native session handler rejects missing, malformed and duplicate cookies before storage or global runtime (86.76909ms)
+✔ default, external and absent explicit selectors cannot resume a global/native fallback (1.71629ms)
+✔ every fenced native HTTP handler refuses anonymous/invalid cookies without entering legacy business logic (162.236573ms)
+✔ unavailable authority never leaks storage details or resumes the legacy runtime (3.777288ms)
+✔ even an explicitly authorized snapshot cannot unlock legacy native mutations (13.208109ms)
+✔ all six native server pages return before invoking any global data loader (65.520353ms)
+✔ reopened chat and native runtime/document handlers still refuse invalid authentication before business code (44.71177ms)
+✔ server instrumentation never imports or starts a global business runtime (2.160716ms)
+✔ Uncertified Google/Brevo/Make connection routes reject invalid OS sessions before storage or provider I/O (80.789391ms)
+✔ a verified native session cannot unlock Google credentials or Make configuration before connector certification (60.17228ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1243.82217

@@ -1,3 +1,4 @@
+import { nativeOperationFence } from "@/lib/native/authority";
 import { NextResponse } from "next/server";
 import { DatabaseConnectionRepository } from "@/lib/connections/connection-repository";
 import { CURRENT_WORKSPACE_ID } from "@/lib/connections/current-workspace";
@@ -5,7 +6,9 @@ export const dynamic = "force-dynamic";
 const PRIVATE_HEADERS = { "Cache-Control": "private, no-store" }; const FORBIDDEN_SCENARIO_KEYS = new Set(["__proto__", "prototype", "constructor"]);
 function validScenarioKey(value: string): boolean { return /^[a-zA-Z0-9._:-]{1,120}$/.test(value) && !FORBIDDEN_SCENARIO_KEYS.has(value.toLowerCase()); }
 /** Returns non-sensitive Make metadata only. Credentials and webhook URLs remain server-side. */
-export async function GET() {
+export async function GET(request: Request) {
+  const denied = await nativeOperationFence(request);
+  if (denied) return denied;
   try {
     const repository = new DatabaseConnectionRepository(); const connection = await repository.findByWorkspaceAndProvider(CURRENT_WORKSPACE_ID, "make");
     if (!connection) return NextResponse.json({ provider: "make", connected: false, status: "NOT_CONFIGURED", scenarioKeys: [] }, { headers: PRIVATE_HEADERS });

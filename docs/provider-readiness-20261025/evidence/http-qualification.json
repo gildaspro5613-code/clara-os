@@ -1,0 +1,15 @@
+{
+  "recordedRequests": 904,
+  "http5xx": {
+    "('GET', '/clara', 503)": 5,
+    "('GET', '/api/calendar', 503)": 2,
+    "('GET', '/api/weather', 502)": 6,
+    "('GET', '/api/connections/make/status', 503)": 3,
+    "('GET', '/api/connections/brevo', 503)": 2
+  },
+  "startup503EachImmediatelyFollowsUpstreamConnectionRefused": true,
+  "startup503Count": 5,
+  "maxDocumentResponseMs": 13004,
+  "historical503FullyExplained": false,
+  "parallelSqlTimeoutRootCause": "not conclusively established; load and transport are hypotheses, all raw traces retained"
+}

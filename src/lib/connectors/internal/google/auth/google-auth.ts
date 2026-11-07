@@ -1,3 +1,7 @@
+import { assertRecetteExternalExecutionBlocked } from "@/lib/recette/external-execution-guard";
+import {nativeContext} from "@/lib/native/scoped-context";
+import {googleAuthority,scopedGoogleCredentialStore,scopedGoogleRepository} from "@/lib/native/google-authority";
+import {RegistryError} from "@/lib/canonical/registry";
 import type { Credentials, OAuth2Client } from "google-auth-library";
 import {
   ConnectionStatus,
@@ -7,7 +11,6 @@ import {
   type ConnectionRepository,
 } from "@/lib/connections/connection-repository";
 import { CredentialStore } from "@/lib/connections/credential-store";
-import { CURRENT_WORKSPACE_ID } from "@/lib/connections/current-workspace";
 import {
   GoogleReauthRequiredError,
   isGoogleInvalidGrant,
@@ -23,21 +26,36 @@ export class GoogleAuth {
   constructor(
     private readonly connections: ConnectionRepository =
       new DatabaseConnectionRepository(),
-    private readonly credentials = new CredentialStore(),
+    private readonly credentials?: CredentialStore,
     private readonly clientFactory: () => OAuth2Client = createGoogleOAuthClient,
   ) {}
 
+  private get credentialStore(): CredentialStore { return this.credentials ?? new CredentialStore(); }
+
   async createClient(connectionId?: string): Promise<OAuth2Client> {
-    const connection = connectionId
-      ? await this.connections.findById(connectionId)
-      : await this.connections.findByWorkspaceAndProvider(
-          CURRENT_WORKSPACE_ID,
-          "google",
-        );
+    assertRecetteExternalExecutionBlocked("google.oauth-client");
+    if(nativeContext()) {
+      if(!connectionId)throw new RegistryError(403,"NATIVE_GOOGLE_EXPLICIT_CONNECTION_REQUIRED");
+      const proof=await googleAuthority(connectionId);
+      const auth=new GoogleAuth(scopedGoogleRepository(connectionId),scopedGoogleCredentialStore(connectionId,proof),this.clientFactory);
+      return auth.createScopedClient(connectionId,proof.subject);
+    }
+    return this.createUnscopedClient(connectionId);
+  }
+
+  private async createScopedClient(connectionId:string,subject:string):Promise<OAuth2Client>{
+    const client=await this.createUnscopedClient(connectionId);
+    const response=await client.request<{sub?:string}>({url:"https://openidconnect.googleapis.com/v1/userinfo",timeout:15_000});
+    if(response.data.sub!==subject)throw new RegistryError(403,"NATIVE_GOOGLE_PRINCIPAL_CHANGED");
+    return client;
+  }
+  private async createUnscopedClient(connectionId?:string):Promise<OAuth2Client>{
+    if(!connectionId)throw new RegistryError(403,"NATIVE_GOOGLE_EXPLICIT_CONNECTION_REQUIRED");
+    const connection=await this.connections.findById(connectionId);
     if (!connection || connection.status !== ConnectionStatus.ACTIVE) {
       throw new GoogleReauthRequiredError();
     }
-    const stored = await this.credentials.get<OAuthTokenSet & Credentials>(connection.id);
+    const stored = await this.credentialStore.get<OAuthTokenSet & Credentials>(connection.id);
     const usesLegacyShape = !stored?.accessToken;
     const normalized: OAuthTokenSet = !usesLegacyShape ? stored : {
       accessToken: stored?.access_token ?? "",
@@ -81,7 +99,7 @@ export class GoogleAuth {
     update: Credentials,
     usesLegacyShape: boolean,
   ): Promise<void> {
-    const current = await this.credentials.get<OAuthTokenSet>(connectionId);
+    const current = await this.credentialStore.get<OAuthTokenSet>(connectionId);
     const merged = mergeOAuthTokens(current?.accessToken ? current : previous, {
       accessToken: update.access_token ?? current?.accessToken ?? previous.accessToken,
       refreshToken: update.refresh_token ?? undefined,
@@ -89,6 +107,6 @@ export class GoogleAuth {
       expiresAt: update.expiry_date ?? undefined,
       scope: update.scope?.split(" ").filter(Boolean),
     });
-    await this.credentials.set(connectionId, usesLegacyShape ? toGoogleCredentials(merged) : merged);
+    await this.credentialStore.set(connectionId, usesLegacyShape ? toGoogleCredentials(merged) : merged);
   }
 }
