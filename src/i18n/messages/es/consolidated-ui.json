@@ -399,5 +399,15 @@
   "mailVisualSignature": "Firma Mélodie Digital",
   "mailVisualSync": "Carpetas y sincronización",
   "mailVisualApprovals": "Aprobación de envíos",
-  "nativeChatFinishedWithError": "Esta solicitud no se ha completado. Puedes continuar en esta conversación."
+  "nativeChatFinishedWithError": "Esta solicitud no se ha completado. Puedes continuar en esta conversación.",
+  "brevoRegistered": "Conexión registrada",
+  "brevoReadNotCertified": "La lectura de datos de Brevo desde Clara requiere certificación antes de campañas o envíos.",
+  "brevoReadyToAuthorize": "OAuth de Brevo configurado. Puedes autorizar la cuenta para consultas.",
+  "brevoOAuthMissing": "Configura OAuth de Brevo en Vercel antes de conectar la cuenta.",
+  "brevoDescription": "Contactos, listas, plantillas y campañas: solo lectura tras verificar el acceso.",
+  "studioStripeUncertified": "Studio Stripe: no certificado",
+  "studioStripeReadPending": "La lectura de pagos de Studio sigue bloqueada hasta validar el registro y los permisos. Aquí no se inicia ningún pago.",
+  "brevoApiKeyConfigured": "Clave API configurada",
+  "brevoApiKeyPendingVerification": "La clave API Brevo está configurada en el servidor. La lectura real desde Clara no está certificada.",
+  "brevoApiKeyMissing": "Falta la clave API de Brevo. Configúrala en Vercel para permitir consultas."
 }

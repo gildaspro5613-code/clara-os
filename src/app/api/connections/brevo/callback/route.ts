@@ -12,7 +12,7 @@ const BREVO_OAUTH_COOKIE = "clara_brevo_oauth_nonce";
 
 function finishRedirect(request: Request, status: string): NextResponse {
   const base = process.env.NEXT_PUBLIC_APP_URL ?? request.url;
-  const response = NextResponse.redirect(new URL(`/?brevo=${status}`, base));
+  const response = NextResponse.redirect(new URL(`/connexions?brevo=${status}`, base));
   response.cookies.set(BREVO_OAUTH_COOKIE, "", {
     httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production",
     maxAge: 0, path: "/api/connections/brevo/callback",

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { BrevoClient } from "@/lib/connectors/brevo/client";
+import {readBrevoBounded,brevoReadKindFromMessage} from '@/lib/connectors/brevo/api-key-read';
 import { BREVO_CAPABILITIES, BrevoConnectorDefinition } from "@/lib/connectors/brevo/definition";
 import { BrevoApiError } from "@/lib/connectors/brevo/error";
 import { parseBrevoWebhook } from "@/lib/connectors/brevo/webhook";
@@ -209,4 +210,41 @@ test("statistics support aggregate and campaign report modes", async () => {
   assert.equal(campaign.id, 27);
   assert.match(http.calls[0]?.url ?? "", /\/smtp\/statistics\/aggregatedReport/);
   assert.match(http.calls[1]?.url ?? "", /\/emailCampaigns\/27\?statistics=/);
+});
+
+test('API key mode uses only GET and api-key header; never an OAuth bearer token',async()=>{
+ const http=fakeHttp([json({contacts:[{id:14,email:'client@example.com',listIds:[3]}],count:1})]);
+ const data=await readBrevoBounded('contacts','restricted-key',http.fetch);
+ assert.deepEqual(data,{kind:'contacts',count:1,items:[{id:14,email:'client@example.com',listIds:[3]}],partial:false});
+ const headers=new Headers(http.calls[0]?.init?.headers);
+ assert.equal(headers.get('api-key'),'restricted-key');
+ assert.equal(headers.get('authorization'),null);
+ assert.equal(http.calls[0]?.init?.method,'GET');
+ assert.equal(http.calls.length,1);
+});
+test('API key mode refuses mutation before provider transport',async()=>{
+ const http=fakeHttp([]);
+ const client=new BrevoClient({apiKey:'restricted-key',fetch:http.fetch});
+ await assert.rejects(()=>client.sendTransactionalEmail({to:[{email:'x@example.com'}],textContent:'test'}),/BREVO_API_KEY_READ_ONLY/);
+ await assert.rejects(()=>client.createList({name:'blocked',folderId:1}),/BREVO_API_KEY_READ_ONLY/);
+ assert.equal(http.calls.length,0);
+});
+test('Brevo Brain read intent is explicit and bounded, never an ambient contact search',async()=>{
+ assert.equal(brevoReadKindFromMessage('Montre mes contacts Brevo'),'contacts');
+ assert.equal(brevoReadKindFromMessage('Liste Brevo'),'lists');
+ assert.equal(brevoReadKindFromMessage('Modèles Brevo'),'templates');
+ assert.equal(brevoReadKindFromMessage('Campagnes Brevo'),'campaigns');
+ assert.equal(brevoReadKindFromMessage('contacts du projet'),null);
+ assert.equal(brevoReadKindFromMessage('Brevo'),null);
+ const http=fakeHttp([]);
+ await assert.rejects(()=>readBrevoBounded('contacts','',http.fetch),/BREVO_API_KEY_NOT_CONFIGURED/);
+ assert.equal(http.calls.length,0);
+});
+test('API key cannot leak through normalized provider failure',async()=>{
+ const http=fakeHttp([json({message:'restricted-key',apiKey:'restricted-key'},403)]);
+ await assert.rejects(()=>readBrevoBounded('lists','restricted-key',http.fetch),e=>{
+  assert.equal(e?.code,'FORBIDDEN');
+  assert.doesNotMatch(JSON.stringify(e),/restricted-key/);
+  return true;
+ });
 });

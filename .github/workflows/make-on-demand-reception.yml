@@ -1,0 +1,36 @@
+name: Make on-demand connector isolation
+on:
+  pull_request:
+    paths:
+      - 'src/lib/connectors/make/**'
+      - 'src/tests/make-on-demand-contract.test.ts'
+      - 'src/tests/make-native-read-handoff.test.ts'
+      - 'src/tests/make-native-admin-command.test.ts'
+      - 'src/tests/make-scenario-catalog-inventory.test.ts'
+      - 'docs/operations/native-make-scenario-catalog-clone-recipe.sql'
+      - 'src/lib/native/make-admin-command.ts'
+      - 'docs/operations/native-make-admin-command-clone-candidate.sql'
+      - 'src/lib/native/make-read-handoff.ts'
+      - 'src/lib/native/make-read-authority.ts'
+      - 'docs/operations/native-make-read-authority-proposal.sql'
+      - '.github/workflows/make-on-demand-reception.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  make-reception:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Isolated Make API on-demand and existing webhook contract
+        run: node --import tsx --test src/tests/make-on-demand-contract.test.ts src/tests/make-connector.test.ts src/tests/make-native-read-handoff.test.ts src/tests/make-native-admin-command.test.ts src/tests/make-scenario-catalog-inventory.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit --pretty false
+      - name: Lint changed files
+        run: npx eslint src/lib/connectors/make/types.ts src/lib/connectors/make/client.ts src/lib/connectors/make/on-demand-client.ts src/lib/connectors/make/adapter.ts src/tests/make-on-demand-contract.test.ts src/tests/make-native-read-handoff.test.ts src/lib/native/make-read-handoff.ts src/lib/native/make-read-authority.ts src/lib/native/make-admin-command.ts src/tests/make-native-admin-command.test.ts src/tests/make-scenario-catalog-inventory.test.ts
