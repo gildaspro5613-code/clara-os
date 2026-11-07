@@ -1,6 +1,6 @@
 'use client';
 
-import {useCallback,useEffect,useState} from 'react';
+import {useCallback,useEffect,useRef,useState} from 'react';
 import {useLocale,useTranslations} from 'next-intl';
 import {Download,FilePenLine,FileSearch,FolderOpen,Upload,FilePlus2} from 'lucide-react';
 
@@ -29,6 +29,9 @@ export default function NativeDocumentDailyPanel({source,onSaved}:{source?:Sourc
  const [connectionId,setConnectionId]=useState('');
  const [caps,setCaps]=useState<Capability|null>(null),[resources,setResources]=useState<Resource[]>([]);
  const [folders,setFolders]=useState<Folder[]>([]),[folderPage,setFolderPage]=useState<string|null>(null),[folderPicker,setFolderPicker]=useState(false);
+ const [folderSearch,setFolderSearch]=useState(''),[folderShown,setFolderShown]=useState(12);
+ const [pendingFolder,setPendingFolder]=useState<Folder|null>(null),[folderError,setFolderError]=useState(''),[folderFeedback,setFolderFeedback]=useState('');
+ const folderApprovalRef=useRef<HTMLButtonElement>(null);
  const [folderId,setFolderId]=useState(''),[upload,setUpload]=useState<File|null>(null);
  const [title,setTitle]=useState(''),[instruction,setInstruction]=useState(''),[draft,setDraft]=useState(''),[sourceText,setSourceText]=useState('');
  const [targetId,setTargetId]=useState(''),[originalLoaded,setOriginalLoaded]=useState(false),[review,setReview]=useState<Review|null>(null);
@@ -51,6 +54,7 @@ export default function NativeDocumentDailyPanel({source,onSaved}:{source?:Sourc
   setCaps(c as Capability);setResources(r.resources??[]);setOperations(o.operations??[]);
   setFolderId((current)=>current&&r.resources?.some((item:Resource)=>item.id===current&&item.kind==='folder')
    ?current:c.selectedFolderId??'');
+  return {capabilities:c as Capability,resources:(r.resources??[]) as Resource[]};
  },[nativeGet]);
  useEffect(()=>{
   let active=true;
@@ -74,6 +78,8 @@ export default function NativeDocumentDailyPanel({source,onSaved}:{source?:Sourc
  const writable=Boolean(caps?.drive&&caps.owned&&caps.canManage&&caps.missionId);
  const folderResources=resources.filter(r=>r.kind==='folder');
  const selectedFolder=folderResources.find(r=>r.id===folderId);
+ const matchingFolders=folders.filter(f=>f.name.toLocaleLowerCase(locale).includes(folderSearch.trim().toLocaleLowerCase(locale)));
+ useEffect(()=>{if(pendingFolder)folderApprovalRef.current?.focus();},[pendingFolder]);
  const textResources=resources.filter(r=>r.kind==='file'&&r.mimeType==='text/plain');
  const selectedTarget=textResources.find(r=>r.id===targetId);
  async function run(task:()=>Promise<void>){
@@ -84,21 +90,38 @@ export default function NativeDocumentDailyPanel({source,onSaved}:{source?:Sourc
  async function browseFolders(more=false){
   await run(async()=>{
    const response=await nativeGet('folders',more&&folderPage?{pageToken:folderPage}:{});
-   setFolders(previous=>more?[...previous,...(response.folders as Folder[]).filter(f=>!previous.some(p=>p.id===f.id))]:response.folders??[]);
+   setFolders(previous=>{
+    const combined:Folder[]=more?[...previous,...(response.folders??[])]:response.folders??[];
+    return [...new Map(combined.map(folder=>[folder.id,folder])).values()];
+   });
+   if(!more){setFolderSearch('');setFolderShown(12);}
+   setFolderError('');setFolderFeedback('');
    setFolderPage(response.nextPageToken??null);setFolderPicker(true);
   });
  }
- async function selectFolder(folder:Folder){
-  if(!window.confirm(t('workspaceConfirmFolder',{name:folder.name})))return;
-  await run(async()=>{
+ function selectFolder(folder:Folder){
+  if(busy||!writable)return;
+  setFolderError('');setPendingFolder(folder);
+ }
+ async function approveFolder(){
+  const folder=pendingFolder;
+  if(!folder||busy||!writable)return;
+  setBusy(true);setError('');setStatus('');setFolderError('');setFolderFeedback('');
+  try{
    if(!resources.some(resource=>resource.kind==='folder'&&resource.id===folder.id)){
     const inspect=await nativePost('inspect',{kind:'folder',resourceId:folder.id});
     if(!inspect.resource?.version)throw Error('GOOGLE_RESOURCE_CHANGED');
     await nativePost('bind',{kind:'folder',resourceId:folder.id,version:inspect.resource.version});
    }
    await nativePost('select',{kind:'folder',resourceId:folder.id});
-   setFolderPicker(false);await reload();setFolderId(folder.id);setStatus(t('workspaceFolderReady',{name:folder.name}));
-  });
+   const refreshed=await reload();
+   if(refreshed.capabilities.selectedFolderId!==folder.id
+      ||!refreshed.resources.some(resource=>resource.kind==='folder'&&resource.id===folder.id))
+    throw Error('GOOGLE_FOLDER_SELECTION_UNVERIFIED');
+   setFolderId(folder.id);setFolderPicker(false);setPendingFolder(null);
+   setFolderFeedback(t('workspaceFolderReady',{name:folder.name}));
+  }catch(e){setFolderError(e instanceof Error?e.message:'DOCUMENT_REQUEST_FAILED');}
+  finally{setBusy(false);}
  }
  async function loadOriginal(fileId:string){
   await run(async()=>{
@@ -221,13 +244,23 @@ export default function NativeDocumentDailyPanel({source,onSaved}:{source?:Sourc
      <button type="button" disabled={busy||!writable} onClick={()=>void browseFolders()}
       className="rounded-xl border border-white/10 px-3 py-2 text-sm text-cyan-100 disabled:opacity-40">{t('workspaceChooseFolder')}</button>
     </div>
+    {folderFeedback&&<p role="status" className="text-sm text-cyan-200">{folderFeedback}</p>}
     {folderPicker&&<div className="space-y-2">
-     {folders.map(f=><button type="button" key={f.id} disabled={busy} onClick={()=>void selectFolder(f)}
-       className="flex w-full justify-between rounded-lg border border-white/10 px-3 py-2 text-left text-sm text-slate-200 disabled:opacity-40">
-       <span>{f.name}</span><span className="text-cyan-200">{t('workspaceUseFolder')}</span></button>)}
+     <input type="search" aria-label={t('workspaceSearchFolder')} placeholder={t('workspaceSearchFolder')}
+      value={folderSearch} onChange={e=>{setFolderSearch(e.target.value);setFolderShown(12);}}
+      className="w-full rounded-lg border border-white/10 bg-[#0a1528] px-3 py-2 text-sm text-white outline-none focus:border-cyan-300/40"/>
+     <div className="max-h-72 space-y-2 overflow-y-auto pr-1">
+      {matchingFolders.slice(0,folderShown).map(f=><button type="button" key={f.id} disabled={busy} onClick={()=>selectFolder(f)}
+       className="flex w-full items-center justify-between gap-3 rounded-lg border border-white/10 px-3 py-2 text-left text-sm text-slate-200 disabled:opacity-40">
+       <span>{f.name}{folders.some(other=>other.id!==f.id&&other.name===f.name)&&
+        <span className="ml-2 text-xs text-slate-400">· …{f.id.slice(-6)}</span>}</span>
+       <span className="shrink-0 text-cyan-200">{t('workspaceUseFolder')}</span></button>)}
+     </div>
+     {matchingFolders.length>folderShown&&<button type="button" disabled={busy} onClick={()=>setFolderShown(n=>n+12)}
+       className="rounded-lg border border-white/10 px-3 py-2 text-sm">{t('workspaceShowMoreFolders')}</button>}
      {folderPage&&<button type="button" disabled={busy} onClick={()=>void browseFolders(true)}
        className="rounded-lg border border-white/10 px-3 py-2 text-sm">{t('workspaceMoreFolders')}</button>}
-     {folders.length===0&&<p className="text-sm text-slate-400">{t('workspaceNoFolderCandidates')}</p>}
+     {matchingFolders.length===0&&<p className="text-sm text-slate-400">{t('workspaceNoFolderCandidates')}</p>}
     </div>}
    </div>
    <button type="button" disabled={busy||!writable||!selectedFolder||Boolean(review&&review.status==='queued')||(mode==='import'?!upload||upload.size>MAX_UPLOAD:!draft.trim()||mode==='revise'&&(!selectedTarget||!originalLoaded))}
@@ -259,5 +292,21 @@ export default function NativeDocumentDailyPanel({source,onSaved}:{source?:Sourc
   </article>}
   {status&&<p role="status" className="mt-4 text-sm text-cyan-100">{status}</p>}
   {error&&<p role="alert" className="mt-4 text-sm text-amber-200">{t('workspaceFailed')} [{error}]</p>}
+  {pendingFolder&&<div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 px-4"
+    onKeyDown={event=>{if(event.key==='Escape'&&!busy)setPendingFolder(null);}}>
+   <div role="dialog" aria-modal="true" aria-label={t('workspaceConfirmFolder',{name:pendingFolder.name})}
+    className="w-full max-w-lg rounded-2xl border border-cyan-300/20 bg-[#101d30] p-6 shadow-2xl">
+    <h3 className="text-lg font-semibold text-white">{t('workspaceChooseFolder')}</h3>
+    <p className="mt-3 break-words text-sm text-slate-200">{t('workspaceConfirmFolder',{name:pendingFolder.name})}</p>
+    {folderError&&<p role="alert" className="mt-4 text-sm text-amber-200">{t('workspaceFailed')} [{folderError}]</p>}
+    <div className="mt-6 flex flex-wrap justify-end gap-2">
+     <button type="button" disabled={busy} onClick={()=>setPendingFolder(null)}
+      className="rounded-xl border border-white/15 px-4 py-2 text-sm text-slate-200 disabled:opacity-40">{t('workspaceCancelFolder')}</button>
+     <button type="button" ref={folderApprovalRef} disabled={busy||!writable} onClick={()=>void approveFolder()}
+      className="rounded-xl border border-cyan-300/30 bg-cyan-900/40 px-4 py-2 text-sm text-cyan-100 disabled:opacity-40">
+      {busy?t('workspaceFolderChecking'):t('workspaceUseFolder')}</button>
+    </div>
+   </div>
+  </div>}
  </section>;
 }
