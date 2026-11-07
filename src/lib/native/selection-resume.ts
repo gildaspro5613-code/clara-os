@@ -41,6 +41,8 @@ export async function restoreNativeSelection(request:Request):Promise<Response>{
  const ordered=sessions.filter(s=>typeof s?.sessionId==='string'&&typeof s.updatedAt==='string'&&Number.isFinite(Date.parse(s.updatedAt)))
   .sort((a,b)=>Date.parse(b.updatedAt)-Date.parse(a.updatedAt)).slice(0,30);
  for(const candidate of ordered){
+  // Preserve the native selector's absolute exclusion of Live/external threads.
+  if(candidate.sessionId.startsWith('external:')||candidate.sessionId==='native:listing')continue;
   try{
    const selected={workspaceId,clientId,projectId,sessionId:opaque(candidate.sessionId)};
    const data=await nativeCommand({...scope,sessionId:selected.sessionId},'read');
