@@ -57,14 +57,14 @@ test('folder candidates are filtered by current Google/SQL authority and not aut
  assert.match(route,/if\(action==='folders'\)return ok\(await work.folders/);
 });
 test('all five supported locales expose every daily Documents label',()=>{
- const fr=JSON.parse(read('src/i18n/messages/fr/documents-daily.json')) as Record<string,string>;
- assert.equal(Object.keys(fr).length,44);
+ const fr=(JSON.parse(read('src/i18n/messages/fr/index.json')) as {documents:Record<string,string>}).documents;
+ assert.equal(Object.keys(fr).filter(k=>k.startsWith('workspace')).length,44);
  for(const lang of ['en','es','de','it']){
-  const other=JSON.parse(read('src/i18n/messages/'+lang+'/documents-daily.json')) as Record<string,string>;
+  const other=(JSON.parse(read('src/i18n/messages/'+lang+'/index.json')) as {documents:Record<string,string>}).documents;
   assert.deepEqual(Object.keys(other).sort(),Object.keys(fr).sort(),lang);
   for(const [key,value] of Object.entries(other))assert.ok(value.trim().length>2,key+' '+lang);
  }
  const request=read('src/i18n/request.ts');
- assert.match(request,/documents-daily.json/);
- assert.match(request,/documents: \{\.\.\.\(baseMessages.documents as Record<string, unknown>\), \.\.\.dailyDocumentsModule.default\}/);
+ assert.doesNotMatch(request,/documents-daily\.json/);
+
 });
