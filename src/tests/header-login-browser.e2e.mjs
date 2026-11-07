@@ -29,6 +29,16 @@ test('header cleanup: all pages × five locales × desktop/mobile; existing cont
    }
    // Same existing user, distinct disposable session E; no enrollment or identity changes.
    await context.addCookies([{name:'clara_auth_session',value:'E'.repeat(43),url:origin},{name:'NEXT_LOCALE',value:'fr',url:origin}]);
+   // A valid login without a native selection must open the existing picker.
+   // Mobile's sidebar is initially inert, so this exercises its activation.
+   await page.goto(origin+'/missions');
+   await page.locator('[data-native-authority="scope"]').waitFor();
+   await page.locator('[data-native-resume-open]').click();
+   const initialPicker=page.locator('[data-native-context-dialog]');
+   await initialPicker.waitFor({state:'visible'});
+   await initialPicker.press('Escape');
+   const mobileToggle=page.locator('button[aria-controls="clara-navigation"]');
+   if(await mobileToggle.isVisible()&&await mobileToggle.getAttribute('aria-expanded')==='true')await mobileToggle.click();
    const make=async projectId=>{const r=await context.request.post(origin+'/api/native/runtime',{headers:{origin},data:{action:'createSession',workspaceId:'w',clientId:'c1',projectId}});assert.equal(r.status(),200);return (await r.json()).data;};
    const one=await make('p1'),two=await make('p2');lastScope=one;
    await page.goto(origin+'/missions');assert.equal(await page.locator('[data-context-loading]').count(),0);
