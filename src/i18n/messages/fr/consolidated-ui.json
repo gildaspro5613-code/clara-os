@@ -372,7 +372,7 @@
   "signInWelcome": "Bienvenue dans Clara OS",
   "signInDescription": "Retrouve ton espace de travail et tes outils avec ton compte Google autorisé.",
   "signInWithGoogle": "Se connecter avec Google",
-  "signInContextHelp": "Déjà connecté ? Ouvre « Espace de travail » dans le menu pour choisir ton projet et ta conversation.",
+  "signInContextHelp": "Connecte-toi pour retrouver tes projets et conversations existants. Aucun nouveau fil n’est créé.",
   "nativeResumeTitle": "Retrouver mon espace de travail",
   "nativeResumeChecking": "Clara retrouve ta dernière conversation autorisée…",
   "nativeResumeChoose": "Choisis une conversation existante pour continuer. Il n'est pas nécessaire de créer un nouveau fil.",
