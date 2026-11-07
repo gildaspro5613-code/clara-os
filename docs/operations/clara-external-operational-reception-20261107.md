@@ -2,7 +2,20 @@
 
 Périmètre : **un seul lot Clara OS**, sans fonctionnalité nouvelle, sans refonte graphique, sans déploiement Preview. Réutilise les fichiers de la PR Make #249 sans fusionner #249. Aucun secret n'est stocké dans le dépôt.
 
-## Brevo
+## Brevo — décision API-key restreinte du 07/11/2026
+
+Le propriétaire a créé et conservé hors dépôt une **clé Brevo restreinte aux lectures** contacts, campagnes emails et emails transactionnels, distincte des deux clés Make et de l'ancienne clé Clara OS à accès complet.
+
+Pour la réception depuis **Clara OS Production**, une seule nouvelle variable Vercel Secret est nécessaire : `BREVO_API_KEY`. Ne pas renseigner une clé API dans `BREVO_CLIENT_SECRET` ; la configuration OAuth historique reste optionnelle et n'est pas requise ici.
+
+Le mode API-key du client HTTP est verrouillé aux requêtes GET, avec l'en-tête `api-key`; `POST/PUT/DELETE` sont refusés avant transport. Les lectures Clara ne sont déclenchées que depuis une session native authentifiée appartenant à l'espace Mélodie Digital, sur mention explicite de Brevo et d'une catégorie parmi contacts, listes, modèles ou campagnes ; dix enregistrements maximum par lecture. Le statut Connexions ne divulgue pas la clé et distingue simple configuration de lecture réelle certifiée.
+
+**Attention :** la protection IP Brevo peut refuser des appels sortants Vercel ; ne pas la désactiver globalement sans investigation. Clé inactive 90 jours : expiration possible. Aucune mutation Brevo ni envoi n'est autorisé par ce chemin.
+
+NO-GO opérationnel jusqu'à configuration Vercel après GO de livraison et lecture réelle depuis une session Clara.
+
+### Documentation OAuth historique (non requise pour cette première réception)
+
 Le connecteur OAuth2 et les capacités READ existent déjà. Le hub Connexions affiche le statut réel de l'enregistrement et n'offre le lien de consentement que si les paramètres OAuth existent et les scopes sont exactement READ.
 
 Dans **Vercel → projet clara-os → Settings → Environment Variables → Production** (valeurs à renseigner par le propriétaire ; jamais dans GitHub ou dans une conversation) :

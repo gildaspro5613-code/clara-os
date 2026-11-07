@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Cloud, Workflow, CreditCard, Building2, ExternalLink, Settings2, ShieldCheck } from "lucide-react";
 
-type Status = { nativeGoogle?: NativeGoogleHubState; connected?: boolean; status?: string; error?: string; connectUrl?: string; scopes?: string[]; scenarioKeys?: string[]; oauthReady?: boolean; provider?: string };
+type Status = { nativeGoogle?: NativeGoogleHubState; connected?: boolean; status?: string; error?: string; connectUrl?: string; scopes?: string[]; scenarioKeys?: string[]; oauthReady?: boolean; apiKeyConfigured?: boolean; provider?: string };
 type Provider = "google" | "microsoft" | "brevo" | "make";
 
 const providers = [
@@ -19,6 +19,7 @@ const providers = [
 
 function label(ui: ReturnType<typeof useTranslations>, status?: Status) {
   if (status?.nativeGoogle) return ui(`googleHub_${status.nativeGoogle}`);
+  if (status?.provider === "brevo" && status.apiKeyConfigured) return ui("brevoApiKeyConfigured");
   if (status?.provider === "brevo" && status.connected) return ui("brevoRegistered");
   if (status?.connected) return ui("connected");
   if (status?.error?.includes("AUTH_REQUIRED")) return ui("authRequired");
@@ -29,7 +30,7 @@ function label(ui: ReturnType<typeof useTranslations>, status?: Status) {
 function detail(ui: ReturnType<typeof useTranslations>, id: Provider, state?: Status) {
   if (!state) return ui("checkingConnection");
   if (id === "google" && state.nativeGoogle) return ui(`googleHub_${state.nativeGoogle}_help`);
-  if (id === "brevo") return state.connected ? ui("brevoReadNotCertified") : state.oauthReady ? ui("brevoReadyToAuthorize") : ui("brevoOAuthMissing");
+  if (id === "brevo") return state.apiKeyConfigured ? ui("brevoApiKeyPendingVerification") : state.connected ? ui("brevoReadNotCertified") : state.oauthReady ? ui("brevoReadyToAuthorize") : ui("brevoApiKeyMissing");
   if (state.error?.includes("AUTH_REQUIRED")) return ui("signInWorkspace");
   if (state.status === "RECONNECT_REQUIRED") return ui("checkConfiguration");
   if (state.status === "UNAVAILABLE" || state.connected===undefined) return ui("unavailable");
@@ -74,7 +75,7 @@ export default function ConnectionsHub() {
       <div className="grid gap-4 md:grid-cols-2">
       {providers.map(({ id, title, icon: Icon }) => {
         const state = states[id];
-        const connectUrl = id === "microsoft" ? "/api/connections/microsoft/connect" : id === "brevo" ? (state?.oauthReady ? "/api/connections/brevo/connect" : undefined) : state?.connectUrl;
+        const connectUrl = id === "microsoft" ? "/api/connections/microsoft/connect" : id === "brevo" ? (state?.apiKeyConfigured ? undefined : state?.oauthReady ? "/api/connections/brevo/connect" : undefined) : state?.connectUrl;
         return (
           <article key={id} className="flex min-h-[285px] flex-col rounded-2xl border border-white/10 bg-white/[0.025] p-6 transition hover:border-cyan-400/20">
             <div className="flex items-start justify-between gap-4">

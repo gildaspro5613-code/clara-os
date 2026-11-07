@@ -406,5 +406,8 @@
   "brevoOAuthMissing": "Brevo OAuth doit être configuré dans Vercel avant de connecter le compte.",
   "brevoDescription": "Contacts, listes, modèles et campagnes : lecture autorisée uniquement après vérification de l'accès.",
   "studioStripeUncertified": "Studio Stripe : non certifié",
-  "studioStripeReadPending": "Lecture des paiements Studio indisponible tant que le journal et les autorisations ne sont pas validés. Aucun paiement ne peut être déclenché ici."
+  "studioStripeReadPending": "Lecture des paiements Studio indisponible tant que le journal et les autorisations ne sont pas validés. Aucun paiement ne peut être déclenché ici.",
+  "brevoApiKeyConfigured": "Clé API configurée",
+  "brevoApiKeyPendingVerification": "La clé Brevo est enregistrée côté serveur. La lecture réelle depuis Clara reste à certifier.",
+  "brevoApiKeyMissing": "Clé API Brevo manquante. La lecture sera possible après configuration dans Vercel."
 }

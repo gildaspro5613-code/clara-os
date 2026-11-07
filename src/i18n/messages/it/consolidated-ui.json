@@ -406,5 +406,8 @@
   "brevoOAuthMissing": "Configura OAuth Brevo in Vercel prima di collegare l'account.",
   "brevoDescription": "Contatti, liste, modelli e campagne: sola lettura dopo la verifica dei permessi.",
   "studioStripeUncertified": "Studio Stripe: non certificato",
-  "studioStripeReadPending": "La lettura dei pagamenti Studio resta indisponibile finché registro e autorizzazioni non sono verificati. Nessun pagamento viene avviato qui."
+  "studioStripeReadPending": "La lettura dei pagamenti Studio resta indisponibile finché registro e autorizzazioni non sono verificati. Nessun pagamento viene avviato qui.",
+  "brevoApiKeyConfigured": "Chiave API configurata",
+  "brevoApiKeyPendingVerification": "La chiave API Brevo è configurata sul server. La lettura reale da Clara non è ancora verificata.",
+  "brevoApiKeyMissing": "Chiave API Brevo mancante. Configurala in Vercel per abilitare le letture."
 }

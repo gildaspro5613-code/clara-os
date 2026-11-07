@@ -18,11 +18,9 @@ import type {
 
 export type BrevoFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
 
-export interface BrevoClientOptions {
-  accessToken: string;
-  fetch?: BrevoFetch;
-  baseUrl?: string;
-}
+type BrevoBaseOptions = {fetch?:BrevoFetch;baseUrl?:string};
+export type BrevoClientOptions = BrevoBaseOptions &
+  ({accessToken:string;apiKey?:never}|{apiKey:string;accessToken?:never});
 
 function queryString(values: object): string {
   const query = new URLSearchParams();
@@ -41,24 +39,32 @@ export class BrevoClient {
   private readonly baseUrl: string;
 
   constructor(private readonly options: BrevoClientOptions) {
-    if (!options.accessToken.trim()) throw new Error("Brevo access token is required.");
+    if (!(options.apiKey ?? options.accessToken)?.trim()) throw new Error("Brevo credential is required.");
     this.fetcher = options.fetch ?? fetch;
     this.baseUrl = (options.baseUrl ?? "https://api.brevo.com/v3").replace(/\/$/, "");
   }
 
   private async request<T>(path: string, init: RequestInit = {}): Promise<T> {
     assertRecetteExternalExecutionBlocked("brevo.api");
+    // Provider-side restrictions do not substitute for a local write guard.
+    if(this.options.apiKey && (init.method??'GET').toUpperCase()!=='GET')throw new Error('BREVO_API_KEY_READ_ONLY');
+    const headers=new Headers(init.headers);
+    headers.set('accept','application/json');
+    if(init.body)headers.set('content-type','application/json');
+    if(this.options.apiKey){
+      headers.delete('authorization');
+      headers.set('api-key',this.options.apiKey);
+    }else{
+      headers.delete('api-key');
+      headers.set('authorization',`Bearer ${this.options.accessToken}`);
+    }
     const response = await this.fetcher(`${this.baseUrl}${path}`, {
       ...init,
-      headers: {
-        accept: "application/json",
-        authorization: `Bearer ${this.options.accessToken}`,
-        ...(init.body ? { "content-type": "application/json" } : {}),
-        ...init.headers,
-      },
+      method:this.options.apiKey?'GET':init.method,
+      headers,
     });
     if (!response.ok) {
-      throw await normalizeBrevoError(response, [this.options.accessToken]);
+      throw await normalizeBrevoError(response, [this.options.apiKey??this.options.accessToken??'']);
     }
     if (response.status === 204 || response.headers.get("content-length") === "0") {
       return undefined as T;
