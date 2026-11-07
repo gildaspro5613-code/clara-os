@@ -11,7 +11,12 @@ type BrevoEnv = {
   BREVO_REDIRECT_URI?: string;
   BREVO_OAUTH_SCOPES?: string;
 };
-export function brevoReadOAuthStatus(env: BrevoEnv = process.env): {ready:boolean;scopes:string[]} {
+export function brevoReadOAuthStatus(env: BrevoEnv = {
+  BREVO_CLIENT_ID: process.env.BREVO_CLIENT_ID,
+  BREVO_CLIENT_SECRET: process.env.BREVO_CLIENT_SECRET,
+  BREVO_REDIRECT_URI: process.env.BREVO_REDIRECT_URI,
+  BREVO_OAUTH_SCOPES: process.env.BREVO_OAUTH_SCOPES,
+}): {ready:boolean;scopes:string[]} {
   const scopes=(env.BREVO_OAUTH_SCOPES??'').split(/[ ,]+/).filter(Boolean);
   const allowed=new Set<string>(BREVO_ALLOWED_READ_SCOPES);
   const configured=Boolean(env.BREVO_CLIENT_ID?.trim() && env.BREVO_CLIENT_SECRET?.trim() && env.BREVO_REDIRECT_URI?.trim());
