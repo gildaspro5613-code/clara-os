@@ -13,13 +13,13 @@ test('daily Documents surface includes only native, user-confirmed write operati
  assert.match(ui,/nativePost\('prepare',\{input\}\)/);
  assert.match(ui,/nativePost\('execute',\{operationId:review.operationId,reviewHash:review.reviewHash,confirm:true\}\)/);
  assert.match(ui,/disabled=\{busy\|\|!confirm\|\|!writable\}/);
- assert.doesNotMatch(ui,/window\\.confirm\\(/);
+ assert.doesNotMatch(ui,/window\.confirm\(/);
  assert.match(ui,/role="dialog" aria-modal="true"/);
- assert.match(ui,/if\\(!folder\\|\\|busy\\|\\|!writable\\)return/);
- assert.match(ui,/const refreshed=await reload\\(\\)/);
+ assert.match(ui,/if\(!folder\|\|busy\|\|!writable\)return/);
+ assert.match(ui,/const refreshed=await reload\(\)/);
  assert.match(ui,/refreshed.capabilities.selectedFolderId!==folder.id/);
  assert.match(ui,/folderSearch/);
- assert.match(ui,/matchingFolders.slice\\(0,folderShown\\)/);
+ assert.match(ui,/matchingFolders.slice\(0,folderShown\)/);
  assert.match(ui,/MAX_UPLOAD=2\*1024\*1024/);
  assert.doesNotMatch(ui,/\/api\/documents.*method:'POST'/);
  assert.match(ui,/nativePost\('select',\{kind:'folder',resourceId:folder.id\}\)/);
