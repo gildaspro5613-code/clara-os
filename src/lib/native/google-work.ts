@@ -83,6 +83,27 @@ export class NativeGoogleWork {
   const out=[];for(const b of await this.bindings()){try{if(b.kind==='calendar'){const c=await this.calendar(b.metadata.id);out.push({id:c.id,name:c.summary,kind:'calendar',role:c.accessRole});}else if(b.metadata.kind==='folder'){const f=await this.file(b.metadata.id,'folder');out.push({id:f.file.id,name:f.file.name,kind:'folder'});}else{const f=await this.file(b.metadata.fileId,'write');out.push({id:f.file.id,name:f.file.name,kind:'file',mimeType:f.file.mimeType});}}catch(error){const status=error instanceof RegistryError?error.status:(error as {response?:{status?:number}})?.response?.status;if(!status||status>=500)throw new RegistryError(503,'GOOGLE_PROVIDER_UNAVAILABLE');/* Withhold inaccessible metadata. */}}
   return {resources:out};
  }
+
+  /** Read-only candidate discovery: a provider-visible folder is never an OS grant.
+   * Candidates are filtered by the existing workspace/project SQL authority gate. */
+  async folders(pageToken?:string){
+   this.owner();const scopes=await this.scopes('drive');
+   if(pageToken&&(pageToken.length>512||/[\x00-\x1f]/.test(pageToken)))throw new RegistryError(400,'GOOGLE_WORK_INVALID');
+   const listing=await this.clients.drive.files.list({
+    q:"mimeType = 'application/vnd.google-apps.folder' and trashed = false",
+    pageSize:50,...(pageToken?{pageToken}:{}),
+    fields:'nextPageToken,files(id,name,version,isAppAuthorized,capabilities(canAddChildren))',
+    spaces:'drive',supportsAllDrives:true,includeItemsFromAllDrives:true,
+   },{timeout:15_000,retry:false});
+   const folders=[] as Array<{id:string;name:string}>;
+   for(const file of listing.data.files??[]){
+    if(!file.id||!file.name||file.capabilities?.canAddChildren!==true)continue;
+    if(!scopes.includes(GOOGLE_SCOPES.existing[0])&&file.isAppAuthorized!==true)continue;
+    const candidate=await googleWorkCommand('candidate',{connectionId:this.connectionId,kind:'folder',id:file.id});
+    if(candidate.allowed)folders.push({id:file.id,name:file.name});
+   }
+   return {folders,nextPageToken:listing.data.nextPageToken??null};
+  }
  async calendars(pageToken?:string){
   this.owner();await this.scopes('calendar');const r=await this.clients.calendar.calendarList.list({maxResults:50,pageToken,fields:'items(id,summary,accessRole,deleted),nextPageToken'},{timeout:15_000,retry:false});const calendars=[];for(const c of r.data.items??[]){if(!c.deleted&&['owner','writer','reader'].includes(c.accessRole??'')&&(await googleWorkCommand('candidate',{connectionId:this.connectionId,kind:'calendar',id:c.id})).allowed)calendars.push(c);}return {calendars,nextPageToken:r.data.nextPageToken??null};
  }

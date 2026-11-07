@@ -9,6 +9,7 @@ import { Brain, Download, ExternalLink, FileText, Folder, FolderPlus, Search, Up
 import NativeDocumentsPanel from "@/components/native/NativeDocumentsPanel";
 import {useLocale} from "next-intl";
 import CanonicalArchivesPanel from "@/components/documents/CanonicalArchivesPanel";
+import NativeDocumentDailyPanel from "@/components/documents/NativeDocumentDailyPanel";
 
 import MainLayout from "@/components/layout/MainLayout";
 
@@ -256,6 +257,9 @@ export default function DocumentsPage() {
     }
   }
 
+  function exportHref(file: DocumentFile,format:'pdf'|'docx'|'txt'){
+    return '/api/documents?'+new URLSearchParams({action:'export',fileId:file.id,format}).toString();
+  }
   function downloadHref(file: DocumentFile) {
     const params = new URLSearchParams({ action: "download", fileId: file.id, fileName: file.name });
     if (file.mimeType) params.set("mimeType", file.mimeType);
@@ -279,6 +283,8 @@ export default function DocumentsPage() {
             </div>
           </div>
 
+          <NativeDocumentDailyPanel source={selected?{name:selected.name,content:selected.content}:null}
+             onSaved={()=>void loadDocuments(activeSearch,activeFolderId)} />
           {readOnly&&<p className="mb-5 text-sm text-slate-400">{t("scopeNote")}</p>}
           <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
             <button type="button" disabled={working !== null} onClick={() => navigateTo(-1)} className="text-cyan-300">{readOnly?ui("nativeDocuments"):ui("myDrive")}</button>
@@ -327,7 +333,12 @@ export default function DocumentsPage() {
                     <button type="button" disabled={working !== null} onClick={() => void handleAnalyze(file)} className="flex items-center justify-between rounded-xl border border-cyan-300/15 bg-cyan-300/[0.04] px-4 py-2.5 text-xs text-cyan-50/75 transition hover:bg-cyan-300/[0.08] disabled:opacity-50">
                       {working === `read:${file.id}` ? ui("reading") : ui("readWithClara")}<Brain size={14} />
                     </button>
-                    <a href={downloadHref(file)} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-xs text-white/60 transition hover:bg-white/[0.06] hover:text-white">{ui("download")}<Download size={14} /></a>
+                    {file.mimeType==='application/vnd.google-apps.document'?
+                      <div className="flex flex-wrap gap-2" data-document-export-formats>
+                        {(['pdf','docx','txt'] as const).map(format=>
+                          <a key={format} href={exportHref(file,format)} className="rounded-xl border border-white/10 px-3 py-2 text-xs text-cyan-100 hover:bg-white/[0.06]">{format==='docx'?'Word':format.toUpperCase()}</a>)}
+                      </div>:
+                      <a href={downloadHref(file)} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-xs text-white/60 transition hover:bg-white/[0.06] hover:text-white">{ui("download")}<Download size={14} /></a>}
                     {file.url && <a href={file.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-xs text-white/60 transition hover:bg-white/[0.06] hover:text-white">{t("open")}<ExternalLink size={14} /></a>}
                     </>}{!readOnly&&<button type="button" disabled={working !== null} onClick={() => startMove(file)} className="rounded-xl border border-white/10 px-4 py-2.5 text-left text-xs text-white/60">{ui("moveToAFolder")}</button>}
                   </div>
