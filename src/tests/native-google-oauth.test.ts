@@ -7,6 +7,7 @@ import {OAuthCallbackService} from '@/lib/auth/oauth/service';
 import {OAuthProviderRegistry} from '@/lib/auth/oauth/registry';
 import {CredentialStore} from '@/lib/connections/credential-store';
 import {ConnectionStatus} from '@/lib/connections/connection';
+import {googleConsentScopes,googleConsentRedirectPath} from '@/lib/native/google-consent-plan';
 
 test('Google connector reuses canonical RS256 issuer/subject validation; nonce, audience, expiry, forged keys and account substitution are rejected before credential mutation',async t=>{
  const pair=generateKeyPairSync('rsa',{modulusLength:2048}),jwk={...pair.publicKey.export({format:'jwk'}),kid:'isolated-key',use:'sig'};
@@ -25,4 +26,23 @@ test('Google connector reuses canonical RS256 issuer/subject validation; nonce, 
  await assert.rejects(()=>new OAuthCallbackService(providers,repo,credentials).complete({provider:'google',workspaceId:'w',redirectUri:'https://isolated.invalid/callback',state,nonce:claims.nonce,code:'synthetic',validateTokens:async tokens=>{const identity=await verifyGoogleIdToken(tokens.idToken!,claims.nonce,'synthetic-client');if(identity.sub!==claims.sub)throw Error('NATIVE_GOOGLE_PRINCIPAL_CHANGED');}}),/PRINCIPAL_CHANGED/);
  assert.equal(exchanges,1);assert.equal(writes,0);assert.equal(statusWrites,0);assert.ok(jwksCalls>=10);
  for(const expiresAt of [NaN,Infinity,Date.now()-1]){const invalid=signOAuthState({provider:'google',workspaceId:'w',connectionId:'connection',nonce:claims.nonce,expiresAt,redirectPath:'/documents'},'test-state-key');assert.throws(()=>verifyOAuthState(invalid,{provider:'google',nonce:claims.nonce},'test-state-key'));}
+});
+
+
+test('Google Agenda/Drive consent: new grants are separate, old grants and refresh scopes retained, redirects allowlisted',()=>{
+ const calendar=['https://www.googleapis.com/auth/calendar.calendarlist.readonly','https://www.googleapis.com/auth/calendar.events'];
+ const oldDrive=['openid','https://www.googleapis.com/auth/drive.readonly'];
+ assert.deepEqual(googleConsentScopes('read'),['openid']);
+ assert.deepEqual(googleConsentScopes('agenda'),['openid',...calendar]);
+ assert.deepEqual(googleConsentScopes('drive'),['openid','https://www.googleapis.com/auth/drive.file']);
+ assert.deepEqual(googleConsentScopes('existing'),['openid','https://www.googleapis.com/auth/drive']);
+ assert.deepEqual(googleConsentScopes('agenda',oldDrive),[...oldDrive,...calendar]);
+ assert.deepEqual(googleConsentScopes('drive',['openid',...calendar]),['openid',...calendar,'https://www.googleapis.com/auth/drive.file']);
+ assert.deepEqual(googleConsentScopes('reconnect',oldDrive),oldDrive);
+ assert.equal(googleConsentRedirectPath('agenda'),'/agenda');
+ assert.equal(googleConsentRedirectPath('drive'),'/documents');
+ assert.equal(googleConsentRedirectPath('reconnect','agenda'),'/agenda');
+ assert.equal(googleConsentRedirectPath('reconnect','drive'),'/documents');
+ for(const path of ['/api/connections/google/callback','//attacker.invalid','https://attacker.invalid','/agenda?token=secret','../'])assert.throws(()=>googleConsentRedirectPath('reconnect',path));
+ assert.throws(()=>googleConsentScopes('reconnect',undefined));
 });
