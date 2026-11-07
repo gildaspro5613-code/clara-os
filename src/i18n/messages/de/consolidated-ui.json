@@ -399,5 +399,8 @@
   "mailVisualSignature": "Mélodie Digital Signatur",
   "mailVisualSync": "Ordner und Synchronisierung",
   "mailVisualApprovals": "Versandfreigabe",
-  "nativeChatFinishedWithError": "Diese Anfrage wurde nicht abgeschlossen. Du kannst in diesem Gespräch fortfahren."
+  "nativeChatFinishedWithError": "Diese Anfrage wurde nicht abgeschlossen. Du kannst in diesem Gespräch fortfahren.",
+  "documentClaraAnalysis": "Claras Analysen",
+  "documentNoAnalysis": "Noch keine Dokumente analysiert.",
+  "documentWorkspaceSettings": "Google-Verbindung und erweiterte Vorgänge"
 }

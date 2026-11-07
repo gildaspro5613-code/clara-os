@@ -399,5 +399,8 @@
   "mailVisualSignature": "Mélodie Digital signature",
   "mailVisualSync": "Folders and synchronization",
   "mailVisualApprovals": "Sending approval",
-  "nativeChatFinishedWithError": "This request did not complete. You can continue in this thread."
+  "nativeChatFinishedWithError": "This request did not complete. You can continue in this thread.",
+  "documentClaraAnalysis": "Clara's analyses",
+  "documentNoAnalysis": "No documents have been analyzed yet.",
+  "documentWorkspaceSettings": "Google connection and advanced operations"
 }

@@ -62,7 +62,7 @@ test("browser: search and document reading display text and Brain recommendation
   try {
     await h.page.locator('form input[type="text"]').fill("Rapport");
     await h.page.locator('form button[type="submit"]').click();
-    await h.page.getByText("Résultats de recherche dans Google Drive : Rapport").waitFor();
+    await h.page.getByText("Résultats pour « Rapport »").waitFor();
     await article(h.page, "Rapport.pdf").getByRole("button", { name: "Lire avec Clara" }).click();
     await h.page.locator("pre").getByText("Texte PDF extrait").waitFor();
     assert.equal(await h.page.getByText("Recommandation documentaire", { exact: true }).isVisible(), true);

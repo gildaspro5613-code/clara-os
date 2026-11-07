@@ -399,5 +399,8 @@
   "mailVisualSignature": "Firma Mélodie Digital",
   "mailVisualSync": "Carpetas y sincronización",
   "mailVisualApprovals": "Aprobación de envíos",
-  "nativeChatFinishedWithError": "Esta solicitud no se ha completado. Puedes continuar en esta conversación."
+  "nativeChatFinishedWithError": "Esta solicitud no se ha completado. Puedes continuar en esta conversación.",
+  "documentClaraAnalysis": "Análisis de Clara",
+  "documentNoAnalysis": "Todavía no hay documentos analizados.",
+  "documentWorkspaceSettings": "Conexión Google y operaciones avanzadas"
 }

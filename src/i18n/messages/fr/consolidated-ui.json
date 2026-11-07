@@ -399,5 +399,8 @@
   "mailVisualSignature": "Signature Mélodie Digital",
   "mailVisualSync": "Dossiers et synchronisation",
   "mailVisualApprovals": "Validation des envois",
-  "nativeChatFinishedWithError": "Cette demande n’a pas abouti. Tu peux poursuivre dans ce fil."
+  "nativeChatFinishedWithError": "Cette demande n’a pas abouti. Tu peux poursuivre dans ce fil.",
+  "documentClaraAnalysis": "Analyses de Clara",
+  "documentNoAnalysis": "Aucun document analysé pour le moment.",
+  "documentWorkspaceSettings": "Connexion Google et opérations avancées"
 }
