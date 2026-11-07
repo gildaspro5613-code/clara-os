@@ -25,6 +25,10 @@ test('native conversation UI: immutable Mission/client, lost acknowledgement + r
  const ambiguous=await call(auth,'/api/native/runtime?resume=1');
  assert.equal(ambiguous.status,200);
  assert.equal((await ambiguous.json()).restored,false,'Multiple authorized clients/projects require an explicit choice; never create a session');
+ const staleSelection=await call(a.cookie,'/api/native/runtime?resume=1');
+ assert.equal(staleSelection.status,200);assert.equal((await staleSelection.json()).restored,false,'An existing selection is never silently replaced');
+ const expiredAuth=await call('clara_auth_session='+'X'.repeat(43),'/api/native/runtime?resume=1');
+ assert.equal(expiredAuth.status,401,'A nonexistent/expired authenticated session must still require sign-in');
  const mission=async(scope,title)=>{const r=await call(scope.cookie,'/api/native/runtime',{action:'createMission',title,objective:title});assert.equal(r.status,200,await r.clone().text());return (await r.json()).mission.id;};
  const ma=await mission(a,'LOT4BIS_MISSION_A'),mb=await mission(b,'LOT4BIS_MISSION_B');
  assert.equal((await call(a.cookie,'/api/clara/chat',{operationId:randomUUID(),message:'LOT4BIS_TURN_A',sessionId:a.sessionId})).status,200);
