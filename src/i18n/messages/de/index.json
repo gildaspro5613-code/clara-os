@@ -161,15 +161,19 @@
     }
   },
   "documents": {
-    "subtitle": "Zugriff auf Dokumente in Ihrem Google-Drive-Arbeitsbereich.",
-    "searchPlaceholder": "Dokument suchen…",
-    "search": "Suchen",
-    "loading": "Dokumente werden geladen…",
-    "loadError": "Dokumente konnten nicht geladen werden.",
-    "empty": "Keine Dokumente gefunden.",
-    "open": "Öffnen",
-    "title": "Dokumente"
-  },
+  "subtitle": "Sieh dir mit Clara die für deine Mission freigegebenen Dokumente an.",
+  "searchPlaceholder": "Dokument suchen…",
+  "search": "Suchen",
+  "loading": "Dokumente werden geladen…",
+  "loadError": "Dokumente konnten nicht geladen werden.",
+  "empty": "Keine Dokumente gefunden.",
+  "open": "Öffnen",
+  "title": "Dokumente",
+  "scopeNote": "Für diese Mission freigegebene Dokumente. Andere Google-Drive-Dateien werden hier nicht angezeigt.",
+  "emptyAuthorized": "Für diese Mission sind noch keine Dokumente freigegeben.",
+  "emptySearch": "Keine freigegebenen Dokumente entsprechen der Suche.",
+  "searchResults": "Ergebnisse für „{query}“"
+},
   "telephony": {
     "subtitle": "Claras Telefonleitung, direkt aus Clara OS.",
     "office": "Clara Office",

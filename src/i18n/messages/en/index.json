@@ -161,15 +161,19 @@
     }
   },
   "documents": {
-    "subtitle": "Access documents in your Google Drive workspace.",
-    "searchPlaceholder": "Search for a document…",
-    "search": "Search",
-    "loading": "Loading documents…",
-    "loadError": "Unable to load documents.",
-    "empty": "No documents found.",
-    "open": "Open",
-    "title": "Documents"
-  },
+  "subtitle": "Read your mission's authorized documents with Clara.",
+  "searchPlaceholder": "Search for a document…",
+  "search": "Search",
+  "loading": "Loading documents…",
+  "loadError": "Unable to load documents.",
+  "empty": "No documents found.",
+  "open": "Open",
+  "title": "Documents",
+  "scopeNote": "Documents authorized for this mission. Other Google Drive files are not shown here.",
+  "emptyAuthorized": "No documents are authorized in this mission yet.",
+  "emptySearch": "No authorized documents match your search.",
+  "searchResults": "Results for “{query}”"
+},
   "telephony": {
     "subtitle": "Clara’s phone line, directly from Clara OS.",
     "office": "Clara Office",
