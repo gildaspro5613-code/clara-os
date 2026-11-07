@@ -61,7 +61,7 @@ test('interface receipt: explicit business flow, responsive navigation, five lan
    for(const path of pages){
     const response=await page.goto(origin+'/'+path);assert.equal(response.status(),200,device+' '+path);
     assert.equal(await page.locator('[data-context-loading], [data-cockpit-context]').count(),0);
-    assert.equal(await page.locator('[data-native-authority="locked"]').count(),0,path);
+    assert.equal(await page.locator('[data-native-authority]').count(),0,path);
     assert.equal(await page.locator('aside a[aria-current="page"]').getAttribute('href'),'/'+path);
     assert.ok(await page.locator('#main-workspace').evaluate(e=>e.scrollWidth<=e.clientWidth+1),device+' '+path+' overflows');
     if(path==='clara')await page.getByRole('log').getByText(message,{exact:true}).waitFor();

@@ -29,6 +29,16 @@ test('header cleanup: all pages × five locales × desktop/mobile; existing cont
    }
    // Same existing user, distinct disposable session E; no enrollment or identity changes.
    await context.addCookies([{name:'clara_auth_session',value:'E'.repeat(43),url:origin},{name:'NEXT_LOCALE',value:'fr',url:origin}]);
+   // A valid login without a native selection must open the existing picker.
+   // Mobile's sidebar is initially inert, so this exercises its activation.
+   await page.goto(origin+'/missions');
+   await page.locator('[data-native-authority="scope"]').waitFor();
+   await page.locator('[data-native-resume-open]').click();
+   const initialPicker=page.locator('[data-native-context-dialog]');
+   await initialPicker.waitFor({state:'visible'});
+   await initialPicker.press('Escape');
+   const mobileToggle=page.locator('button[aria-controls="clara-navigation"]');
+   if(await mobileToggle.isVisible()&&await mobileToggle.getAttribute('aria-expanded')==='true')await mobileToggle.click();
    const make=async projectId=>{const r=await context.request.post(origin+'/api/native/runtime',{headers:{origin},data:{action:'createSession',workspaceId:'w',clientId:'c1',projectId}});assert.equal(r.status(),200);return (await r.json()).data;};
    const one=await make('p1'),two=await make('p2');lastScope=one;
    await page.goto(origin+'/missions');assert.equal(await page.locator('[data-context-loading]').count(),0);
@@ -45,7 +55,7 @@ test('header cleanup: all pages × five locales × desktop/mobile; existing cont
     await context.addCookies([{name:'NEXT_LOCALE',value:locale,url:origin}]);
     for(const path of pages){
      const response=await page.goto(origin+'/'+path);assert.equal(response.status(),200);
-     assert.equal(await page.locator('[data-native-authority=locked]').count(),0,`${locale} /${path}`);
+     assert.equal(await page.locator('[data-native-authority]').count(),0,`${locale} /${path}: authorized pages must not enter any recovery/sign-in state`);
      assert.equal(await page.locator('[data-context-loading], [data-cockpit-context]').count(),0,`No automatically mounted selector on /${path}`);
      assert.equal(await page.locator('#main-workspace .native-context').count(),0);
      assert.ok(await page.locator('#main-workspace').evaluate(e=>e.scrollWidth<=e.clientWidth+1),`${format} /${path}`);
@@ -66,7 +76,7 @@ test('header cleanup: all pages × five locales × desktop/mobile; existing cont
   }
   // Refusals remain locked; changing the entry screen grants no access.
   for(const token of ['', 'invalid','D'.repeat(43)]){
-   const context=await contextFor({width:390,height:844});if(token)await context.addCookies([{name:'clara_auth_session',value:token,url:origin}]);const page=await context.newPage();await page.goto(origin+'/missions');await page.locator('[data-native-authority=locked]').waitFor();assert.ok([401,403].includes((await context.request.get(origin+'/api/native/runtime?'+new URLSearchParams(lastScope))).status()));await context.close();
+   const context=await contextFor({width:390,height:844});if(token)await context.addCookies([{name:'clara_auth_session',value:token,url:origin}]);const page=await context.newPage();await page.goto(origin+'/missions');await page.locator(`[data-native-authority=${token==='D'.repeat(43)?'scope':'signIn'}]`).waitFor();assert.ok([401,403].includes((await context.request.get(origin+'/api/native/runtime?'+new URLSearchParams(lastScope))).status()));await context.close();
   }
   assert.equal(readFileSync('/tmp/native-fixture-global-attempts-'+db,'utf8'),'');
   if(evidence)writeFileSync(evidence+'/matrix.json',JSON.stringify({provider:'Google authentication not exercised against real Google; existing routes unchanged',matrix},null,2)+'\n');

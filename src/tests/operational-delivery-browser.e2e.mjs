@@ -44,7 +44,7 @@ test('delivery UI: official logo, business navigation, private advanced controls
     await closeContextSelection(page);
    }
    if(path==='documents')await page.getByText(/\[NATIVE_GOOGLE_EXPLICIT_SELECTION_REQUIRED\]/).waitFor();
-   assert.equal(await page.locator('[data-native-authority="locked"]').count(),0,path);
+   assert.equal(await page.locator('[data-native-authority]').count(),0,path);
    await page.screenshot({path:out+'/'+(path||'cockpit')+'-desktop.png',fullPage:true});
    results.push({path:'/'+path,status:'PASS rendered authenticated synthetic context',scope:'page rendering, not provider certification'});
   }

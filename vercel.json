@@ -30,7 +30,8 @@
       "fix/mail-visual-finalization-20261104": false,
       "fix/agenda-operational-clarity-20261106": false,
       "fix/agenda-calendar-views-20261106": false,
-      "fix/operational-chat-recovery-252-20261106": false
+      "fix/operational-chat-recovery-252-20261106": false,
+      "fix/native-session-entry-recovery-20261107": false
     }
   }
 }

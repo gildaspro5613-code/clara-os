@@ -17,7 +17,7 @@ test('real browser: disabled telephony cannot launch on Enter; native Make/Brevo
   assert.equal(callPosts,0);assert.ok(await page.getByRole('button',{name:'Appeler',exact:true}).isDisabled());
   for(const path of ['/api/connections/make/status','/api/connections/brevo']){const r=await context.request.get(origin+path);assert.equal(r.status(),503);assert.equal((await r.json()).code,'NATIVE_SCOPED_OPERATION_UNAVAILABLE');}
   for(const path of ['/api/elevenlabs/session']){const r=await fetch(origin+path);assert.equal(r.status,403);}
-  await page.goto(origin+'/');assert.equal(await page.locator('[data-native-authority="locked"]').count(),0);await page.getByText('Résumé de la mission active',{exact:true}).waitFor();
+  await page.goto(origin+'/');assert.equal(await page.locator('[data-native-authority]').count(),0);await page.getByText('Résumé de la mission active',{exact:true}).waitFor();
   writeFileSync(out+'/provider-surface-result.json',JSON.stringify({status:'PASS',telephonyButtonDisabled:true,keyboardPostCount:callPosts,nativeMakeBrevoFenced:true,anonymousVoiceDenied:true,cockpit:true,realProviderCalls:0},null,2));
  }finally{await browser.close();}
 });

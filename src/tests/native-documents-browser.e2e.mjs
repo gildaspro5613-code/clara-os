@@ -52,7 +52,7 @@ test('documentary browser E2E: canonical selection → mission → pinned OAuth 
   const download=await call('/api/documents?action=download&fileId=document-a');assert.equal(download.status,200);assert.ok((await download.arrayBuffer()).byteLength>100);
   const persisted=await (await call('/api/documents?action=references')).json();assert.equal(persisted.references[0].available,true);assert.ok(persisted.references[0].analysis.answer);
   for(const path of ['/journal','/','/clara']){
-   await page.goto(origin+path);assert.equal(await page.locator('[data-native-authority="locked"]').count(),0);
+   await page.goto(origin+path);assert.equal(await page.locator('[data-native-authority]').count(),0);
    if(path==='/journal')assert.ok((await page.locator('body').innerText()).includes('DOCUMENT_RECEIVED'));
    else{
     if(path==='/'){

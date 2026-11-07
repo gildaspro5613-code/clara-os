@@ -89,7 +89,7 @@ test('781 composition Cockpit: actual native mission, five languages and respons
   const digest=createHash('sha256').update('A'.repeat(43)).digest('hex');
   t.after(()=>pg(`UPDATE clara_auth_sessions SET revoked_at=NULL WHERE token_hash='${digest}'`));
   pg(`UPDATE clara_auth_sessions SET revoked_at=NOW() WHERE token_hash='${digest}'`);
-  await page.reload();await page.locator('[data-native-authority="locked"]').waitFor();assert.equal(await page.locator('[data-cockpit-hero]').count(),0);
-  await context.clearCookies();await page.goto(origin);await page.locator('[data-native-authority="locked"]').waitFor();assert.equal(await page.locator('[data-cockpit-hero]').count(),0);
+  await page.reload();await page.locator('[data-native-authority="scope"]').waitFor();await page.locator('a[href="/api/auth/google/start"]').waitFor();assert.equal(await page.locator('[data-cockpit-hero]').count(),0);assert.equal((await page.request.get(origin+'/api/native/runtime')).status(),403);
+  await context.clearCookies();await page.goto(origin);await page.locator('[data-native-authority="signIn"]').waitFor();assert.equal(await page.locator('[data-cockpit-hero]').count(),0);
  }finally{await browser.close();}
 });
