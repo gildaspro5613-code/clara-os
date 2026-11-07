@@ -7,6 +7,7 @@ import {registryContext,opaque,RegistryError} from '@/lib/canonical/registry';
 import {fields,registryBody,sameOrigin} from '@/lib/canonical/http';
 import {nativeCommand,nativeRequest,nativeContext,writableNativeContext,nativeMission} from '@/lib/native/scoped-context';
 import {nativeFailure,nativeSessionView} from '@/lib/native/authority';
+import {nativeSelectionCookie,restoreNativeSelection} from '@/lib/native/selection-resume';
 export const dynamic='force-dynamic';
 export async function POST(request:Request){
  try{
@@ -20,7 +21,7 @@ export async function POST(request:Request){
    if(capabilities.protocolVersion!==2)throw new RegistryError(503,'NATIVE_CONVERSATION_MIGRATION_REQUIRED');
    const result=await nativeCommand(scope,action==='createSession'?'create':'read');
    const selected={workspaceId:scope.workspaceId,clientId:scope.clientId,projectId:scope.projectId,sessionId:action==='createSession'?String(result.sessionId):scope.sessionId};
-   return Response.json({success:true,data:selected},{headers:{'Cache-Control':'no-store','Set-Cookie':`clara_native_selection=${encodeURIComponent(JSON.stringify(selected))}; Path=/; HttpOnly; Secure; SameSite=Lax`}});
+   return Response.json({success:true,data:selected},{headers:{'Cache-Control':'no-store','Set-Cookie':nativeSelectionCookie(selected)}});
   }
   return await nativeRequest(request,async()=>{
    const ctx=writableNativeContext();
@@ -88,6 +89,7 @@ export async function POST(request:Request){
 }
 export async function GET(request:Request){
  try{
+  if(new URL(request.url).searchParams.get('resume')==='1')return await restoreNativeSelection(request);
   const {nativeSelectors}=await import('@/lib/native/authority');
   const scope=nativeSelectors(request);
   if(new URL(request.url).searchParams.get('list')==='1')return Response.json({success:true,data:await nativeCommand(scope,'list')},{headers:{'Cache-Control':'no-store'}});
