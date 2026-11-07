@@ -8,6 +8,7 @@ import {businessDayKey,businessDayWindow,formatBusinessDate,todayCalendarUrl,age
 import {calendarReadErrorKey,agendaPageReadErrorKey} from '@/modules/agenda/calendar-read-state';
 import AgendaWidget from '@/components/cockpit/widgets/agenda/AgendaWidget';
 import AgendaStage from '@/modules/agenda/AgendaStage';
+import AgendaCalendarSetup from '@/modules/agenda/AgendaCalendarSetup';
 
 test('business date is Paris day independently of the host and browser timezone',()=>{
  assert.equal(businessDayKey(new Date('2026-11-03T22:59:59Z')),'2026-11-03');
@@ -36,7 +37,7 @@ test('SSR has a deterministic date placeholder and closed settings; no provider 
  try{for(const component of [AgendaWidget,AgendaStage])for(const locale of ['fr','en','es','de','it']){
   process.env.TZ='UTC';const utc=render(component,locale);process.env.TZ='America/Los_Angeles';assert.equal(render(component,locale),utc);
   if(component===AgendaWidget)assert.match(utc,/data-business-date="true">—<\/time>/);assert.ok(!utc.includes('MISSING_MESSAGE'));
-  if(component===AgendaStage){assert.ok(!utc.includes('<details'));assert.ok(!utc.includes('id="native-google-document-authority"'));assert.ok(utc.includes('data-agenda-view="week"'));assert.ok(utc.includes('/connexions#google-agenda-administration'));}
+  if(component===AgendaStage){assert.ok(!utc.includes('<details'));assert.ok(!utc.includes('id="native-google-document-authority"'));assert.ok(utc.includes('data-agenda-view="week"'));assert.ok(utc.includes('href="/clara"'));assert.ok(!utc.includes('/connexions#google-agenda-administration'));}
  }}finally{if(previous===undefined)delete process.env.TZ;else process.env.TZ=previous;}
 });
 
@@ -53,4 +54,17 @@ test('Agenda consent wording changes no Cockpit state and never hides a refusal'
  assert.equal(calendarReadErrorKey(403,'GOOGLE_CONSENT_REQUIRED'),'agendaAccessDenied');
  assert.equal(agendaPageReadErrorKey(403,'REGISTRY_ACCESS_DENIED'),'agendaAccessDenied');
  assert.equal(agendaPageReadErrorKey(401,'AUTHENTICATED_OS_SESSION_REQUIRED'),'agendaSessionExpired');
+});
+
+test('one-time calendar picker remains closed on SSR: no implicit account, calendar, provider call, or write',()=>{
+ for(const locale of ['fr','en','es','de','it']){
+  const messages=JSON.parse(readFileSync(`src/i18n/messages/${locale}/index.json`,'utf8'));
+  const html=renderToString(createElement(NextIntlClientProvider,{locale,timeZone:'Europe/Paris',messages},createElement(AgendaCalendarSetup)));
+  assert.ok(html.includes('data-agenda-calendar-setup'),locale);
+  assert.ok(html.includes('aria-busy="true"'),locale);
+  assert.ok(!html.includes('<select'),locale);
+  assert.ok(!html.includes('google-calendar-id'),locale);
+  assert.ok(!html.includes('/api/native/google/work'),locale);
+  assert.ok(!html.includes('MISSING_MESSAGE'),locale);
+ }
 });
