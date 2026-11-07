@@ -378,6 +378,7 @@
   "nativeResumeChoose": "Elige una conversación existente para continuar. No hace falta crear un nuevo hilo.",
   "nativeResumeUnavailable": "Clara no puede verificar tu espacio ahora. Este error no requiere volver a iniciar sesión con Google.",
   "nativeResumeRetry": "Reintentar",
+  "nativeResumeOpen": "Elegir una conversación existente",
   "googleAccountNumber": "Cuenta de Google {number}",
   "googleReconnectHelp": "Renueva esta conexión de Google antes de usarla. Se conservarán tus permisos actuales.",
   "googleReconnectAction": "Volver a conectar esta cuenta de Google",
