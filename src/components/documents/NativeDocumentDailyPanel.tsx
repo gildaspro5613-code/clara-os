@@ -31,7 +31,7 @@ export default function NativeDocumentDailyPanel({source,onSaved}:{source?:Sourc
  const [folders,setFolders]=useState<Folder[]>([]),[folderPage,setFolderPage]=useState<string|null>(null),[folderPicker,setFolderPicker]=useState(false);
  const [folderId,setFolderId]=useState(''),[upload,setUpload]=useState<File|null>(null);
  const [title,setTitle]=useState(''),[instruction,setInstruction]=useState(''),[draft,setDraft]=useState(''),[sourceText,setSourceText]=useState('');
- const [targetId,setTargetId]=useState(''),[review,setReview]=useState<Review|null>(null);
+ const [targetId,setTargetId]=useState(''),[originalLoaded,setOriginalLoaded]=useState(false),[review,setReview]=useState<Review|null>(null);
  const [confirm,setConfirm]=useState(false),[busy,setBusy]=useState(false),[status,setStatus]=useState(''),[error,setError]=useState('');
  const [operations,setOperations]=useState<Array<{operationId:string;status:string;kind:string}>>([]);
  const nativeGet=useCallback(async(action:string,params:Record<string,string>={})=>{
@@ -98,6 +98,18 @@ export default function NativeDocumentDailyPanel({source,onSaved}:{source?:Sourc
    setFolderPicker(false);await reload();setFolderId(folder.id);setStatus(t('workspaceFolderReady',{name:folder.name}));
   });
  }
+ async function loadOriginal(fileId:string){
+  await run(async()=>{
+   setOriginalLoaded(false);setDraft('');
+   const response=await fetch('/api/documents?'+new URLSearchParams({action:'download',fileId}),{cache:'no-store'});
+   if(!response.ok||!response.headers.get('Content-Type')?.startsWith('text/plain'))
+    throw Error('NATIVE_DOCUMENT_SCOPE_DENIED');
+   const content=new Uint8Array(await response.arrayBuffer());
+   if(content.length>MAX_UPLOAD)throw Error('GOOGLE_UPLOAD_LIMIT');
+   const text=new TextDecoder('utf-8',{fatal:true}).decode(content);
+   setDraft(text);setOriginalLoaded(true);
+  });
+ }
  async function generateDraft(){
   await run(async()=>{
    if(!title.trim()||!instruction.trim())throw Error('DOCUMENT_DRAFT_INVALID');
@@ -124,7 +136,7 @@ export default function NativeDocumentDailyPanel({source,onSaved}:{source?:Sourc
     if(bytes.length>MAX_UPLOAD)throw Error('GOOGLE_UPLOAD_LIMIT');
     name=(mode==='revise'&&selectedTarget?selectedTarget.name:title.trim().endsWith('.txt')?title.trim():title.trim()+'.txt');
     kind=mode==='revise'?'drive.update':'drive.create';
-    if(mode==='revise'&&!selectedTarget)throw Error('GOOGLE_RESOURCE_DENIED');
+    if(mode==='revise'&&(!selectedTarget||!originalLoaded))throw Error('GOOGLE_RESOURCE_DENIED');
    }
    const input={operationId:crypto.randomUUID(),kind,resourceId:selectedFolder.id,name,
     content:bytesBase64(bytes),mimeType,...(kind==='drive.update'?{fileId:selectedTarget?.id}:{})};
@@ -184,7 +196,7 @@ export default function NativeDocumentDailyPanel({source,onSaved}:{source?:Sourc
      {sourceText&&<p className="text-xs text-slate-400">{t('workspaceSourceNotice')}</p>}
     </>}
     {mode==='revise'&&<label className="block text-sm text-slate-300">{t('workspaceEditableFile')}
-      <select value={targetId} onChange={e=>{setTargetId(e.target.value);setDraft('');setTitle(textResources.find(x=>x.id===e.target.value)?.name??'');}}
+      <select value={targetId} onChange={e=>{setTargetId(e.target.value);setDraft('');setOriginalLoaded(false);setTitle(textResources.find(x=>x.id===e.target.value)?.name??'');if(e.target.value)void loadOriginal(e.target.value);}}
        className="mt-1.5 block h-11 w-full rounded-xl border border-white/10 bg-[#0a1528] px-3">
        <option value="">{t('workspaceChoose')}</option>{textResources.map(f=><option key={f.id} value={f.id}>{f.name}</option>)}
       </select>
@@ -216,7 +228,7 @@ export default function NativeDocumentDailyPanel({source,onSaved}:{source?:Sourc
      {folders.length===0&&<p className="text-sm text-slate-400">{t('workspaceNoFolderCandidates')}</p>}
     </div>}
    </div>
-   <button type="button" disabled={busy||!writable||!selectedFolder||Boolean(review&&review.status==='queued')||(mode==='import'?!upload||upload.size>MAX_UPLOAD:!draft.trim()||mode==='revise'&&!selectedTarget)}
+   <button type="button" disabled={busy||!writable||!selectedFolder||Boolean(review&&review.status==='queued')||(mode==='import'?!upload||upload.size>MAX_UPLOAD:!draft.trim()||mode==='revise'&&(!selectedTarget||!originalLoaded))}
     onClick={()=>void prepare()}
     className="rounded-xl border border-cyan-300/30 bg-cyan-300/[0.09] px-5 py-3 text-sm font-medium text-cyan-100 disabled:opacity-40">{t('workspacePrepare')}</button>
   </div>}
