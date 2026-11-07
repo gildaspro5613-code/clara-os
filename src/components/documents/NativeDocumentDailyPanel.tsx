@@ -69,7 +69,7 @@ export default function NativeDocumentDailyPanel({source,onSaved}:{source?:Sourc
   setMode('draft');setSourceText(source.content.slice(0,24000));
   setTitle(source.name.replace(/\.[^.]+$/,'')+' - revision');
   setInstruction(t('workspaceRevisionInstruction'));
-  setDraft('');
+  setDraft('');setReview(null);setConfirm(false);
  },[source?.name,source?.content,t]);
  const writable=Boolean(caps?.drive&&caps.owned&&caps.canManage&&caps.missionId);
  const folderResources=resources.filter(r=>r.kind==='folder');
@@ -102,7 +102,7 @@ export default function NativeDocumentDailyPanel({source,onSaved}:{source?:Sourc
  }
  async function loadOriginal(fileId:string){
   await run(async()=>{
-   setOriginalLoaded(false);setDraft('');
+   setOriginalLoaded(false);setDraft('');setReview(null);setConfirm(false);
    const response=await fetch('/api/documents?'+new URLSearchParams({action:'download',fileId}),{cache:'no-store'});
    if(!response.ok||!response.headers.get('Content-Type')?.startsWith('text/plain'))
     throw Error('NATIVE_DOCUMENT_SCOPE_DENIED');
@@ -120,7 +120,7 @@ export default function NativeDocumentDailyPanel({source,onSaved}:{source?:Sourc
    const body=await response.json();
    if(!response.ok||!body.success)throw Error(responseCode(body));
    if(body.kind!=='unapproved-draft'||body.savedToDrive!==false)throw Error('DOCUMENT_DRAFT_INVALID');
-   setDraft(body.content);setStatus(t('workspaceDraftReady'));
+   setDraft(body.content);setReview(null);setConfirm(false);setStatus(t('workspaceDraftReady'));
   });
  }
  async function prepare(){
@@ -185,12 +185,12 @@ export default function NativeDocumentDailyPanel({source,onSaved}:{source?:Sourc
   {mode!=='export'&&<div className="mt-5 space-y-4">
    {mode!=='import'&&<>
     <label className="block text-sm text-slate-300">{t('workspaceTitleLabel')}
-     <input maxLength={150} value={title} onChange={e=>setTitle(e.target.value)}
+     <input maxLength={150} value={title} onChange={e=>{setTitle(e.target.value);setReview(null);setConfirm(false);}}
       className="mt-1.5 block h-11 w-full rounded-xl border border-white/10 bg-[#0a1528] px-4 outline-none focus:border-cyan-300/40"/>
     </label>
     {mode==='draft'&&<>
      <label className="block text-sm text-slate-300">{t('workspaceInstruction')}
-      <textarea rows={3} maxLength={4000} value={instruction} onChange={e=>setInstruction(e.target.value)}
+      <textarea rows={3} maxLength={4000} value={instruction} onChange={e=>{setInstruction(e.target.value);setReview(null);setConfirm(false);}}
        className="mt-1.5 w-full rounded-xl border border-white/10 bg-[#0a1528] p-4 outline-none focus:border-cyan-300/40"/>
      </label>
      <button type="button" disabled={busy||!title.trim()||!instruction.trim()} onClick={()=>void generateDraft()}
@@ -198,13 +198,13 @@ export default function NativeDocumentDailyPanel({source,onSaved}:{source?:Sourc
      {sourceText&&<p className="text-xs text-slate-400">{t('workspaceSourceNotice')}</p>}
     </>}
     {mode==='revise'&&<label className="block text-sm text-slate-300">{t('workspaceEditableFile')}
-      <select value={targetId} onChange={e=>{setTargetId(e.target.value);setDraft('');setOriginalLoaded(false);setTitle(textResources.find(x=>x.id===e.target.value)?.name??'');if(e.target.value)void loadOriginal(e.target.value);}}
+      <select value={targetId} onChange={e=>{setTargetId(e.target.value);setDraft('');setReview(null);setConfirm(false);setOriginalLoaded(false);setTitle(textResources.find(x=>x.id===e.target.value)?.name??'');if(e.target.value)void loadOriginal(e.target.value);}}
        className="mt-1.5 block h-11 w-full rounded-xl border border-white/10 bg-[#0a1528] px-3">
        <option value="">{t('workspaceChoose')}</option>{textResources.map(f=><option key={f.id} value={f.id}>{f.name}</option>)}
       </select>
      </label>}
     <label className="block text-sm text-slate-300">{t('workspaceDraftContent')}
-     <textarea rows={8} maxLength={100000} value={draft} onChange={e=>setDraft(e.target.value)}
+     <textarea rows={8} maxLength={100000} value={draft} onChange={e=>{setDraft(e.target.value);setReview(null);setConfirm(false);}}
       className="mt-1.5 w-full rounded-xl border border-white/10 bg-[#0a1528] p-4 text-sm leading-6 outline-none focus:border-cyan-300/40"/>
     </label>
     <p className="text-xs text-slate-400">{t('workspaceDraftWarning')}</p>
@@ -212,7 +212,7 @@ export default function NativeDocumentDailyPanel({source,onSaved}:{source?:Sourc
      className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm disabled:opacity-40"><Download size={15}/>{t('workspaceDownloadText')}</button>
    </>}
    {mode==='import'&&<label className="block text-sm text-slate-300">{t('workspaceLocalFile')}
-    <input type="file" className="mt-2 block w-full text-sm" onChange={e=>setUpload(e.target.files?.[0]??null)}/>
+    <input type="file" className="mt-2 block w-full text-sm" onChange={e=>{setUpload(e.target.files?.[0]??null);setReview(null);setConfirm(false);}}/>
     <span className="mt-2 block text-xs text-slate-400">{t('workspaceImportLimit')}</span>
    </label>}
    <div className="space-y-3 rounded-xl border border-white/10 p-4">
