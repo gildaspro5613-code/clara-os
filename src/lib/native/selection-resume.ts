@@ -18,6 +18,9 @@ export function nativeSelectionCookie(value:NativeSelection){
 export async function restoreNativeSelection(request:Request):Promise<Response>{
  const {digest}=registryContext(request.headers.get('cookie'),'workspace-selector');
  const workspaces=await canonicalRegistry.workspaces(digest) as Array<{workspace_id:string}>;
+ // A syntactically valid but expired OS auth cookie must still show sign-in,
+ // not a workspace selector. No workspace/identity is inferred or created.
+ if(!workspaces.length)return Response.json({success:false,code:'AUTHENTICATED_OS_SESSION_REQUIRED'},{status:401,headers:{'Cache-Control':'no-store'}});
  const choose=()=>Response.json({success:true,restored:false},{headers:{'Cache-Control':'no-store'}});
  // A previously selected but now invalid/revoked context must not silently
  // switch to a different project or thread. The owner chooses explicitly.
