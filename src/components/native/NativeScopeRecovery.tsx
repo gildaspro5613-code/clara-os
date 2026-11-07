@@ -1,7 +1,6 @@
 'use client';
 import {useEffect,useState} from 'react';
 import {useTranslations} from 'next-intl';
-import NativeScopeSelector from './NativeScopeSelector';
 
 /** Reuse an already-authorized conversation; never silently create a new one. */
 export default function NativeScopeRecovery(){
@@ -32,5 +31,5 @@ export default function NativeScopeRecovery(){
  if(state==='checking')return <p role="status" className="mt-5 text-sm text-cyan-100">{ui('nativeResumeChecking')}</p>;
  if(state==='signIn')return <a className="mt-5 inline-block rounded-xl border border-cyan-300/30 bg-cyan-400/10 px-4 py-3 text-cyan-100" href="/api/auth/google/start">{ui('signInWithGoogle')}</a>;
  if(state==='unavailable')return <div role="alert" className="mt-5"><p>{ui('nativeResumeUnavailable')}</p><a className="mt-3 inline-block underline" href="/">{ui('nativeResumeRetry')}</a></div>;
- return <div className="mt-5 text-left"><p className="mb-4 text-sm text-slate-300">{ui('nativeResumeChoose')}</p><NativeScopeSelector /></div>;
+ return <div className="mt-5"><p className="mb-4 text-sm text-slate-300">{ui('nativeResumeChoose')}</p><button type="button" className="rounded-xl border border-cyan-300/30 bg-cyan-400/10 px-4 py-3 text-cyan-100" onClick={()=>document.querySelector<HTMLButtonElement>('[data-open-native-context]')?.click()}>{ui('uiWorkspace')}</button></div>;
 }
