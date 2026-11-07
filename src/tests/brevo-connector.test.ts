@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { BrevoClient } from "@/lib/connectors/brevo/client";
-import {readBrevoBounded,brevoReadKindFromMessage} from '@/lib/connectors/brevo/api-key-read';
+import {readBrevoBounded,brevoReadKindFromMessage,brevoReadFailureCode} from '@/lib/connectors/brevo/api-key-read';
 import { BREVO_CAPABILITIES, BrevoConnectorDefinition } from "@/lib/connectors/brevo/definition";
 import { BrevoApiError } from "@/lib/connectors/brevo/error";
 import { parseBrevoWebhook } from "@/lib/connectors/brevo/webhook";
@@ -247,4 +247,25 @@ test('API key cannot leak through normalized provider failure',async()=>{
   assert.doesNotMatch(JSON.stringify(e),/restricted-key/);
   return true;
  });
+});
+
+test('Brevo list-of-contacts wording routes to list GET, not contact export',async()=>{
+ for(const message of ['Clara, consulte mes listes de contacts Brevo et présente-moi celles qui sont disponibles','Show my lists of Brevo contacts','Muestra mis listas de contactos Brevo','Zeige Brevo Listen mit Kontakten','Mostrami le liste contatti Brevo']){
+  assert.equal(brevoReadKindFromMessage(message),'lists',message);
+ }
+ const http=fakeHttp([json({count:1,lists:[{id:27,name:'Newsletter',uniqueSubscribers:11}]})]);
+ const data=await readBrevoBounded(brevoReadKindFromMessage('listes de contacts Brevo')!,'restricted-key',http.fetch);
+ assert.deepEqual(data,{kind:'lists',count:1,items:[{id:27,name:'Newsletter',uniqueSubscribers:11}],partial:false});
+ assert.equal(http.calls.length,1);
+ assert.match(http.calls[0].url,/\/contacts\/lists\?limit=10&offset=0$/);
+ assert.equal(http.calls[0].init?.method,'GET');
+});
+test('Brevo failures distinguish status codes without leaking provider messages',()=>{
+ const codes=[[401,'UNAUTHORIZED','BREVO_READ_UNAUTHORIZED'],[403,'FORBIDDEN','BREVO_READ_FORBIDDEN'],[429,'RATE_LIMITED','BREVO_READ_RATE_LIMITED'],[500,'API_ERROR','BREVO_READ_PROVIDER_ERROR']] as const;
+ for(const [status,code,result] of codes){
+  const e=new BrevoApiError(status,code,'PRIVATE-DO-NOT-SHOW',{apiKey:'PRIVATE-DO-NOT-SHOW'});
+  assert.equal(brevoReadFailureCode(e),result);
+  assert.doesNotMatch(brevoReadFailureCode(e),/PRIVATE|apiKey/);
+ }
+ assert.equal(brevoReadFailureCode(new Error('PRIVATE_PROVIDER_IP_AND_KEY')),'BREVO_READ_TRANSPORT_ERROR');
 });

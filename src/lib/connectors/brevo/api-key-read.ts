@@ -1,10 +1,12 @@
 import {BrevoClient,type BrevoFetch} from './client';
+import {BrevoApiError} from './error';
 export type BrevoReadKind='contacts'|'lists'|'templates'|'campaigns';
 export type BrevoReadSnapshot={kind:BrevoReadKind;count:number|null;items:Record<string,unknown>[];partial:boolean};
 export function brevoReadKindFromMessage(message:string):BrevoReadKind|null{
  if(!/\bbrevo\b/i.test(message))return null;
+ // "listes de contacts Brevo" requests lists, not individual contacts.
+ if(/\b(?:listes?|lists?|listas?|listen|elenchi|elenchi|liste)\b/i.test(message))return 'lists';
  if(/contact|kontakte|contatti/i.test(message))return 'contacts';
- if(/list[aei]|listen|liste|elench/i.test(message))return 'lists';
  if(/mod[eè]le|template|plantilla|vorlage|modello/i.test(message))return 'templates';
  if(/campagn|campaign|kampagne|campaña/i.test(message))return 'campaigns';
  return null;
@@ -44,4 +46,16 @@ export async function readBrevoBounded(kind:BrevoReadKind,apiKey:string,fetcher?
   default:throw Error('BREVO_READ_KIND_INVALID');
  }
  return {kind,count,items,partial:count!==null?count>items.length:items.length>=10};
+}
+
+/** Publish only a bounded diagnostic category; never a raw provider message,
+ * response body, IP, request URL, headers or credential. */
+export function brevoReadFailureCode(error:unknown):string{
+ if(error instanceof BrevoApiError){
+  if(error.status===401)return 'BREVO_READ_UNAUTHORIZED';
+  if(error.status===403)return 'BREVO_READ_FORBIDDEN';
+  if(error.status===429)return 'BREVO_READ_RATE_LIMITED';
+  return 'BREVO_READ_PROVIDER_ERROR';
+ }
+ return 'BREVO_READ_TRANSPORT_ERROR';
 }
