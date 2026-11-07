@@ -36,7 +36,7 @@ export async function nativePage(render:()=>Promise<ReactNode>){
  }catch(error){
   if(error instanceof RegistryError){
    if(error.status===401)return nativePageFence('signIn');
-   if([400,403,404,409].includes(error.status))return nativePageFence('scope');
+   if(['EXPLICIT_NATIVE_SCOPE_REQUIRED','INVALID_NATIVE_SESSION_IDENTIFIER','INVALID_REGISTRY_IDENTIFIER','NATIVE_SCOPE_DENIED','REGISTRY_ACCESS_DENIED','NATIVE_THREAD_REVIEW_REQUIRED','NATIVE_CHAT_CONTEXT_CHANGED'].includes(error.code))return nativePageFence('scope');
   }
   return nativePageFence('unavailable');
  }
