@@ -17,6 +17,14 @@ test('native conversation UI: immutable Mission/client, lost acknowledgement + r
  const call=(cookie,path,body)=>fetch(origin+path,{method:body?'POST':'GET',headers:{cookie,...(body?{origin,'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
  const create=async(clientId='c1',projectId='p2')=>{const r=await call(auth,'/api/native/runtime',{action:'createSession',workspaceId:'w',clientId,projectId});assert.equal(r.status,200);return {cookie:auth+'; '+r.headers.get('set-cookie').split(';')[0],...(await r.json()).data};};
  const a=await create(),b=await create();
+ // Selection is a durable preference, not authentication or an authorization grant.
+ const selectedCookieResponse=await call(auth,'/api/native/runtime',{action:'selectSession',workspaceId:'w',clientId:'c1',projectId:'p2',sessionId:a.sessionId});
+ assert.equal(selectedCookieResponse.status,200);
+ assert.match(selectedCookieResponse.headers.get('set-cookie')??'',/Max-Age=2592000/);
+ assert.match(selectedCookieResponse.headers.get('set-cookie')??'',/HttpOnly/);
+ const ambiguous=await call(auth,'/api/native/runtime?resume=1');
+ assert.equal(ambiguous.status,200);
+ assert.equal((await ambiguous.json()).restored,false,'Multiple authorized clients/projects require an explicit choice; never create a session');
  const mission=async(scope,title)=>{const r=await call(scope.cookie,'/api/native/runtime',{action:'createMission',title,objective:title});assert.equal(r.status,200,await r.clone().text());return (await r.json()).mission.id;};
  const ma=await mission(a,'LOT4BIS_MISSION_A'),mb=await mission(b,'LOT4BIS_MISSION_B');
  assert.equal((await call(a.cookie,'/api/clara/chat',{operationId:randomUUID(),message:'LOT4BIS_TURN_A',sessionId:a.sessionId})).status,200);
@@ -56,7 +64,12 @@ test('native conversation UI: immutable Mission/client, lost acknowledgement + r
  try{
   const ctx=await browser.newContext();await ctx.route('**/*',r=>new URL(r.request().url()).origin===new URL(origin).origin?r.continue():r.abort());
   const select=async cookie=>{await ctx.clearCookies();await ctx.addCookies(cookie.split('; ').map(pair=>{const n=pair.indexOf('=');return {name:pair.slice(0,n),value:pair.slice(n+1),url:origin};}));};
-  await select(a.cookie);const page=await ctx.newPage();await page.goto(origin+'/clara');
+  // Authenticated but without native selection: show a workspace choice, never Google sign-in.
+  await select(auth);const page=await ctx.newPage();await page.goto(origin+'/clara');
+  await page.locator('[data-native-authority="scope"]').waitFor();
+  assert.equal(await page.locator('[data-google-sign-in-card]').count(),0);
+  await page.locator('[data-native-resume-open]').waitFor();
+  await select(a.cookie);await page.goto(origin+'/clara');
   let acknowledged;const committed=new Promise(r=>{acknowledged=r;});
   await page.route('**/api/clara/chat',async route=>{const req=route.request();const response=await fetch(req.url(),{method:'POST',headers:await req.allHeaders(),body:req.postData()});assert.equal(response.status,200,await response.clone().text());await response.json();await route.abort('failed');acknowledged();});
   const form=page.locator('form').filter({has:page.locator('textarea[placeholder]')}).last();await form.locator('textarea').fill('LOT4BIS_ACK_LOST');await form.locator('button[type="submit"]').click();await committed;
