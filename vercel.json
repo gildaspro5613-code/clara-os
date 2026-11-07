@@ -37,7 +37,8 @@
       "fix/agenda-business-calendar-choice-20261107": false,
       "fix/operational-brevo-make-stripe-20261107": false,
       "fix/brevo-read-status-reception-20261107": false,
-      "fix/documents-reading-ui-20261107": false
+      "fix/documents-reading-ui-20261107": false,
+      "fix/documents-daily-native-work-20261107": false
     }
   }
 }
