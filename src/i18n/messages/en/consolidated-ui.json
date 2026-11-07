@@ -372,7 +372,7 @@
   "signInWelcome": "Welcome to Clara OS",
   "signInDescription": "Access your workspace and tools with your authorized Google account.",
   "signInWithGoogle": "Sign in with Google",
-  "signInContextHelp": "Already signed in? Open “Workspace” in the menu to choose your project and conversation.",
+  "signInContextHelp": "Sign in to return to your existing projects and conversations. No new thread is created.",
   "nativeResumeTitle": "Return to my workspace",
   "nativeResumeChecking": "Clara is restoring your last authorized conversation…",
   "nativeResumeChoose": "Choose an existing conversation to continue. You do not need to create a new thread.",
