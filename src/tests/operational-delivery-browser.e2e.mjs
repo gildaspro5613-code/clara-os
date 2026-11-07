@@ -48,15 +48,15 @@ test('delivery UI: official logo, business navigation, private advanced controls
    await page.screenshot({path:out+'/'+(path||'cockpit')+'-desktop.png',fullPage:true});
    results.push({path:'/'+path,status:'PASS rendered authenticated synthetic context',scope:'page rendering, not provider certification'});
   }
-  await page.goto(origin+'/documents');const settings=page.locator('[data-document-authority-settings]');await settings.waitFor();
-  assert.equal(await settings.evaluate(e=>e.open),false);assert.equal(await settings.getByRole('button').first().isVisible(),false);
+  await page.goto(origin+'/documents');const settings=page.locator('[data-document-workspace-settings]');await settings.waitFor();
+  assert.equal(await settings.evaluate(e=>e.open),false);assert.equal(await settings.getByRole('button').count(),0);
   let mutations=0;await page.route('**/api/connections/google/connect',async route=>{mutations++;await route.fulfill({status:403,contentType:'application/json',body:JSON.stringify({success:false,code:'PRIVATE_TOKEN_MUST_NOT_ESCAPE',message:'private diagnostic sentinel'})});});
-  await settings.locator('summary').click();await settings.getByRole('button',{name:'Associer mon compte Google',exact:true}).click();
+  await settings.locator('summary').click();await page.locator('[data-document-authority-settings] summary').click();await settings.getByRole('button',{name:'Associer mon compte Google',exact:true}).click();
   await page.getByRole('alert').filter({hasText:JSON.parse(readFileSync('src/i18n/messages/fr/consolidated-ui.json','utf8')).googleConnectionDenied}).waitFor();assert.equal(mutations,1);assert.ok(!(await page.locator('body').innerText()).includes('private diagnostic sentinel'));assert.ok(!(await page.locator('body').innerText()).includes('PRIVATE_TOKEN_MUST_NOT_ESCAPE'));
   await page.getByRole('alert').filter({hasText:JSON.parse(readFileSync('src/i18n/messages/fr/consolidated-ui.json','utf8')).googleConnectionDenied}).screenshot({path:out+'/filtered-diagnostic.png'});
   await page.unroute('**/api/connections/google/connect');
   for(const locale of ['fr','en','es','de','it']){
-   await context.addCookies([{name:'NEXT_LOCALE',value:locale,url:origin}]);await page.goto(origin+'/documents');await page.locator('[data-document-authority-settings] summary').waitFor();
+   await context.addCookies([{name:'NEXT_LOCALE',value:locale,url:origin}]);await page.goto(origin+'/documents');await page.locator('[data-document-workspace-settings] summary').waitFor();await page.locator('[data-document-workspace-settings] summary').click();await page.locator('[data-document-authority-settings] summary').waitFor();
    const label=JSON.parse(readFileSync('src/i18n/messages/'+locale+'/consolidated-ui.json','utf8')).documentAuthoritySettings;
    assert.equal(await page.locator('[data-document-authority-settings] summary').innerText(),label);
   }

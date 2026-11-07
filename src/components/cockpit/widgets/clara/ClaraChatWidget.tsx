@@ -7,7 +7,7 @@ import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Check, Send, X } from "lucide-react";
+import { Check, RefreshCw, Send, X } from "lucide-react";
 import type { ClaraConversationMessage } from "@/lib/core/session";
 
 interface PendingApproval {
@@ -367,8 +367,20 @@ export default function ClaraChatWidget({
 
       {nativeThreadReadOnly&&<p role="alert">{ui('nativeThreadReviewRequired')}</p>}
       {chatError&&<p role="alert">{chatError}</p>}
-      {pending&&!nativeThreadReadOnly&&<button type="button" disabled={loading} onClick={()=>void submitOperation(pending)}>{ui('nativeCheckChat')}</button>}
-      {pending&&!nativeThreadReadOnly&&<button type="button" disabled={loading} onClick={()=>void cancelPending()}>{ui('nativeCancelChat')}</button>}
+      {pending&&!nativeThreadReadOnly&&(
+        <div data-native-chat-recovery className="mt-3 flex items-center justify-end gap-2">
+          <button type="button" disabled={loading} onClick={()=>void submitOperation(pending)}
+            aria-label={ui('nativeCheckChat')} title={ui('nativeCheckChat')}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-cyan-300/20 bg-cyan-300/[0.06] text-cyan-200/80 transition hover:bg-cyan-300/[0.12] focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300 disabled:opacity-35">
+            <RefreshCw size={15} aria-hidden="true"/>
+          </button>
+          <button type="button" disabled={loading} onClick={()=>void cancelPending()}
+            aria-label={ui('nativeCancelChat')} title={ui('nativeCancelChat')}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/[0.025] text-slate-400 transition hover:bg-white/[0.07] focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300 disabled:opacity-35">
+            <X size={15} aria-hidden="true"/>
+          </button>
+        </div>
+      )}
       <form
         onSubmit={handleSubmit}
         className="mt-4 flex items-center gap-2"

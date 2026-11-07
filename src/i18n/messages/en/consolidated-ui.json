@@ -409,5 +409,8 @@
   "studioStripeReadPending": "Studio payment reads remain unavailable until its ledger and authorization are verified. No payment can be initiated here.",
   "brevoApiKeyConfigured": "API key configured",
   "brevoApiKeyPendingVerification": "The Brevo API key is configured on the server. A real read from Clara is still unverified.",
-  "brevoApiKeyMissing": "Brevo API key missing. Read-only access requires configuration in Vercel."
+  "brevoApiKeyMissing": "Brevo API key missing. Read-only access requires configuration in Vercel.",
+  "documentClaraAnalysis": "Clara's analyses",
+  "documentNoAnalysis": "No documents have been analyzed yet.",
+  "documentWorkspaceSettings": "Google connection and advanced operations"
 }
