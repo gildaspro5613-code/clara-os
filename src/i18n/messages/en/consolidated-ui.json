@@ -378,6 +378,7 @@
   "nativeResumeChoose": "Choose an existing conversation to continue. You do not need to create a new thread.",
   "nativeResumeUnavailable": "Clara cannot verify your workspace right now. This error does not require another Google sign-in.",
   "nativeResumeRetry": "Try again",
+  "nativeResumeOpen": "Choose an existing conversation",
   "googleAccountNumber": "Google account {number}",
   "googleReconnectHelp": "Renew this Google connection before using it. Your existing permissions will be preserved.",
   "googleReconnectAction": "Reconnect this Google account",
