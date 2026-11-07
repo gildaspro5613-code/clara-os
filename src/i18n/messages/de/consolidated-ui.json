@@ -372,7 +372,7 @@
   "signInWelcome": "Willkommen bei Clara OS",
   "signInDescription": "Öffne deinen Arbeitsbereich und deine Werkzeuge mit deinem autorisierten Google-Konto.",
   "signInWithGoogle": "Mit Google anmelden",
-  "signInContextHelp": "Bereits angemeldet? Öffne „Arbeitsbereich“ im Menü, um dein Projekt und deine Unterhaltung auszuwählen.",
+  "signInContextHelp": "Melde dich an, um deine bestehenden Projekte und Unterhaltungen wiederzufinden. Es wird kein neuer Chat erstellt.",
   "nativeResumeTitle": "Zurück zu meinem Arbeitsbereich",
   "nativeResumeChecking": "Clara stellt die letzte autorisierte Unterhaltung wieder her…",
   "nativeResumeChoose": "Wähle eine bestehende Unterhaltung, um fortzufahren. Du musst keinen neuen Chat erstellen.",
