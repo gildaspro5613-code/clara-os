@@ -409,5 +409,8 @@
   "studioStripeReadPending": "Studio-Zahlungen sind erst nach Prüfung des Journals und der Rechte lesbar. Hier werden keine Zahlungen ausgelöst.",
   "brevoApiKeyConfigured": "API-Schlüssel eingerichtet",
   "brevoApiKeyPendingVerification": "Der Brevo-API-Schlüssel ist serverseitig konfiguriert. Ein echter Lesezugriff durch Clara ist noch nicht geprüft.",
-  "brevoApiKeyMissing": "Brevo-API-Schlüssel fehlt. Für Lesezugriff muss er in Vercel eingerichtet werden."
+  "brevoApiKeyMissing": "Brevo-API-Schlüssel fehlt. Für Lesezugriff muss er in Vercel eingerichtet werden.",
+  "documentClaraAnalysis": "Claras Analysen",
+  "documentNoAnalysis": "Noch keine Dokumente analysiert.",
+  "documentWorkspaceSettings": "Google-Verbindung und erweiterte Vorgänge"
 }

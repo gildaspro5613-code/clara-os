@@ -409,5 +409,8 @@
   "studioStripeReadPending": "La lettura dei pagamenti Studio resta indisponibile finché registro e autorizzazioni non sono verificati. Nessun pagamento viene avviato qui.",
   "brevoApiKeyConfigured": "Chiave API configurata",
   "brevoApiKeyPendingVerification": "La chiave API Brevo è configurata sul server. La lettura reale da Clara non è ancora verificata.",
-  "brevoApiKeyMissing": "Chiave API Brevo mancante. Configurala in Vercel per abilitare le letture."
+  "brevoApiKeyMissing": "Chiave API Brevo mancante. Configurala in Vercel per abilitare le letture.",
+  "documentClaraAnalysis": "Analisi di Clara",
+  "documentNoAnalysis": "Nessun documento analizzato al momento.",
+  "documentWorkspaceSettings": "Connessione Google e operazioni avanzate"
 }

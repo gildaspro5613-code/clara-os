@@ -161,15 +161,19 @@
     }
   },
   "documents": {
-    "subtitle": "Accesso ai documenti del tuo spazio Google Drive.",
-    "searchPlaceholder": "Cerca un documento…",
-    "search": "Cerca",
-    "loading": "Caricamento dei documenti…",
-    "loadError": "Impossibile caricare i documenti.",
-    "empty": "Nessun documento trovato.",
-    "open": "Apri",
-    "title": "Documenti"
-  },
+  "subtitle": "Consulta con Clara i documenti autorizzati della tua missione.",
+  "searchPlaceholder": "Cerca un documento…",
+  "search": "Cerca",
+  "loading": "Caricamento dei documenti…",
+  "loadError": "Impossibile caricare i documenti.",
+  "empty": "Nessun documento trovato.",
+  "open": "Apri",
+  "title": "Documenti",
+  "scopeNote": "Documenti autorizzati per questa missione. Gli altri file di Google Drive non vengono mostrati.",
+  "emptyAuthorized": "Nessun documento autorizzato per questa missione al momento.",
+  "emptySearch": "Nessun documento autorizzato corrisponde alla ricerca.",
+  "searchResults": "Risultati per «{query}»"
+},
   "telephony": {
     "subtitle": "La linea telefonica di Clara, direttamente da Clara OS.",
     "office": "Clara Office",
