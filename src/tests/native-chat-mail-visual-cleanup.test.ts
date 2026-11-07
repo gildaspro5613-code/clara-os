@@ -37,3 +37,19 @@ test('chat textarea scrollbar is cyan with dark track, and history display hides
  assert.match(widget,/messages\.filter\(message=>!isLegacyMailDraftChatNotice\(message\)\)/);
  assert.match(earlier,/messages\.filter\(m=>!isLegacyMailDraftChatNotice\(m\)\)/);
 });
+
+test('pending conversation recovery is accessible without raw white text actions on Clara and Cockpit',()=>{
+ const widget=readFileSync('src/components/cockpit/widgets/clara/ClaraChatWidget.tsx','utf8');
+ const actions=widget.slice(widget.indexOf('{pending&&!nativeThreadReadOnly&&('),widget.indexOf('<form\n',widget.indexOf('{pending&&!nativeThreadReadOnly&&(')));
+ assert.match(actions,/data-native-chat-recovery/);
+ assert.match(actions,/aria-label=\{ui\('nativeCheckChat'\)\}/);
+ assert.match(actions,/aria-label=\{ui\('nativeCancelChat'\)\}/);
+ assert.match(actions,/title=\{ui\('nativeCheckChat'\)\}/);
+ assert.match(actions,/title=\{ui\('nativeCancelChat'\)\}/);
+ assert.match(actions,/onClick=\{\(\)=>void submitOperation\(pending\)\}/);
+ assert.match(actions,/onClick=\{\(\)=>void cancelPending\(\)\}/);
+ assert.match(actions,/<RefreshCw size=\{15\} aria-hidden="true"\/>/);
+ assert.match(actions,/<X size=\{15\} aria-hidden="true"\/>/);
+ assert.doesNotMatch(actions,/>\{ui\('native(Check|Cancel)Chat'\)\}<\/button>/);
+ assert.match(widget,/if\(!pending\|\|!nativeSessionId\|\|!window\.confirm\(ui\('nativeCancelChatConfirm'\)\)\)return/);
+});
