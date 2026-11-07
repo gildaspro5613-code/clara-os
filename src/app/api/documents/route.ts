@@ -12,8 +12,13 @@ const providerStatus=(error as {response?:{status?:number}})?.response?.status;
 if(providerStatus)return Response.json({success:false,code:providerStatus===401?'GOOGLE_REAUTH_REQUIRED':providerStatus===403||providerStatus===404?'NATIVE_DOCUMENT_GOOGLE_RIGHTS_DENIED':'DOCUMENT_GOOGLE_UNAVAILABLE'},{status:providerStatus===401?401:providerStatus===403||providerStatus===404?403:503,headers:{'Cache-Control':'no-store'}});if(error instanceof DocumentReadError)return Response.json({success:false,code:error.code},{status:error.status,headers:{'Cache-Control':'no-store',...('terminal'in error&&error.terminal?{'X-Clara-Document-Result':'failed'}:{})}});return nativeFailure(error);}
 export async function GET(request:Request){try{return await withNativeScope(request,false,async()=>{
  const params=new URL(request.url).searchParams,action=params.get('action')??'list';
- if(!['list','references','download'].includes(action))throw new RegistryError(405,'NATIVE_DOCUMENT_POST_REQUIRED');
- const documents=await selectedNativeDocuments();if(action==='download')return documents.download(params.get('fileId')??'');return Response.json(action==='references'?await documents.references():await documents.list(params.get('query')??''),{headers:{'Cache-Control':'no-store'}});
+ if(!['list','references','download','export'].includes(action))throw new RegistryError(405,'NATIVE_DOCUMENT_POST_REQUIRED');
+ const documents=await selectedNativeDocuments();if(action==='download')return documents.download(params.get('fileId')??'');
+ if(action==='export'){
+  const format=params.get('format');
+  if(format!=='pdf'&&format!=='docx'&&format!=='txt')throw new RegistryError(400,'DOCUMENT_EXPORT_FORMAT_INVALID');
+  return documents.exportGoogleDoc(params.get('fileId')??'',format);
+ }return Response.json(action==='references'?await documents.references():await documents.list(params.get('query')??''),{headers:{'Cache-Control':'no-store'}});
 });}catch(error){return failure(error);}}
 export async function POST(request:Request){return nativeRequest(request,async()=>{try{
  const body=await registryBody(request.clone());fields(body,['action','fileId',...(body.action==='bind'?['version']:body.action==='read'?['question','locale','operationId']:[])]);
