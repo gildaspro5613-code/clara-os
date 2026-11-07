@@ -91,9 +91,11 @@ export default function NativeDocumentDailyPanel({source,onSaved}:{source?:Sourc
  async function selectFolder(folder:Folder){
   if(!window.confirm(t('workspaceConfirmFolder',{name:folder.name})))return;
   await run(async()=>{
-   const inspect=await nativePost('inspect',{kind:'folder',resourceId:folder.id});
-   if(!inspect.resource?.version)throw Error('GOOGLE_RESOURCE_CHANGED');
-   await nativePost('bind',{kind:'folder',resourceId:folder.id,version:inspect.resource.version});
+   if(!resources.some(resource=>resource.kind==='folder'&&resource.id===folder.id)){
+    const inspect=await nativePost('inspect',{kind:'folder',resourceId:folder.id});
+    if(!inspect.resource?.version)throw Error('GOOGLE_RESOURCE_CHANGED');
+    await nativePost('bind',{kind:'folder',resourceId:folder.id,version:inspect.resource.version});
+   }
    await nativePost('select',{kind:'folder',resourceId:folder.id});
    setFolderPicker(false);await reload();setFolderId(folder.id);setStatus(t('workspaceFolderReady',{name:folder.name}));
   });
