@@ -44,7 +44,10 @@ export async function revealBusinessContext(page) {
 
 export async function revealAgendaSettings(page){
  if(await page.locator('[data-agenda-view]').count()){
-  await page.locator('.agenda-calendar-source a').click();
+  // Agenda now keeps ordinary Calendar selection on-page. Tests for native
+  // administration visit its dedicated Connections URL without reintroducing
+  // technical controls into the user's day/week/month calendar.
+  await page.goto(new URL('/connexions#google-agenda-administration',page.url()).href);
   await page.waitForFunction(()=>document.getElementById('google-agenda-administration')?.open===true);
   return;
  }
