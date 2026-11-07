@@ -17,8 +17,8 @@ test('native server pages: no private HTML/RSC leakage across six pages and five
   page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(/MISSING_MESSAGE|INVALID_MESSAGE|IntlError/.test(m.text()))errors.push(m.text());});
   for(const path of ['/','/clara','/missions','/journal','/brain','/conversations']){
    const response=await page.goto(origin+path);assert.equal(response.status(),200);
-   await page.getByRole('heading',{name:ui.nativeAccessLocked,exact:true}).waitFor();
-   assert.equal(await page.locator('[data-native-authority="locked"]').count(),1);
+   await page.getByRole('heading',{name:ui.signInWelcome,exact:true}).waitFor();
+   assert.equal(await page.locator('[data-native-authority="signIn"]').count(),1);
    const html=await response.text(),body=await page.locator('body').innerText();
    for(const marker of privateMarkers){assert.ok(!html.includes(marker),`${locale} ${path} HTML/RSC ${marker}`);assert.ok(!body.includes(marker),`${locale} ${path} body ${marker}`);}
    assert.equal(await page.locator('html').getAttribute('lang'),locale);
