@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {missionMutationRequested} from '@/lib/core/orchestrator';
 import {documentDiagnostic} from '@/lib/documents/document-read-error';
-import {parseNativeCalendarReadIntent,matchesAuthorizedCalendarName} from '@/lib/brain/calendar-read-intent';
+import {parseNativeCalendarReadIntent,matchesAuthorizedCalendarName,chooseAuthorizedCalendar,type AuthorizedCalendarCandidate} from '@/lib/brain/calendar-read-intent';
 import {readFileSync} from 'node:fs';
 import {EventType,type Event} from '@/types';
 const event=(message:string):Event=>({id:'test',type:EventType.USER_MESSAGE,source:'CLARA_CHAT',timestamp:new Date(),payload:{message}});
@@ -47,12 +47,56 @@ test('targeted calendar ranges reject invalid/ambiguous inputs and honor Paris D
 test('native Brain targeted Calendar uses bound source and reports partial rather than treating a page as complete',()=>{
  const src=readFileSync('src/lib/brain/brain-source-registry.ts','utf8');
  assert.match(src,/parseNativeCalendarReadIntent\(extractMessage\(event\)\)/);
- assert.match(src,/work\.calendar\(calendarId\)/);
- assert.match(src,/matchesAuthorizedCalendarName\(selectedName,intent\.expectedName\)/);
- assert.match(src,/work\.events\(undefined,timeMin,timeMax\)/);
+ assert.match(src,/nativeGoogleCommand\('list'\)/);
+ assert.match(src,/googleWorkCommand\('resources',\{connectionId\}\)/);
+ assert.match(src,/googleWorkCommand\('resource',\{connectionId,bindingId/);
+ assert.match(src,/chooseAuthorizedCalendar\(candidates,intent.expectedName/);
+ assert.match(src,/work\.calendar\(binding.metadata!\.id!\)/);
+ assert.match(src,/work\.eventsForBoundCalendar\(calendarId,undefined,timeMin,timeMax\)/);
+ assert.match(src,/GOOGLE_CALENDAR_BINDING_REQUIRED/);
+ assert.match(src,/GOOGLE_CALENDAR_NAME_AMBIGUOUS/);
+ assert.match(src,/current.revision!==proof.revision/);
  assert.match(src,/GOOGLE_CALENDAR_NAME_MISMATCH/);
  assert.match(src,/GOOGLE_CALENDAR_RANGE_UNSUPPORTED/);
  assert.match(src,/partial=Boolean\(result\.nextPageToken\)/);
  assert.match(src,/revalidate\('calendar:'\+connectionId/);
  assert.doesNotMatch(src,/calendarId:\s*['"]primary['"]/);
+});
+
+test('native Calendar accepts a natural single day after an authorized calendar name',()=>{
+ const text='Clara, consulte le calendrier Melodie Digital Calendar pour le lundi 9 novembre 2026. Vérifie le créneau de 10 h à 10 h 30, sans rien créer.';
+ assert.deepEqual(parseNativeCalendarReadIntent(text),{
+  kind:'range',expectedName:'Melodie Digital Calendar',from:'2026-11-09',through:'2026-11-09',
+  timeMin:'2026-11-08T23:00:00.000Z',timeMax:'2026-11-09T23:00:00.000Z',
+ });
+ const quoted=parseNativeCalendarReadIntent('Consulte en lecture seule le calendrier « Melodie Digital Calendar » du 9 au 9 novembre 2026.');
+ assert.equal(quoted.kind,'range');
+ assert.equal(quoted.expectedName,'Melodie Digital Calendar');
+ assert.equal(parseNativeCalendarReadIntent('calendrier « Melodie Digital Calendar » pour le 31 février 2026').kind,'unsupported');
+ assert.equal(parseNativeCalendarReadIntent('calendrier Melodie Digital Calendar du 14 au 8 novembre 2026').kind,'unsupported');
+});
+test('persistent Calendar resolution never grants an unknown name or guesses between bindings',()=>{
+ const bound:AuthorizedCalendarCandidate[]=[
+  {connectionId:'account-a',calendarId:'calendar-a',bindingId:'grant-a',name:'Melodie Digital Calendar'},
+  {connectionId:'account-a',calendarId:'calendar-b',bindingId:'grant-b',name:'Private calendar'},
+ ];
+ assert.deepEqual(chooseAuthorizedCalendar(bound,'Mélodie Digital Calendar'),
+  {kind:'selected',calendar:bound[0]});
+ assert.deepEqual(chooseAuthorizedCalendar(bound,'Unknown'),{kind:'missing'});
+ assert.deepEqual(chooseAuthorizedCalendar(bound,null),{kind:'ambiguous'});
+ assert.deepEqual(chooseAuthorizedCalendar(bound,null,{connectionId:'account-a',calendarId:'calendar-b'}),
+  {kind:'selected',calendar:bound[1]});
+ assert.deepEqual(chooseAuthorizedCalendar([...bound,{...bound[0],bindingId:'grant-c',connectionId:'account-b'}],'Melodie Digital Calendar'),
+  {kind:'ambiguous'});
+ assert.deepEqual(chooseAuthorizedCalendar([],null),{kind:'missing'});
+});
+test('Brain Calendar uses only durable scoped READ and leaves session-selected route unchanged',()=>{
+ const native=readFileSync('src/lib/native/google-work.ts','utf8');
+ const brain=readFileSync('src/lib/brain/brain-source-registry.ts','utf8');
+ assert.match(native,/async eventsForBoundCalendar\(id:string,pageToken\?:string,timeMin\?:string,timeMax\?:string\)/);
+ assert.match(native,/await this.bound\(id,'calendar'\);await this.calendar\(id\);/);
+ assert.match(native,/return this.eventsForBoundCalendar\(id,pageToken,timeMin,timeMax\)/);
+ assert.match(brain,/current.revision!==proof.revision/);
+ assert.match(brain,/GOOGLE_CALENDAR_SCOPE_AMBIGUOUS/);
+ assert.doesNotMatch(brain,/native\.session\.googleCalendarId\s*=\s*/);
 });
