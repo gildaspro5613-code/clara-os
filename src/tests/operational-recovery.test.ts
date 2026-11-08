@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {missionMutationRequested} from '@/lib/core/orchestrator';
 import {documentDiagnostic} from '@/lib/documents/document-read-error';
 import {parseNativeCalendarReadIntent,matchesAuthorizedCalendarName,chooseAuthorizedCalendar,type AuthorizedCalendarCandidate} from '@/lib/brain/calendar-read-intent';
+import {parseNativeCalendarChatDraft} from '@/lib/native/calendar-chat-draft';
 import {readFileSync} from 'node:fs';
 import {EventType,type Event} from '@/types';
 const event=(message:string):Event=>({id:'test',type:EventType.USER_MESSAGE,source:'CLARA_CHAT',timestamp:new Date(),payload:{message}});
@@ -99,4 +100,43 @@ test('Brain Calendar uses only durable scoped READ and leaves session-selected r
  assert.match(brain,/current.revision!==proof.revision/);
  assert.match(brain,/GOOGLE_CALENDAR_SCOPE_AMBIGUOUS/);
  assert.doesNotMatch(brain,/native\.session\.googleCalendarId\s*=\s*/);
+});
+
+
+test('Clara native scheduling accepts an explicit bounded request but never treats text as approval',()=>{
+ const fieldIntent=parseNativeCalendarReadIntent('Prépare un rendez-vous\nCalendrier : Melodie Digital Calendar\nDate : lundi 9 novembre 2026');
+ assert.equal(fieldIntent.expectedName,'Melodie Digital Calendar');
+ const request=[
+  'Clara, prépare maintenant la création du rendez-vous suivant :',
+  'Titre : TEST Clara OS — Agenda',
+  'Date : lundi 9 novembre 2026',
+  'Heure : 10 h à 10 h 30, heure de Paris',
+  'Calendrier : Melodie Digital Calendar',
+  'Invités : aucun',
+  'Description : Vérification de la création de rendez-vous depuis Clara OS.',
+  "Ne crée aucun événement avant mon accord."
+ ].join('\n');
+ assert.deepEqual(parseNativeCalendarChatDraft(request),{
+  calendarName:'Melodie Digital Calendar',name:'TEST Clara OS — Agenda',
+  start:'2026-11-09T10:00:00+01:00',end:'2026-11-09T10:30:00+01:00',
+  description:'Vérification de la création de rendez-vous depuis Clara OS.'
+ });
+ for(const text of [
+  'Voici un résumé du rendez-vous prévu.',
+  request.replace('prépare maintenant','ne prépare pas'),
+  request.replace('Invités : aucun','Invités : team@example.org'),
+  request.replace('Date : lundi 9 novembre 2026','Date : mardi 31 février 2026'),
+  request.replace('Heure : 10 h à 10 h 30','Heure : 11 h à 10 h 30'),
+  request.replace('Calendrier : Melodie Digital Calendar','Calendrier : primary'),
+ ]) assert.equal(parseNativeCalendarChatDraft(text),null);
+ const spring=request.replace('Date : lundi 9 novembre 2026','Date : dimanche 29 mars 2026').replace('Heure : 10 h à 10 h 30','Heure : 2 h à 2 h 30');
+ assert.equal(parseNativeCalendarChatDraft(spring),null);
+ const autumn=request.replace('Date : lundi 9 novembre 2026','Date : dimanche 25 octobre 2026').replace('Heure : 10 h à 10 h 30','Heure : 2 h à 2 h 30');
+ assert.equal(parseNativeCalendarChatDraft(autumn),null);
+ const route=readFileSync('src/app/api/clara/chat/route.ts','utf8');
+ const module=readFileSync('src/lib/native/calendar-chat-prepare.ts','utf8');
+ assert.match(route,/nativeGoogleProposal/);
+ assert.match(module,/googleWorkCommand\('resources'/);
+ assert.match(module,/work\.prepare\(/);
+ assert.doesNotMatch(module,/executeGoogleWork/);
 });
