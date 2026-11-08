@@ -9,6 +9,7 @@ import {
 import { Clara } from "@/lib/core/clara";
 import { dispatchEvent } from "@/lib/core/event-bus";
 import { activeProjectId, object } from "@/lib/brain/live-project-context";
+import { hasCompleteLiveProductionProposal, type LiveProductionScope } from "@/lib/brain/live-production-proposal-guard";
 import { safeResponseLocale } from "@/i18n/response-language";
 import { composeClaraResponseWithProposal } from "@/lib/brain/response-composer";
 import { saveSession } from "@/lib/core/store/session-store";
@@ -295,6 +296,19 @@ async function handleEvent(request: Request, execution?: Execution) {
     const declaredProject=object(object(body.context?.projectContext).project).id;
     if(projectId && declaredProject && declaredProject!==projectId)
       return respond({success:false,code:"CORE_EVENT_PROCESSING_FAILED",error:"Project context mismatch."},400);
+    const live=object(body.context?.live), activePreparation=object(body.context?.activePreparation);
+    // Only the existing authenticated Clara Live Production advice path requests
+    // a structured proposal. Ordinary external dialogue is unaffected.
+    const expectsLiveProposal=body.eventType==="USER_MESSAGE" && product.productId==="clara-live" &&
+      live.adviceOnly===true && Object.hasOwn(activePreparation,"businessContext");
+    if(expectsLiveProposal && (!projectId || scope.workspaceId!==projectId ||
+        typeof live.preparationId!=="string" || live.preparationId.length===0 ||
+        activePreparation.id!==live.preparationId ||
+        (activePreparation.project_id!==undefined && activePreparation.project_id!==projectId))) {
+      return respond({success:false,code:"CORE_EVENT_PROCESSING_FAILED",error:"Production preparation scope mismatch."},400);
+    }
+    const liveProductionScope:LiveProductionScope|undefined=expectsLiveProposal
+      ? {projectId:projectId!,preparationId:live.preparationId as string}:undefined;
     const key = sessionKey(scope,projectId);
     const clara = new Clara(key, product.workspaceId);
     const event = {
@@ -328,12 +342,17 @@ async function handleEvent(request: Request, execution?: Execution) {
     await advance("core_dispatch");
     const session = await dispatchEvent(clara, event);
     await advance("response_composition");
-    const composed = await composeClaraResponseWithProposal(message, session,safeResponseLocale(body.context?.language));
+    const composed = await composeClaraResponseWithProposal(message, session,safeResponseLocale(body.context?.language),liveProductionScope);
     // A partial/failed cognitive response is a failed receipt, never a usable
     // assistant answer for an external product. Keep only a safe failure notice
     // in the scoped conversation. The provider fragment must not be persisted
     // or returned through the Core failure payload.
-    const generationFailed=body.eventType==="USER_MESSAGE" && composed.generation.status!=="completed";
+    // A provider may report "completed" for prose that Live cannot consume.
+    // Never publish an unusable Production handoff as a successful Core job.
+    const invalidLiveProposal=!!liveProductionScope && composed.generation.status==="completed" &&
+      !hasCompleteLiveProductionProposal(composed.content,liveProductionScope);
+    const generationFailed=body.eventType==="USER_MESSAGE" &&
+      (composed.generation.status!=="completed" || invalidLiveProposal);
     const locale=safeResponseLocale(body.context?.language);
     const failedNotice={
       fr:"Clara n'a pas pu terminer sa réponse. Aucune proposition exploitable n'a été produite. Une nouvelle tentative doit être demandée explicitement.",
@@ -343,7 +362,11 @@ async function handleEvent(request: Request, execution?: Execution) {
       it:"Clara non è riuscita a completare la risposta. Non è stata prodotta alcuna proposta utilizzabile. Un nuovo tentativo richiede una richiesta esplicita.",
     }[locale];
     const response=generationFailed?failedNotice:composed.content;
-    const generation=generationFailed?{...composed.generation,recoverable:false}:composed.generation;
+    const generation=generationFailed?{
+      ...composed.generation,
+      ...(invalidLiveProposal?{status:"failed" as const,failureCategory:"invalid_structure"}:{}),
+      recoverable:false,
+    }:composed.generation;
     const now=new Date().toISOString();
     const prefix=execution?.jobId ?? crypto.randomUUID();
     const messages: ClaraConversationMessage[] = [
@@ -355,7 +378,7 @@ async function handleEvent(request: Request, execution?: Execution) {
     session.updatedAt=new Date();
     if(generationFailed){
       await advance("response_incomplete");
-      const category=composed.generation.failureCategory ?? "provider_failed";
+      const category=generation.failureCategory ?? "provider_failed";
       if(execution){
         if(!execution.persistFailure)throw new Error("Failure/session atomic persistence required");
         await execution.persistFailure(category,session,key);
