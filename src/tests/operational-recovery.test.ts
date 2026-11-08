@@ -126,7 +126,7 @@ test('Clara native scheduling accepts an explicit bounded request but never trea
   request.replace('Date : lundi 9 novembre 2026','Date : mardi 31 février 2026'),
   request.replace('Heure : 10 h à 10 h 30','Heure : 11 h à 10 h 30'),
   request.replace('Calendrier : Melodie Digital Calendar','Calendrier : primary'),
- ]) assert.equal(parseNativeCalendarChatDraft(text)?.calendarName==='primary'?null:parseNativeCalendarChatDraft(text),null);
+ ]) assert.equal(parseNativeCalendarChatDraft(text),null);
  const spring=request.replace('Date : lundi 9 novembre 2026','Date : dimanche 29 mars 2026').replace('Heure : 10 h à 10 h 30','Heure : 2 h à 2 h 30');
  assert.equal(parseNativeCalendarChatDraft(spring),null);
  const autumn=request.replace('Date : lundi 9 novembre 2026','Date : dimanche 25 octobre 2026').replace('Heure : 10 h à 10 h 30','Heure : 2 h à 2 h 30');
