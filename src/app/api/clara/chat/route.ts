@@ -174,12 +174,25 @@ async function scopedChat(request:Request) {
         const detail=prepared.review.proposal;
         const date=new Intl.DateTimeFormat(locale,{dateStyle:'full',timeZone:'Europe/Paris'}).format(new Date(detail.start));
         const hour=new Intl.DateTimeFormat(locale,{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Paris'});
-        responseMessage=`J'ai préparé « ${detail.name} » dans ${prepared.review.calendarName}, pour ${date} de ${hour.format(new Date(detail.start))} à ${hour.format(new Date(detail.end))}. Rien n'a été créé dans Google. Vérifie les informations ci-dessous et confirme seulement si elles te conviennent.`;
+        const display=detail.name+' · '+prepared.review.calendarName+' · '+date+' '+hour.format(new Date(detail.start))+'–'+hour.format(new Date(detail.end));
+        const replies={
+          fr:"C'est prêt à être validé : "+display+". Je n'ai encore rien créé dans Google. Vérifie les détails ci-dessous et donne ton accord si tout te convient.",
+          en:"Ready for your review: "+display+". I haven't created anything in Google. Check the details below and confirm only if everything looks right.",
+          es:"Ya está listo para tu revisión: "+display+". Todavía no he creado nada en Google. Comprueba los detalles y confirma solo si estás de acuerdo.",
+          de:"Der Vorschlag ist zur Prüfung bereit: "+display+". In Google habe ich noch nichts erstellt. Prüfe die Angaben und bestätige nur, wenn alles stimmt.",
+          it:"La proposta è pronta da verificare: "+display+". Non ho ancora creato nulla su Google. Controlla i dettagli e conferma solo se va tutto bene.",
+        };
+        responseMessage=replies[locale];
       }else if(prepared.kind==='unavailable'){
-        const reason=prepared.code==='GOOGLE_MISSION_REQUIRED'
-          ? "Une mission active dans ce projet est nécessaire pour enregistrer la proposition."
-          : "Je n'ai pas pu certifier un calendrier disponible en écriture et déjà autorisé dans ce projet.";
-        responseMessage=`J'ai compris le rendez-vous que tu souhaites préparer, mais je ne peux pas encore enregistrer l'opération dans Google. ${reason} Je n'ai rien créé.`;
+        const missingMission=prepared.code==='GOOGLE_MISSION_REQUIRED';
+        const replies={
+          fr:missingMission?"Je peux préparer ce rendez-vous, mais il faut d'abord une mission active dans ce projet. Rien n'a été créé.":"J'ai compris le rendez-vous, mais je ne retrouve pas un calendrier déjà autorisé pour ce projet. Je n'ai rien créé.",
+          en:missingMission?"I can prepare this appointment once there is an active mission in this project. Nothing has been created.":"I understand the appointment, but I can't verify an authorized calendar for this project. Nothing has been created.",
+          es:missingMission?"Puedo preparar la cita cuando haya una misión activa en este proyecto. No he creado nada.":"He entendido la cita, pero no encuentro un calendario autorizado para este proyecto. No he creado nada.",
+          de:missingMission?"Ich kann den Termin vorbereiten, sobald in diesem Projekt eine Mission aktiv ist. Es wurde nichts erstellt.":"Ich habe den Termin verstanden, kann aber keinen autorisierten Kalender für dieses Projekt bestätigen. Es wurde nichts erstellt.",
+          it:missingMission?"Posso preparare l'appuntamento quando ci sarà una missione attiva nel progetto. Non ho creato nulla.":"Ho capito l'appuntamento, ma non riesco a verificare un calendario autorizzato per questo progetto. Non ho creato nulla.",
+        };
+        responseMessage=replies[locale];
       }
     }
     if (executionPlan.physicalActions.length > 0) {
