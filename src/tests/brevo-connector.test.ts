@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
+import {readFileSync} from 'node:fs';
 import test from "node:test";
 import { BrevoClient } from "@/lib/connectors/brevo/client";
 import {readBrevoBounded,brevoReadKindFromMessage,brevoReadFailureCode} from '@/lib/connectors/brevo/api-key-read';
+import {brevoM2MStatus,brevoM2MReadScope,requestBrevoM2MReadToken,BrevoM2MError} from '@/lib/connectors/brevo/m2m';
 import { BREVO_CAPABILITIES, BrevoConnectorDefinition } from "@/lib/connectors/brevo/definition";
 import { BrevoApiError } from "@/lib/connectors/brevo/error";
 import { parseBrevoWebhook } from "@/lib/connectors/brevo/webhook";
@@ -268,4 +270,72 @@ test('Brevo failures distinguish status codes without leaking provider messages'
   assert.doesNotMatch(brevoReadFailureCode(e),/PRIVATE|apiKey/);
  }
  assert.equal(brevoReadFailureCode(new Error('PRIVATE_PROVIDER_IP_AND_KEY')),'BREVO_READ_TRANSPORT_ERROR');
+});
+
+
+
+test('Brevo M2M mints only one explicitly requested READ scope and calls GET with Bearer',async()=>{
+ const tokenHttp=fakeHttp([json({access_token:'scoped-access-token-12345',token_type:'Bearer',expires_in:3600,scope:'contacts:read'})]);
+ const env={BREVO_M2M_CLIENT_ID:'service-client',BREVO_M2M_CLIENT_SECRET:'private-keep-out'};
+ assert.deepEqual(brevoM2MStatus(env),{selected:true,configured:true});
+ assert.equal(brevoM2MReadScope('lists'),'contacts:read');
+ assert.equal(brevoM2MReadScope('campaigns'),'campaigns.email:read');
+ assert.equal(brevoM2MReadScope('templates'),'transactional.email:read');
+ const token=await requestBrevoM2MReadToken('lists',env,tokenHttp.fetch);
+ assert.equal(token,'scoped-access-token-12345');
+ assert.equal(tokenHttp.calls.length,1);
+ assert.equal(tokenHttp.calls[0]?.url,'https://api.brevo.com/realms/partner/oauth/token');
+ assert.equal(tokenHttp.calls[0]?.init?.method,'POST');
+ const form=new URLSearchParams(String(tokenHttp.calls[0]?.init?.body));
+ assert.equal(form.get('grant_type'),'client_credentials');
+ assert.equal(form.get('client_id'),'service-client');
+ assert.equal(form.get('client_secret'),'private-keep-out');
+ assert.equal(form.get('scope'),'contacts:read');
+ assert.equal(tokenHttp.calls[0]?.init?.redirect,'error');
+ const apiHttp=fakeHttp([json({count:1,lists:[{id:7,name:'Commercial'}]})]);
+ const lists=await readBrevoBounded('lists',{accessToken:token},apiHttp.fetch);
+ assert.deepEqual(lists,{kind:'lists',count:1,items:[{id:7,name:'Commercial',uniqueSubscribers:undefined}],partial:false});
+ assert.equal(new Headers(apiHttp.calls[0]?.init?.headers).get('Authorization'),'Bearer scoped-access-token-12345');
+ assert.equal(new Headers(apiHttp.calls[0]?.init?.headers).get('api-key'),null);
+ assert.equal(apiHttp.calls[0]?.init?.method,undefined);
+});
+test('M2M incomplete configuration, invalid token, wrong scope and unauthorized exchange fail closed and hide secrets',async()=>{
+ const env={BREVO_M2M_CLIENT_ID:'client',BREVO_M2M_CLIENT_SECRET:'very-sensitive'};
+ assert.deepEqual(brevoM2MStatus({BREVO_M2M_CLIENT_ID:'client'}),{selected:true,configured:false});
+ let called=false;
+ await assert.rejects(()=>requestBrevoM2MReadToken('contacts',{BREVO_M2M_CLIENT_ID:'client'},async()=>{
+  called=true;throw Error('not expected');
+ }),{code:'BREVO_M2M_CONFIGURATION_INCOMPLETE'});
+ assert.equal(called,false);
+ for(const bad of [
+  {access_token:'scoped-token-some-123',token_type:'Bearer',expires_in:3600,scope:'contacts:read campaigns.email:write'},
+  {access_token:'scoped-token-some-123',token_type:'Bearer',expires_in:3600,scope:'campaigns.email:write'},
+  {access_token:'scoped-token-some-123',token_type:'Bearer',expires_in:0,scope:'contacts:read'},
+ ]){
+  const http=fakeHttp([json(bad)]);
+  await assert.rejects(()=>requestBrevoM2MReadToken('contacts',env,http.fetch),(err:unknown)=>{
+   assert.ok(err instanceof BrevoM2MError);
+   assert.equal(err.code,'BREVO_M2M_TOKEN_INVALID');
+   assert.doesNotMatch(JSON.stringify(err),/very-sensitive|scoped-token-some-123/);
+   return true;
+  });
+ }
+ const rejected=fakeHttp([json({error:'invalid_client',client_secret:'very-sensitive'},401)]);
+ await assert.rejects(()=>requestBrevoM2MReadToken('contacts',env,rejected.fetch),(err:unknown)=>{
+  assert.ok(err instanceof BrevoM2MError);
+  assert.equal(err.code,'BREVO_M2M_TOKEN_UNAUTHORIZED');
+  assert.doesNotMatch(JSON.stringify(err),/very-sensitive|invalid_client/);
+  return true;
+ });
+ assert.equal(brevoReadFailureCode(new BrevoM2MError('BREVO_M2M_TOKEN_UNAUTHORIZED')),'BREVO_M2M_TOKEN_UNAUTHORIZED');
+});
+test('native Brevo M2M is the preferred fail-closed READ path without enabling sends or bypassing scoped session',()=>{
+ const brain=readFileSync('src/lib/brain/brain-source-registry.ts','utf8');
+ assert.match(brain,/brevoM2MStatus\(\)\.selected/);
+ assert.match(brain,/requestBrevoM2MReadToken\(kind\)/);
+ assert.match(brain,/native.scope.workspaceId!==CURRENT_WORKSPACE_ID/);
+ assert.doesNotMatch(brain,/sendCampaign\(|sendTransactionalEmail\(/);
+ const status=readFileSync('src/app/api/native/brevo/status/route.ts','utf8');
+ assert.match(status,/m2mConfigured:m2m.configured/);
+ assert.match(status,/connected:false/);
 });
