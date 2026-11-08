@@ -33,8 +33,8 @@ export function naturalVerifiedCalendarReply(message:string,sources:readonly Bra
  const matches=(data.events as CalendarEvent[]).filter(item=>{
   const title=label(item?.summary,200);
   if(!title||fold(title).length<10||fold(title).split(' ').length<3||!requested.includes(fold(title)))return false;
-  const begin=typeof item?.start?.dateTime==='string'?Date.parse(item.start.dateTime):NaN;
-  const end=typeof item?.end?.dateTime==='string'?Date.parse(item.end.dateTime):NaN;
+  const begin=typeof item?.start?.dateTime==='string'&&/(?:Z|[+-]\d{2}:\d{2})$/.test(item.start.dateTime)?Date.parse(item.start.dateTime):NaN;
+  const end=typeof item?.end?.dateTime==='string'&&/(?:Z|[+-]\d{2}:\d{2})$/.test(item.end.dateTime)?Date.parse(item.end.dateTime):NaN;
   return Number.isFinite(begin)&&Number.isFinite(end)&&begin>=low&&begin<high&&end>begin&&end<=high;
  });
  if(matches.length!==1)return null;
@@ -43,6 +43,13 @@ export function naturalVerifiedCalendarReply(message:string,sources:readonly Bra
  const date=new Intl.DateTimeFormat(locale,{timeZone:'Europe/Paris',dateStyle:'full'}).format(begin);
  const a=parisHour(begin,locale),b=parisHour(end,locale);
  if(!a||!b)return null;
+ // A request for a specific clock time must match the provider event's Paris time.
+ const requestedTime=message.match(/\b(?:à|at|um|alle|a las)\s+(\d{1,2})\s*(?:h|:)\s*(\d{0,2})(?:\b|$)/iu);
+ if(requestedTime){
+  const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Paris',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(begin);
+  const hour=Number(parts.find(v=>v.type==='hour')?.value),minute=Number(parts.find(v=>v.type==='minute')?.value);
+  if(hour!==Number(requestedTime[1])||minute!==Number(requestedTime[2]||0))return null;
+ }
  switch(locale){
   case 'en':return 'Yes, I found it! “'+title+'” is in '+calendarName+' on '+date+', from '+a+' to '+b+'. I haven’t changed anything.';
   case 'es':return '¡Sí, lo encontré! «'+title+'» está en '+calendarName+' el '+date+', de '+a+' a '+b+'. No he modificado nada.';
