@@ -41,18 +41,52 @@ Pour un événement externe `USER_MESSAGE` dont la génération n'a pas
 
 Le comportement existant du compositeur pour le chat ordinaire reste inchangé.
 
+## Contrat Production existant : génération complète et exploitable
+
+Un contrôle supplémentaire est borné à un tour `USER_MESSAGE` de
+`clara-live` avec `context.live.adviceOnly=true` **et** un
+`activePreparation.businessContext` transmis par Live. Les identités
+`projectId`, `preparationId` et le workspace sont relues depuis le contexte
+scopé avant génération ; une préparation différente est rejetée avant dispatch.
+
+Le compositeur OS garde exactement le contrat de transport existant
+`ClaraCoreResult.response` (texte), mais demande alors à la même génération
+cognitive de fournir un **unique bloc JSON complet** conforme au schéma
+Live déjà utilisé `clara.production.proposal.v1`. Aucun appel fournisseur
+additionnel ni nouveau modèle d'exécution.
+
+Avant `completeWithSession`, le garde OS vérifie la présence du schéma,
+les identités exactes, 1–50 lignes, les sections autorisées, les tailles de
+champs et l'absence d'autres champs métier. Si la génération fournisseur est
+terminée mais n'a produit que de la prose ou un JSON inutilisable,
+le job est enregistré `failed / invalid_structure` avec la session et un
+avis d'échec non exploitable. Aucun fragment de la réponse brute invalide n'est
+renvoyé ni stocké comme réponse de Clara.
+
+**Le parseur et les vérifications de Live restent l'autorité métier finale** :
+ils contrôlent toujours les refus, les accès, la version CAS, les brouillons,
+les confirmations et les sauvegardes explicites. Cette vérification de
+compatibilité OS ne donne aucune autorité d'écriture.
+
+Le parcours normal de conversation, les autres produits et les appels sans
+`businessContext` restent inchangés. Un fournisseur réel peut toujours
+refuser ou manquer le bloc attendu : ceci produit désormais un **échec explicite**
+plutôt qu'un résultat `completed` non consommable, mais ne garantit pas le
+succès cognitif réel.
+
 ## Réception et limites
 
 Tests P0 sur les cas `output_truncated`, `output_filtered`,
 `provider_timeout`, `provider_failed`, présence de l'identité et absence
 de fragments dans la conversation/réponse d'erreur ; compilations GitHub.
 
-Le schéma Live `clara.production.proposal.v1` est contenu dans le
-prompt de `ProductionWorksheet` mais n'est pas encore garanti par une
-réponse structurée fournisseur. Le prompt utilise « If you propose… » ;
-une réponse OS `completed` peut donc rester de la prose. **Ce correctif
-n'atteste pas la production de propositions réelles** et ne change pas
-le contrat Core `ClaraCoreResult.response`.
+Le schéma Live `clara.production.proposal.v1` figure déjà dans
+`ProductionWorksheet`. Avec le nouveau garde, une réponse de prose seule
+dans le parcours Production ciblé sera **rejetée**, mais une sortie fournisseur
+réellement conforme reste **NON ATTESTÉE**. Les essais d'isolation utilisent
+des réponses synthétiques ; ils n'attestent pas la compréhension d'une vraie
+fiche ni la pertinence des lignes proposées. Le contrat Core
+`ClaraCoreResult.response` reste inchangé.
 
 NO-GO pour annoncer une fiche Origins Of Nebulae reçue, un rattachement
 Stage/Patch attesté, ou une génération fournisseur réelle. Test en
