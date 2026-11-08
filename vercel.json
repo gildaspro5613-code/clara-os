@@ -45,7 +45,8 @@
       "fix/clara-personality-clarity-20261108": false,
       "fix/native-calendar-chat-prepare-20261108": false,
       "fix/calendar-read-natural-lookup-20261108": false,
-      "fix/clara-natural-provider-replies-20261108": false
+      "fix/clara-natural-provider-replies-20261108": false,
+      "fix/brevo-m2m-credential-bridge-20261108": false
     }
   }
 }
