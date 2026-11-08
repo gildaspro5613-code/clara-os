@@ -123,7 +123,13 @@ export class NativeGoogleWork {
   const ctx=writableNativeContext();if(ctx.session.googleConnectionId!==this.connectionId){ctx.session.googleCalendarId=undefined;ctx.session.googleFolderId=undefined;}ctx.session.googleConnectionId=this.connectionId;if(kind==='calendar')ctx.session.googleCalendarId=id;else ctx.session.googleFolderId=id;return {success:true};
  }
  async events(pageToken?:string,timeMin?:string,timeMax?:string){
-  const id=nativeContext()!.session.googleCalendarId;if(!id||nativeContext()!.session.googleConnectionId!==this.connectionId)throw new RegistryError(409,'GOOGLE_CALENDAR_SELECTION_REQUIRED');
+  const id=nativeContext()!.session.googleCalendarId;
+  if(!id||nativeContext()!.session.googleConnectionId!==this.connectionId)throw new RegistryError(409,'GOOGLE_CALENDAR_SELECTION_REQUIRED');
+  return this.eventsForBoundCalendar(id,pageToken,timeMin,timeMax);
+ }
+ /** READ-only: a durable, unrevoked project binding is required, even if this
+  * particular chat session has never selected the calendar in the UI. */
+ async eventsForBoundCalendar(id:string,pageToken?:string,timeMin?:string,timeMax?:string){
   await this.bound(id,'calendar');await this.calendar(id);
   const now=new Date();now.setUTCHours(0,0,0,0);const end=new Date(now);end.setUTCDate(end.getUTCDate()+1);
   timeMin??=now.toISOString();timeMax??=end.toISOString();
