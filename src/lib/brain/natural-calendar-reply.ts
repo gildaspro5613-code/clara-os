@@ -44,7 +44,7 @@ export function naturalVerifiedCalendarReply(message:string,sources:readonly Bra
  const a=parisHour(begin,locale),b=parisHour(end,locale);
  if(!a||!b)return null;
  // A request for a specific clock time must match the provider event's Paris time.
- const requestedTime=message.match(/\b(?:à|at|um|alle|a las)\s+(\d{1,2})\s*(?:h|:)\s*(\d{0,2})(?:\b|$)/iu);
+ const requestedTime=message.match(/(?:^|\s)(?:à|at|um|alle|a las)\s+(\d{1,2})\s*(?:h|:)\s*(\d{0,2})(?:\b|$)/iu);
  if(requestedTime){
   const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Paris',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(begin);
   const hour=Number(parts.find(v=>v.type==='hour')?.value),minute=Number(parts.find(v=>v.type==='minute')?.value);
