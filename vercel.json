@@ -42,7 +42,8 @@
       "fix/calendar-targeted-native-read-20261107": false,
       "fix/documents-folder-confirmation-inp-20261107": false,
       "fix/agenda-native-authorized-read-20261108": false,
-      "fix/clara-personality-clarity-20261108": false
+      "fix/clara-personality-clarity-20261108": false,
+      "fix/native-calendar-chat-prepare-20261108": false
     }
   }
 }
