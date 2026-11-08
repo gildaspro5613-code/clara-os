@@ -41,6 +41,16 @@ test('Google native workspace: real PostgreSQL, exact confirmations, immutable s
  });
  await t.test('explicit resource binding, two users/clients/projects and historical/primary/root refusals',async()=>{
   for(const [kind,id] of [['calendar','calendar-a'],['folder','folder-a'],['folder','folder-other']] as const){const check=await run(async()=>await(await work()).inspect(kind,id));await run(async()=>await(await work()).bind(kind,id,check.resource.version!),request(),true);}
+  await run(async()=>{
+   const scoped=nativeContext()!.session,chosen=scoped.googleCalendarId;
+   scoped.googleCalendarId=undefined;
+   try{
+    const bound=await work();
+    assert.equal((await bound.eventsForBoundCalendar('calendar-a')).calendarId,'calendar-a');
+    await assert.rejects(()=>bound.events());
+    await assert.rejects(()=>bound.eventsForBoundCalendar('calendar-other'));
+   }finally{scoped.googleCalendarId=chosen;}
+  });
   for(const r of [request('B',b),request('A',p2,'c1','p2'),request('A',p3,'c2','p3')]){
    await assert.rejects(()=>run(async()=>await(await work()).bind('folder','folder-a','1'),r,true));
   }
