@@ -1,3 +1,4 @@
+import {readFileSync} from "node:fs";
 import test from "node:test";
 import assert from "node:assert/strict";
 import {moduleFrom} from "./helpers/production-p0-harness";
@@ -119,4 +120,23 @@ test("P0-B: opaque scope identifiers reject controls that could collide in the d
  assert.ok(parseBody(body));
  for(const field of ["workspaceId","userId","sessionId"])
   for(const control of ["\u001f","\n","\u007f"])assert.equal(parseBody({...body,scope:{...body.scope,[field]:"first"+control+"second"}}),null);
+});
+
+
+test("P0 Documents folder selection preserves explicit approval without blocking the browser",()=>{
+ const ui=readFileSync("src/components/documents/NativeDocumentDailyPanel.tsx","utf8");
+ assert.doesNotMatch(ui,/window\.confirm\s*\(/);
+ assert.match(ui,/role="dialog" aria-modal="true"/);
+ assert.match(ui,/if\(!folder\|\|busy\|\|!writable\)return/);
+ assert.match(ui,/nativePost\('inspect',\{kind:'folder',resourceId:folder.id\}\)/);
+ assert.match(ui,/nativePost\('bind',\{kind:'folder',resourceId:folder.id,version:inspect.resource.version\}\)/);
+ assert.match(ui,/nativePost\('select',\{kind:'folder',resourceId:folder.id\}\)/);
+ assert.match(ui,/refreshed.capabilities.selectedFolderId!==folder.id/);
+ assert.match(ui,/!refreshed.resources.some\(resource=>resource.kind==='folder'&&resource.id===folder.id\)/);
+ assert.match(ui,/disabled=\{busy\|\|!writable\}/);
+ for(const locale of ["fr","en","es","de","it"]){
+  const messages=JSON.parse(readFileSync(`src/i18n/messages/${locale}/index.json`,"utf8")).documents as Record<string,string>;
+  for(const key of ["workspaceConfirmFolder","workspaceCancelFolder","workspaceFolderChecking","workspaceFolderReady","workspaceSearchFolder"])
+   assert.ok(messages[key]?.trim(),`${locale}:${key}`);
+ }
 });
