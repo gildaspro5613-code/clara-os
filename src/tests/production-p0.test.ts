@@ -182,7 +182,8 @@ test("P0-C/Live: complete provider prose or foreign/invalid JSON fails as an ato
  const originalContext=(current.payload as {context:Record<string,unknown>}).context;
  const scope={productId:"clara-live",workspaceId:"project-a",userId:"alice",sessionId:"session-a"};
  const body={schemaVersion:"clara.unified-core.event.v1",eventType:"USER_MESSAGE",scope,
-   ...(current.payload as object),context:{...originalContext,language:"fr",
+   ...(current.payload as object),message:"Prépare la feuille de production.",
+   context:{...originalContext,language:"fr",
      live:{adviceOnly:true,preparationId:"prep-a"},
      activePreparation:{id:"prep-a",project_id:"project-a",businessContext:{rows:[{label:"Production"}]}}}};
  const good=JSON.stringify({schema:"clara.production.proposal.v1",project_id:"project-a",preparation_id:"prep-a",
