@@ -140,3 +140,20 @@ test("P0 Documents folder selection preserves explicit approval without blocking
    assert.ok(messages[key]?.trim(),`${locale}:${key}`);
  }
 });
+
+test("P0 Agenda reuses durable scoped calendars without session selection or automatic writes",()=>{
+ const parser=readFileSync("src/lib/brain/calendar-read-intent.ts","utf8");
+ const source=readFileSync("src/lib/brain/brain-source-registry.ts","utf8");
+ const work=readFileSync("src/lib/native/google-work.ts","utf8");
+ assert.match(parser,/chooseAuthorizedCalendar/);
+ assert.match(parser,/matchesAuthorizedCalendarName/);
+ assert.match(source,/nativeGoogleCommand\('list'\)/);
+ assert.match(source,/googleWorkCommand\('resources',\{connectionId\}\)/);
+ assert.match(source,/googleWorkCommand\('resource',\{connectionId,bindingId/);
+ assert.match(source,/chooseAuthorizedCalendar\(candidates,intent.expectedName/);
+ assert.match(source,/eventsForBoundCalendar\(calendarId,undefined,timeMin,timeMax\)/);
+ assert.match(source,/current.revision!==proof.revision/);
+ assert.match(work,/await this.bound\(id,'calendar'\);await this.calendar\(id\);/);
+ assert.match(work,/return this.eventsForBoundCalendar\(id,pageToken,timeMin,timeMax\)/);
+ assert.doesNotMatch(source,/native\.session\.googleCalendarId\s*=/);
+});

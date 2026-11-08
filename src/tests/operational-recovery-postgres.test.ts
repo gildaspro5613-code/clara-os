@@ -70,7 +70,7 @@ test('operational recovery through scoped runtime and real PostgreSQL persistenc
  });
  await t.test('native calendar missing binding and mailbox missing authority are explicit, no global fallback',async()=>{
   const contexts=await run(()=>buildBrainSources(event('Mon agenda et mes courriels'),new Date()));
-  assert.ok(contexts.some(s=>s.summary.includes('GOOGLE_CALENDAR_SELECTION_REQUIRED')));
+  assert.ok(contexts.some(s=>s.summary.includes('GOOGLE_CALENDAR_CONNECTION_REQUIRED')));
   assert.ok(contexts.some(s=>s.summary.includes('MAIL_AUTHORITY_REQUIRED')));
  });
  await t.test('selected-calendar cognition reuses real scoped authority and no mutation transport',async()=>{
@@ -81,6 +81,12 @@ test('operational recovery through scoped runtime and real PostgreSQL persistenc
    await run(async()=>{const c=writableNativeContext();c.session.googleConnectionId='google-work-a';const work=await new NativeGoogleWork('google-work-a').initialize();const inspected=await work.inspect('calendar','calendar-a');await work.bind('calendar','calendar-a',inspected.resource.version!);});
    await run(async()=>{await(await new NativeGoogleWork('google-work-a').initialize()).select('calendar','calendar-a');});
    const contexts=await run(()=>buildBrainSources(event('Mon agenda'),new Date()));assert.equal(contexts[0].available,true);assert.equal((contexts[0].data as {calendarId:string}).calendarId,'calendar-a');assert.equal(provider.calls.length,0);
+   const secondSession=await create();
+   const carried=await run(()=>buildBrainSources(event('Consulte le calendrier calendar-a pour le lundi 9 novembre 2026'),new Date()),secondSession);
+   const persistent=carried.find(s=>s.source==='google-calendar');
+   assert.equal(persistent?.available,true,'durable project binding must survive a new conversation');
+   assert.deepEqual((persistent?.data as {range?:{from:string;through:string}}).range?.from,'2026-11-09');
+   assert.equal(provider.calls.length,0,'READ-only must not mutate the provider');
    await assert.rejects(run(async()=>{writableNativeContext();const result=await buildBrainSources(event('Mon agenda'),new Date());pg("UPDATE clara_native_resource_authority SET revoked_at=NOW() WHERE resource_kind='calendar' AND revoked_at IS NULL");return result;}));
   }finally{drive.mock.restore();calendar.mock.restore();}
  });

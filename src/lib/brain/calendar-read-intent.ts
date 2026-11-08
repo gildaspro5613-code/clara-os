@@ -38,15 +38,36 @@ function parisMidnightUTC(date:Date):string{
  const key=date.toISOString().slice(0,10);
  return new Date(key+'T00:00:00'+offset).toISOString();
 }
+/** The caller supplies only already granted, scoped bindings; names are never a grant. */
+export interface AuthorizedCalendarCandidate {
+ readonly connectionId:string;readonly calendarId:string;readonly bindingId:string;readonly name:string;
+}
+export type AuthorizedCalendarChoice =
+ | {kind:'selected';calendar:AuthorizedCalendarCandidate}
+ | {kind:'missing'|'ambiguous'};
+export function chooseAuthorizedCalendar(candidates:AuthorizedCalendarCandidate[],expectedName:string|null,
+ preferred?:{connectionId?:string;calendarId?:string}):AuthorizedCalendarChoice{
+ const matched=expectedName?candidates.filter(c=>matchesAuthorizedCalendarName(c.name,expectedName)):candidates;
+ if(!expectedName&&preferred?.connectionId&&preferred.calendarId){
+  const selected=matched.filter(c=>c.connectionId===preferred.connectionId&&c.calendarId===preferred.calendarId);
+  if(selected.length===1)return {kind:'selected',calendar:selected[0]};
+ }
+ if(matched.length===0)return {kind:'missing'};
+ if(matched.length!==1)return {kind:'ambiguous'};
+ return {kind:'selected',calendar:matched[0]};
+}
 export function parseNativeCalendarReadIntent(message:string):NativeCalendarReadIntent{
- const m=message.match(/\b(?:calendrier|calendar|calendario|kalender)\s+(.+?)\s+(?:du|from|del|vom|dal|dall['’])\s+\d{1,2}/iu);
- const expectedName=m?.[1]?.trim().replace(/^["“«']+|["”»']+$/g,'').trim()||null;
+ // A named calendar in the prompt can be compared with a durable binding, not used to create one.
+ const named=message.match(/\b(?:calendrier|calendar|calendario|kalender)\s+(?:«([^»\n]{1,160})»|"([^"\n]{1,160})"|“([^”\n]{1,160})”|([^.,!?\n]{1,160}?)(?=\s+(?:du|pour|from|on|del|vom|dal)\b))/iu);
+ const expectedName=(named?.[1]??named?.[2]??named?.[3]??named?.[4]??'').trim()||null;
  const range=message.match(/\b(?:du|from)\s+(\d{1,2})(?:er)?\s+(?:au|to)\s+(\d{1,2})\s+([a-zA-ZÀ-ÿ]+)\s+(?:de\s+)?(\d{4})\b/iu);
- if(!range){
+ const single=range?null:message.match(/\b(?:(?:pour|le|on|del|vom|am|il|el)\s+)?(?:(?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\s+)?(\d{1,2})(?:er)?\s+([a-zA-ZÀ-ÿ]+)\s+(?:de\s+)?(\d{4})\b/iu);
+ if(!range&&!single){
   if(/\b20\d{2}\b/.test(message)||/\b(?:du|from|del|vom|dal)\s+\d{1,2}\b/iu.test(message))return {kind:'unsupported',expectedName};
   return {kind:'default',expectedName};
  }
- const startDay=Number(range[1]),endDay=Number(range[2]),month=MONTHS[fold(range[3])],year=Number(range[4]);
+ const startDay=Number(range?.[1]??single?.[1]),endDay=Number(range?.[2]??single?.[1]);
+ const month=MONTHS[fold(range?.[3]??single?.[2]??'')],year=Number(range?.[4]??single?.[3]);
  const start=validDate(year,month,startDay),last=validDate(year,month,endDay);
  if(!start||!last||last.getTime()<start.getTime()||last.getTime()-start.getTime()>30*86400000)return {kind:'unsupported',expectedName};
  const exclusive=new Date(last.getTime()+86400000);
