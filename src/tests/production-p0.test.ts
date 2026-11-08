@@ -11,6 +11,7 @@ import { reasoning } from "@/lib/brain/reasoning";
 import { OpenAIResponsesEngine } from "@/lib/connectors/internal/openai/responses/openai-responses-engine";
 import { composeClaraResponseWithProposal } from "@/lib/brain/response-composer";
 import { responseGeneration } from "@/lib/brain/response-generation";
+import { hasCompleteLiveProductionProposal } from "@/lib/brain/live-production-proposal-guard";
 import { withPersistedConversation } from "@/lib/core/conversation-context";
 import { rememberEvent, clearRememberedEvents } from "@/lib/brain/memory-store";
 import { loadMemory } from "@/lib/brain/memory";
@@ -134,6 +135,99 @@ test("P0-C/F: no failed external generation is exposed as a completed assistant 
    assert.doesNotMatch(history[1].content,/PRIVATE_PARTIAL_PROVIDER_FRAGMENT/);
    assert.match(history[1].content,/nouvelle tentative/);
  }
+});
+
+
+test("P0-C/Live: existing Production proposal shape is complete, bounded and tied to the authorized project/preparation",()=>{
+ const scope={projectId:"project-a",preparationId:"prep-a"};
+ const payload={schema:"clara.production.proposal.v1",project_id:scope.projectId,preparation_id:scope.preparationId,
+   rows:[{section:"tasks",label:"Check rigging",value:"Rigging details require confirmation",notes:"Technical rider, page 2"}]};
+ const json=JSON.stringify(payload),fence=String.fromCharCode(96).repeat(3);
+ assert.equal(hasCompleteLiveProductionProposal("Réserves à valider.\n"+fence+"json\n"+json+"\n"+fence,scope),true);
+ assert.equal(hasCompleteLiveProductionProposal(json,scope),true);
+ for(const invalid of [
+   "Natural prose without machine rows",
+   fence+"json\n"+json.slice(0,-2),
+   fence+"json\n"+json+"\n"+fence+"\n"+fence+"json\n"+json+"\n"+fence,
+   JSON.stringify({...payload,project_id:"project-b"}),
+   JSON.stringify({...payload,preparation_id:"prep-b"}),
+   JSON.stringify({...payload,rows:[]}),
+   JSON.stringify({...payload,rows:[{...payload.rows[0],section:"unauthorized"}]}),
+   JSON.stringify({...payload,rows:[{...payload.rows[0],operation_id:"execute"}]}),
+   JSON.stringify({...payload,rows:[{...payload.rows[0],label:"x".repeat(301)}]}),
+ ])assert.equal(hasCompleteLiveProductionProposal(invalid,scope),false,invalid.slice(0,85));
+});
+
+test("P0-C/Live: Production handoff is explicit in the existing composer, without changing the ordinary conversation contract",async(t)=>{
+ const scope={projectId:"project-a",preparationId:"prep-a"};
+ const value=JSON.stringify({schema:"clara.production.proposal.v1",project_id:"project-a",preparation_id:"prep-a",
+   rows:[{section:"tasks",label:"Verify crew",value:"Crew assignments are not confirmed"}]});
+ let prompt="";
+ t.mock.method(OpenAIResponsesEngine.prototype,"generate",async(input)=>{prompt=input.prompt;return result(value);});
+ const session=createSession();
+ const complete=await composeClaraResponseWithProposal("Propose des tâches de production",session,"fr",scope);
+ assert.equal(complete.generation.status,"completed");
+ assert.equal(complete.content,value);
+ assert.match(prompt,/clara\.production\.proposal\.v1/);
+ assert.match(prompt,/project-a/);
+ assert.match(prompt,/prep-a/);
+ assert.match(prompt,/aucune proposition|aucun.*statut|aucune.*ligne/i);
+ const generic=await composeClaraResponseWithProposal("Bonjour",session,"fr");
+ assert.equal(generic.content,value);
+ assert.doesNotMatch(prompt,/REMIS LIVE/);
+});
+
+test("P0-C/Live: complete provider prose or foreign/invalid JSON fails as an atomic Core job, with no leaked fragment or automatic rewrite",async()=>{
+ const current=event();
+ const originalContext=(current.payload as {context:Record<string,unknown>}).context;
+ const scope={productId:"clara-live",workspaceId:"project-a",userId:"alice",sessionId:"session-a"};
+ const body={schemaVersion:"clara.unified-core.event.v1",eventType:"USER_MESSAGE",scope,
+   ...(current.payload as object),context:{...originalContext,language:"fr",
+     live:{adviceOnly:true,preparationId:"prep-a"},
+     activePreparation:{id:"prep-a",project_id:"project-a",businessContext:{rows:[{label:"Production"}]}}}};
+ const good=JSON.stringify({schema:"clara.production.proposal.v1",project_id:"project-a",preparation_id:"prep-a",
+   rows:[{section:"tasks",label:"Verify resource",value:"Resource to confirm",notes:"Rider"}]});
+ const success=routeHarness(false,undefined,false,undefined,async()=>({content:good,
+   generation:{status:"completed",recoverable:false}}));
+ let persisted:unknown;
+ const receipt=await success.execute({product:success.products.get("clara-live")!,body,
+   correlationId:"a".repeat(32),jobId:"b".repeat(64),progress:async()=>{},
+   persist:async(data)=>{persisted=data;},persistFailure:async()=>{throw Error("Valid handoff must complete");}});
+ assert.equal(receipt.status,200);
+ assert.equal((await receipt.json()).data.response,good);
+ assert.equal((persisted as {response:string}).response,good);
+ for(const fragment of ["PRIVATE_PROSE_NO_ROWS",JSON.stringify({schema:"clara.production.proposal.v1",
+    project_id:"another-project",preparation_id:"prep-a",rows:[{section:"tasks",label:"Incorrect scope",value:"No"}]})]){
+   const failedRoute=routeHarness(false,undefined,false,undefined,async()=>({content:fragment,
+     generation:{status:"completed",recoverable:false}}));
+   let stored:unknown;let category:string|undefined;
+   const failed=await failedRoute.execute({product:failedRoute.products.get("clara-live")!,body,
+     correlationId:"c".repeat(32),jobId:"d".repeat(64),progress:async()=>{},
+     persist:async()=>{throw Error("Unusable handoff must not complete");},
+     persistFailure:async(c,session)=>{category=c;stored=session;}});
+   assert.equal(failed.status,500);
+   const payload=await failed.json();
+   assert.equal(payload.code,"CORE_EVENT_PROCESSING_FAILED");
+   assert.equal(payload.failureCategory,"invalid_structure");
+   assert.equal(category,"invalid_structure");
+   assert.equal(payload.data?.sessionId,"session-a");
+   assert.equal(payload.data?.response,undefined);
+   assert.equal(payload.data?.generation?.status,"failed");
+   assert.doesNotMatch(JSON.stringify(payload),/PRIVATE_PROSE_NO_ROWS|another-project/);
+   const conversation=(stored as {conversation:{content:string;generation?:{status:string}}[]}).conversation;
+   assert.equal(conversation.length,2);
+   assert.equal(conversation[0].content,body.message);
+   assert.equal(conversation[1].generation?.status,"failed");
+   assert.doesNotMatch(conversation[1].content,/PRIVATE_PROSE_NO_ROWS|another-project/);
+   assert.equal(failedRoute.received.length,1,"Only one Core invocation, no replay");
+ }
+ const scopeMismatch=routeHarness();
+ const invalid=await scopeMismatch.execute({product:scopeMismatch.products.get("clara-live")!,
+   body:{...body,context:{...body.context,live:{adviceOnly:true,preparationId:"prep-other"}}},
+   correlationId:"e".repeat(32),jobId:"f".repeat(64),progress:async()=>{},
+   persist:async()=>{throw Error("No persistence on invalid preparation");}});
+ assert.equal(invalid.status,400);
+ assert.equal(scopeMismatch.received.length,0,"Scope mismatch rejected before dispatch");
 });
 
 test("P0-C: provider adapter enforces conversational ceiling and timeout without changing other profiles",async()=>{
