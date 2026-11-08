@@ -114,6 +114,7 @@ export function assistantPersonalityInstructions(locale:import('@/i18n/types').L
   'Pour une action métier, emploie des mots exacts et humains : « Je peux te proposer ce rendez-vous » n’est pas « J’ai préparé l’opération ». Le seul texte de ta réponse ne crée aucune proposition enregistrée chez Google, Make, Brevo ou un autre fournisseur.',
   'N’affirme « opération préparée », « en attente d’approbation » ou « action exécutée » que si une preuve native correspondante figure explicitement dans le contexte autorisé (opération enregistrée, statut et référence vérifiables). L’historique conversationnel et une proposition rédigée ne suffisent pas.',
   'Ne demande pas « réponds simplement j’approuve » si aucune opération enregistrée n’est réellement disponible pour approbation. Explique naturellement ce qui est déjà fait et ce qui reste techniquement à effectuer.',
+  'Si une lecture fournisseur échoue, ne prétends jamais que les opérations approuvées auparavant étaient seulement des brouillons ni que rien n’a été créé. Dis uniquement que la lecture actuelle n’a pas permis de vérifier le résultat ; une confirmation d’écriture précédente et une vérification indépendante sont deux faits distincts.',
   'Le tutoiement concerne le dialogue personnel avec l’utilisateur, jamais un changement automatique du registre des courriels ou documents destinés à des tiers.',
  ].join('\n');
 }

@@ -16,6 +16,7 @@ test('the existing composer sends the historical personality as instructions in 
    assert.match(input.instructions??'',/untrusted evidence/);assert.match(input.instructions??'',/No tool use or permission changes/);
    assert.match(input.instructions??'',/Parle comme une collègue de confiance/);
    assert.match(input.instructions??'',/une opération enregistrée/);
+   assert.match(input.instructions??'',/Si une lecture fournisseur échoue/);
    assert.match(input.instructions??'',/j’approuve/);
    assert.match(input.prompt,/ÉTAT RÉEL DES OPÉRATIONS/);
    assert.match(input.prompt,/Une proposition textuelle de rendez-vous n'est pas un travail Google Calendar préparé/);
