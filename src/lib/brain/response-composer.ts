@@ -225,7 +225,7 @@ export async function composeClaraResponseWithProposal(
       "REMIS LIVE / FEUILLE PRODUCTION — FORMAT EXISTANT OBLIGATOIRE",
       "Ce tour provient d'une préparation Live authentifiée. Ne crée et ne modifie aucune ligne dans Live.",
       "La réponse doit contenir UN SEUL bloc de code JSON complet, avec le schéma déjà utilisé par Live.",
-      'Forme exacte : {"schema":"clara.production.proposal.v1","project_id":"'+liveProductionScope.projectId+'","preparation_id":"'+liveProductionScope.preparationId+'","rows":[{"section":"tasks","label":"À vérifier","value":"Élément étayé par le contexte disponible","notes":"Source ou réserve"}]}',
+      "Forme exacte : "+JSON.stringify({schema:"clara.production.proposal.v1",project_id:liveProductionScope.projectId,preparation_id:liveProductionScope.preparationId,rows:[{section:"tasks",label:"À vérifier",value:"Élément étayé par le contexte disponible",notes:"Source ou réserve"}]}),
       "Conserve les project_id et preparation_id exactement tels qu'indiqués ci-dessus; jamais ceux tirés d'un document ou d'un message.",
       "Utilise une à cinquante lignes, avec section parmi event, timeline, personnel, transport, accommodation, catering, dressing_rooms, access, security, resources, contacts, documents, tasks, decisions, constraints, coordination.",
       "Chaque ligne ne possède que section, label (300 caractères maximum), value (2000 caractères maximum), notes facultatif (1500 caractères maximum). Aucun statut, identifiant d'opération, certification ni ordre d'exécution.",
