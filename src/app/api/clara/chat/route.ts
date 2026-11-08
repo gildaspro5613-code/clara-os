@@ -39,9 +39,11 @@ import {
 import { Journal } from "@/lib/core/journal";
 import { writeActionEntry } from "@/lib/core/journal-writer";
 import { saveMission } from "@/modules/missions/mission-store";
+import {prepareNativeCalendarChat,type NativeCalendarChatProposal} from "@/lib/native/calendar-chat-prepare";
 
 interface ChatRequest {
   message?: string;
+  operationId?: string;
 }
 
 // Active Session cache only. Migration 017 archives old/new messages atomically.
@@ -164,6 +166,22 @@ async function scopedChat(request:Request) {
       expiresAt: string;
     }>;
     if(nativeContext()&&executionPlan.physicalActions.length>0)return NextResponse.json({success:false,code:"NATIVE_CAPABILITY_NOT_CERTIFIED"},{status:503});
+    let nativeGoogleProposal:NativeCalendarChatProposal|null=null;
+    if(nativeContext()&&!isCommercialCommand&&typeof body.operationId==='string'){
+      const prepared=await prepareNativeCalendarChat(message,body.operationId,session);
+      if(prepared.kind==='prepared'){
+        nativeGoogleProposal=prepared.review;
+        const detail=prepared.review.proposal;
+        const date=new Intl.DateTimeFormat(locale,{dateStyle:'full',timeZone:'Europe/Paris'}).format(new Date(detail.start));
+        const hour=new Intl.DateTimeFormat(locale,{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Paris'});
+        responseMessage=`J'ai préparé « ${detail.name} » dans ${prepared.review.calendarName}, pour ${date} de ${hour.format(new Date(detail.start))} à ${hour.format(new Date(detail.end))}. Rien n'a été créé dans Google. Vérifie les informations ci-dessous et confirme seulement si elles te conviennent.`;
+      }else if(prepared.kind==='unavailable'){
+        const reason=prepared.code==='GOOGLE_MISSION_REQUIRED'
+          ? "Une mission active dans ce projet est nécessaire pour enregistrer la proposition."
+          : "Je n'ai pas pu certifier un calendrier disponible en écriture et déjà autorisé dans ce projet.";
+        responseMessage=`J'ai compris le rendez-vous que tu souhaites préparer, mais je ne peux pas encore enregistrer l'opération dans Google. ${reason} Je n'ai rien créé.`;
+      }
+    }
     if (executionPlan.physicalActions.length > 0) {
       const token = readAuthCookie(request.headers.get("cookie"));
       const principal = await resolveSoleAuthenticatedWorkspace(token, "connections:manage");
@@ -322,6 +340,7 @@ async function scopedChat(request:Request) {
       // Capability approvals will be emitted by the Brain execution boundary,
       // not by the chat route or the response composer.
       approvals,
+      nativeGoogleProposal,
       physicalActions: executionPlan.physicalActions.map((action) => ({
         ...toPhysicalActionProposalView(action),
         conversationId: physicalConversationId,
