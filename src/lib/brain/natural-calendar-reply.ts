@@ -18,7 +18,9 @@ export function naturalVerifiedCalendarReply(message:string,sources:readonly Bra
  // Exact event lookup only. For detailed, incomplete or ambiguous requests, the regular composer remains authoritative.
  if(!/\b(?:retrouv\w*|trouv\w*|v[ée]rifi\w*|confirm\w*|exist\w*|find|check|verify|confirm|encontr\w*|busc\w*|pr[üu]f\w*|trov\w*)\b/iu.test(message))return null;
  if(/\b(?:plusieurs|tous|toutes|all events|alle termine|todos los eventos)\b/iu.test(message))return null;
- if(/\b(?:d[ée]tails?\s+techniques?|fournisseur|utc|identifiant|journal|preuve\s+technique|source\s+brute|json|raw|timestamps?|audit)\b/iu.test(message))return null;
+ // A mixed read + write command requires the normal authorized workflow, never a quick reply.
+ if(/\b(?:et|puis|then|and)\s+(?:cr[ée]e|ajoute|supprime|modifie|d[ée]place|annule|create|delete|update|cancel)\b/iu.test(message))return null;
+ if(/\b(?:d[ée]tails?|fournisseur|utc|identifiant|journal|preuve\s+technique|source\s+brute|json|raw|timestamps?|audit)\b/iu.test(message))return null;
  const reads=sources.filter(s=>s.source==='google-calendar');
  if(reads.length!==1||reads[0].available!==true)return null;
  const data=reads[0].data as CalendarRead|null;
