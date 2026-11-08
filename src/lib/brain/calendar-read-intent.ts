@@ -59,7 +59,8 @@ export function chooseAuthorizedCalendar(candidates:AuthorizedCalendarCandidate[
 export function parseNativeCalendarReadIntent(message:string):NativeCalendarReadIntent{
  // A named calendar in the prompt can be compared with a durable binding, not used to create one.
  const named=message.match(/\b(?:calendrier|calendar|calendario|kalender)\s+(?:«([^»\n]{1,160})»|"([^"\n]{1,160})"|“([^”\n]{1,160})”|([^.,!?\n]{1,160}?)(?=\s+(?:du|pour|from|on|del|vom|dal)\b))/iu);
- const expectedName=(named?.[1]??named?.[2]??named?.[3]??named?.[4]??'').trim()||null;
+ const explicitLine=message.match(/^\s*(?:calendrier|calendar|calendario|kalender)\s*:\s*([^\n]{1,160})\s*$/imu);
+ const expectedName=(explicitLine?.[1]??named?.[1]??named?.[2]??named?.[3]??named?.[4]??'').trim()||null;
  const range=message.match(/\b(?:du|from)\s+(\d{1,2})(?:er)?\s+(?:au|to)\s+(\d{1,2})\s+([a-zA-ZÀ-ÿ]+)\s+(?:de\s+)?(\d{4})\b/iu);
  const single=range?null:message.match(/\b(?:(?:pour|le|on|del|vom|am|il|el)\s+)?(?:(?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\s+)?(\d{1,2})(?:er)?\s+([a-zA-ZÀ-ÿ]+)\s+(?:de\s+)?(\d{4})\b/iu);
  if(!range&&!single){
