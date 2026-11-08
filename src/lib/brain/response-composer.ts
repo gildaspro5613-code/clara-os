@@ -1,4 +1,5 @@
 import {assistantPersonalityInstructions} from "@/lib/knowledge/assistant/personality";
+import {naturalVerifiedCalendarReply} from './natural-calendar-reply';
 import {nativeContext} from "@/lib/native/scoped-context";
 import { authenticatedNativeCognitiveScope } from "@/lib/native/cognitive-scope";
 /**
@@ -123,6 +124,16 @@ export async function composeClaraResponseWithProposal(
   const mission = session.mission;
   const native=nativeContext(),selected=native?.session.acquisitionSubmissionId;
   const firstName = native?.authenticatedFirstName ?? null;
+  // The Brain already obtained a scoped, complete native READ. For a simple
+  // verified-event question, present only the answer in Clara's voice.
+  // Native evidence/authorization remain unchanged; technical details stay
+  // available for explicitly diagnostic requests.
+  const conversational=naturalVerifiedCalendarReply(
+    message,session.sources,
+    locale ?? safeResponseLocale(object(object(session.brainDashboard?.context.event.payload).context).language),
+  );
+  if(conversational)return {content:conversational,generation:{status:'completed',recoverable:false}};
+
   const selectedIntake=selected?native?.intakes.get(selected):undefined;
   const commercialContext=selectedIntake?JSON.stringify({submissionId:selected,contact:selectedIntake.contact,request:selectedIntake.request}):'Aucun dossier commercial sélectionné.';
 
@@ -162,6 +173,10 @@ export async function composeClaraResponseWithProposal(
     "- Ne répète pas inutilement la demande utilisateur.",
     "- Parle comme une collaboratrice présente dans la conversation : réponds directement, sans décomposer chaque demande simple en tableau de champs, bilan ou procédure.",
     "- Ne transforme pas une réponse courte en longues listes de vérifications ; préfère une conversation naturelle quand les faits le permettent.",
+    "- Une consultation réussie appelle une phrase claire et naturelle, pas un rapport d'exécution : commence par Oui/Non et les détails utiles demandés.",
+    "- Les nombres d'événements, le statut de pagination, les horodatages UTC, les identifiants, les noms de capabilities et les preuves d'audit sont des données de travail. Ne les récite que si l'utilisateur demande ces détails ou qu'une limitation réelle l'exige.",
+    "- Si le résultat se résume à un rendez-vous confirmé, préfère une réponse courte, sans tableau, rubrique ni inventaire des champs.",
+
     "- Si le Brain a produit plusieurs étapes utiles, synthétise-les naturellement au lieu de réduire la réponse à une seule ligne.",
     "- Si une étape de mission reste réellement en attente, explique-le naturellement au lieu de faire croire qu'elle est accomplie.",
     "- Si l'utilisateur vient d'apporter une information demandée, accuse réception de cette information et présente la suite décidée par le Brain.",
