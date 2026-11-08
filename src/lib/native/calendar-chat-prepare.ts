@@ -45,6 +45,8 @@ export async function prepareNativeCalendarChat(message:string,operationId:strin
  if(matched.length!==1)return {kind:'unavailable',code:'GOOGLE_CALENDAR_BINDING_AMBIGUOUS'};
  const connectionId=matched[0].connectionId;
  const work=await new NativeGoogleWork(connectionId).initialize();
+ const liveCalendar=await work.calendar(data.calendarId);
+ if(!matchesAuthorizedCalendarName(liveCalendar.summary??'',draft.calendarName))return {kind:'unavailable',code:'GOOGLE_CALENDAR_NAME_CHANGED'};
  // This is a previously bound resource; no implicit new grant or global
  // primary-calendar fallback. Existing native write preflight remains intact.
  await work.select('calendar',data.calendarId);
