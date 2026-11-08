@@ -86,11 +86,55 @@ test("P0-C/F: actual external handler retains interrupted generation and returns
  const current=event();const body={schemaVersion:"clara.unified-core.event.v1",eventType:"USER_MESSAGE",scope:{productId:"clara-live",workspaceId:"shared-workspace",userId:"alice",sessionId:"session-a"},...(current.payload as object)};
  let retained:unknown;
  const response=await route.execute({product:route.products.get("clara-live")!,body,correlationId:"a".repeat(32),jobId:"b".repeat(64),progress:async()=>{},persist:async()=>{throw Error("Partial response cannot complete");},persistFailure:async(category,session)=>{assert.equal(category,"output_truncated");retained=session;}});
- assert.equal(response.status,500);assert.equal((await response.json()).failureCategory,"output_truncated");
- assert.equal((retained as {conversation:{generation?:{status:string}}[]}).conversation[1].generation?.status,"incomplete");
+ assert.equal(response.status,500);
+ const failed=await response.json();
+ assert.equal(failed.code,"CORE_EVENT_PROCESSING_FAILED");
+ assert.equal(failed.failureCategory,"output_truncated");
+ assert.equal(failed.data?.sessionId,"session-a");
+ assert.equal(failed.data?.response,undefined,"failed Core response must not expose a provider fragment");
+ assert.equal(failed.data?.generation?.recoverable,false);
+ const history=(retained as {conversation:{id:string;content:string;generation?:{status:string;recoverable:boolean}}[]}).conversation;
+ assert.equal(history.length,2);
+ assert.equal(history[0].id,"b".repeat(64)+":user");
+ assert.equal(history[1].id,"b".repeat(64)+":clara");
+ assert.equal(history[1].generation?.status,"incomplete");
+ assert.equal(history[1].generation?.recoverable,false);
+ assert.doesNotMatch(history[1].content,/Partial text retained/);
+ assert.match(history[1].content,/Clara n'a pas pu terminer/);
 });
 
 
+
+test("P0-C/F: no failed external generation is exposed as a completed assistant answer",async()=>{
+ for(const generation of [
+   {status:"incomplete" as const,failureCategory:"output_truncated",recoverable:true},
+   {status:"incomplete" as const,failureCategory:"output_filtered",recoverable:true},
+   {status:"timeout" as const,failureCategory:"provider_timeout",recoverable:true},
+   {status:"failed" as const,failureCategory:"provider_failed",recoverable:true},
+ ]){
+   const route=routeHarness(false,undefined,false,undefined,async()=>({content:"PRIVATE_PARTIAL_PROVIDER_FRAGMENT",generation}));
+   const current=event();
+   const body={schemaVersion:"clara.unified-core.event.v1",eventType:"USER_MESSAGE",scope:{productId:"clara-live",workspaceId:"shared-workspace",userId:"alice",sessionId:"session-a"},...(current.payload as object)};
+   let retained:unknown;let failureCategory:string|undefined;
+   const response=await route.execute({
+     product:route.products.get("clara-live")!,body,
+     correlationId:"a".repeat(32),jobId:"c".repeat(64),progress:async()=>{},
+     persist:async()=>{throw Error("Failing generation must not complete");},
+     persistFailure:async(category,session)=>{failureCategory=category;retained=session;},
+   });
+   assert.equal(response.status,500);
+   const payload=await response.json();
+   assert.equal(payload.failureCategory,generation.failureCategory);
+   assert.equal(failureCategory,generation.failureCategory);
+   assert.equal(payload.data?.response,undefined);
+   assert.doesNotMatch(JSON.stringify(payload),/PRIVATE_PARTIAL_PROVIDER_FRAGMENT/);
+   const history=(retained as {conversation:{content:string;generation?:{status:string}}[]}).conversation;
+   assert.equal(history.length,2);
+   assert.equal(history[1].generation?.status,generation.status);
+   assert.doesNotMatch(history[1].content,/PRIVATE_PARTIAL_PROVIDER_FRAGMENT/);
+   assert.match(history[1].content,/nouvelle tentative/);
+ }
+});
 
 test("P0-C: provider adapter enforces conversational ceiling and timeout without changing other profiles",async()=>{
  const calls:Record<string,unknown>[]=[],settings:Record<string,unknown>[]=[];
