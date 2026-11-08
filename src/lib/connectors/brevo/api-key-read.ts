@@ -15,7 +15,7 @@ const validCount=(value:unknown):number|null=>typeof value==='number'&&Number.is
 /** Exactly one hardcoded GET per user-authorized read, capped at ten records. */
 export async function readBrevoBounded(kind:BrevoReadKind,credential:string|{accessToken:string},fetcher?:BrevoFetch):Promise<BrevoReadSnapshot>{
  const token=typeof credential==='string'?credential:credential.accessToken;
- if(!token.trim())throw new Error('BREVO_CREDENTIAL_NOT_CONFIGURED');
+ if(!token.trim())throw new Error(typeof credential==='string'?'BREVO_API_KEY_NOT_CONFIGURED':'BREVO_CREDENTIAL_NOT_CONFIGURED');
  const client=typeof credential==='string'
   ?new BrevoClient({apiKey:credential,fetch:fetcher})
   :new BrevoClient({accessToken:credential.accessToken,fetch:fetcher});
