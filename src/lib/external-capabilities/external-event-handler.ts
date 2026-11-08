@@ -329,17 +329,31 @@ async function handleEvent(request: Request, execution?: Execution) {
     const session = await dispatchEvent(clara, event);
     await advance("response_composition");
     const composed = await composeClaraResponseWithProposal(message, session,safeResponseLocale(body.context?.language));
-    const response=composed.content;
+    // A partial/failed cognitive response is a failed receipt, never a usable
+    // assistant answer for an external product. Keep only a safe failure notice
+    // in the scoped conversation. The provider fragment must not be persisted
+    // or returned through the Core failure payload.
+    const generationFailed=body.eventType==="USER_MESSAGE" && composed.generation.status!=="completed";
+    const locale=safeResponseLocale(body.context?.language);
+    const failedNotice={
+      fr:"Clara n'a pas pu terminer sa réponse. Aucune proposition exploitable n'a été produite. Une nouvelle tentative doit être demandée explicitement.",
+      en:"Clara could not complete her reply. No usable proposal was produced. A new attempt requires an explicit request.",
+      es:"Clara no pudo completar su respuesta. No se produjo ninguna propuesta utilizable. Un nuevo intento requiere una solicitud expresa.",
+      de:"Clara konnte ihre Antwort nicht abschließen. Es wurde kein verwendbarer Vorschlag erstellt. Ein neuer Versuch erfordert eine ausdrückliche Anfrage.",
+      it:"Clara non è riuscita a completare la risposta. Non è stata prodotta alcuna proposta utilizzabile. Un nuovo tentativo richiede una richiesta esplicita.",
+    }[locale];
+    const response=generationFailed?failedNotice:composed.content;
+    const generation=generationFailed?{...composed.generation,recoverable:false}:composed.generation;
     const now=new Date().toISOString();
     const prefix=execution?.jobId ?? crypto.randomUUID();
     const messages: ClaraConversationMessage[] = [
       {id:prefix+":user",role:"user",content:message,createdAt:now},
-      {id:prefix+":clara",role:"clara",content:response,createdAt:new Date().toISOString(),generation:composed.generation},
+      {id:prefix+":clara",role:"clara",content:response,createdAt:new Date().toISOString(),generation},
     ];
     const ids=new Set(session.conversation.map(entry=>entry.id));
     session.conversation=[...session.conversation,...messages.filter(entry=>!ids.has(entry.id))].slice(-MAX_PERSISTED_MESSAGES);
     session.updatedAt=new Date();
-    if(body.eventType==="USER_MESSAGE" && composed.generation.status!=="completed"){
+    if(generationFailed){
       await advance("response_incomplete");
       const category=composed.generation.failureCategory ?? "provider_failed";
       if(execution){
@@ -347,7 +361,7 @@ async function handleEvent(request: Request, execution?: Execution) {
         await execution.persistFailure(category,session,key);
       } else await saveSession(session,key);
       return respond({success:false,code:"CORE_EVENT_PROCESSING_FAILED",failureCategory:category,
-        error:"Clara response generation did not complete.",data:{response,generation:composed.generation,sessionId:scope.sessionId}},500);
+        error:"Clara response generation did not complete.",data:{generation,sessionId:scope.sessionId}},500);
     }
     await advance("document_analysis");
     const documentAnalysis = await analyzeExternalDocument(body);
