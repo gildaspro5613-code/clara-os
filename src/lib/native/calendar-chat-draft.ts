@@ -44,7 +44,7 @@ export function parseNativeCalendarChatDraft(message:string):NativeCalendarChatD
   const date=line(message,'Date'),hours=line(message,'Heure|Horaire|Time');
   const invite=line(message,'Invit[ée]s|Guests');
   const description=line(message,'Description')??'';
-  if(!name||!calendarName||/^primary$/i.test(calendarName)||!date||!hours||!invite||!^(?:aucun(?:e|s)?|none)$/iu.test(invite)
+  if(!name||!calendarName||/^primary$/i.test(calendarName)||!date||!hours||!invite||!/^(?:aucun(?:e|s)?|none)$/iu.test(invite)
     ||!valid(name,200)||!valid(calendarName,160)||description.length>4000)return null;
   const range=parseNativeCalendarReadIntent(date);
   if(range.kind!=='range'||range.from!==range.through)return null;
