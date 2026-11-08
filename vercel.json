@@ -44,7 +44,8 @@
       "fix/agenda-native-authorized-read-20261108": false,
       "fix/clara-personality-clarity-20261108": false,
       "fix/native-calendar-chat-prepare-20261108": false,
-      "fix/calendar-read-natural-lookup-20261108": false
+      "fix/calendar-read-natural-lookup-20261108": false,
+      "fix/clara-natural-provider-replies-20261108": false
     }
   }
 }
