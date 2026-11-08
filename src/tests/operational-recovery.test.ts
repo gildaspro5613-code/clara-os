@@ -104,6 +104,8 @@ test('Brain Calendar uses only durable scoped READ and leaves session-selected r
 
 
 test('Clara native scheduling accepts an explicit bounded request but never treats text as approval',()=>{
+ const fieldIntent=parseNativeCalendarReadIntent('Prépare un rendez-vous\nCalendrier : Melodie Digital Calendar\nDate : lundi 9 novembre 2026');
+ assert.equal(fieldIntent.expectedName,'Melodie Digital Calendar');
  const request=[
   'Clara, prépare maintenant la création du rendez-vous suivant :',
   'Titre : TEST Clara OS — Agenda',
