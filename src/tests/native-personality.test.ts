@@ -73,4 +73,6 @@ test('technical provenance on request; incomplete or ambiguous provider data nev
  assert.equal(naturalVerifiedCalendarReply('Vérifie un autre rendez-vous',[source],'fr'),null);
  assert.equal(naturalVerifiedCalendarReply('Crée un nouveau rendez-vous',[source],'fr'),null);
  assert.equal(naturalVerifiedCalendarReply(message,[{...source,data:{...data,events:[]}}],'fr'),null);
+ assert.equal(naturalVerifiedCalendarReply('Retrouve TEST Clara OS — Agenda à 11 h dans mon calendrier',[source],'fr'),null);
+ assert.equal(naturalVerifiedCalendarReply(message,[{...source,data:{...data,events:[{...data.events[0],start:{dateTime:'2026-11-09T10:00:00'}}]}}],'fr'),null);
 });
