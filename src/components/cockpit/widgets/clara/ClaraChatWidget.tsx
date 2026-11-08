@@ -10,6 +10,11 @@ import { useTranslations } from "next-intl";
 import { Check, RefreshCw, Send, X } from "lucide-react";
 import type { ClaraConversationMessage } from "@/lib/core/session";
 
+interface NativeGoogleChatProposal {
+  connectionId:string;operationId:string;reviewHash:string;status:string;calendarName:string;
+  proposal:{kind:string;name:string;resourceId:string;start:string;end:string;description:string;missionId:string};
+}
+
 interface PendingApproval {
   id: string;
   token: string;
@@ -89,6 +94,9 @@ export default function ClaraChatWidget({
   const [loading, setLoading] = useState(false);
   const [approvals, setApprovals] = useState<PendingApproval[]>([]);
   const [physicalActions, setPhysicalActions] = useState<PhysicalActionProposalView[]>([]);
+  const [googleProposal,setGoogleProposal]=useState<NativeGoogleChatProposal|null>(null);
+  const [googleConfirm,setGoogleConfirm]=useState(false);
+  const [googleOutcome,setGoogleOutcome]=useState<string|null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -154,7 +162,8 @@ export default function ClaraChatWidget({
       }else if(Array.isArray(data.conversation))setMessages(data.conversation);
       if(pendingKey)try{sessionStorage.removeItem(pendingKey);}catch{/* acknowledged receipt remains server-owned */}setPending(null);
       if(!response.ok||!data.success){setChatError(['NATIVE_THREAD_MISSION_BOUND','NATIVE_NEW_SESSION_REQUIRED'].includes(data.code)?ui('nativeThreadMissionBound'):data.code==='NATIVE_CONSULTATION_MIGRATION_REQUIRED'?`${ui('nativeChatFailed')} [NATIVE_CONSULTATION_MIGRATION_REQUIRED]`:ui('nativeChatFinishedWithError'));router.refresh();return;}
-      setApprovals(current=>[...current,...(data.approvals??[])]);setPhysicalActions(data.physicalActions??[]);router.refresh();
+      setApprovals(current=>[...current,...(data.approvals??[])]);setPhysicalActions(data.physicalActions??[]);
+      setGoogleProposal(data.nativeGoogleProposal??null);setGoogleConfirm(false);setGoogleOutcome(null);router.refresh();
     }catch{setChatError(ui('nativeChatPending'));}
     finally{setLoading(false);}
   },[nativeSessionId,pendingKey,router,ui]);
@@ -178,6 +187,33 @@ export default function ClaraChatWidget({
       if(pendingKey)try{sessionStorage.removeItem(pendingKey);}catch{/* durable cancellation is server-owned */}
       setPending(null);setChatError(body.cancelled?ui('nativeChatCancelled'):'');router.refresh();
     }catch{setChatError(ui('nativeChatPending'));}finally{setLoading(false);}
+  }
+
+  async function decideGoogleProposal(action:'execute'|'cancel'){
+    if(!googleProposal||loading||(action==='execute'&&!googleConfirm))return;
+    setLoading(true);setChatError('');
+    try{
+      const response=await fetch('/api/native/google/work',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({action,connectionId:googleProposal.connectionId,operationId:googleProposal.operationId,
+          ...(action==='execute'?{reviewHash:googleProposal.reviewHash,confirm:true}:{})}),
+      });
+      const data=await response.json();
+      if(!response.ok||data.success!==true)throw Error(String(data.code??'GOOGLE_WORK_UNAVAILABLE'));
+      if(action==='cancel'){
+        setGoogleProposal(null);setGoogleConfirm(false);setGoogleOutcome(null);
+      }else if(data.status==='completed'&&data.result?.id){
+        setGoogleProposal(null);setGoogleConfirm(false);setGoogleOutcome(null);
+        setMessages(current=>[...current,{id:crypto.randomUUID(),role:'clara',content:ui('googleState_completed')+' · '+data.result.id,createdAt:new Date().toISOString()}]);
+        window.dispatchEvent(new Event('clara:google-work-updated'));
+      }else{
+        // An uncertain delivery must never be retried as a second creation.
+        setGoogleOutcome(data.status??'uncertain');setGoogleConfirm(false);
+      }
+      router.refresh();
+    }catch{
+      setGoogleConfirm(false);setGoogleOutcome('uncertain');setChatError(ui('googleExistingUncertain'));
+    }finally{setLoading(false);}
   }
 
   async function decideApproval(
@@ -272,6 +308,22 @@ export default function ClaraChatWidget({
           </div>
         )}
       </div>
+
+      {googleProposal&&(
+        <section data-native-google-chat-proposal className="mt-4 rounded-2xl border border-cyan-300/20 bg-cyan-300/[0.05] p-4" aria-label={ui('googleProposal')}>
+          <p className="text-xs text-cyan-200">{ui('googleProposal')} · {googleProposal.status}</p>
+          <p className="mt-2 font-medium text-white">{googleProposal.proposal.name}</p>
+          <p className="mt-1 text-sm text-white/75">{googleProposal.calendarName}</p>
+          <p className="mt-1 text-sm text-white/75">{new Intl.DateTimeFormat(undefined,{timeZone:'Europe/Paris',dateStyle:'full',timeStyle:'short'}).format(new Date(googleProposal.proposal.start))} — {new Intl.DateTimeFormat(undefined,{timeZone:'Europe/Paris',timeStyle:'short'}).format(new Date(googleProposal.proposal.end))}</p>
+          {googleProposal.proposal.description&&<p className="mt-2 text-sm text-white/65">{googleProposal.proposal.description}</p>}
+          <p className="mt-1 text-xs text-white/45">{googleProposal.operationId}</p>
+          {googleOutcome?<p role="status" className="mt-2 text-amber-100">{ui('googleExistingUncertain')}</p>:<div className="mt-3 flex flex-wrap items-center gap-3">
+            <label className="flex items-center gap-2 text-sm text-white/80"><input type="checkbox" checked={googleConfirm} disabled={loading} onChange={e=>setGoogleConfirm(e.target.checked)} />{ui('googleExactConfirmation')}</label>
+            <button type="button" disabled={loading||!googleConfirm} onClick={()=>void decideGoogleProposal('execute')} className="rounded-lg border border-cyan-300/30 px-3 py-2 text-sm text-cyan-100 disabled:opacity-40">{ui('googleExecute')}</button>
+            <button type="button" disabled={loading} onClick={()=>void decideGoogleProposal('cancel')} className="rounded-lg border border-white/20 px-3 py-2 text-sm text-white/70 disabled:opacity-40">{ui('cancel')}</button>
+          </div>}
+        </section>
+      )}
 
       {physicalActions.length > 0 && (
         <div className="mt-4 space-y-3" aria-live="polite">
