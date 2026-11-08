@@ -248,9 +248,9 @@ export async function buildBrainSources(
       if(contexts.some(context=>context.source===source.id))continue;
       try{
         if(source.id==='google-calendar'){
-          const intent=parseNativeCalendarReadIntent(extractMessage(event));
+          const intent=parseNativeCalendarReadIntent(extractMessage(event),now);
           if(intent.kind==='unsupported'){
-            contexts.push({source:source.id,available:false,data:null,summary:'GOOGLE_CALENDAR_RANGE_UNSUPPORTED: explicit dates are missing, ambiguous or invalid. No provider queried and no events may be inferred.'});continue;
+            contexts.push({source:source.id,available:false,data:null,summary:'GOOGLE_CALENDAR_RANGE_UNSUPPORTED: explicit dates are missing, ambiguous or invalid. No provider queried. This does not invalidate any previously confirmed Google write receipt.'});continue;
           }
           const {NativeGoogleWork,googleWorkCommand,GOOGLE_SCOPES}=await import('@/lib/native/google-work');
           const {nativeGoogleCommand,googleAuthority}=await import('@/lib/native/google-authority');
@@ -292,7 +292,7 @@ export async function buildBrainSources(
           if(chosen.kind!=='selected'){
             const code=chosen.kind==='ambiguous'?'GOOGLE_CALENDAR_NAME_AMBIGUOUS'
               :intent.expectedName&&candidates.length?'GOOGLE_CALENDAR_NAME_MISMATCH':'GOOGLE_CALENDAR_BINDING_REQUIRED';
-            contexts.push({source:source.id,available:false,data:null,summary:code+': use an existing explicitly authorized project calendar; a new resource requires a one-time human grant. No provider events queried.'});continue;
+            contexts.push({source:source.id,available:false,data:null,summary:code+': no uniquely matching bound project calendar identified. No provider events queried; do not infer that a previously confirmed event was never created.'});continue;
           }
           const {connectionId,calendarId,bindingId,name:selectedName}=chosen.calendar;
           const proof=await googleAuthority(connectionId);
