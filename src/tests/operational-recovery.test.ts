@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {missionMutationRequested} from '@/lib/core/orchestrator';
 import {documentDiagnostic} from '@/lib/documents/document-read-error';
-import {parseNativeCalendarReadIntent,matchesAuthorizedCalendarName,chooseAuthorizedCalendar,type AuthorizedCalendarCandidate} from '@/lib/brain/calendar-read-intent';
+import {parseNativeCalendarReadIntent,matchesAuthorizedCalendarName,matchesAuthorizedCalendarReadReference,chooseAuthorizedCalendar,type AuthorizedCalendarCandidate} from '@/lib/brain/calendar-read-intent';
 import {parseNativeCalendarChatDraft} from '@/lib/native/calendar-chat-draft';
 import {readFileSync} from 'node:fs';
 import {EventType,type Event} from '@/types';
@@ -47,7 +47,7 @@ test('targeted calendar ranges reject invalid/ambiguous inputs and honor Paris D
 });
 test('native Brain targeted Calendar uses bound source and reports partial rather than treating a page as complete',()=>{
  const src=readFileSync('src/lib/brain/brain-source-registry.ts','utf8');
- assert.match(src,/parseNativeCalendarReadIntent\(extractMessage\(event\)\)/);
+ assert.match(src,/parseNativeCalendarReadIntent\(extractMessage\(event\),now\)/);
  assert.match(src,/nativeGoogleCommand\('list'\)/);
  assert.match(src,/googleWorkCommand\('resources',\{connectionId\}\)/);
  assert.match(src,/googleWorkCommand\('resource',\{connectionId,bindingId/);
@@ -139,4 +139,35 @@ test('Clara native scheduling accepts an explicit bounded request but never trea
  assert.match(module,/googleWorkCommand\('resources'/);
  assert.match(module,/work\.prepare\(/);
  assert.doesNotMatch(module,/executeGoogleWork/);
+});
+
+
+test('regression: Clara finds a newly created event after a natural Calendar follow-up',()=>{
+ const prompt="Clara, retrouve dans mon calendrier Mélodie Digital le rendez-vous TEST Clara OS — Agenda du lundi 9 novembre à 10 h et confirme-moi qu'il existe réellement.";
+ const intent=parseNativeCalendarReadIntent(prompt,new Date('2026-11-08T13:00:00+01:00'));
+ assert.deepEqual(intent,{
+  kind:'range',expectedName:'Mélodie Digital',
+  from:'2026-11-09',through:'2026-11-09',timeMin:'2026-11-08T23:00:00.000Z',timeMax:'2026-11-09T23:00:00.000Z',
+ });
+ const bound:AuthorizedCalendarCandidate[]=[
+  {connectionId:'connection-a',bindingId:'grant-a',calendarId:'calendar-123',name:'Melodie Digital Calendar'},
+  {connectionId:'connection-a',bindingId:'grant-b',calendarId:'other-321',name:'Personal Calendar'},
+ ];
+ assert.deepEqual(chooseAuthorizedCalendar(bound,intent.expectedName),{kind:'selected',calendar:bound[0]});
+ assert.equal(matchesAuthorizedCalendarReadReference('Melodie Digital Calendar','Mélodie Digital'),true);
+ assert.equal(matchesAuthorizedCalendarName('Melodie Digital Calendar','Mélodie Digital'),false);
+ assert.deepEqual(chooseAuthorizedCalendar(bound,'Another calendar'),{kind:'missing'});
+ assert.deepEqual(chooseAuthorizedCalendar([...bound,{connectionId:'connection-b',bindingId:'grant-c',calendarId:'another',name:'Melodie Digital Agenda'}],'Mélodie Digital'),{kind:'ambiguous'});
+ assert.deepEqual(chooseAuthorizedCalendar([],intent.expectedName),{kind:'missing'});
+});
+test('yearless weekday dates fail closed unless nearby and unambiguous, without changing old explicit ranges',()=>{
+ const today=new Date('2026-11-08T10:00:00.000Z');
+ assert.deepEqual(parseNativeCalendarReadIntent('montre lundi 9 novembre dans le calendrier Melodie Digital Calendar',today),{
+  kind:'range',expectedName:null,from:'2026-11-09',through:'2026-11-09',timeMin:'2026-11-08T23:00:00.000Z',timeMax:'2026-11-09T23:00:00.000Z',
+ });
+ assert.equal(parseNativeCalendarReadIntent('calendrier Melodie Digital Calendar du 9 novembre',today).kind,'unsupported');
+ assert.equal(parseNativeCalendarReadIntent('calendrier Melodie Digital Calendar du mardi 9 novembre',today).kind,'unsupported');
+ assert.equal(parseNativeCalendarReadIntent('calendrier Melodie Digital Calendar du lundi 9 novembre',new Date('2026-06-01T10:00:00Z')).kind,'unsupported');
+ assert.equal(parseNativeCalendarReadIntent('calendrier Melodie Digital Calendar du 8 au 14 novembre',today).kind,'unsupported');
+ assert.equal(parseNativeCalendarReadIntent('calendrier Melodie Digital Calendar du lundi 9 novembre 2025',today).kind,'unsupported');
 });
