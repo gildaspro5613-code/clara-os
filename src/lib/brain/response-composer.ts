@@ -134,7 +134,7 @@ export async function composeClaraResponseWithProposal(
     message,session.sources,
     locale ?? safeResponseLocale(object(object(session.brainDashboard?.context.event.payload).context).language),
   );
-  if(conversational)return {content:conversational,generation:{status:'completed',recoverable:false}};
+  if(!liveProductionScope && conversational)return {content:conversational,generation:{status:'completed',recoverable:false}};
 
   const selectedIntake=selected?native?.intakes.get(selected):undefined;
   const commercialContext=selectedIntake?JSON.stringify({submissionId:selected,contact:selectedIntake.contact,request:selectedIntake.request}):'Aucun dossier commercial sélectionné.';
