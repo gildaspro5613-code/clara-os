@@ -148,9 +148,28 @@ export async function composeClaraResponseWithProposal(
   // persona, historic turns, acquisition context or physical action instructions.
   // This path cannot execute tools, mutate Live, or bypass its proposal validator.
   if (liveProductionScope) {
-    const evidence = sourcesSummary.length > 12_000
-      ? sourcesSummary.slice(0,12_000) + "\n[Source summaries clipped; omitted details are NOT verified.]"
-      : sourcesSummary;
+    // Use the scoped structured source already read by the Brain, not a second
+    // clipped prose serialization. No new source lookup or provider call.
+    const liveSource=session.sources.find(source=>source.source==='clara-live-project' && source.available);
+    const data=object(liveSource?.data), prep=object(data.activePreparation);
+    const business=object(prep.businessContext);
+    const evidence=Object.keys(business).length ? JSON.stringify({
+      project:data.project, preparationId:prep.id, provenance:data.provenance, sourceSelection:{truncated:data.truncated},
+      businessContext:business,
+      documents:Array.isArray(data.documents)?data.documents.map(doc=>{
+        const row=object(doc);
+        const analyses=object(business.documents).rows;
+        const complete=Array.isArray(analyses) && analyses.some(analysis=>object(analysis).document_id===row.id && object(analysis).complete===true && typeof row.source_revision==='string' && object(analysis).source_revision===row.source_revision);
+        return {id:row.id,filename:row.filename,source_revision:row.source_revision,
+          ...(!complete?{excerpt:row.text,excerpt_truncated:row.text_truncated===true || row.truncated===true,
+            text_unavailable:row.text_unavailable,reason:row.reason,
+            source:"projectContext.documents",evidence_status:"extracted_not_operator_confirmed"}:{})};
+      }):[],
+    }) : sourcesSummary;
+    if(evidence.length>12_000) {
+      return {content:generationNotice(locale ?? "fr",{status:"failed",recoverable:false}),
+        generation:{status:"failed",failureCategory:"source_context_budget",recoverable:false}};
+    }
     const prompt = [
       "Rédige uniquement un brouillon de propositions pour la feuille Production Clara Live.",
       "Tu ne disposes d'aucun outil ni droit de modification, sauvegarde ou exécution.",
@@ -158,7 +177,16 @@ export async function composeClaraResponseWithProposal(
       "Ne confirme aucun fait absent des sources, et ne déduis pas de caractéristiques techniques non documentées.",
       "Les données inconnues peuvent devenir des points À VÉRIFIER, jamais des faits certifiés.",
       "Réponds avec UN SEUL objet JSON brut, sans Markdown, préambule ni commentaire.",
-      "Utilise 1 à 5 lignes utiles au maximum ; donne priorité aux informations manquantes ou aux réserves explicites.",
+      "Produis au plus cinq lots opérationnels sourcés ; ne te limite pas à reformuler les sources ou à demander de vérifier les horaires.",
+      "1 constraints : synthèse technique, faits établis, contradictions, risques et conséquences sur la préparation.",
+      "2 tasks : feuille de route priorisée avec actions concrètes, dépendances, responsable documenté ou à désigner, échéance documentée ou à confirmer.",
+      "3 timeline : préparation, load-in/montage, line check/balances, exploitation et démontage ; ordre conditionnel fondé sur les dépendances. Aucun horaire ni durée inventé.",
+      "4 coordination : relie explicitement les contraintes plateau/Structure, Light, Sound, Video, Production et personnel/logistique. Métier absent des sources = non documenté, pas supposé complet.",
+      "5 decisions : arbitrages, conséquences, informations manquantes et conditions de validation humaine.",
+      "Pour chaque lot, value détaille faits, hypothèses et réserves distincts ; notes cite les chemins/identifiants source, page/révision lorsqu'ils existent et leurs statuts confirmed, to_verify, missing, stale.",
+      "Les résultats stale ne sont pas actuels. Un extrait ou checkpoint documentaire incomplet ne certifie pas le document entier.",
+      "Si businessContext.truncated, sourceSelection.truncated, omissions, coverage partielle ou documents incomplets : annoncer DOSSIER PARTIEL, limiter la portée des conclusions et citer les réserves dans les notes de chaque lot concerné. Donnée omise ne signifie pas inexistante en base.",
+      "Ne présente jamais un dossier comme complet ou une installation comme certifiée. Une proposition de responsable ou de ressource ne confirme aucune disponibilité ni réservation.",
       "Schéma exact : " + JSON.stringify({
         schema:"clara.production.proposal.v1",
         project_id:liveProductionScope.projectId,
@@ -167,10 +195,12 @@ export async function composeClaraResponseWithProposal(
       }),
       "project_id et preparation_id doivent correspondre exactement au contexte authentifié fourni.",
       "Sections permises : event, timeline, personnel, transport, accommodation, catering, dressing_rooms, access, security, resources, contacts, documents, tasks, decisions, constraints, coordination.",
-      "Chaque ligne ne contient que section, label (max 300 caractères), value (max 2000), notes facultatif (max 1500).",
+      "Chaque ligne contient section, label (max 300 caractères), value (max 2000), notes (max 1500). Extension compatible : responsible facultatif (max 300, nom/rôle attesté uniquement), date facultative YYYY-MM-DD et time facultative HH:mm exclusivement documentés ; sinon omettre ces champs, jamais inventer une affectation ou un horaire.",
       "Si aucune proposition n'est justifiée, retourne rows:[] ; le contrôle existant refusera la génération sans rien sauvegarder.",
       "LANGUE",
       locale ? responseLanguageInstruction(locale) : "Réponds dans la langue de la demande.",
+      "COUVERTURE DE LA DEMANDE ET DE LA SYNTHÈSE : " + JSON.stringify({requestTruncated:message.length>1500,brainSummaryTruncated:(decision?.summary ?? recommendation?.summary ?? "").length>1600}),
+      "Si une de ces valeurs est true, la demande/synthèse est partielle : signaler cette limite, sans inventer la partie omise.",
       "DEMANDE MÉTIER",
       message.slice(0,1500),
       "SYNTHÈSE MÉTIER DU BRAIN (non certifiée)",

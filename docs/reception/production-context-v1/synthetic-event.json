@@ -1,0 +1,527 @@
+{
+  "schemaVersion": "clara.unified-core.event.v1",
+  "eventType": "USER_MESSAGE",
+  "scope": {
+    "productId": "clara-live",
+    "workspaceId": "A",
+    "userId": "u",
+    "sessionId": "session-A"
+  },
+  "message": "Production advice",
+  "project": {
+    "id": "A",
+    "name": null,
+    "client": null,
+    "type": null,
+    "date": null,
+    "environments": null,
+    "description": null
+  },
+  "context": {
+    "surface": "clara-live",
+    "language": "fr",
+    "effectiveTier": "pro",
+    "projectContext": {
+      "project": {
+        "id": "A",
+        "name": null,
+        "client": null,
+        "type": null,
+        "date": null,
+        "environments": null,
+        "description": null
+      },
+      "documents": [
+        {
+          "id": "doc1",
+          "filename": "synthetic.pdf",
+          "mime": "application/pdf",
+          "size": null,
+          "created_at": "2026-01-01",
+          "text": "Synthetic rider: 17 inputs and 6 outputs. Stage 12 m x 8 m.",
+          "text_truncated": false,
+          "project_id": "A",
+          "extracted_at": null,
+          "source_revision": "0df024eeaa3364dc1dce9d36496c63e5016a7789dfb8dac74b0a3daf595492a4",
+          "revision_state": "available"
+        }
+      ],
+      "preparations": [
+        {
+          "id": "prep-A",
+          "project_id": "A"
+        }
+      ],
+      "computations": {},
+      "document_selection": {
+        "state": "available",
+        "limit": 20,
+        "association": "selected_preparation",
+        "preparation_revision": "073a53c7d32f14c3d411b4c844e6fcdb44b143c88c2449e607a7ffb89ff6d8a4",
+        "excerpt_char_budget": 2500
+      }
+    },
+    "activePreparation": {
+      "id": "prep-A",
+      "project_id": "A",
+      "businessContext": {
+        "project_id": "A",
+        "preparation_id": "prep-A",
+        "revision": "073a53c7d32f14c3d411b4c844e6fcdb44b143c88c2449e607a7ffb89ff6d8a4",
+        "consistency": "individual_source_reads",
+        "policy": "saved_data_only_no_execution",
+        "limits": {
+          "bytes": 18000,
+          "rows_per_list": 60,
+          "documents": 20
+        },
+        "items": {
+          "state": "available",
+          "source": "effective_items",
+          "excluded_source_count": 2,
+          "rows": [
+            {
+              "id": "console",
+              "section": "sound",
+              "label": "Console",
+              "value": "Yamaha 01V",
+              "status": "confirmed",
+              "source": "manual",
+              "provenance": {
+                "source": "operator",
+                "locator": "page 1"
+              },
+              "source_document_id": "doc1",
+              "equipment_reference_id": "eq1"
+            },
+            {
+              "id": "patch",
+              "section": "sound",
+              "label": "Patch",
+              "value": "17 inputs / 6 outputs",
+              "status": "to_verify",
+              "source": "manual"
+            },
+            {
+              "id": "access",
+              "section": "production",
+              "label": "Access",
+              "value": "",
+              "status": "missing"
+            }
+          ]
+        },
+        "spatial": {
+          "state": "available",
+          "source": "preparations.spatial",
+          "unit_system": "metric",
+          "stage_width": 12,
+          "stage_depth": 8,
+          "field_provenance": {
+            "stage_width": {
+              "source": "operator",
+              "status": "confirmed"
+            }
+          },
+          "structures": [
+            {
+              "id": "bridge",
+              "name": "Front bridge",
+              "status": "confirmed",
+              "position": {
+                "x": 0,
+                "y": 1,
+                "z": 4
+              }
+            }
+          ]
+        },
+        "calculations": {
+          "lighting": {
+            "state": "available",
+            "source": "project_computations",
+            "id": "calc-lighting",
+            "input_revision": "e006023eebf915b1d271a53f",
+            "input_version": "clara.effective-input.v1",
+            "created_at": "2026-01-01",
+            "stale": false,
+            "revision_state": "current",
+            "result": {
+              "totals": {
+                "inputs": 17,
+                "outputs": 6
+              },
+              "patch": [
+                {
+                  "universe": 1,
+                  "address": 1,
+                  "equipment_reference_id": "eq1"
+                }
+              ],
+              "warnings": [
+                "Documented, not certified"
+              ]
+            }
+          },
+          "sound": {
+            "state": "available",
+            "source": "project_computations",
+            "id": "calc-sound",
+            "input_revision": "354f3dae5154e6492eb4ec61",
+            "input_version": "clara.effective-input.v1",
+            "created_at": "2026-01-01",
+            "stale": false,
+            "revision_state": "current",
+            "result": {
+              "totals": {
+                "inputs": 17,
+                "outputs": 6
+              },
+              "patch": [
+                {
+                  "universe": 1,
+                  "address": 1,
+                  "equipment_reference_id": "eq1"
+                }
+              ],
+              "warnings": [
+                "Documented, not certified"
+              ]
+            }
+          },
+          "video": {
+            "state": "available",
+            "source": "project_computations",
+            "id": "calc-video",
+            "input_revision": "504b6cee63c4df070e8bf2ee",
+            "input_version": "clara.effective-input.v1",
+            "created_at": "2026-01-01",
+            "stale": false,
+            "revision_state": "current",
+            "result": {
+              "totals": {
+                "inputs": 17,
+                "outputs": 6
+              },
+              "patch": [
+                {
+                  "universe": 1,
+                  "address": 1,
+                  "equipment_reference_id": "eq1"
+                }
+              ],
+              "warnings": [
+                "Documented, not certified"
+              ]
+            }
+          },
+          "production": {
+            "state": "available",
+            "source": "project_computations",
+            "id": "calc-production",
+            "input_revision": "05dea386999d40396faa4eea",
+            "input_version": "clara.effective-input.v1",
+            "created_at": "2026-01-01",
+            "stale": false,
+            "revision_state": "current",
+            "result": {
+              "totals": {
+                "inputs": 17,
+                "outputs": 6
+              },
+              "patch": [
+                {
+                  "universe": 1,
+                  "address": 1,
+                  "equipment_reference_id": "eq1"
+                }
+              ],
+              "warnings": [
+                "Documented, not certified"
+              ]
+            }
+          }
+        },
+        "worksheets": {
+          "production": {
+            "state": "available",
+            "source": "preparations.business_workspaces",
+            "domain": "production",
+            "version": 3,
+            "base_revision": "073a53c7d32f14c3d411b4c844e6fcdb44b143c88c2449e607a7ffb89ff6d8a4",
+            "stale": false,
+            "content": {
+              "rows": [
+                {
+                  "id": "production-row",
+                  "label": "Saved production",
+                  "value": "Persisted only",
+                  "status": "to_verify",
+                  "section": "tasks",
+                  "field": "detail",
+                  "notes": "Source doc1, page 1; préparation à vérifier"
+                }
+              ],
+              "routes": [],
+              "notes": ""
+            },
+            "provenance": {
+              "production-row": {
+                "source": "operator",
+                "preparation_id": "prep-A"
+              }
+            },
+            "updated_at": "2026-01-01"
+          },
+          "sound": {
+            "state": "available",
+            "source": "preparations.business_workspaces",
+            "domain": "sound",
+            "version": 3,
+            "base_revision": "073a53c7d32f14c3d411b4c844e6fcdb44b143c88c2449e607a7ffb89ff6d8a4",
+            "stale": false,
+            "content": {
+              "rows": [
+                {
+                  "id": "sound-row",
+                  "label": "Saved sound",
+                  "value": "Persisted only",
+                  "status": "to_verify",
+                  "role": "input",
+                  "channel": 1
+                }
+              ],
+              "routes": [],
+              "notes": ""
+            },
+            "provenance": {
+              "sound-row": {
+                "source": "operator",
+                "preparation_id": "prep-A"
+              }
+            },
+            "updated_at": "2026-01-01"
+          },
+          "video": {
+            "state": "available",
+            "source": "preparations.business_workspaces",
+            "domain": "video",
+            "version": 3,
+            "base_revision": "073a53c7d32f14c3d411b4c844e6fcdb44b143c88c2449e607a7ffb89ff6d8a4",
+            "stale": false,
+            "content": {
+              "rows": [
+                {
+                  "id": "video-row",
+                  "label": "Saved video",
+                  "value": "Persisted only",
+                  "status": "to_verify",
+                  "role": "input",
+                  "channel": 1
+                }
+              ],
+              "routes": [],
+              "notes": ""
+            },
+            "provenance": {
+              "video-row": {
+                "source": "operator",
+                "preparation_id": "prep-A"
+              }
+            },
+            "updated_at": "2026-01-01"
+          }
+        },
+        "stage_model": {
+          "state": "available",
+          "source": "stage_models",
+          "scope": "project_not_preparation",
+          "updated_at": "2026-01-01",
+          "stale": null,
+          "revision_state": "not_compared_to_preparation_input",
+          "revision": "de96e4886cc341dbf29f6f8a208ff4d999d12abef71347f6af8e9f879238eae6",
+          "schema_name": "clara.stage_model_3d",
+          "schema_version": "1.0",
+          "unit": "m",
+          "coordinate_system_id": "clara_stage_v1",
+          "origin_description": "downstage edge centre at deck level",
+          "axis_x": "positive_stage_left_negative_stage_right",
+          "axis_y": "positive_upstage",
+          "axis_z": "positive_up_from_deck_level",
+          "stage": {
+            "id": "deck",
+            "name": "Stage",
+            "elevation_m": 0.0,
+            "boundary": [
+              {
+                "x_m": -6.0,
+                "y_m": 0.0,
+                "z_m": 0.0
+              },
+              {
+                "x_m": 6.0,
+                "y_m": 0.0,
+                "z_m": 0.0
+              },
+              {
+                "x_m": 6.0,
+                "y_m": 8.0,
+                "z_m": 0.0
+              }
+            ]
+          },
+          "objects": [
+            {
+              "id": "light-1",
+              "name": "Fixture",
+              "kind": "lighting",
+              "position": {
+                "x_m": 2,
+                "y_m": 1,
+                "z_m": 4
+              },
+              "certification": {
+                "placement": "verified",
+                "representation": "unknown"
+              },
+              "equipment_reference_id": "eq1",
+              "gdtf_reference": "persisted-pointer",
+              "source_object_id": "mvr-object"
+            }
+          ],
+          "representations": {
+            "state": "not_loaded",
+            "reason": "no_gdtf_mvr_asset_or_semantic_loading"
+          }
+        },
+        "equipment": {
+          "state": "available",
+          "source": "matchable_references",
+          "referenced_count": 1,
+          "truncated": false,
+          "reader_limit_per_scope": 2000,
+          "rows": [
+            {
+              "id": "eq1",
+              "scope": "core",
+              "category": null,
+              "type": null,
+              "manufacturer": "Yamaha",
+              "model": "01V",
+              "aliases": [],
+              "modes": [],
+              "specs": {
+                "inputs": 17
+              },
+              "notes": null,
+              "quantity": null,
+              "location": null,
+              "internal_id": null,
+              "verified": false,
+              "incomplete": false,
+              "knowledge_status": null,
+              "knowledge_facts": [],
+              "manufacturer_evidence_status": "partial",
+              "created_at": null,
+              "updated_at": null,
+              "canonical_id": "equipment:core:eq1"
+            }
+          ],
+          "unavailable_references": [],
+          "canonical_library_semantics": {
+            "state": "not_loaded",
+            "reason": "pointer_is_not_evidence"
+          }
+        },
+        "documents": {
+          "state": "available",
+          "selection": {
+            "state": "available",
+            "limit": 20,
+            "association": "selected_preparation",
+            "preparation_revision": "073a53c7d32f14c3d411b4c844e6fcdb44b143c88c2449e607a7ffb89ff6d8a4",
+            "excerpt_char_budget": 2500
+          },
+          "rows": [
+            {
+              "document_id": "doc1",
+              "source_revision": "0df024eeaa3364dc1dce9d36496c63e5016a7789dfb8dac74b0a3daf595492a4",
+              "source": "document_analysis_batches",
+              "state": "available",
+              "reason": null,
+              "complete": false,
+              "completed_batches": 1,
+              "truncated": false,
+              "evidence_status": "documented_not_operator_confirmed",
+              "analysis": {
+                "schemaVersion": "clara.document-analysis.v1",
+                "entities": [],
+                "facts": [
+                  {
+                    "property": "sound.inputs_total",
+                    "value": 17,
+                    "locator": "page 1",
+                    "confidence": 0.9
+                  }
+                ],
+                "ambiguities": [
+                  "Outputs to verify"
+                ],
+                "conflicts": []
+              }
+            }
+          ],
+          "work_cycle": {
+            "source": "preparations.clara_work_cycle",
+            "complete": false,
+            "status": "not_loaded",
+            "operations": []
+          },
+          "unavailable_source_count": 1
+        },
+        "coverage": {
+          "policy": "representative_saved_sources_not_complete_dossier",
+          "source_counts": {
+            "items": 3,
+            "items_by_section": {
+              "sound": 2,
+              "production": 1,
+              "lighting": 0,
+              "video": 0,
+              "structure": 0,
+              "other": 0
+            },
+            "stage_objects": 1,
+            "equipment": 1,
+            "documents": 1,
+            "worksheets": {
+              "production": 1,
+              "sound": 1,
+              "video": 1
+            }
+          },
+          "selected_counts": {
+            "items": 3,
+            "stage_objects": 1,
+            "equipment": 1,
+            "documents": 1,
+            "worksheets": {
+              "production": 1,
+              "sound": 1,
+              "video": 1
+            }
+          }
+        },
+        "omissions": [],
+        "truncated": false
+      }
+    },
+    "live": {
+      "environment": "production",
+      "adviceOnly": true,
+      "preparationId": "prep-A"
+    }
+  },
+  "documents": [],
+  "liveCapabilities": []
+}
