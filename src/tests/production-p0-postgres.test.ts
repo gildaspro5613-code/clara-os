@@ -48,7 +48,7 @@ test("P0-B: real durable session survives new runtime/navigation, ordered histor
  await pg.runSql(`DELETE FROM clara_sessions WHERE id IN ('${key}','${sessionKey(scope,"project-b")}')`);
 });
 
-test("P0-C/F: actual worker commits failure and partial session atomically, never completes/replays interrupted output",{skip:!container},async()=>{
+test("P0-C/F: actual worker commits failed status and sanitized session atomically, never completes/replays interrupted output",{skip:!container},async()=>{
  const pg=isolatedPostgres(container),store=createEventJobStore(pg.query as unknown as Parameters<typeof createEventJobStore>[0]);
  const jobId=id(),scope=id(),correlation=id().slice(0,32);
  const route=routeHarness(false,undefined,false,undefined,async()=>({content:"Synthetic retained partial",generation:{status:"incomplete",failureCategory:"output_truncated",recoverable:true}}));
@@ -58,7 +58,12 @@ test("P0-C/F: actual worker commits failure and partial session atomically, neve
  const saved=await store.lookup(scope,jobId);assert.equal(saved?.status,"failed");assert.equal(saved?.result,null);assert.equal(saved?.failure_category,"output_truncated");
  const key=sessionKey(body.scope,"project-a");
  const stored=JSON.parse((await pg.runSql(`SELECT data FROM clara_sessions WHERE id='${key}'`)).trim()) as ClaraSession;
- assert.equal(stored.conversation.length,2);assert.equal(stored.conversation[1].content,"Synthetic retained partial");assert.equal(stored.conversation[1].generation?.status,"incomplete");
+ assert.equal(stored.conversation.length,2);
+ assert.equal(stored.conversation[0].content,"Synthetic request");
+ assert.match(stored.conversation[1].content,/Clara could not complete/);
+ assert.doesNotMatch(JSON.stringify(stored.conversation),/Synthetic retained partial/);
+ assert.equal(stored.conversation[1].generation?.status,"incomplete");
+ assert.equal(stored.conversation[1].generation?.recoverable,false);
  assert.equal(await runEventJob(jobId,store,route.execute,()=>route.products),false);assert.equal(route.received.length,1);
  // A completed owner must never be changed by a late failure write.
  const completedId=id();await store.enqueue(scope,completedId,"clara-live","os-workspace",body,correlation);const owner=(await store.claim(completedId))!;
