@@ -1,0 +1,118 @@
+{
+  "synthetic": true,
+  "base": "8f031fb0e8492d5b7dc963ff637fbfc315fdf5e0",
+  "businessCharacters": 11105,
+  "requestCharacters": 1083,
+  "omissions": 40,
+  "readerTruncated": false,
+  "rawEvidenceCharacters": 13152,
+  "projectedEvidenceCharacters": 11443,
+  "sharedDictionaryCharacters": 225,
+  "sections": [
+    {
+      "section": "project",
+      "before": 99,
+      "after": 99
+    },
+    {
+      "section": "preparationId",
+      "before": 8,
+      "after": 8
+    },
+    {
+      "section": "provenance",
+      "before": 73,
+      "after": 73
+    },
+    {
+      "section": "sourceSelection",
+      "before": 19,
+      "after": 19
+    },
+    {
+      "section": "documents",
+      "before": 1754,
+      "after": 1696
+    },
+    {
+      "section": "businessContext.project_id",
+      "before": 3,
+      "after": 3
+    },
+    {
+      "section": "businessContext.preparation_id",
+      "before": 8,
+      "after": 8
+    },
+    {
+      "section": "businessContext.revision",
+      "before": 66,
+      "after": 8
+    },
+    {
+      "section": "businessContext.consistency",
+      "before": 25,
+      "after": 25
+    },
+    {
+      "section": "businessContext.policy",
+      "before": 30,
+      "after": 30
+    },
+    {
+      "section": "businessContext.limits",
+      "before": 49,
+      "after": 49
+    },
+    {
+      "section": "businessContext.items",
+      "before": 2210,
+      "after": 1470
+    },
+    {
+      "section": "businessContext.spatial",
+      "before": 292,
+      "after": 292
+    },
+    {
+      "section": "businessContext.calculations",
+      "before": 779,
+      "after": 705
+    },
+    {
+      "section": "businessContext.worksheets",
+      "before": 2541,
+      "after": 2205
+    },
+    {
+      "section": "businessContext.stage_model",
+      "before": 764,
+      "after": 751
+    },
+    {
+      "section": "businessContext.equipment",
+      "before": 448,
+      "after": 448
+    },
+    {
+      "section": "businessContext.documents",
+      "before": 873,
+      "after": 757
+    },
+    {
+      "section": "businessContext.coverage",
+      "before": 433,
+      "after": 433
+    },
+    {
+      "section": "businessContext.omissions",
+      "before": 2371,
+      "after": 1770
+    },
+    {
+      "section": "businessContext.truncated",
+      "before": 4,
+      "after": 4
+    }
+  ]
+}

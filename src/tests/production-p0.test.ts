@@ -411,3 +411,59 @@ test('Production V1: incomplete analysis keeps its unique cached documentary exc
  assert.match(prompts[0],/UNIQUE_CACHED_RIDER_EXCERPT/);assert.match(prompts[0],/"excerpt_truncated":true/);assert.match(prompts[0],/extracted_not_operator_confirmed/);assert.match(prompts[0],/revision-a/);
  assert.doesNotMatch(prompts[1],/UNIQUE_CACHED_RIDER_EXCERPT/);assert.match(prompts[2],/UNIQUE_CACHED_RIDER_EXCERPT/);assert.equal(prompts.length,3);
 });
+
+// The budget fixture is synthetic, not a copy of a real project or a cognitive-quality test.
+test('Production source budget: 11k business context fits losslessly, preserving every source/status/omission',async(t)=>{
+ const {liveProductionEvidence,compactLiveProductionEvidence}=await import('@/lib/brain/live-production-evidence');
+ const wire=JSON.parse(readFileSync('docs/reception/production-source-budget-20261109/synthetic-event.json','utf8'));
+ const business=wire.context.activePreparation.businessContext;
+ assert.ok(JSON.stringify(business).length>11000);assert.equal(business.omissions.length,40);
+ assert.equal(business.truncated,true);assert.equal(wire.message.length,1083);
+ const source=liveProjectSource({id:'synthetic-budget',type:EventType.USER_MESSAGE,source:'EXTERNAL_PRODUCT',timestamp:new Date(),context:wire.scope,payload:wire});assert.ok(source);
+ assert.equal((source.data as {truncated:boolean}).truncated,false,'The existing reader has not cut this fixture');
+ const raw=liveProductionEvidence(source.data as Record<string,unknown>),encoded=compactLiveProductionEvidence(raw);
+ assert.ok(JSON.stringify(raw).length>12000);assert.ok(encoded.length<=12000);
+ const packed=JSON.parse(encoded);
+ function expand(value:unknown):unknown {
+  if(Array.isArray(value))return value.map(expand);
+  if(value&&typeof value==='object'){
+   const row=value as Record<string,unknown>;
+   if(Object.keys(row).length===1&&Object.hasOwn(row,'$v'))return packed.values[row.$v as number];
+   if(Object.hasOwn(row,'$columns'))return (row.$rows as unknown[][]).map(values=>Object.fromEntries((row.$columns as string[]).map((column,i)=>[column,expand(values[i])])));
+   return Object.fromEntries(Object.entries(row).map(([key,v])=>[key,expand(v)]));
+  }
+  return value;
+ }
+ assert.equal(packed.encoding,'lossless_source_tables_v1');
+ assert.deepEqual(expand(packed.evidence),JSON.parse(JSON.stringify(raw)),'Exact round-trip: no selection, status promotion, provenance loss or extra omissions');
+ for(const marker of ['production','structure','lighting','sound','video','transport','confirmed','to_verify','missing','stale','doc1','revision','coverage','omissions','extracted_not_operator_confirmed'])assert.ok(encoded.includes(marker),marker);
+ const session=createSession();session.sources=[source];let calls=0,prompt='';
+ t.mock.method(OpenAIResponsesEngine.prototype,'generate',async input=>{
+  calls++;prompt=input.prompt;assert.equal(input.maxTokens,5200);assert.equal(input.reasoningEffort,'low');assert.equal(input.outputProfile,'live_production');
+  return result(JSON.stringify({schema:'clara.production.proposal.v1',project_id:'A',preparation_id:'prep-A',rows:['constraints','tasks','timeline','coordination','decisions'].map(section=>({section,label:'Dossier synthétique partiel',value:'À vérifier avant toute action.',notes:'Source doc1 ; statut to_verify ; omissions déclarées.'}))}));
+ });
+ const composed=await composeClaraResponseWithProposal(wire.message,session,'fr',{projectId:'A',preparationId:'prep-A'});
+ assert.equal(calls,1);assert.equal(composed.generation.status,'completed');assert.equal(composed.physicalAction,undefined);
+ assert.equal(prompt.split('SOURCES DISPONIBLES (non certifiées)\n').at(-1),encoded);
+ assert.match(prompt,/DOSSIER PARTIEL/);assert.match(prompt,/Reconstruire les chemins originaux/);
+ assert.equal(hasCompleteLiveProductionProposal(composed.content,{projectId:'A',preparationId:'prep-A'}),true);
+ assert.equal(hasCompleteLiveProductionProposal(composed.content,{projectId:'foreign',preparationId:'prep-A'}),false);
+ assert.equal(hasCompleteLiveProductionProposal(composed.content,{projectId:'A',preparationId:'foreign'}),false);
+});
+
+test('Production source budget: irreducible values and encoding-marker collisions stay fail-closed',async(t)=>{
+ const {compactLiveProductionEvidence}=await import('@/lib/brain/live-production-evidence');
+ const irreducible={businessContext:{facts:'irreducible'.repeat(1400)}};
+ assert.equal(compactLiveProductionEvidence(irreducible),JSON.stringify(irreducible));
+ const collision={businessContext:{$v:0,facts:'x'.repeat(13000)}};
+ assert.equal(compactLiveProductionEvidence(collision),JSON.stringify(collision));
+ const nestedCollision={project:{id:{$v:0}},...irreducible};
+ assert.equal(compactLiveProductionEvidence(nestedCollision),JSON.stringify(nestedCollision));
+ let calls=0;t.mock.method(OpenAIResponsesEngine.prototype,'generate',async()=>{calls++;return result('must not run');});
+ for(const businessContext of [irreducible.businessContext,collision.businessContext]){
+  const session=createSession();session.sources=[{source:'clara-live-project',available:true,summary:'',data:{project:{id:'A'},activePreparation:{id:'prep-A',businessContext}}}];
+  const composed=await composeClaraResponseWithProposal('Prépare',session,'fr',{projectId:'A',preparationId:'prep-A'});
+  assert.equal(composed.generation.failureCategory,'source_context_budget');assert.equal(composed.generation.status,'failed');
+ }
+ assert.equal(calls,0);
+});

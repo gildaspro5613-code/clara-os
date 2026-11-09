@@ -1,0 +1,9 @@
+{
+  "base": "8f031fb0e8492d5b7dc963ff637fbfc315fdf5e0",
+  "failureCategory": "source_context_budget",
+  "providerCalls": 0,
+  "businessCharacters": 11105,
+  "requestCharacters": 1083,
+  "readerTruncated": false,
+  "synthetic": true
+}
