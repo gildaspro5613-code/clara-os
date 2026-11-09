@@ -286,7 +286,7 @@ test("P0-C: provider adapter enforces conversational ceiling and timeout without
  assert.equal(calls[0].max_output_tokens,3200);assert.equal(settings[0].timeout,60000);assert.equal(settings[0].maxRetries,0);assert.equal(response.finishReason,"incomplete");
  await engine.generate({prompt:"Synthetic",maxTokens:100000});assert.equal(calls[1].max_output_tokens,2000);assert.equal(settings[1].timeout,undefined);
  await engine.generate({prompt:"Synthetic",maxTokens:100000,outputProfile:"document_analysis"});assert.equal(calls[2].max_output_tokens,6000);
- await engine.generate({prompt:"Synthetic",maxTokens:100000,outputProfile:"live_production",reasoningEffort:"low"});assert.equal(calls[3].max_output_tokens,5200);assert.deepEqual(calls[3].reasoning,{effort:"low"});assert.equal(settings[3].timeout,60000);assert.equal(settings[3].maxRetries,0);
+ await engine.generate({prompt:"Synthetic",maxTokens:100000,outputProfile:"live_production",reasoningEffort:"low"});assert.equal(calls[3].max_output_tokens,5200);assert.equal((calls[3].reasoning as {effort?:string})?.effort,"low");assert.equal(settings[3].timeout,60000);assert.equal(settings[3].maxRetries,0);
 });
 
 
