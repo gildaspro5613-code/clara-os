@@ -241,8 +241,8 @@ export async function composeClaraResponseWithProposal(
     model: process.env.OPENAI_MODEL ?? "gpt-5.5",
     // Dedicated bounded conversational budget, including provider reasoning.
     // No automatic continuation or implicit repeat of a durable invocation.
-    maxTokens: 3200,
-    outputProfile: "conversation",
+    maxTokens: liveProductionScope ? 5200 : 3200,
+    outputProfile: liveProductionScope ? "live_production" : "conversation",
   });
 
   const generation=responseGeneration(result);
