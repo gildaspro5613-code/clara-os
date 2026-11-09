@@ -1,0 +1,31 @@
+Base testée : 8f031fb0e8492d5b7dc963ff637fbfc315fdf5e0 + correctif de cette branche.
+Aucun fournisseur réel, secret ou donnée du projet réel utilisé.
+
+1. Baseline détachée inchangée, même profil synthétique : source_context_budget ; 0 appel fournisseur.
+   Preuve before.json. Sources brutes 13 152 caractères.
+2. Suite du workflow Production P0 existant : 55 PASS, 0 FAIL, 0 SKIP (6,1 s).
+   DOCUMENT_OPERATION_TEST_CONTAINER=clara-document-registry-test-budget node --import tsx --test
+   src/tests/production-p0.test.ts src/tests/production-p0-postgres.test.ts
+   src/tests/event-jobs-postgres.test.ts src/tests/external-event-message-contract.test.ts
+   src/tests/document-analysis-failures.test.ts src/tests/commercial-operational-continuity.test.ts
+3. Contrats/authentification OS ↔ Live : 17 PASS, 0 FAIL, 0 SKIP (5,2 s).
+   node --import tsx --test src/tests/live-callback-transport.test.ts src/tests/clara-live-product-auth.test.ts
+4. Après ajout du cas négatif de collision imbriquée et ajustement du prompt de décodage aux seuls contextes projetés :
+   Production P0 + PostgreSQL : 33 PASS ; compositeur final : 29 PASS (recouvrement volontaire, ne pas additionner).
+5. TypeScript : npx tsc --noEmit --pretty false : PASS.
+6. ESLint ciblé : PASS (compositeur, projection et deux fichiers de tests modifiés).
+7. Build Next.js optimisé Webpack final : PASS, 29 pages générées.
+   Le build standard a d'abord échoué uniquement au téléchargement de Geist/Geist Mono, domaine Google Fonts inaccessible.
+   Validation finale avec NEXT_FONT_GOOGLE_MOCKED_RESPONSES pointant sur un fichier /tmp : CSS local utilisant les polices Geist du paquet Next déjà installé ; aucun changement applicatif ou de dépendance.
+8. git diff --check : PASS.
+9. AntiPreview : branche explicitement false dans vercel.json ; aucun workflow modifié/déclenché, aucun déploiement demandé.
+
+Projection : 11 443 caractères, incluant dictionnaire/colonnes/enveloppe ; garde 12 000 inchangée.
+Égalité profonde du JSON reconstruit avec les sources avant projection : PASS.
+Contexte irréductible/collision de format : refus source_context_budget, zéro génération : PASS.
+Document incomplet/périmé, références/révisions, omissions et tous statuts : conservés.
+Cinq lots V1 : validation du format seulement, réponse cognitive simulée.
+maxTokens=5200 ; reasoningEffort=low ; modèle et nombre d'appels inchangés.
+Persistance réelle dans un PostgreSQL 17 local jetable : session/job terminés, contexte étranger refusé, traitement terminé non rejoué.
+Aucune preuve de qualité cognitive OpenAI réelle ni de résultat sur le dossier exact Production.
+CI GitHub distantes : état à préciser dans la remise finale, pas assimilé aux tests locaux.

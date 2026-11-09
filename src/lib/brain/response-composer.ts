@@ -28,6 +28,7 @@ import { extractPhysicalActionProposal, PHYSICAL_ACTION_PROPOSAL_INSTRUCTIONS, t
 import { safeResponseLocale } from "@/i18n/response-language";
 import { responseGeneration, generationNotice, type ResponseGeneration } from "./response-generation";
 import { object } from "./live-project-context";
+import {liveProductionEvidence, compactLiveProductionEvidence, LIVE_EVIDENCE_ENCODING_INSTRUCTION} from "./live-production-evidence";
 import type { LiveProductionScope } from "./live-production-proposal-guard";
 
 export interface ComposedClaraResponse {
@@ -153,19 +154,8 @@ export async function composeClaraResponseWithProposal(
     const liveSource=session.sources.find(source=>source.source==='clara-live-project' && source.available);
     const data=object(liveSource?.data), prep=object(data.activePreparation);
     const business=object(prep.businessContext);
-    const evidence=Object.keys(business).length ? JSON.stringify({
-      project:data.project, preparationId:prep.id, provenance:data.provenance, sourceSelection:{truncated:data.truncated},
-      businessContext:business,
-      documents:Array.isArray(data.documents)?data.documents.map(doc=>{
-        const row=object(doc);
-        const analyses=object(business.documents).rows;
-        const complete=Array.isArray(analyses) && analyses.some(analysis=>object(analysis).document_id===row.id && object(analysis).complete===true && typeof row.source_revision==='string' && object(analysis).source_revision===row.source_revision);
-        return {id:row.id,filename:row.filename,source_revision:row.source_revision,
-          ...(!complete?{excerpt:row.text,excerpt_truncated:row.text_truncated===true || row.truncated===true,
-            text_unavailable:row.text_unavailable,reason:row.reason,
-            source:"projectContext.documents",evidence_status:"extracted_not_operator_confirmed"}:{})};
-      }):[],
-    }) : sourcesSummary;
+    const evidence=Object.keys(business).length
+      ? compactLiveProductionEvidence(liveProductionEvidence(data)) : sourcesSummary;
     if(evidence.length>12_000) {
       return {content:generationNotice(locale ?? "fr",{status:"failed",recoverable:false}),
         generation:{status:"failed",failureCategory:"source_context_budget",recoverable:false}};
@@ -205,6 +195,7 @@ export async function composeClaraResponseWithProposal(
       message.slice(0,1500),
       "SYNTHÈSE MÉTIER DU BRAIN (non certifiée)",
       (decision?.summary ?? recommendation?.summary ?? "Non disponible").slice(0,1600),
+      ...(evidence.startsWith('{"encoding":"lossless_source_tables_v1",') ? [LIVE_EVIDENCE_ENCODING_INSTRUCTION] : []),
       "SOURCES DISPONIBLES (non certifiées)",
       evidence,
     ].join("\n");
