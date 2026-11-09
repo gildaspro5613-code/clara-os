@@ -400,3 +400,14 @@ test('Production V1: pre-existing request and Brain-summary bounds are disclosed
  await composeClaraResponseWithProposal('x'.repeat(1600),session,'fr',{projectId:'A',preparationId:'prep-A'});
  assert.match(prompt,/"requestTruncated":true/);assert.match(prompt,/"brainSummaryTruncated":false/);
 });
+
+
+test('Production V1: incomplete analysis keeps its unique cached documentary excerpt and provenance',async(t)=>{
+ const prompts:string[]=[];t.mock.method(OpenAIResponsesEngine.prototype,'generate',async input=>{prompts.push(input.prompt);return result('{}');});
+ for(const complete of [false,true,'stale']){
+  const session=createSession();session.sources=[{available:true,source:'clara-live-project',data:{project:{id:'A'},activePreparation:{id:'prep-A',businessContext:{documents:{rows:[{document_id:'doc1',complete:complete!==false,source_revision:complete==='stale'?'old':'revision-a',analysis:{facts:[]}}]}}},documents:[{id:'doc1',filename:'Synthetic.pdf',source_revision:'revision-a',text:'UNIQUE_CACHED_RIDER_EXCERPT',text_truncated:true}]},summary:'No substitute excerpt'}];
+  await composeClaraResponseWithProposal('Prépare',session,'fr',{projectId:'A',preparationId:'prep-A'});
+ }
+ assert.match(prompts[0],/UNIQUE_CACHED_RIDER_EXCERPT/);assert.match(prompts[0],/"excerpt_truncated":true/);assert.match(prompts[0],/extracted_not_operator_confirmed/);assert.match(prompts[0],/revision-a/);
+ assert.doesNotMatch(prompts[1],/UNIQUE_CACHED_RIDER_EXCERPT/);assert.match(prompts[2],/UNIQUE_CACHED_RIDER_EXCERPT/);assert.equal(prompts.length,3);
+});

@@ -6,7 +6,7 @@ Base Production vérifiée par Vercel et GitHub : `9e64e8eb4f265d022736a153cf900
 
 ## Correctifs OS
 
-- `src/lib/brain/response-composer.ts` : utiliser les données structurées de la source Live déjà chargée par le Brain, sans recouper son résumé à mi-enregistrement. Budget de sources 12 000 caractères conservé ; si hors budget, échec explicite source_context_budget avant composition, sans nouvel appel ni retry. Les marqueurs de couverture/troncature sont transmis, y compris les bornes préexistantes de la demande (1 500 caractères) et de la synthèse Brain (1 600).
+- `src/lib/brain/response-composer.ts` : utiliser les données structurées de la source Live déjà chargée par le Brain, sans recouper son résumé à mi-enregistrement. Budget de sources 12 000 caractères conservé ; si hors budget, échec explicite source_context_budget avant composition, sans nouvel appel ni retry. Quand une analyse documentaire est incomplète ou d’une autre révision, son extrait de texte enregistré reste inclus avec source, révision et indicateur de troncature ; seul un extrait déjà couvert par une analyse complète de même révision est omis comme doublon. Les marqueurs de couverture/troncature sont transmis, y compris les bornes préexistantes de la demande (1 500 caractères) et de la synthèse Brain (1 600).
 - Même compositeur, modèle configuré, maxTokens=5200, reasoningEffort=low et nombre d'appels inchangés. Prompt : cinq lots opérationnels, liens entre sources/contraintes/actions/dépendances/validation ; planning conditionnel sans horaires inventés ; statut/provenance de chaque lot et dossier partiel quand nécessaire.
 - `src/lib/brain/live-production-proposal-guard.ts` : trois champs facultatifs responsible/date/time, déjà présents dans ProductionRow Live, avec validation compatible ; anciennes réponses V1 valides inchangées. Refus des identités/status/depends_on ajoutés par le modèle. Aucun nouveau protocole d'autorité.
 - `src/lib/external-capabilities/external-event-handler.ts` : refuser un businessContext déclarant un autre projet ou une autre préparation avant cognition. OWNER/expiration/révocation/scope, protections de génération incomplète et persistance des jobs inchangés.
@@ -22,6 +22,10 @@ Base Production vérifiée par Vercel et GitHub : `9e64e8eb4f265d022736a153cf900
 - Live : 58 tests Python, 68 tests UI, build frontend et recette navigateur ciblée. Langue fr malgré profil it, approbation locale, sauvegarde explicite et réouverture des champs responsables/horaires. Rapport détaillé et captures dans le dossier correspondant de la PR Live.
 
 Aucun test existant désactivé. Les anciens contrats, refus, générations interrompues, sessions et reprise restent testés. SHA/CI finaux et éventuels échecs comparés à la base seront relevés dans les PR ; ne pas masquer une régression globale avec ces tests ciblés.
+
+## Vérification complémentaire des extraits
+
+Le premier SHA 8f31304 conservait uniquement les métadonnées des documents dans le compositeur structuré. La revue a identifié que cela perdait l'extrait unique d'un document dont l'analyse est incomplète. Le correctif le conserve sous le budget existant, avec sa révision/provenance et son statut non confirmé ; si l'ensemble ne tient pas, refus explicite plutôt que perte de source. [48 tests ciblés finaux hors stockage](os-excerpts.log) et TypeScript passent, dont source incomplète, source complète de même révision et analyse complète d'une ancienne révision. Les 51 tests initiaux avec PostgreSQL réel restent rapportés séparément ; aucune logique de stockage n'est modifiée par ce complément. CI finale du nouveau SHA relevée dans la PR.
 
 ## Limites et décision
 

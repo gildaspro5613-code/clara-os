@@ -157,7 +157,13 @@ export async function composeClaraResponseWithProposal(
       project:data.project, preparationId:prep.id, provenance:data.provenance, sourceSelection:{truncated:data.truncated},
       businessContext:business,
       documents:Array.isArray(data.documents)?data.documents.map(doc=>{
-        const row=object(doc);return {id:row.id,filename:row.filename,source_revision:row.source_revision};
+        const row=object(doc);
+        const analyses=object(business.documents).rows;
+        const complete=Array.isArray(analyses) && analyses.some(analysis=>object(analysis).document_id===row.id && object(analysis).complete===true && typeof row.source_revision==='string' && object(analysis).source_revision===row.source_revision);
+        return {id:row.id,filename:row.filename,source_revision:row.source_revision,
+          ...(!complete?{excerpt:row.text,excerpt_truncated:row.text_truncated===true || row.truncated===true,
+            text_unavailable:row.text_unavailable,reason:row.reason,
+            source:"projectContext.documents",evidence_status:"extracted_not_operator_confirmed"}:{})};
       }):[],
     }) : sourcesSummary;
     if(evidence.length>12_000) {
