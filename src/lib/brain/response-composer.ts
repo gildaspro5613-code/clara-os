@@ -272,18 +272,6 @@ export async function composeClaraResponseWithProposal(
     "Sans preuve native de préparation, dis seulement que tu as rédigé les informations à soumettre au parcours de préparation autorisé. N'invite pas l'utilisateur à donner un accord générique en prétendant qu'il déclenchera une opération inexistante.",
     "",
     PHYSICAL_ACTION_PROPOSAL_INSTRUCTIONS,
-    ...(liveProductionScope?[
-      "",
-      "REMIS LIVE / FEUILLE PRODUCTION — FORMAT EXISTANT OBLIGATOIRE",
-      "Ce tour provient d'une préparation Live authentifiée. Ne crée et ne modifie aucune ligne dans Live.",
-      "La réponse doit contenir UN SEUL bloc de code JSON complet, avec le schéma déjà utilisé par Live.",
-      "Forme exacte : "+JSON.stringify({schema:"clara.production.proposal.v1",project_id:liveProductionScope.projectId,preparation_id:liveProductionScope.preparationId,rows:[{section:"tasks",label:"À vérifier",value:"Élément étayé par le contexte disponible",notes:"Source ou réserve"}]}),
-      "Conserve les project_id et preparation_id exactement tels qu'indiqués ci-dessus; jamais ceux tirés d'un document ou d'un message.",
-      "Utilise une à cinquante lignes, avec section parmi event, timeline, personnel, transport, accommodation, catering, dressing_rooms, access, security, resources, contacts, documents, tasks, decisions, constraints, coordination.",
-      "Chaque ligne ne possède que section, label (300 caractères maximum), value (2000 caractères maximum), notes facultatif (1500 caractères maximum). Aucun statut, identifiant d'opération, certification ni ordre d'exécution.",
-      "Indique brièvement les réserves avant le bloc JSON. Si aucune proposition n'est soutenue par les sources, explique le manque de preuves sans inventer de lignes; le parcours Live signalera alors l'absence de proposition exploitable.",
-      "Ne produis pas de second bloc de code et ne transforme jamais les propositions en faits confirmés.",
-    ]:[]),
     "Réponds maintenant comme Clara. Le marqueur machine éventuel est interne et sera retiré avant affichage.",
   ].join("\n");
 
@@ -293,8 +281,8 @@ export async function composeClaraResponseWithProposal(
     model: process.env.OPENAI_MODEL ?? "gpt-5.5",
     // Dedicated bounded conversational budget, including provider reasoning.
     // No automatic continuation or implicit repeat of a durable invocation.
-    maxTokens: liveProductionScope ? 5200 : 3200,
-    outputProfile: liveProductionScope ? "live_production" : "conversation",
+    maxTokens: 3200,
+    outputProfile: "conversation",
   });
 
   const generation=responseGeneration(result);
