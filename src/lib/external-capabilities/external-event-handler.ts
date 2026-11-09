@@ -297,6 +297,7 @@ async function handleEvent(request: Request, execution?: Execution) {
     if(projectId && declaredProject && declaredProject!==projectId)
       return respond({success:false,code:"CORE_EVENT_PROCESSING_FAILED",error:"Project context mismatch."},400);
     const live=object(body.context?.live), activePreparation=object(body.context?.activePreparation);
+    const businessContext=object(activePreparation.businessContext);
     // Only the existing authenticated Clara Live Production advice path requests
     // a structured proposal. Ordinary external dialogue is unaffected.
     const expectsLiveProposal=body.eventType==="USER_MESSAGE" && product.productId==="clara-live" &&
@@ -304,7 +305,9 @@ async function handleEvent(request: Request, execution?: Execution) {
     if(expectsLiveProposal && (!projectId || scope.workspaceId!==projectId ||
         typeof live.preparationId!=="string" || live.preparationId.length===0 ||
         activePreparation.id!==live.preparationId ||
-        (activePreparation.project_id!==undefined && activePreparation.project_id!==projectId))) {
+        (activePreparation.project_id!==undefined && activePreparation.project_id!==projectId) ||
+        (businessContext.project_id!==undefined && businessContext.project_id!==projectId) ||
+        (businessContext.preparation_id!==undefined && businessContext.preparation_id!==live.preparationId))) {
       return respond({success:false,code:"CORE_EVENT_PROCESSING_FAILED",error:"Production preparation scope mismatch."},400);
     }
     const liveProductionScope:LiveProductionScope|undefined=expectsLiveProposal

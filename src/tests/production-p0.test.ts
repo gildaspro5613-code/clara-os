@@ -339,3 +339,64 @@ test("P0 Agenda reuses durable scoped calendars without session selection or aut
  assert.match(work,/return this.eventsForBoundCalendar\(id,pageToken,timeMin,timeMax\)/);
  assert.doesNotMatch(source,/native\.session\.googleCalendarId\s*=/);
 });
+
+test('Production V1: actual Live serializer fixture reaches Brain and structured composer without a second text cut',async(t)=>{
+ const wire=JSON.parse(readFileSync('docs/reception/production-context-v1/synthetic-event.json','utf8'));
+ const current:Event={id:'synthetic-context',type:EventType.USER_MESSAGE,source:'EXTERNAL_PRODUCT',timestamp:new Date(),context:wire.scope,payload:wire};
+ const source=liveProjectSource(current);assert.ok(source);
+ const data=source.data as Record<string,unknown>;
+ assert.equal(data.truncated,false);
+ const calls:{prompt:string;maxTokens?:number}[]=[];
+ const answer=JSON.stringify({schema:'clara.production.proposal.v1',project_id:'A',preparation_id:'prep-A',rows:[{section:'coordination',label:'Accès avant montage',value:'Conditionner le montage à la confirmation de l’accès ; répartir ensuite les équipes plateau et son.',notes:'Hypothèse de séquencement à valider ; source items access (missing), doc1 page 1 ; aucun horaire attesté.'}]});
+ t.mock.method(OpenAIResponsesEngine.prototype,'generate',async input=>{calls.push(input);return result(calls.length===1?JSON.stringify({intent:'Prepare',summary:'Coordinate missing access and crew',confidence:1,entities:[],actions:[],nextAction:'Review',importance:1,urgency:0,impact:1}):answer);});
+ await reasoning(buildContext(current),{shortTerm:[],longTerm:[],facts:[]},[source]);
+ const session=createSession();session.sources=[source];
+ const composed=await composeClaraResponseWithProposal('Prépare un dossier opérationnel',session,'fr',{projectId:'A',preparationId:'prep-A'});
+ assert.equal(composed.generation.status,'completed');assert.equal(calls.length,2);
+ for(const marker of ['doc1','confirmed','to_verify','missing','stage_model','calculations','worksheets','coverage']){assert.ok(calls[0].prompt.includes(marker),marker+' Brain');assert.ok(calls[1].prompt.includes(marker),marker+' composer');}
+ assert.match(calls[1].prompt,/français/);assert.match(calls[1].prompt,/dépendances/);assert.match(calls[1].prompt,/DOSSIER PARTIEL/);assert.match(calls[1].prompt,/responsable documenté ou à désigner/);
+ assert.equal(calls[1].maxTokens,5200);
+ assert.equal(hasCompleteLiveProductionProposal(composed.content,{projectId:'A',preparationId:'prep-A'}),true);
+ assert.doesNotMatch(calls[1].prompt,/Source summaries clipped/);
+});
+
+test('Production V1: oversize evidence is refused before a provider call rather than cut inside a source',async(t)=>{
+ let calls=0;t.mock.method(OpenAIResponsesEngine.prototype,'generate',async()=>{calls++;return result('must not run');});
+ const session=createSession();session.sources=[{available:true,source:'clara-live-project',data:{project:{id:'A'},activePreparation:{id:'prep-A',businessContext:{items:'x'.repeat(13000)}}},summary:'not a replacement for structured evidence'}];
+ const composed=await composeClaraResponseWithProposal('Prépare',session,'fr',{projectId:'A',preparationId:'prep-A'});
+ assert.equal(calls,0);assert.equal(composed.generation.status,'failed');assert.equal(composed.generation.failureCategory,'source_context_budget');
+});
+
+test('Production V1: every selected locale is requested explicitly, without claiming provider language certification',async(t)=>{
+ const prompts:string[]=[];t.mock.method(OpenAIResponsesEngine.prototype,'generate',async input=>{prompts.push(input.prompt);return result('{}');});
+ for(const locale of ['fr','en','es','de','it'] as const)await composeClaraResponseWithProposal('Prepare',createSession(),locale,{projectId:'A',preparationId:'prep-A'});
+ for(const [i,language] of ['français','anglais','espagnol','allemand','italien'].entries())assert.ok(prompts[i].includes(language));
+ assert.equal(prompts.length,5);
+});
+
+test('Production V1: foreign nested business identity is rejected before cognition',async()=>{
+ const current=event('project-a');const route=routeHarness(false,undefined,false,undefined,async()=>{throw Error('No generation for wrong scope');});
+ const original=(current.payload as {context:Record<string,unknown>}).context;
+ for(const business of [{project_id:'foreign',preparation_id:'prep-a'},{project_id:'project-a',preparation_id:'foreign'}]){
+  const body={schemaVersion:'clara.unified-core.event.v1',eventType:'USER_MESSAGE',scope:{productId:'clara-live',workspaceId:'project-a',userId:'alice',sessionId:'session-a'},...(current.payload as object),context:{...original,live:{adviceOnly:true,preparationId:'prep-a'},activePreparation:{id:'prep-a',project_id:'project-a',businessContext:business}}};
+  const response=await route.execute({product:route.products.get('clara-live')!,body,correlationId:'a'.repeat(32),jobId:'b'.repeat(64),progress:async()=>{}});
+  assert.equal(response.status,400);
+ }
+});
+
+
+test('Production V1 compatible optional fields accept attested schedule and refuse invalid dates/identities',()=>{
+ const payload={schema:'clara.production.proposal.v1',project_id:'A',preparation_id:'prep-A',rows:[{section:'timeline',label:'Montage',value:'À valider',responsible:'Régie déclarée',date:'2026-11-10',time:'08:30',notes:'doc1 page 2 ; documenté, non confirmé'}]};
+ assert.equal(hasCompleteLiveProductionProposal(JSON.stringify(payload),{projectId:'A',preparationId:'prep-A'}),true);
+ for(const field of [{date:'2026-02-30'},{time:'25:00'},{responsible:{userId:'forged'}},{status:'confirmed'},{depends_on:['forged-id']}]){
+  assert.equal(hasCompleteLiveProductionProposal(JSON.stringify({...payload,rows:[{...payload.rows[0],...field}]}),{projectId:'A',preparationId:'prep-A'}),false);
+ }
+});
+
+
+test('Production V1: pre-existing request and Brain-summary bounds are disclosed rather than silent',async(t)=>{
+ let prompt='';t.mock.method(OpenAIResponsesEngine.prototype,'generate',async input=>{prompt=input.prompt;return result('{}');});
+ const session=createSession();
+ await composeClaraResponseWithProposal('x'.repeat(1600),session,'fr',{projectId:'A',preparationId:'prep-A'});
+ assert.match(prompt,/"requestTruncated":true/);assert.match(prompt,/"brainSummaryTruncated":false/);
+});

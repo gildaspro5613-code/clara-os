@@ -11,6 +11,12 @@ const sections = new Set([
 const safeText = (v: unknown, max: number): v is string =>
   typeof v === "string" && v.length <= max;
 
+const validDate = (value:unknown):boolean => {
+  if(value==null)return true;
+  if(typeof value!=="string" || !/^\d{4}-\d{2}-\d{2}$/.test(value))return false;
+  const parsed=new Date(value+'T00:00:00Z');
+  return Number.isFinite(parsed.valueOf()) && parsed.toISOString().slice(0,10)===value;
+};
 /** True only when Live's existing parseProductionResponse can receive the
  * complete, single structured envelope with the exact authenticated scope.
  * This function never accepts advice as an executable instruction.
@@ -37,6 +43,8 @@ export function hasCompleteLiveProductionProposal(response: string, scope: LiveP
     return sections.has(row.section as string) &&
       safeText(row.label,300) && row.label.trim().length>0 &&
       safeText(row.value,2000) && safeText(row.notes??"",1500) &&
-      Object.keys(row).every(key=>["section","label","value","notes"].includes(key));
+      (!Object.hasOwn(row,'responsible') || safeText(row.responsible,300)) && validDate(row.date) &&
+      (row.time==null || typeof row.time==='string' && /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(row.time)) &&
+      Object.keys(row).every(key=>["section","label","value","notes","responsible","date","time"].includes(key));
   });
 }
