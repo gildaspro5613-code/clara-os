@@ -83,6 +83,37 @@ test("P0-C/Live: only authenticated Production scope requests increased output b
  assert.deepEqual(requested,[{maxTokens:3200,outputProfile:"conversation"},{maxTokens:5200,outputProfile:"live_production"}]);
 });
 
+test("P0-C/Live: compact proposal excludes conversational history and remains scoped",async(t)=>{
+ const calls:{prompt:string;instructions?:string;outputProfile?:string;reasoningEffort?:string;maxTokens?:number}[]=[];
+ t.mock.method(OpenAIResponsesEngine.prototype,"generate",async(input)=>{
+   calls.push(input);
+   return result(JSON.stringify({schema:"clara.production.proposal.v1",project_id:"project-a",preparation_id:"prep-a",rows:[{section:"tasks",label:"Confirm crew",value:"Crew count unknown"}]}));
+ });
+ const session=createSession();
+ session.conversation=[{id:"old",role:"user",content:"PRIVATE_UNRELATED_OLD_CHAT",createdAt:new Date().toISOString()}];
+ const output=await composeClaraResponseWithProposal("Prépare la logistique",session,"fr",{projectId:"project-a",preparationId:"prep-a"});
+ assert.equal(output.generation.status,"completed");
+ assert.equal(calls.length,1);
+ assert.equal(calls[0].outputProfile,"live_production");
+ assert.equal(calls[0].reasoningEffort,"low");
+ assert.equal(calls[0].maxTokens,5200);
+ assert.match(calls[0].prompt,/clara.production.proposal.v1/);
+ assert.match(calls[0].prompt,/project-a/);
+ assert.match(calls[0].prompt,/prep-a/);
+ assert.doesNotMatch(calls[0].prompt,/PRIVATE_UNRELATED_OLD_CHAT/);
+ assert.doesNotMatch(calls[0].prompt,/CLARA_PHYSICAL_ACTION_PROPOSAL/);
+ assert.equal(hasCompleteLiveProductionProposal(output.content,{projectId:"project-a",preparationId:"prep-a"}),true);
+});
+
+test("P0-C/Live: incomplete compact proposal stays non-actionable",async(t)=>{
+ t.mock.method(OpenAIResponsesEngine.prototype,"generate",async()=>result('{"schema":"clara.production.proposal.v1",',{responseStatus:"incomplete",incompleteReason:"max_output_tokens"}));
+ const output=await composeClaraResponseWithProposal("Prépare",createSession(),"fr",{projectId:"project-a",preparationId:"prep-a"});
+ assert.equal(output.generation.status,"incomplete");
+ assert.equal(output.generation.failureCategory,"output_truncated");
+ assert.equal(hasCompleteLiveProductionProposal(output.content,{projectId:"project-a",preparationId:"prep-a"}),false);
+ assert.equal(output.physicalAction,undefined);
+});
+
 test("P0-C: complete, limit, filter, timeout, failure and empty output remain distinct",()=>{
  assert.equal(responseGeneration(result("Complete")).status,"completed");
  assert.equal(responseGeneration(result("Partial",{responseStatus:"incomplete",incompleteReason:"max_output_tokens"})).status,"incomplete");
