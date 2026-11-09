@@ -67,6 +67,8 @@ export class OpenAIResponsesEngine {
 
         instructions: context.instructions,
 
+        ...(context.outputProfile === "live_production" && context.reasoningEffort === "low" ? {reasoning:{effort:"low" as const}} : {}),
+
         max_output_tokens: Math.min(
           context.maxTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,
           context.outputProfile === "document_analysis" ? 6_000 : context.outputProfile === "live_production" ? 5_200 : context.outputProfile === "conversation" ? 3_200 : HARD_MAX_OUTPUT_TOKENS,
