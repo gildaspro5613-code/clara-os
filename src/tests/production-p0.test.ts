@@ -72,6 +72,17 @@ test("P0-C/E: incomplete provider output retains text, suppresses proposals and 
  for(const locale of ["fr","en","es","de","it"] as const){const session=createSession();const response=await composeClaraResponseWithProposal("Synthetic request",session,locale);assert.equal(response.generation.status,"incomplete");assert.equal(response.generation.failureCategory,"output_truncated");assert.equal(response.generation.recoverable,true);assert.equal(response.physicalAction,undefined);assert.ok(!response.content.includes("CLARA_PHYSICAL_ACTION_PROPOSAL"));assert.match(response.content,/Original quote: "Keep this wording"/);assert.match(prompt,/Préserve les citations/);assert.match(response.content,/interrompue|interrupted|interrumpida|unterbrochen|interrotta/);}
 });
 
+test("P0-C/Live: only authenticated Production scope requests increased output budget",async(t)=>{
+ const requested:{maxTokens?:number;outputProfile?:string}[]=[];
+ t.mock.method(OpenAIResponsesEngine.prototype,"generate",async(input)=>{
+   requested.push({maxTokens:input.maxTokens,outputProfile:input.outputProfile});
+   return result(JSON.stringify({schema:"clara.production.proposal.v1",project_id:"project-a",preparation_id:"prep-a",rows:[{section:"tasks",label:"Verify",value:"Crew to confirm"}]}));
+ });
+ await composeClaraResponseWithProposal("Synthetic request",createSession(),"fr");
+ await composeClaraResponseWithProposal("Synthetic request",createSession(),"fr",{projectId:"project-a",preparationId:"prep-a"});
+ assert.deepEqual(requested,[{maxTokens:3200,outputProfile:"conversation"},{maxTokens:5200,outputProfile:"live_production"}]);
+});
+
 test("P0-C: complete, limit, filter, timeout, failure and empty output remain distinct",()=>{
  assert.equal(responseGeneration(result("Complete")).status,"completed");
  assert.equal(responseGeneration(result("Partial",{responseStatus:"incomplete",incompleteReason:"max_output_tokens"})).status,"incomplete");
@@ -244,6 +255,7 @@ test("P0-C: provider adapter enforces conversational ceiling and timeout without
  assert.equal(calls[0].max_output_tokens,3200);assert.equal(settings[0].timeout,60000);assert.equal(settings[0].maxRetries,0);assert.equal(response.finishReason,"incomplete");
  await engine.generate({prompt:"Synthetic",maxTokens:100000});assert.equal(calls[1].max_output_tokens,2000);assert.equal(settings[1].timeout,undefined);
  await engine.generate({prompt:"Synthetic",maxTokens:100000,outputProfile:"document_analysis"});assert.equal(calls[2].max_output_tokens,6000);
+ await engine.generate({prompt:"Synthetic",maxTokens:100000,outputProfile:"live_production"});assert.equal(calls[3].max_output_tokens,5200);assert.equal(settings[3].timeout,60000);assert.equal(settings[3].maxRetries,0);
 });
 
 
