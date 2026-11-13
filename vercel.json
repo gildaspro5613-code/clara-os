@@ -46,6 +46,11 @@
       "fix/native-calendar-chat-prepare-20261108": false,
       "fix/calendar-read-natural-lookup-20261108": false,
       "fix/clara-natural-provider-replies-20261108": false,
+      "fix/os-live-core-truncation-20261108": false,
+      "fix/live-production-output-budget-20261109": false,
+      "fix/live-production-compact-composition-20261109": false,
+      "fix/production-context-v1": false,
+      "fix/live-production-context-budget-20261109": false,
       "fix/brevo-m2m-credential-bridge-20261108": false
     }
   }
