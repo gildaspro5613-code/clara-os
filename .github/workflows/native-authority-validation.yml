@@ -46,6 +46,8 @@ on:
       - 'src/app/api/native/**'
       - 'src/app/api/connections/google/**'
       - 'src/app/api/connections/brevo/**'
+      - 'src/lib/connectors/brevo/**'
+      - 'src/tests/brevo-*'
       - 'src/app/api/connections/make/**'
       - 'src/tests/operational-reception*'
       - 'db/migrations/012_native_resource_authority.sql'
@@ -155,7 +157,7 @@ jobs:
           npx eslint src/components/connections src/tests/google-native-hub*
           npx eslint src/components/layout src/components/native/NativeScopeSelector.tsx src/components/native/NativeDocumentsPanel.tsx src/components/native/NativeMailPanel.tsx src/components/cockpit/widgets/clara/ClaraChatWidget.tsx src/components/automatisations/MakeConnectionStatus.tsx src/components/contacts/ContactsDirectory.tsx src/modules/missions/MissionsStage.tsx src/app/documents/page.tsx src/app/clara/page.tsx src/tests/helpers/native-ui-disclosures.mjs src/tests/interface-finalization-browser.e2e.mjs
       - name: Operational recovery, consultations and scoped provider reads
-        run: node --import tsx --test src/tests/documents-daily.test.ts src/tests/operational-recovery*.test.ts src/tests/historical-cockpit.test.ts src/tests/native-voice.test.ts src/tests/native-personality.test.ts src/tests/existing-capabilities.test.ts src/tests/voice-route-security.test.ts src/tests/google-display-name.test.ts src/tests/header-account-postgres.test.ts src/tests/header-search-postgres.test.ts
+        run: node --import tsx --test src/tests/documents-daily.test.ts src/tests/operational-recovery*.test.ts src/tests/brevo-connector.test.ts src/tests/brevo-operational-readiness.test.ts src/tests/historical-cockpit.test.ts src/tests/native-voice.test.ts src/tests/native-personality.test.ts src/tests/existing-capabilities.test.ts src/tests/voice-route-security.test.ts src/tests/google-display-name.test.ts src/tests/header-account-postgres.test.ts src/tests/header-search-postgres.test.ts
       - name: Actual handlers and database isolation, revocation, snapshot and history
         run: node --import tsx --test src/tests/google-sign-in-postgres.test.ts src/tests/canonical-conversation-postgres.test.ts src/tests/canonical-conversation-routes.test.ts src/tests/native-authority.test.ts src/tests/native-authority-postgres.test.ts src/tests/native-runtime-postgres.test.ts src/tests/native-commercial-postgres.test.ts src/tests/native-mission-contact-postgres.test.ts src/tests/native-documents-postgres.test.ts src/tests/native-google-oauth.test.ts src/tests/native-mail-postgres.test.ts src/tests/native-mail-triage.test.ts src/tests/native-mail-monitor.test.ts src/tests/native-mail-monitor-postgres.test.ts src/tests/ionos-transport.test.ts src/tests/native-conversation-postgres.test.ts src/tests/native-functional-closure.test.ts src/tests/native-google-work-postgres.test.ts
       - name: Canonical Stage decision, native identity and restricted SQL role

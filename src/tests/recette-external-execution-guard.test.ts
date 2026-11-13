@@ -162,3 +162,46 @@ test("Recette IONOS IMAP and SMTP are denied before network", async () => {
     else process.env.CLARA_OS_RUNTIME_MODE = previousMode;
   }
 });
+
+test("Recette refuses Brevo M2M token exchange before any provider request", async () => {
+  const previousMode = process.env.CLARA_OS_RUNTIME_MODE;
+  process.env.CLARA_OS_RUNTIME_MODE = "recette";
+  let requests = 0;
+  try {
+    const { requestBrevoM2MReadToken } = await import("../lib/connectors/brevo/m2m");
+    await assert.rejects(
+      () => requestBrevoM2MReadToken(
+        "lists",
+        { BREVO_M2M_CLIENT_ID: "fictional-client", BREVO_M2M_CLIENT_SECRET: "fictional-secret" },
+        async () => { requests++; throw new Error("NETWORK_CALLED"); },
+      ),
+      /RECETTE_EXTERNAL_EXECUTION_DENIED:brevo\.m2m/,
+    );
+    assert.equal(requests, 0, "No OAuth token endpoint is called in Recette");
+  } finally {
+    if (previousMode === undefined) delete process.env.CLARA_OS_RUNTIME_MODE;
+    else process.env.CLARA_OS_RUNTIME_MODE = previousMode;
+  }
+});
+
+test("Recette refuses a Make on-demand READ scenario before any provider request", async () => {
+  const previousMode = process.env.CLARA_OS_RUNTIME_MODE;
+  process.env.CLARA_OS_RUNTIME_MODE = "recette";
+  let requests = 0;
+  try {
+    const { MakeOnDemandClient } = await import("../lib/connectors/make/on-demand-client");
+    const client = new MakeOnDemandClient(async () => { requests++; throw new Error("NETWORK_CALLED"); });
+    await assert.rejects(
+      () => client.execute(
+        { transport: "api", scenarioId: 7295042 } as never,
+        { zone: "eu1", token: "fictional-token" },
+        { scenarioKey: "find-drive-document", payload: { query: "fictional" } },
+      ),
+      /RECETTE_EXTERNAL_EXECUTION_DENIED:make\.api/,
+    );
+    assert.equal(requests, 0, "A READ scenario must not bypass the external execution guard");
+  } finally {
+    if (previousMode === undefined) delete process.env.CLARA_OS_RUNTIME_MODE;
+    else process.env.CLARA_OS_RUNTIME_MODE = previousMode;
+  }
+});
