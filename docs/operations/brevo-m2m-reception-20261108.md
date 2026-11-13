@@ -13,18 +13,14 @@ Le correctif de la PR Draft #270 remplace uniquement l'authentification du **che
 - Le Builder autonome complet « discover -> generate -> validate -> register -> execute » **n'est pas attesté opérationnel** par cette vérification ; ne pas le déclarer validé, ni développer un second système pour Brevo.
 - La PR #270, créée le 8 novembre, a des CI historiques réussies, mais a divergé de `delivery/clara-os-v1-20261025`. Réconciliation et validations à refaire **en isolation** avant tout GO ultérieur.
 
-## Propriétaire : une seule intervention indispensable, hors ChatGPT/GitHub
-Créer **une application privée** `Clara OS - Melodie Digital` depuis un terminal privé avec une CLI Brevo à jour :
+## Identifiants existants : aucune création répétée sans vérification
+Le propriétaire a déjà conservé **deux jeux d'identifiants Brevo** : une configuration Clara lecture seule et une configuration Mélodie Digital à autorisations étendues. **Ne pas en créer de nouveaux par défaut.** Les métadonnées Vercel (13 novembre) indiquent une variable `BREVO_API_KEY` en Production, mais aucune variable `BREVO_M2M_CLIENT_ID` ou `BREVO_M2M_CLIENT_SECRET` ; cela ne prouve pas l'absence d'une application M2M dans le compte Brevo. Ne pas lire ni divulguer les valeurs.
 
-    npm install -g @getbrevo/cli@latest
-    brevo login
-    brevo app create --name "Clara OS - Melodie Digital" --distribution private --m2m --scopes "contacts:read,campaigns.email:read,transactional.email:read"
+Vérifier **d'abord la nature** des identifiants déjà conservés : les clés API (header `api-key`) ne sont pas interchangeables avec le couple OAuth M2M `client_id` + `client_secret`. Si un couple M2M existe, **le réutiliser**, en contrôlant ses scopes et sans rotation inutile. Si et seulement si aucun couple M2M n'existe, créer **une** application privée depuis un terminal privé, avec CLI Brevo récente. Codespaces n'est pas indispensable pour l'authentification Brevo.
 
-Commencer STRICTEMENT par les trois scopes READ, car le chemin natif traite contacts, listes, campagnes et modèles transactionnels. Ne pas accorder `contacts:write` ni `campaigns.email:write` à cette première application : l'écriture/l'envoi doivent faire l'objet d'une réception d'autorité indépendante.
+Le chemin de **réception initiale** de cette PR est READ seulement (`contacts:read,campaigns.email:read,transactional.email:read`) pour éviter tout envoi pendant les tests. **La cible fonctionnelle de Clara est bien READ + PREPARE + WRITE/EXECUTE autorisés**, et il ne faut pas la réduire au READ à long terme. Les autres scopes (dont `contacts:write`, `campaigns.email:write`) s'ajouteront à une application M2M **existante** si nécessaire, après validation de l'autorité, de la confirmation humaine pour SEND, du journal et de l'idempotence. Ne pas confondre droit fournisseur et permission du Brain.
 
-Si `brevo login` échoue dans Codespaces, faire cette opération **depuis un terminal local** plutôt que de désactiver la sécurité du compte. Ne jamais publier le `client_secret`, le token ou la sortie de la commande dans un chat, une issue ou un dépôt.
-
-Stocker `BREVO_M2M_CLIENT_ID` et `BREVO_M2M_CLIENT_SECRET` uniquement dans un gestionnaire de secrets destiné à l'environnement de test isolé lorsqu'un environnement adapté existe. **Ne pas renseigner Vercel Production ni modifier sa configuration sous ce GO.** L'ancienne clé API Production reste inchangée.
+Stocker les secrets M2M exclusivement dans un coffre destiné à l'environnement isolé autorisé lorsqu'il existe. **Aucune modification des variables Vercel Production sous ce GO.** Conserver les deux jeux d'identifiants existants.
 
 ## Réutilisation et protections de la PR #270
 - Le client Brevo existant sait transmettre `Authorization: Bearer <token>` ; requêtes de consultation GET uniquement, limite 10 enregistrements.
