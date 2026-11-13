@@ -30,6 +30,18 @@ Stocker les secrets M2M exclusivement dans un coffre destiné à l'environnement
 - Contrôle de session native et du workspace, aucune nouvelle autorité SEND/WRITE.
 - Ne pas confondre le chemin READ réellement raccordé avec les capacités déclaratives Brevo V2 : l'exécution via le Builder complet n'est pas certifiée.
 
+## Vérification d'isolement — 13 novembre 2026
+
+**Blocage confirmé côté transports :** les environnements Vercel `clara-os-recette` portent la variable `CLARA_RECETTE_MODE`. Le garde central `src/lib/recette/external-execution-guard.ts` considère sa seule présence comme un mode de recette, quelle qu'en soit la valeur. Dans ce mode :
+- `requestBrevoM2MReadToken` refuse l'appel fournisseur avant la demande de token (`assertRecetteExternalExecutionBlocked('brevo.m2m')`).
+- `BrevoClient` refuse également les lectures réseau réelles en recette (test explicite dans `recette-external-execution-guard.test.ts`).
+- `MakeOnDemandClient` et `MakeWebhookClient` refusent toute invocation fournisseur réelle, y compris les trois scénarios étiquetés READ.
+- Ne pas désactiver, supprimer ou contourner ces gardes pour « faire passer » une recette ; ne pas utiliser la Production pour remplacer cette recette.
+
+**Conséquence :** dans la recette actuelle, valider la logique M2M/GET/autorité avec faux transports uniquement et ne jamais annoncer une vraie lecture Brevo ou Make. Une réception réelle depuis Clara exige un environnement séparé explicitement approuvé, avec autorité native, identité authentifiée, secrets en coffre, isolation forte des WRITE/SEND et réseau fournisseur borné ; cette mise en place n'est **pas autorisée par le GO actuel**. Les jetons existants ne sont ni à recréer ni à insérer dans les variables Production sous ce GO.
+
+**Make, état du clone `br-nameless-dew-b2v6asgj` (lecture seule) :** catalogue 9/9 présent mais toutes les entrées désactivées, une autorité READ révoquée, connexion `RECONNECT_REQUIRED`, aucun secret chiffré associé, `clara_make_runtime_test` NOLOGIN, aucun rôle applicatif LOGIN minimal trouvé. Une restauration de connexion et une recette grant → READ → revoke exigeraient une autorisation distincte de mutation de ce clone ; aucun scénario Make n'a été lancé.
+
 ## Réception : GO / NO-GO
 1. **Sans action propriétaire** : inspecter la branche Draft, constater la CI historique, vérifier non-régression, identifier les éventuels conflits avec la livraison courante. Ne pas créer un nouveau système, une PR parallèle ou un environnement de recette lourd.
 2. **Une fois les identifiants privés disponibles dans un environnement isolé autorisé** : demander `contacts:read`, puis consulter les listes, sans donnée simulée présentée comme réelle. Confirmer authentification, scopes, résultats et refus sécurisés.
