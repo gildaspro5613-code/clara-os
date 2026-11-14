@@ -29,7 +29,10 @@ export function filterAuthorizedNativeConnectorReads(
      !/^[a-zA-Z0-9._:-]{1,160}$/.test(row.connectionId)||
      !Number.isSafeInteger(revision)||revision<1||
      !Number.isSafeInteger(catalogRevision)||catalogRevision<1)return [];
-  const unique=capability.id+':'+row.connectionId;
+  // Never silently select one of two accounts authorized for the same action.
+  // An explicit account choice must first resolve the ambiguity in the
+  // connection setup; the model must not choose an arbitrary connection.
+  const unique=capability.id;
   if(seen.has(unique))return [];
   seen.add(unique);
   available.push({
