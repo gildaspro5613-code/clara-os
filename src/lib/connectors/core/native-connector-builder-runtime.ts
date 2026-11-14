@@ -172,7 +172,7 @@ export function nativeBuilderReadExecutor(
    const response=await adapter.execute(request.connectionId,{
     capability:request.capabilityId,
     input:request.input,
-   } as unknown as Parameters<GitHubConnectorAdapter['execute']>[1],request.workspaceId);
+   } as unknown as Parameters<InstanceType<typeof GitHubConnectorAdapter>['execute']>[1],request.workspaceId);
    data=response.data;
   }else if(request.provider==='brevo'){
    const {BrevoConnectorAdapter}=await import('@/lib/connectors/brevo/adapter');
@@ -180,7 +180,7 @@ export function nativeBuilderReadExecutor(
    const response=await adapter.execute(request.connectionId,{
     capability:request.capabilityId,
     input:request.input,
-   } as unknown as Parameters<BrevoConnectorAdapter['execute']>[1]);
+   } as unknown as Parameters<InstanceType<typeof BrevoConnectorAdapter>['execute']>[1]);
    if(!response.success||response.status!=='completed')
     throw new RegistryError(503,'CONNECTOR_BUILDER_PROVIDER_FAILED');
    data=response.data;
@@ -214,7 +214,7 @@ export function nativeBuilderReadExecutor(
    const response=await adapter.execute(request.connectionId,{
     capability:request.capabilityId,
     input:request.input,
-   } as unknown as Parameters<StripeConnectorAdapter['execute']>[1]);
+   } as unknown as Parameters<InstanceType<typeof StripeConnectorAdapter>['execute']>[1]);
    data=response.data;
   }else{
    // Make scenarios remain in their own certified, scenario-key-specific READ
