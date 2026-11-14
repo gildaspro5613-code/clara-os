@@ -52,3 +52,15 @@ Ce bloc est **un schéma**, pas un secret à committer.
 
 ### État vérifié au 14/11
 L'API Make a répondu HTTP 200, puis une exécution réelle du scénario Drive a réussi : ID `74fbfad4ac3a4ee9a37b741708c569a1`, 1 crédit, résultat `status=completed` sans fichier trouvé. Il s'agit de preuves côté fournisseur, **pas** d'une exécution depuis le Brain Clara OS.
+
+
+## Vérification complémentaire — 14 novembre 2026
+
+- Rôle `clara_make_provisioner_login` créé sur le clone, limité au schéma `clara_make_runtime_scope`. Aucun droit direct sur les connexions, les credentials ou les grants.
+- Fonction `clara_make_runtime_scope.provision_make_read_ciphertext_once(text)` **installée** dans une transaction CREATE/REVOKE/GRANT. SQL source : `docs/operations/make-clone-once-provisioner-20261114.sql`.
+- Droits vérifiés : seule l'identité `clara_make_provisioner_login` possède EXECUTE en plus du propriétaire ; PUBLIC et `clara_make_runtime_login` : refusés.
+- Fonction : connexion fixe `make-read-fixture-249-20261106`, workspace `melodie-digital`, scope unique `find-drive-document`, exige `RECONNECT_REQUIRED`, aucun credential préexistant, n'accepte qu'une enveloppe AES-256-GCM structurée, enregistre le chiffré et fixe le statut **CONFIGURED** (jamais ACTIVE), en une transaction verrouillée.
+- Test négatif : enveloppe invalide → rejet ; runtime Clara → permission denied.
+- Après tous les tests, connexion toujours `RECONNECT_REQUIRED`, zéro credential Make enregistré.
+- **Pas de test positif de provisionnement** (le jeton n'est pas présent et aucune clé clone n'est encore établie). Le rôle PostgreSQL LOGIN ne doit pas être utilisé pour démarrer le runtime complet de Clara OS.
+- Ne pas exposer de chaîne PostgreSQL, mot de passe, ciphertext ou jeton dans les journaux, scripts suivis ou la conversation. Le provisionnement reste **NO-GO** sans canal secret attesté et clé clone dédiée.
