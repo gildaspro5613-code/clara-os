@@ -239,6 +239,22 @@ export async function buildBrainSources(
         }
       }
     }
+    // A Make-backed Drive lookup must be requested explicitly and remains
+    // subject to the canonical native grant. It is never a fallback for Drive.
+    const makeTitle=(await import('@/lib/native/make-read-intent'))
+      .explicitMakeDriveReadTitle(extractMessage(event));
+    if(makeTitle){
+      try{
+        const {executeCloneNativeMakeDriveRead}=await import('@/lib/native/make-clone-read-bridge');
+        contexts.push(await executeCloneNativeMakeDriveRead(makeTitle));
+      }catch{
+        // This includes unavailable clone runtime, unapproved catalogue,
+        // connection still CONFIGURED, absent/revoked native scope or provider
+        // refusal. Never guess results or silently query another provider.
+        contexts.push({source:'google-drive',available:false,data:null,
+          summary:'NATIVE_MAKE_READ_UNAVAILABLE: this authorized Make Drive read is not available. No document was confirmed. Do not invent a result or retry automatically.'});
+      }
+    }
     if(native.documentSource) contexts.push(native.documentSource);
     else if(native.session.mission?.documentReferences?.length || native.session.documentReferences?.length){
       const {selectedNativeDocuments}=await import('@/lib/native/documents');
