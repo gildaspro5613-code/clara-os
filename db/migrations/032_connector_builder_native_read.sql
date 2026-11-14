@@ -102,6 +102,24 @@ BEGIN
   RAISE EXCEPTION 'CONNECTOR_NATIVE_SCOPE_DENIED' USING ERRCODE='42501';
  END IF;
 
+ -- An owner can have several accounts, but Clara must never silently
+ -- choose a different account for the same READ capability.
+ IF (
+  SELECT COUNT(DISTINCT gr.connection_id)
+  FROM clara_connector_builder.read_grants gr
+  JOIN clara_connector_builder.read_catalog cat
+    ON cat.provider=gr.provider AND cat.capability_id=gr.capability_id
+  JOIN public.clara_connections co ON co.id=gr.connection_id
+    AND co.provider=cat.provider AND co.workspace_id=w AND co.status='ACTIVE'
+  JOIN public.clara_connection_credentials cc ON cc.connection_id=co.id
+  WHERE gr.workspace_id=w AND gr.client_id=c AND gr.project_id=p
+    AND gr.owner_user_id=actor AND gr.capability_id=requested_capability
+    AND gr.revoked_at IS NULL AND cat.effect='READ'
+    AND cat.enabled AND cat.revoked_at IS NULL
+    AND cat.reviewed_by IS NOT NULL AND cat.reviewed_at IS NOT NULL
+    AND co.scopes @> cat.required_scopes
+ ) <> 1 THEN RETURN NULL; END IF;
+
  SELECT jsonb_build_object(
    'userId',actor,'workspaceId',w,'clientId',c,'projectId',p,
    'provider',cat.provider,'capabilityId',cat.capability_id,
