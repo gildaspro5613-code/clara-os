@@ -2,7 +2,7 @@ import {RegistryError} from '@/lib/canonical/registry';
 import {nativeContext} from './scoped-context';
 import {nativeMakeReadAuthority} from './make-read-authority';
 import {executeAuthorizedNativeMakeRead,type MakeReadCapability} from './make-read-handoff';
-import {scopedMakeReadCredentialStore} from './make-scoped-credentials';
+import {scopedMakeReadCredentialStore,validateMakeCloneRuntime} from './make-scoped-credentials';
 import {ConnectionResolver} from '@/lib/connections/connection-resolver';
 import {ConnectionStatus,type Connection} from '@/lib/connections/connection';
 import type {ConnectionRepository} from '@/lib/connections/connection-repository';
@@ -70,6 +70,8 @@ export function makeCloneScopedReadCapability(fetcher?:MakeFetch):MakeReadCapabi
 
 /** Requires native AsyncLocalStorage scope established by withNativeScope. */
 export async function executeCloneNativeMakeDriveRead(query:string){
+ if(!validateMakeCloneRuntime())
+   throw new RegistryError(403,'NATIVE_MAKE_CLONE_RUNTIME_DENIED');
  if(typeof query!=='string'||!query.trim()||query.length>200)
    throw new RegistryError(400,'NATIVE_MAKE_QUERY_INVALID');
  return executeAuthorizedNativeMakeRead(SCENARIO_KEY,{query},nativeMakeReadAuthority,makeCloneScopedReadCapability());
