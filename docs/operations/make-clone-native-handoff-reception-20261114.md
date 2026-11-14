@@ -36,3 +36,11 @@ NO-GO merge, Ready, Vercel Preview, Production et exécution Make supplémentair
 - Test négatif avec le rôle runtime et un digest/session factices : refus réel `NATIVE_SCOPE_DENIED` / SQLSTATE 42501. Il ne s'agit **pas** d'un test positif d'une session authentifiée.
 - État Neon après contrôle : connexion `CONFIGURED`, un ciphertext, zéro scénario activé, zéro autorisation active ; aucun Make fournisseur appelé.
 - **Blocage conservé** : le projet Vercel Recette actuel est lié à un autre clone et ses appels externes sont interdits ; le rôle `clara_make_runtime_login` n'a toujours pas d'environnement Clara OS authentifié dédié complet, ni de chemin de session validé dans le chat. Ne pas remapper silencieusement les secrets ni lever les garde-fous de Recette.
+
+## Point d'arrêt anti-surtests (14 novembre 2026)
+
+Vérification en lecture seule du clone, sans accès aux jetons : **0 session d'authentification non révoquée et non expirée**, 22 conversations stockées (elles ne prouvent pas l'existence d'une session active), 10 droits de session native, connexion Make CONFIGURED avec un seul secret chiffré, 0 scénario activé, 0 grant Make actif.
+
+**Décision d'ingénierie : ne plus demander à l'utilisateur de relancer des tests unitaires ou des commandes de contrôle sur ce lot.** La condition bloquante est une *session OS réellement authentifiée, dans un environnement isolé relié au clone*, pas un défaut de chiffrement. Ne pas créer un faux digest ni relâcher les contrôles Recette pour produire artificiellement un PASS. Reprendre uniquement lorsqu'une session isolée réelle est disponible; effectuer alors une **réception intégrée unique** grant → READ Drive → revoke → refus, avec consultation du journal, puis demander un GO distinct pour toute livraison.
+
+Aucune activation, aucun appel Make, aucune fusion ni aucun déploiement lors de ce point d'arrêt.
