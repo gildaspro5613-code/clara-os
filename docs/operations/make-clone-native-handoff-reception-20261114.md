@@ -28,3 +28,11 @@ Le rôle `clara_make_runtime_login` peut appeler les fonctions ciblées mais **n
 Une fois le point d'entrée attesté : certifier le contrat READ, approuver et activer la seule entrée `find-drive-document`, puis attribution native et audit, exécution réelle unique, révocation et refus. Cette étape exige GO distinct de réception réelle. Le provider et le secret fonctionnent, **le bout-en-bout Clara n'est pas certifié**.
 
 NO-GO merge, Ready, Vercel Preview, Production et exécution Make supplémentaire.
+
+## Complément après les 14 tests PASS (14/11/2026)
+- L'utilisateur a exécuté 14 tests hors ligne : 14 PASS, 0 échec. Tests de non-autorisation, READ strict et révocation pendant l'appel validés **avec doubles de test**, pas encore avec une session Clara connectée.
+- Fonction `clara_make_runtime_scope.native_runtime_read(digest,w,c,p,s)` installée sur le **clone uniquement**. C'est un wrapper `SECURITY DEFINER` en lecture seule, qui réutilise `public.clara_native_runtime_command(...,'read','{}')`. Elle ne donne aucune permission générale sur les tables, ne crée pas de session et ne permet pas de commit.
+- ACL vérifiée : EXECUTE seulement propriétaire et `clara_make_runtime_login`. `PUBLIC` et le provisionneur n'ont pas EXECUTE.
+- Test négatif avec le rôle runtime et un digest/session factices : refus réel `NATIVE_SCOPE_DENIED` / SQLSTATE 42501. Il ne s'agit **pas** d'un test positif d'une session authentifiée.
+- État Neon après contrôle : connexion `CONFIGURED`, un ciphertext, zéro scénario activé, zéro autorisation active ; aucun Make fournisseur appelé.
+- **Blocage conservé** : le projet Vercel Recette actuel est lié à un autre clone et ses appels externes sont interdits ; le rôle `clara_make_runtime_login` n'a toujours pas d'environnement Clara OS authentifié dédié complet, ni de chemin de session validé dans le chat. Ne pas remapper silencieusement les secrets ni lever les garde-fous de Recette.
