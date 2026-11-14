@@ -24,7 +24,7 @@ export function eligibleConnectorReadNames(
  for(const item of authorized){
   if(!/^[a-z][a-z0-9_-]{0,63}$/.test(item.provider)||
      !/^[a-z][a-z0-9._:-]{1,119}$/.test(item.capabilityId))continue;
-  const escaped=item.provider.replace(/[.*+?^\x24{}()|[\]\\]/g,'\\$&');
+  const escaped=item.provider; // Already restricted to [a-z0-9_-], safe as a regexp atom.
   if(new RegExp('(?:^|[^a-z0-9])'+escaped+'(?:$|[^a-z0-9])','iu').test(message))
    candidates.add(item.capabilityId);
  }
@@ -80,6 +80,7 @@ function defaultSelectionDependencies():BuilderReadSelectionDependencies{
     ].join('\n'),
     maxTokens:350,
     tools:[{
+     type:'function',
      name:'clara_connector_read',
      description:'Request exactly one already authorized provider READ through the Clara native Connector Builder.',
      strict:true,
