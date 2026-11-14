@@ -45,3 +45,16 @@ The script requests the explicit word CLONE before its only database write. Neve
 - The existing Vercel Recette blocks external Make calls; do not disable its guard or use Production as a shortcut.
 
 No merge, Ready, Production deployment or additional provider run without separate GO.
+
+## Étape suivante — contrôle de déchiffrement en lecture seule
+Après le provisionnement initial confirmé, la fonction `clara_make_runtime_scope.verify_make_ciphertext_readback()` est installée sur le seul clone Make : `EXECUTE` autorisé exclusivement au rôle de provisionnement ; accès PUBLIC et runtime ordinaire refusés. Elle retourne uniquement l'enveloppe chiffrée fixe de la connexion en état `CONFIGURED` et refuse les grants/scénarios déjà actifs. Elle ne lit aucun autre identifiant et ne retourne aucun jeton déchiffré.
+
+Exécuter sur la branche isolée :
+```bash
+git pull --ff-only origin ops/make-clone-credential-preflight-20261114
+node --test src/scripts/provision-make-clone-credential.test.mjs
+node src/scripts/provision-make-clone-credential.mjs --verify
+```
+Attendu : 5 tests PASS puis `MAKE CLONE : AES-256-GCM readback verified; connection remains CONFIGURED. No Make run.`
+
+Ne pas utiliser `--commit` une nouvelle fois. Si le contrôle échoue, stopper et examiner uniquement les métadonnées sans imprimer l'enveloppe, la clé ou le jeton. Ce test ne valide toujours pas l'authentification d'une véritable session Clara OS ni une autorisation native grant/READ/revoke.
