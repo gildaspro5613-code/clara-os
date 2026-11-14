@@ -65,9 +65,11 @@ const restrictedNames=new Set(['__proto__','prototype','constructor','token','ap
  'secret','authorization','webhookurl','connectionid','workspaceid',
  'clientid','projectid','userid','sessionid','password','accesskey','credential',
  'privatekey','clientsecret','refreshtoken','accesstoken']);
-const isRestrictedName=(name:string)=>restrictedNames.has(
- name.toLowerCase().replace(/[_\\-]/g,'')
-);
+const isRestrictedName=(name:string)=>{
+ const lowered=name.toLowerCase();
+ return restrictedNames.has(lowered)||
+  restrictedNames.has(lowered.replace(/[_\\-]/g,''));
+};
 function boundedInput(input:unknown):input is Record<string,unknown>{
  if(!input||typeof input!=='object'||Array.isArray(input)||
     Object.getPrototypeOf(input)!==Object.prototype)return false;
