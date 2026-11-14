@@ -4,7 +4,7 @@ import {useEffect,useState} from 'react';
 import {useLocale} from 'next-intl';
 import {ShieldCheck,LockKeyhole} from 'lucide-react';
 
-type State='loading'|'available'|'connected'|'unavailable';
+type State='loading'|'available'|'registered'|'connected'|'unavailable';
 const texts={
  fr:{title:'Connecter Make à Clara',intro:'Associez votre compte Make pour permettre ensuite des recherches Drive avec votre accord.',token:'Jeton API Make',scenario:'Identifiant du scénario de recherche Drive',zone:'Région Make',confirm:'Vérifier et connecter',secondary:'Confirmer la connexion à Clara ?',cancel:'Annuler',required:'Jeton Make avec les autorisations scenarios:read, scenarios:write et scenarios:run. Le scénario doit être limité à la recherche Drive approuvée.',safe:'Le jeton est chiffré dans Clara OS. Aucune automatisation n’est lancée par cette connexion.',working:'Vérification sécurisée…',success:'Compte Make relié. Vous pouvez maintenant actualiser les autorisations de Clara.',connected:'Un compte Make est déjà enregistré pour cet espace.',unavailable:'État de connexion indisponible. Aucune modification effectuée.',error:'Connexion non validée. Vérifiez le jeton, les droits API et le scénario.',approved:'Je confirme connecter ce compte Make à cet espace Clara OS.',placeholder:'Jeton à saisir uniquement ici'},
  en:{title:'Connect Make to Clara',intro:'Link your Make account for approved Drive searches.',token:'Make API token',scenario:'Drive search scenario ID',zone:'Make region',confirm:'Verify and connect',secondary:'Confirm connecting Make to Clara?',cancel:'Cancel',required:'The Make token needs scenarios:read, scenarios:write, and scenarios:run. The scenario must be the approved Drive-only search.',safe:'The token is encrypted in Clara OS. Connecting does not execute a scenario.',working:'Checking securely…',success:'Make connected. You can refresh Clara permissions.',connected:'A Make account already exists in this workspace.',unavailable:'Connection status unavailable. No changes made.',error:'Connection could not be verified. Check your token, scopes and scenario.',approved:'I approve linking this Make account to this Clara workspace.',placeholder:'Enter token only here'},
@@ -19,7 +19,7 @@ export default function MakeNativeOnboardingPanel(){
  const t=texts[lang];
  const [status,setStatus]=useState<State>('loading');
  const [token,setToken]=useState('');
- const [scenario,setScenario]=useState('7295042');
+ const [scenario,setScenario]=useState('');
  const [zone,setZone]=useState('eu1');
  const [confirmation,setConfirmation]=useState(false);
  const [approved,setApproved]=useState(false);
@@ -33,7 +33,7 @@ export default function MakeNativeOnboardingPanel(){
     const v:unknown=await r.json();
     const d=v&&typeof v==='object'&&!Array.isArray(v)?v as Record<string,unknown>:{};
     if(d.status==='NOT_CONFIGURED')setStatus('available');
-    else if(typeof d.status==='string'&&d.status!=='UNAVAILABLE')setStatus('connected');
+    else if(typeof d.status==='string'&&d.status!=='UNAVAILABLE')setStatus('registered');
     else setStatus('unavailable');
    }).catch(()=>{if(!abort.signal.aborted)setStatus('unavailable');});
   return ()=>abort.abort();
@@ -61,7 +61,7 @@ export default function MakeNativeOnboardingPanel(){
   <p className="mt-2 text-sm text-white/55">{t.intro}</p>
   {status==='loading'?<p className="mt-4 text-sm text-white/55">{t.working}</p>:
    status==='unavailable'?<p className="mt-4 text-sm text-amber-200">{t.unavailable}</p>:
-   status==='connected'?<p className="mt-4 text-sm text-cyan-200">{t.connected} {t.success}</p>:
+   (status==='connected'||status==='registered')?<p className="mt-4 text-sm text-cyan-200">{status==='connected'?t.success:t.connected}</p>:
    <div className="mt-5 max-w-xl space-y-4">
     <label className="block text-sm text-white/80">{t.token}
      <input type="password" autoComplete="off" value={token} onChange={e=>setToken(e.target.value)}
@@ -69,7 +69,7 @@ export default function MakeNativeOnboardingPanel(){
     </label>
     <div className="grid grid-cols-2 gap-3">
      <label className="text-sm text-white/80">{t.scenario}
-      <input inputMode="numeric" value={scenario} onChange={e=>setScenario(e.target.value)}
+      <input inputMode="numeric" value={scenario} placeholder="7295042" onChange={e=>setScenario(e.target.value)}
        className="mt-2 w-full rounded-xl border border-white/15 bg-black/25 px-3 py-3 text-white"/>
      </label>
      <label className="text-sm text-white/80">{t.zone}
