@@ -75,3 +75,34 @@ Le travail conservé dans cette branche est un **socle transversal candidat**, n
 **Limitations non levées :** la conversation native ne déclenche pas encore le `CognitiveToolLoop` avec outils ; l'entrée Builder est raccordée au pont de capacités existant, sans activation automatique dans le cycle Brain actuel. Les définitions Make READ ne sont pas encore normalisées dans le catalogue commun. Les scripts SQL de clone ont encore un rôle/une base/une entreprise de qualification explicites et ne constituent pas une migration multi-tenant de Production. Le test complet depuis une vraie session Clara et les nouveaux tests TypeScript ne sont pas exécutés : **ne pas annoncer le Builder fonctionnel ou livré.**
 
 **Budget / sécurité :** aucun environnement Vercel créé, pas de preview, pas de déploiement, pas de merge, aucun appel fournisseur ni nouvelle consommation Make/Brevo, aucun secret lu ou renvoyé.
+
+## Candidat de clôture applicative — avancement du 14 novembre, soirée
+
+Cette section remplace les constats obsolètes des paragraphes précédents concernant l'absence d'appel depuis le Brain et l'absence de migration portable.
+
+### Chaîne native maintenant préparée
+
+1. **Manifestes reconnus** : le registre existant et la directory Builder découvrent GitHub READ, Brevo READ et **Make `make.drive.find` READ** (scénario interne fixe `find-drive-document`). Le générique `make.scenario.execute` reste `EXECUTE`, donc inaccessible dans cette voie.
+2. **Sélection conversationnelle** : `src/lib/connectors/core/native-connector-builder-selection.ts` propose au modèle une seule fonction, contenant au plus une capacité READ préalablement accordée à l'utilisateur. Le modèle ne reçoit ni identifiant de compte, ni clé, ni workspace. Aucun appel si le message n'exprime pas une lecture explicite liée à un fournisseur reconnu.
+3. **Exécution Brain** : `brain-source-registry.ts` appelle désormais ce sélecteur, puis fournit le résultat borné comme preuve externe non fiable ; l'échec ou l'absence de sélection explicite produit `CONNECTOR_READ_UNAVAILABLE` plutôt qu'un résultat fictif. Le repli direct sur `BREVO_API_KEY` a été retiré de cette conversation native. `capability-tool-bridge.ts` refuse le repli sur les anciennes opérations WRITE/SEND des connecteurs en contexte natif.
+4. **Autorité réutilisable** : `native-connector-read-gateway.ts` journalise l'appel, certifie l'utilisateur/workspace/client/projet, vérifie l'autorisation une deuxième fois après retour fournisseur, refuse les clés/secret/identités arbitraires du modèle, et impose une unique connexion non ambiguë.
+5. **Administration humaine** : `GET/POST /api/native/connectors` sous session canonique et vérification d'origine, avec `NativeConnectorBuilderPanel.tsx` intégré à la page Connexions, cinq langues, consentement READ explicite, révocation et absence de certification fictive. Le serveur autorise les changements uniquement sur l'utilisateur authentifié et revérifie les droits manager dans SQL.
+6. **Migration commune** : `db/migrations/032_connector_builder_native_read.sql` est maintenant un **candidat SQL multi-tenant préparé**. Il ne contient plus de nom d'entreprise, rôle clone ou nom de base en dur. Son rôle d'exécution doit être explicitement validé/activé puis recevoir ses seuls privilèges d'usage/exécution à la livraison ; la migration elle-même ne les accorde pas. Aucun changement Production.
+7. **Make** : une seule capacité commerciale de lecture est déclarée avec entrée `{query:string}`, scénario `find-drive-document` non modifiable par Clara, validation du reçu `executionStatus=completed`. Le jeton existant dans le clone reste chiffré avec la clé de clone indépendante : sa normalisation vers le coffre de l'environnement déployé devra être effectuée par une procédure de migration approuvée, **sans affichage du jeton**.
+
+### Vérifications réellement effectuées
+
+- 20 contrôles de cohérence de fichiers et de liens fonctionnels ont été satisfaits en lecture directe GitHub (vérification des sources ; **pas des tests exécutés**).
+- Vérification SQL négative sur clone : la fausse session est refusée ; rôles PUBLIC sans EXECUTE, 0 grant et 0 catalogue approuvé.
+- Le préflight Neon indique 1 jeton Make chiffré, connexion toujours CONFIGURED, zéro certification, zéro session OS active sur le clone, zéro scénario actif.
+- Aucun déploiement de la branche Builder observé parmi les 20 derniers déploiements Vercel consultés.
+- Les nouveaux tests Node/TypeScript existent mais **leur exécution complète, le typecheck, le build et une réception depuis l'interface ne sont pas attestés**. Ne pas présenter un statut PASS inventé.
+
+### Conditions de livraison restant obligatoires
+
+1. Exécuter **une validation isolée unique**, avec tests TypeScript ciblés, `tsc --noEmit` et build, sur cette branche. Réparer toute erreur.
+2. Faire examiner et installer de façon contrôlée la migration 032 (sauvegarde Neon, compte de service restreint, permissions, retour arrière), **uniquement sur GO Production distinct**.
+3. Qualifier une session authentifiée dans OS existant et le parcours READ complet de deux fournisseurs (en particulier Make et Brevo lorsque leurs accès fournisseurs sont réellement prêts), avec approbation/revocation et journal. Aucun environnement de Recette supplémentaire.
+4. Tant que ces preuves ne sont pas disponibles : **NO-GO Ready / merge / Preview / Production / WRITE / SEND**. Le code est candidat, pas livré.
+
+Le principe produit est maintenu : une intégration fournisseur se fait une fois au niveau de la plateforme ; chaque client autorise ensuite son propre compte depuis une interface, sans code, SQL ou Codespaces.
