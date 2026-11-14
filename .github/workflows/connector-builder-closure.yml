@@ -1,0 +1,52 @@
+name: Connector Builder native isolated closure
+
+on:
+  push:
+    branches:
+      - fix/connector-builder-native-gateway-20261114
+    paths:
+      - '.github/workflows/connector-builder-closure.yml'
+      - 'src/lib/connectors/core/**'
+      - 'src/lib/connectors/make/**'
+      - 'src/lib/capabilities/**'
+      - 'src/lib/brain/brain-source-registry.ts'
+      - 'src/components/connections/**'
+      - 'src/app/api/native/connectors/**'
+      - 'src/tests/connector-builder-native-*.test.ts'
+      - 'src/tests/make-connector.test.ts'
+      - 'src/tests/make-on-demand-contract.test.ts'
+      - 'db/migrations/032_connector_builder_native_read.sql'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  isolated-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      CI: 'true'
+      # No provider credentials, no database, no Preview or Vercel token.
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Offline connector-builder and legacy contract tests
+        run: |
+          node --import tsx --test \
+            src/tests/connector-builder-native-gateway.test.ts \
+            src/tests/connector-builder-native-selection.test.ts \
+            src/tests/connector-builder-read-reception.test.ts \
+            src/tests/make-connector.test.ts \
+            src/tests/make-on-demand-contract.test.ts
+      - name: Strict TypeScript
+        if: always()
+        run: npx tsc --noEmit --pretty false
+      - name: Next.js build without external providers
+        if: always()
+        run: npm run build

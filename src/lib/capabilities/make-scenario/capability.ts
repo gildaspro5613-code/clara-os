@@ -19,7 +19,7 @@ export type MakeScenarioCapability = {
   readonly description: string;
   readonly version: string;
   readonly category: string;
-  readonly inputSchema: typeof parameters;
+  readonly inputSchema: Record<string,{type:string;description:string;required:boolean}>;
 };
 
 export const MakeScenarioPrepareCapabilityDefinition: MakeScenarioCapability = {
@@ -38,4 +38,21 @@ export const MakeScenarioExecuteCapabilityDefinition: MakeScenarioCapability = {
   version: "1.0.0",
   category: "Automation",
   inputSchema: parameters,
+};
+
+// This is a single reviewed READ business scenario. The generic Make execute
+// capability remains EXECUTE and is never routed through native READ.
+export const MakeDriveFindCapabilityDefinition: MakeScenarioCapability = {
+  id: MAKE_CAPABILITIES.DRIVE_FIND,
+  name: "Find Drive document through Make",
+  description: "Read-only search of Drive using the approved find-drive-document Make scenario.",
+  version: "1.0.0",
+  category: "Automation",
+  inputSchema: {
+    query: {
+      type: "string",
+      description: "Bounded Google Drive document search query (max 200 characters); no scenario key, account ID or secret.",
+      required: true,
+    },
+  },
 };

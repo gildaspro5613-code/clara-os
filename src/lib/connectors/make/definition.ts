@@ -3,6 +3,7 @@ import type { ConnectorDefinition } from "../core/connector";
 export const MAKE_CAPABILITIES = {
   SCENARIO_PREPARE: "make.scenario.prepare",
   SCENARIO_EXECUTE: "make.scenario.execute",
+  DRIVE_FIND: "make.drive.find",
 } as const;
 
 export const MakeConnectorDefinition: ConnectorDefinition = {
@@ -20,6 +21,11 @@ export const MakeConnectorDefinition: ConnectorDefinition = {
       id: MAKE_CAPABILITIES.SCENARIO_EXECUTE,
       operationType: "EXECUTE",
       description: "Execute an approved Make scenario through its configured webhook.",
+    },
+    {
+      id: MAKE_CAPABILITIES.DRIVE_FIND,
+      operationType: "READ",
+      description: "Search Drive through the reviewed Make find-drive-document scenario only. No other scenario or WRITE/SEND.",
     },
   ],
 };
