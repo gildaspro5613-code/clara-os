@@ -13,9 +13,12 @@ export function brevoReadKindFromMessage(message:string):BrevoReadKind|null{
 }
 const validCount=(value:unknown):number|null=>typeof value==='number'&&Number.isSafeInteger(value)&&value>=0?value:null;
 /** Exactly one hardcoded GET per user-authorized read, capped at ten records. */
-export async function readBrevoBounded(kind:BrevoReadKind,apiKey:string,fetcher?:BrevoFetch):Promise<BrevoReadSnapshot>{
- if(!apiKey.trim())throw new Error('BREVO_API_KEY_NOT_CONFIGURED');
- const client=new BrevoClient({apiKey,fetch:fetcher});
+export async function readBrevoBounded(kind:BrevoReadKind,credential:string|{accessToken:string},fetcher?:BrevoFetch):Promise<BrevoReadSnapshot>{
+ const token=typeof credential==='string'?credential:credential.accessToken;
+ if(!token.trim())throw new Error(typeof credential==='string'?'BREVO_API_KEY_NOT_CONFIGURED':'BREVO_CREDENTIAL_NOT_CONFIGURED');
+ const client=typeof credential==='string'
+  ?new BrevoClient({apiKey:credential,fetch:fetcher})
+  :new BrevoClient({accessToken:credential.accessToken,fetch:fetcher});
  let items:Record<string,unknown>[]=[];
  let count:number|null=null;
  switch(kind){
@@ -51,6 +54,7 @@ export async function readBrevoBounded(kind:BrevoReadKind,apiKey:string,fetcher?
 /** Publish only a bounded diagnostic category; never a raw provider message,
  * response body, IP, request URL, headers or credential. */
 export function brevoReadFailureCode(error:unknown):string{
+ if(error&&typeof error==='object'&&'code' in error&&typeof error.code==='string'&&/^BREVO_M2M_(?:TOKEN_(?:UNAUTHORIZED|FORBIDDEN|UNAVAILABLE|INVALID)|CONFIGURATION_INCOMPLETE|SCOPE_DENIED)$/.test(error.code))return error.code;
  if(error instanceof BrevoApiError){
   if(error.status===401)return 'BREVO_READ_UNAUTHORIZED';
   if(error.status===403)return 'BREVO_READ_FORBIDDEN';

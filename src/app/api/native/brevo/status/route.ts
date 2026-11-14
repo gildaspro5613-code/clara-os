@@ -3,6 +3,7 @@ import {nativeFailure} from '@/lib/native/authority';
 import {RegistryError} from '@/lib/canonical/registry';
 import {CURRENT_WORKSPACE_ID} from '@/lib/connections/current-workspace';
 import {brevoReadOAuthStatus} from '@/lib/connectors/brevo/read-oauth-status';
+import {brevoM2MStatus} from '@/lib/connectors/brevo/m2m';
 
 export const dynamic='force-dynamic';
 export const runtime='nodejs';
@@ -16,10 +17,12 @@ export async function GET(request:Request){
    if(!context || context.scope.workspaceId!==CURRENT_WORKSPACE_ID)
      throw new RegistryError(403,'BREVO_WORKSPACE_DENIED');
    const configured=Boolean(process.env.BREVO_API_KEY?.trim());
+   const m2m=brevoM2MStatus();
    return Response.json({
      provider:'brevo',connected:false,
-     status:configured?'CONFIGURED':'NOT_CONFIGURED',
+     status:m2m.selected?(m2m.configured?'CONFIGURED':'M2M_INCOMPLETE'):(configured?'CONFIGURED':'NOT_CONFIGURED'),
      apiKeyConfigured:configured,
+     m2mConfigured:m2m.configured,
      oauthReady:brevoReadOAuthStatus().ready,
    },{headers:{'Cache-Control':'private, no-store'}});
   });

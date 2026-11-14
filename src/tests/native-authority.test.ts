@@ -103,7 +103,6 @@ const uncertifiedConnectorRoutes = [
  ['src/app/api/connections/google/connect/route.ts','GET'],
  ['src/app/api/connections/google/callback/route.ts','GET'],
  ['src/app/api/connections/make/configure/route.ts','POST'],
- ['src/app/api/connections/make/status/route.ts','GET'],
  ['src/app/api/connections/make/verify/route.ts','POST'],
  ['src/app/api/connections/brevo/route.ts','GET'],
  ['src/app/api/connections/brevo/connect/route.ts','GET'],
@@ -141,5 +140,62 @@ test('a verified native session cannot unlock Google credentials or Make configu
   assert.equal(response.status,503,file);assert.equal(response.headers.get('Cache-Control'),'no-store');
   assert.deepEqual(await response.json(),{success:false,code:'NATIVE_SCOPED_OPERATION_UNAVAILABLE'});
  }
- assert.equal(authorityReads,7);assert.equal(legacyCalls,0);
+ assert.equal(authorityReads,6);assert.equal(legacyCalls,0);
+});
+
+test('Make status exposes only native scoped metadata, never provider readiness or credentials', async () => {
+ let workspaceId = 'isolated-workspace', repositoryReads = 0;
+ const connection = {
+   status: 'ACTIVE',
+   scopes: ['make:scenario:find-drive-document'],
+   updatedAt: new Date('2026-11-13T00:00:00.000Z'),
+ };
+ const route = compiled('src/app/api/connections/make/status/route.ts', {
+   '@/lib/native/scoped-context': {
+     withNativeScope: async (request:Request, write:boolean, read:()=>Promise<Response>) => {
+       assert.equal(write,false);
+       // This is a scoped-session fixture; actual cookie verification is tested separately.
+       if (!/^clara_auth_session=[A-Za-z0-9_-]{43}$/.test(request.headers.get('cookie') ?? ''))
+         throw new RegistryError(401,'NATIVE_AUTH_REQUIRED');
+       return read();
+     },
+     nativeContext: () => ({scope:{workspaceId}}),
+   },
+   '@/lib/native/authority': {nativeFailure},
+   '@/lib/canonical/registry': {RegistryError},
+   '@/lib/connections/connection-repository': {
+     DatabaseConnectionRepository: class {
+       async findByWorkspaceAndProvider(workspace:string, provider:string) {
+         repositoryReads++;
+         assert.equal(workspace,'isolated-workspace');
+         assert.equal(provider,'make');
+         return connection;
+       }
+     },
+   },
+   '@/lib/connections/current-workspace': {CURRENT_WORKSPACE_ID:'isolated-workspace'},
+   'next/server': {NextResponse:Response},
+ }).GET as (request:Request)=>Promise<Response>;
+ const url='https://fixture.invalid/api/connections/make/status';
+ for (const cookie of ['', 'clara_auth_session=invalid']) {
+   const response=await route(new Request(url,{headers:{cookie}}));
+   assert.equal(response.status,401);
+   assert.equal(response.headers.get('Cache-Control'),'no-store');
+ }
+ assert.equal(repositoryReads,0,'Unauthenticated callers must never query Make metadata');
+ const validCookie='clara_auth_session='+'A'.repeat(43);
+ workspaceId='another-workspace';
+ const denied=await route(new Request(url,{headers:{cookie:validCookie}}));
+ assert.equal(denied.status,403);
+ assert.equal(repositoryReads,0,'Cross-workspace callers must never query Make metadata');
+ workspaceId='isolated-workspace';
+ const allowed=await route(new Request(url,{headers:{cookie:validCookie}}));
+ assert.equal(allowed.status,200);
+ assert.equal(allowed.headers.get('Cache-Control'),'private, no-store');
+ assert.deepEqual(await allowed.json(),{
+   provider:'make',connected:false,status:'ACTIVE',
+   scenarioKeys:['find-drive-document'],updatedAt:'2026-11-13T00:00:00.000Z',
+   validation:'METADATA_ONLY',
+ });
+ assert.equal(repositoryReads,1);
 });
