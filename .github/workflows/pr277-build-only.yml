@@ -1,0 +1,41 @@
+name: OS 277 build only (one-shot)
+run-name: PR #277 Next.js build — 194a8852a251
+on:
+  push:
+    branches:
+      - ci/pr277-build-only-20261114
+    paths:
+      - .github/workflows/pr277-build-only.yml
+permissions:
+  contents: read
+concurrency:
+  group: pr277-build-only-20261114
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      CI: '1'
+    steps:
+      - name: Check out exact PR #277 commit (not validation branch)
+        uses: actions/checkout@v4
+        with:
+          ref: 194a8852a251ca1564e9c42c35175420fe734c1b
+          persist-credentials: false
+      - name: Verify exact commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "194a8852a251ca1564e9c42c35175420fe734c1b"
+          echo "Verifying PR #277 commit: 194a8852a251ca1564e9c42c35175420fe734c1b"
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Build Next.js only
+        run: npm run build
