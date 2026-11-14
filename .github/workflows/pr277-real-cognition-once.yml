@@ -1,0 +1,115 @@
+name: PR #277 one real cognitive generation
+run-name: One real Responses call on #277 synthetic dossier
+on:
+  push:
+    branches:
+      - ci/pr277-real-cognition-once-20261114
+    paths:
+      - '.github/workflows/pr277-real-cognition-once.yml'
+permissions:
+  contents: read
+concurrency:
+  group: pr277-real-cognition-once-20261114
+  cancel-in-progress: false
+jobs:
+  one-response:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      CI: '1'
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - name: Check out exact PR #277 code
+        uses: actions/checkout@v4
+        with:
+          ref: 194a8852a251ca1564e9c42c35175420fe734c1b
+          persist-credentials: false
+      - name: Verify exact code and isolated fixture
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "194a8852a251ca1564e9c42c35175420fe734c1b"
+          test -f docs/reception/issue-276/sanitized-event.json
+          echo 'PR #277 SHA and synthetic fixture verified'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked dependencies without tests or build
+        run: npm ci --no-audit --no-fund
+      - name: One real provider generation — no retry, no DB, no persistence
+        shell: bash
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_TEST }}
+          OPENAI_MODEL: gpt-5.5
+        run: |
+          set -euo pipefail
+          if [ -z "${OPENAI_API_KEY:-}" ]; then echo 'BLOCKED: OPENAI_API_KEY_TEST unavailable'; exit 4; fi
+          node --import tsx --input-type=module <<'NODE'
+          import {incident276} from './src/tests/helpers/production-276-fixture.ts';
+          import {liveProjectSource} from './src/lib/brain/live-project-context.ts';
+          import {composeClaraResponseWithProposal} from './src/lib/brain/response-composer.ts';
+          import {createSession} from './src/lib/core/session.ts';
+          import {OpenAIResponsesEngine} from './src/lib/connectors/internal/openai/responses/openai-responses-engine.ts';
+          import {hasCompleteLiveProductionProposal} from './src/lib/brain/live-production-proposal-guard.ts';
+          import {EventType} from '@/types';
+          
+          const expectedSha = '194a8852a251ca1564e9c42c35175420fe734c1b';
+          if (!process.env.OPENAI_API_KEY || process.env.OPENAI_MODEL !== 'gpt-5.5') {
+            throw new Error('Provider preflight failed');
+          }
+          const wire = incident276(1);
+          if (JSON.stringify(wire).length !== 16239) throw new Error('Sanitized fixture changed');
+          const scope = {projectId:'A',preparationId:'prep-A'};
+          const source = liveProjectSource({
+            id:'test-real-provider-once-277',type:EventType.USER_MESSAGE,source:'EXTERNAL_PRODUCT',
+            timestamp:new Date(),context:wire.scope,payload:wire
+          });
+          if (!source || !source.available) throw new Error('Isolated source was not loaded');
+          const session = createSession();
+          session.sources = [source];
+          const actualGenerate = OpenAIResponsesEngine.prototype.generate;
+          let calls=0,promptCharacters=0,providerResult;
+          OpenAIResponsesEngine.prototype.generate = async function (ctx) {
+            calls++;
+            if (calls!==1) throw new Error('More than one provider call refused');
+            if (ctx.model!=='gpt-5.5' || ctx.outputProfile!=='live_production' ||
+                ctx.maxTokens!==5200 || ctx.reasoningEffort!=='low' ||
+                (ctx.tools && ctx.tools.length>0)) throw new Error('Unexpected provider parameters');
+            promptCharacters=(ctx.prompt?.length??0)+(ctx.instructions?.length??0);
+            if (promptCharacters>23000) throw new Error('Input limit exceeded');
+            providerResult=await actualGenerate.call(this,ctx);
+            return providerResult;
+          };
+          const result=await composeClaraResponseWithProposal(wire.message,session,'fr',scope);
+          const valid=result.generation.status==='completed' &&
+            hasCompleteLiveProductionProposal(result.content,scope);
+          const parsed=valid?JSON.parse(result.content):null;
+          const rows=parsed?.rows??[];
+          const coverageRows=rows.filter(row=>String(row.label??'').startsWith('DOSSIER PARTIEL'));
+          const businessRows=rows.filter(row=>!String(row.label??'').startsWith('DOSSIER PARTIEL'));
+          const operationalText=businessRows.map(row=>String(row.label??'')+' '+String(row.value??'')).join(' ').toLowerCase();
+          const conflictIdentified=/(montage|plateau)/i.test(operationalText) &&
+            /(chevauche|conflit|arbitr|réglages|reglages)/i.test(operationalText);
+          const coverageRecorded=coverageRows.some(row=>String(row.notes??'').includes('live_roadmap_selection_v1'));
+          const report={
+            codeSha:expectedSha, model:'gpt-5.5', providerCalls:calls,
+            promptCharacters, maxOutputTokens:5200,
+            providerSuccess:providerResult?.success??false,
+            providerResponseStatus:providerResult?.responseStatus??null,
+            providerFailureCategory:providerResult?.failureCategory??null,
+            providerOutputTokens:providerResult?.outputTokens??null,
+            generationStatus:result.generation.status,
+            generationFailureCategory:result.generation.failureCategory??null,
+            validProductionJSON:valid,
+            totalRows:rows.length,operationalRows:businessRows.length,
+            coverageRows:coverageRows.length,coverageRecorded,conflictIdentified,
+            sections:[...new Set(businessRows.map(row=>row.section))],
+            labels:businessRows.slice(0,5).map(row=>String(row.label??'').slice(0,90)),
+            syntheticSourcesOnly:true, businessWrites:0, retry:0, deployment:0
+          };
+          console.log('PR277_REAL_PROVIDER_ONCE_RESULT='+JSON.stringify(report));
+          if(calls!==1 || !valid || !coverageRecorded || !conflictIdentified) {
+            throw new Error('Isolated real provider acceptance not met; no retry');
+          }
+          NODE
