@@ -63,6 +63,18 @@ export function hydrateNative(data:Record<string,unknown>):ClaraSession {
 export function nativeCommands(query:RegistryQuery=sql){
  return async(scope:NativeSelectors&{digest:string},operation:string,payload:unknown={})=>{
   try{
+   // The clone's restricted SQL role has no direct native-runtime EXECUTE.
+   // Read-only sessions use the existing canonical authority through a
+   // clone-only SECURITY DEFINER gateway. Never route writes or Production here.
+   if(operation==='read'){
+    const {validateMakeCloneRuntime}=await import('./make-scoped-credentials');
+    if(validateMakeCloneRuntime()){
+     const rows=await query`SELECT clara_make_runtime_scope.native_runtime_read(${scope.digest},${scope.workspaceId},${scope.clientId},${scope.projectId},${scope.sessionId}) AS data`;
+     const data=(rows[0] as {data?:Record<string,unknown>})?.data;
+     if(!data)throw new RegistryError(503,'NATIVE_RUNTIME_UNAVAILABLE');
+     return data;
+    }
+   }
    const rows=await query`SELECT clara_native_runtime_command(${scope.digest},${scope.workspaceId},${scope.clientId},${scope.projectId},${scope.sessionId},${operation},${JSON.stringify(payload)}::jsonb) AS data`;
    const data=(rows[0] as {data?:Record<string,unknown>})?.data;if(!data)throw new RegistryError(503,'NATIVE_RUNTIME_UNAVAILABLE');return data;
   }catch(error){if((error as {code?:string})?.code==='40001')throw new RegistryError(409,'NATIVE_REVISION_CONFLICT');databaseError(error);}
