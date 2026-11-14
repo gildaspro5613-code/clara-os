@@ -135,3 +135,25 @@ test('real native entry refuses when no authenticated Clara context exists',asyn
  await assert.rejects(executeNativeConnectorRead(key,{},directory,authorize,execute,audit),
   denied('NATIVE_SCOPE_REQUIRED'));
 });
+
+test('native model-tool gateway refuses unsupported commands, forged JSON and no session',async()=>{
+ const {executeNativeBuilderToolCall}=await import('@/lib/connectors/core/native-connector-builder-tool');
+ let calls=0;
+ const deps={directory,authorize,audit,executor:{async execute(){calls++;return capabilityResponse;}}};
+ const unsupported=await executeNativeBuilderToolCall({
+  callId:'c1',name:'make.scenario.execute',arguments:'{}',
+ },{...deps,authority:authorize});
+ assert.equal(unsupported.available,false);
+ assert.equal(unsupported.code,'CONNECTOR_NOT_AVAILABLE');
+ const malformed=await executeNativeBuilderToolCall({
+  callId:'c2',name:'github.repository.read',arguments:'{not valid}',
+ },{...deps,authority:authorize});
+ assert.equal(malformed.available,false);
+ assert.equal(malformed.code,'CONNECTOR_INPUT_INVALID');
+ const noContext=await executeNativeBuilderToolCall({
+  callId:'c3',name:'github.repository.read',arguments:'{"owner":"acme","repo":"fixture"}',
+ },{...deps,authority:authorize});
+ assert.equal(noContext.available,false);
+ assert.equal(noContext.code,'CONNECTOR_READ_UNAVAILABLE');
+ assert.equal(calls,0);
+});
