@@ -410,4 +410,6 @@ BEGIN
  RETURN result_;
 END;
 $builder_candidates$;
+REVOKE ALL ON FUNCTION clara_connector_builder.native_candidates(
+ TEXT,TEXT,TEXT,TEXT,TEXT) FROM PUBLIC;
 COMMIT;
