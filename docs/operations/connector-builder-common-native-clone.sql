@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS clara_connector_builder.read_catalog (
  revoked_at TIMESTAMPTZ,
  PRIMARY KEY (provider,capability_id),
  CHECK (capability_id LIKE provider || '.%'),
- CHECK (enabled=FALSE OR (reviewed_by IS NOT NULL AND reviewed_at IS NOT NULL AND revoked_at IS NULL))
+ CHECK (enabled=FALSE OR (reviewed_by IS NOT NULL AND reviewed_at IS NOT NULL AND revoked_at IS NULL AND jsonb_array_length(required_scopes)>0))
 );
 REVOKE ALL ON TABLE clara_connector_builder.read_catalog FROM PUBLIC;
 REVOKE ALL ON TABLE clara_connector_builder.read_catalog FROM clara_make_runtime_login;
