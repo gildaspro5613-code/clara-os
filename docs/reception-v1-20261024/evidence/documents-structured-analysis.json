@@ -1,0 +1,121 @@
+{
+  "success": true,
+  "extractable": true,
+  "operationId": "a2335fb5-4c44-4a8e-9e46-31dd40b3ec01",
+  "fileId": "document-shared",
+  "fileName": "Shared project PDF",
+  "mimeType": "application/pdf",
+  "textContent": "SOURCE_B\nCONFIRME: 16 A monophase; ouverture scene 8 m.\nCONTRADICTION: pas de 32 A triphase, conflit non resolu.",
+  "analysis": {
+    "recommendation": "Priorité moyenne. Commencer par : Faire confirmer les sources contradictoires",
+    "answer": "SIMULATION FOURNISSEUR : 12 PAR LED; faits rapportes non certifies. Hypothese montage 2 heures. Plan DMX manquant. Conflit non resolu : 32 A triphase / 16 A monophase. Sources document-a@1 et document-shared@1. Aucune action executee.",
+    "generation": {
+      "status": "completed",
+      "recoverable": false
+    },
+    "checkedAt": "2026-10-24T04:25:11.375Z",
+    "evidence": {
+      "schemaVersion": "clara.document-analysis.v1",
+      "status": "source-assertions-unverified",
+      "segments": [
+        {
+          "locator": "document-shared@1:L1",
+          "text": "SOURCE_B",
+          "fileId": "document-shared",
+          "version": "1"
+        },
+        {
+          "locator": "document-shared@1:L2",
+          "text": "CONFIRME: 16 A monophase; ouverture scene 8 m.",
+          "fileId": "document-shared",
+          "version": "1"
+        },
+        {
+          "locator": "document-shared@1:L3",
+          "text": "CONTRADICTION: pas de 32 A triphase, conflit non resolu.",
+          "fileId": "document-shared",
+          "version": "1"
+        }
+      ],
+      "structured": {
+        "schemaVersion": "clara.document-analysis.v1",
+        "entities": [
+          {
+            "id": "show",
+            "manufacturer": null,
+            "model": null,
+            "category": "equipment",
+            "name": "Spectacle synthetique"
+          }
+        ],
+        "facts": [
+          {
+            "entityId": "show",
+            "property": "light.quantity",
+            "value": 12,
+            "unit": null,
+            "locator": "document-a@1:L2",
+            "confidence": 0.8,
+            "ambiguity": null
+          },
+          {
+            "entityId": "show",
+            "property": "power.amps",
+            "value": 32,
+            "unit": null,
+            "locator": "document-a@1:L4",
+            "confidence": 0.8,
+            "ambiguity": null
+          },
+          {
+            "entityId": "show",
+            "property": "mount.hours",
+            "value": 2,
+            "unit": null,
+            "locator": "document-a@1:L5",
+            "confidence": 0.8,
+            "ambiguity": "Unverified/ambiguous source assertion; not a confirmed fact."
+          },
+          {
+            "entityId": "show",
+            "property": "power.amps",
+            "value": 16,
+            "unit": null,
+            "locator": "document-shared@1:L2",
+            "confidence": 0.8,
+            "ambiguity": null
+          },
+          {
+            "entityId": "show",
+            "property": "power.amps",
+            "value": 32,
+            "unit": null,
+            "locator": "document-shared@1:L3",
+            "confidence": 0.8,
+            "ambiguity": "Unverified/ambiguous source assertion; not a confirmed fact."
+          }
+        ],
+        "ambiguities": [
+          "Plan DMX manquant; montage 2 heures = hypothese"
+        ],
+        "conflicts": [
+          "document-a@1:32 A triphase / document-shared@1:16 A monophase — contradiction non resolue"
+        ]
+      },
+      "sources": [
+        {
+          "fileId": "document-a",
+          "version": "1"
+        },
+        {
+          "fileId": "document-shared",
+          "version": "1"
+        }
+      ]
+    }
+  },
+  "brain": {
+    "recommendation": "Priorité moyenne. Commencer par : Faire confirmer les sources contradictoires",
+    "missionId": "native:6f1f6789-5300-451d-888b-b0de3429137b"
+  }
+}

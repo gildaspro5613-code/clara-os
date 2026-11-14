@@ -1,3 +1,8 @@
+import {hasNativeVoiceScope,nativeVoiceOperation} from "@/lib/native/voice";
+import {nativeCommand} from "@/lib/native/scoped-context";
+import {RegistryError} from "@/lib/canonical/registry";
+import { getTranslations } from "next-intl/server";
+import { authorizeVoiceRequest } from "@/lib/auth/voice-request-authorization";
 import { NextResponse } from "next/server";
 
 import { elevenLabsConfig } from "@/lib/config/elevenlabs";
@@ -12,12 +17,25 @@ interface SpeakRequest {
 }
 
 export async function POST(request: Request) {
+ if(hasNativeVoiceScope(request))return nativeVoiceOperation(request,async(scope,signal)=>{
+  const body=await request.json();
+  if(Object.keys(body).some(k=>k!=="messageId")||typeof body.messageId!=="string")throw new RegistryError(400,"NATIVE_VOICE_MESSAGE_REQUIRED");
+  const history=await nativeCommand(scope,"history",{limit:100});
+  const message=(history.messages as Array<{id:string;role:string;content:string}>).find(m=>m.id===body.messageId&&m.role==="clara");
+  if(!message)throw new RegistryError(403,"NATIVE_VOICE_MESSAGE_DENIED");
+  return speak(new Request(request.url,{method:"POST",body:JSON.stringify({text:message.content})}),signal,true);
+ });
+ return speak(request);
+}
+async function speak(request:Request,signal?:AbortSignal,native=false){
+  const t = await getTranslations("voiceApi");
   try {
+    if (!native && !await authorizeVoiceRequest(request)) return NextResponse.json({success:false,message:t("operatorRequired")}, {status:403});
     const voiceId = elevenLabsConfig.voiceId;
 
     if (!voiceId) {
       return NextResponse.json(
-        { success: false, message: "Clara voice is not configured." },
+        { success: false, message: t("notConfigured") },
         { status: 503 },
       );
     }
@@ -27,14 +45,14 @@ export async function POST(request: Request) {
 
     if (!text) {
       return NextResponse.json(
-        { success: false, message: "Text is required." },
+        { success: false, message: t("textRequired") },
         { status: 400 },
       );
     }
 
     if (text.length > MAX_TTS_CHARACTERS) {
       return NextResponse.json(
-        { success: false, message: "Text is too long for voice synthesis." },
+        { success: false, message: t("textTooLong") },
         { status: 413 },
       );
     }
@@ -44,13 +62,13 @@ export async function POST(request: Request) {
       operation: "text-to-speech",
       text,
       voiceId,
-    });
+    },signal);
 
     if (!result.success || !result.audioBuffer) {
       return NextResponse.json(
         {
           success: false,
-          message: result.error ?? "Voice synthesis failed.",
+          message: t("synthesisFailed"),
         },
         { status: 502 },
       );
@@ -62,14 +80,12 @@ export async function POST(request: Request) {
         "Cache-Control": "no-store, max-age=0",
       },
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       {
         success: false,
         message:
-          error instanceof Error
-            ? error.message
-            : "Voice synthesis failed.",
+          t("synthesisFailed"),
       },
       { status: 500 },
     );

@@ -1,3 +1,4 @@
+import { nativeOperationFence } from "@/lib/native/authority";
 import { NextResponse, type NextRequest } from "next/server";
 import { loadAcquisitionDecisionQueue } from "@/lib/acquisition/acquisition-store";
 import { authorizeMicrosoftRequest } from "@/lib/connectors/microsoft/security/request-authorization";
@@ -10,6 +11,9 @@ function configuredWorkspaceId(): string | null {
 }
 
 export async function GET(request: NextRequest) {
+  const nativeDenied=await nativeOperationFence(request);
+  if(nativeDenied)return nativeDenied;
+
   try {
     const workspaceId = configuredWorkspaceId();
     if (!workspaceId) {

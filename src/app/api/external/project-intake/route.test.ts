@@ -1,21 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { EventType } from "@/types";
-
-const dispatchEvent = vi.fn();
-const saveSession = vi.fn();
-
-vi.mock("@/lib/core/clara", () => ({
-  Clara: class Clara {
-    constructor(
-      public readonly sessionKey: string,
-      public readonly workspaceId?: string,
-    ) {}
-  },
-}));
-
-vi.mock("@/lib/core/event-bus", () => ({ dispatchEvent }));
-vi.mock("@/lib/core/store/session-store", () => ({ saveSession }));
+const {persistProjectIntake,runProjectIntakeWorker,scheduled}=vi.hoisted(()=>({persistProjectIntake:vi.fn(),runProjectIntakeWorker:vi.fn(),scheduled:[] as Array<()=>Promise<void>>}));
+vi.mock('@/lib/intake/md-project-intake-inbox',()=>({persistProjectIntake}));
+vi.mock('@/lib/intake/md-project-intake-worker',()=>({runProjectIntakeWorker}));
+vi.mock('next/server',async importOriginal=>({...await importOriginal<typeof import('next/server')>(),after:(work:()=>Promise<void>)=>scheduled.push(work)}));
 
 import { POST, intakeSessionKey } from "./route";
 
@@ -77,13 +65,8 @@ describe("Mélodie Digital project intake HTTP boundary", () => {
         capabilities: ["project-intake"],
       },
     });
-    dispatchEvent.mockReset();
-    saveSession.mockReset();
-    dispatchEvent.mockResolvedValue({
-      mission: { id: "mission-123" },
-      updatedAt: new Date(),
-    });
-    saveSession.mockResolvedValue(undefined);
+    persistProjectIntake.mockReset();persistProjectIntake.mockResolvedValue(undefined);
+    runProjectIntakeWorker.mockReset();runProjectIntakeWorker.mockResolvedValue({processed:1});scheduled.length=0;
   });
 
   afterEach(() => {
@@ -119,7 +102,7 @@ describe("Mélodie Digital project intake HTTP boundary", () => {
 
     expect(response.status).toBe(401);
     expect(await response.json()).toMatchObject({ accepted: false });
-    expect(dispatchEvent).not.toHaveBeenCalled();
+    expect(persistProjectIntake).not.toHaveBeenCalled();expect(scheduled).toHaveLength(0);
   });
 
   it("rejects an invalid MD intake contract", async () => {
@@ -133,7 +116,7 @@ describe("Mélodie Digital project intake HTTP boundary", () => {
       accepted: false,
       status: "invalid_project_intake",
     });
-    expect(dispatchEvent).not.toHaveBeenCalled();
+    expect(persistProjectIntake).not.toHaveBeenCalled();expect(scheduled).toHaveLength(0);
   });
 
   it("rejects a product whose authenticated scope does not match the intake", async () => {
@@ -144,10 +127,10 @@ describe("Mélodie Digital project intake HTTP boundary", () => {
     ));
 
     expect(response.status).toBe(403);
-    expect(dispatchEvent).not.toHaveBeenCalled();
+    expect(persistProjectIntake).not.toHaveBeenCalled();expect(scheduled).toHaveLength(0);
   });
 
-  it("accepts only after Clara dispatch and persistence succeed", async () => {
+  it("acknowledges only after durable inbox persistence; the existing worker runs after response", async () => {
     const response = await POST(request(validIntake));
     const body = await response.json();
 
@@ -156,20 +139,20 @@ describe("Mélodie Digital project intake HTTP boundary", () => {
       accepted: true,
       status: "accepted_by_clara_os",
       submissionId: "submission-123",
-      missionId: "mission-123",
+      missionId: null,
     });
-    expect(dispatchEvent).toHaveBeenCalledOnce();
-    const event = dispatchEvent.mock.calls[0]?.[1];
-    expect(event.type).toBe(EventType.PROJECT_INTAKE_RECEIVED);
-    expect(saveSession).toHaveBeenCalledOnce();
+    expect(persistProjectIntake).toHaveBeenCalledOnce();
+    expect(persistProjectIntake.mock.calls[0]?.[0]).toMatchObject({workspaceId:'md-workspace',submissionId:'submission-123',productId:'melodie-digital-site',sessionKey:intakeSessionKey('melodie-digital-site','md-workspace','submission-123')});
+    expect(runProjectIntakeWorker).not.toHaveBeenCalled();expect(scheduled).toHaveLength(1);
+    await scheduled[0]();expect(runProjectIntakeWorker).toHaveBeenCalledOnce();
   });
 
   it("does not acknowledge the intake when persistence fails", async () => {
-    saveSession.mockRejectedValueOnce(new Error("database unavailable"));
+    persistProjectIntake.mockRejectedValueOnce(new Error("database unavailable"));
 
     const response = await POST(request(validIntake));
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(500);expect(scheduled).toHaveLength(0);expect(runProjectIntakeWorker).not.toHaveBeenCalled();
     expect(await response.json()).toMatchObject({
       accepted: false,
       status: "clara_processing_failed",

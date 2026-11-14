@@ -1,0 +1,738 @@
+{
+  "Live_tree": "77e0767f464c1ef3bca74ce677aebc441d3ae53d",
+  "provider": "SIMULATED",
+  "calls": [
+    {
+      "method": "POST",
+      "path": "/api/projects",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/preparations",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/preparations/prep_643018c0245b49b1/items",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/preparations/prep_643018c0245b49b1/items",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/preparations/prep_643018c0245b49b1/items",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/preparations/prep_643018c0245b49b1/items",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/preparations/prep_643018c0245b49b1/items",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/prj_cafdb2adbdcb4bc2/business-workspace/production",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/prj_cafdb2adbdcb4bc2/business-workspace/production",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/prj_cafdb2adbdcb4bc2/business-workspace/production",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/prj_cafdb2adbdcb4bc2/business-workspace/production/check",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspace/artifacts",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/prj_cafdb2adbdcb4bc2",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/clara/jobs",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/prj_cafdb2adbdcb4bc2/business-workspace/production",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/prj_cafdb2adbdcb4bc2/business-workspace/production/check",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/clara/chat",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/clara/jobs/b945f3c37f4613b23df6fb1f85640b52108cf86534dc1410bcd068d00e7ce151",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/clara/messages/b945f3c37f4613b23df6fb1f85640b52108cf86534dc1410bcd068d00e7ce151:assistant",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/prj_cafdb2adbdcb4bc2/business-workspace/production",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/clara/jobs/b945f3c37f4613b23df6fb1f85640b52108cf86534dc1410bcd068d00e7ce151",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/prj_cafdb2adbdcb4bc2/business-workspace/production",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/prj_cafdb2adbdcb4bc2/business-workspace/production",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/prj_cafdb2adbdcb4bc2/business-workspace/production",
+      "status": 409
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/prj_cafdb2adbdcb4bc2",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspace/artifacts",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/clara/jobs",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/clara/history",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/prj_cafdb2adbdcb4bc2/business-workspace/production",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspace/artifacts",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/prj_cafdb2adbdcb4bc2",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/clara/jobs",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/prj_cafdb2adbdcb4bc2/business-workspace/production",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/clara/history",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/prj_cafdb2adbdcb4bc2/business-workspace/production/check",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/clara/chat",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/clara/jobs/b945f3c37f4613b23df6fb1f85640b52108cf86534dc1410bcd068d00e7ce151",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/clara/messages/b945f3c37f4613b23df6fb1f85640b52108cf86534dc1410bcd068d00e7ce151:assistant",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/clara/jobs/4dfb73fc71efeaa1765dcd968e94b965f91cd686c3c0c8e2b3bc8bd818b7964c",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/clara/jobs",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/clara/history",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/prj_cafdb2adbdcb4bc2",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspace/artifacts",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/prj_cafdb2adbdcb4bc2/business-workspace/production",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/prj_cafdb2adbdcb4bc2/business-workspace/production/check",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/clara/chat",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/clara/jobs/4dfb73fc71efeaa1765dcd968e94b965f91cd686c3c0c8e2b3bc8bd818b7964c",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/clara/jobs/b945f3c37f4613b23df6fb1f85640b52108cf86534dc1410bcd068d00e7ce151",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/clara/messages/b945f3c37f4613b23df6fb1f85640b52108cf86534dc1410bcd068d00e7ce151:assistant",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/clara/jobs/f41d778372c8b45a22aa6dbf5ad46485ac83e980eb9cff1c0bd028794e18def7",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/clara/messages/f41d778372c8b45a22aa6dbf5ad46485ac83e980eb9cff1c0bd028794e18def7:assistant",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/prj_cafdb2adbdcb4bc2/business-workspace/production",
+      "status": 403
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/prj_cafdb2adbdcb4bc2/business-workspace/production",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/prj_cafdb2adbdcb4bc2/business-workspace/production",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/clara/jobs",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/clara/history",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/prj_cafdb2adbdcb4bc2",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspace/artifacts",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/prj_cafdb2adbdcb4bc2/business-workspace/production",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/prj_cafdb2adbdcb4bc2/business-workspace/production/check",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/prj_cafdb2adbdcb4bc2/business-workspace/production",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/doc_5b37bf600c124818/download",
+      "status": 200
+    }
+  ],
+  "explicit_save_version": 2,
+  "concurrent_version": 3,
+  "fresh_browser_reopened": true,
+  "concurrent_winner_preserved": true,
+  "revoked_access_refused": true,
+  "approval_draft_only": true,
+  "unsaved_before_approval": true,
+  "refusals": [
+    403,
+    404,
+    409
+  ],
+  "incomplete_failure_visible": true,
+  "no_automatic_resubmit": true,
+  "project_id": "prj_cafdb2adbdcb4bc2",
+  "preparation_id": "prep_643018c0245b49b1",
+  "document_id": "doc_5b37bf600c124818",
+  "saved_content_sha256": "bcd91ff3317d57dd8100b03eed1e0a63fc16a4691c9b74b9217517afdcf7ce9e",
+  "metrics": {
+    "executions": 3,
+    "logs": [
+      {
+        "correlation_id": "0ccfa1037fb047c3971f965d6ba4a817",
+        "job_id": "b945f3c37f4613b23df6fb1f85640b52108cf86534dc1410bcd068d00e7ce151",
+        "event": "start",
+        "phase": "authentication",
+        "operation": "unknown_event"
+      },
+      {
+        "correlation_id": "0ccfa1037fb047c3971f965d6ba4a817",
+        "job_id": "b945f3c37f4613b23df6fb1f85640b52108cf86534dc1410bcd068d00e7ce151",
+        "event": "phase_end",
+        "phase": "authentication",
+        "operation": "unknown_event",
+        "duration_ms": 0,
+        "code": "PHASE_COMPLETED"
+      },
+      {
+        "correlation_id": "0ccfa1037fb047c3971f965d6ba4a817",
+        "job_id": "b945f3c37f4613b23df6fb1f85640b52108cf86534dc1410bcd068d00e7ce151",
+        "event": "phase_start",
+        "phase": "body_validation",
+        "operation": "unknown_event"
+      },
+      {
+        "correlation_id": "0ccfa1037fb047c3971f965d6ba4a817",
+        "job_id": "b945f3c37f4613b23df6fb1f85640b52108cf86534dc1410bcd068d00e7ce151",
+        "event": "phase_end",
+        "phase": "body_validation",
+        "operation": "user_message",
+        "duration_ms": 79,
+        "code": "PHASE_COMPLETED"
+      },
+      {
+        "correlation_id": "0ccfa1037fb047c3971f965d6ba4a817",
+        "job_id": "b945f3c37f4613b23df6fb1f85640b52108cf86534dc1410bcd068d00e7ce151",
+        "event": "phase_start",
+        "phase": "core_dispatch",
+        "operation": "user_message"
+      },
+      {
+        "correlation_id": "0ccfa1037fb047c3971f965d6ba4a817",
+        "job_id": "b945f3c37f4613b23df6fb1f85640b52108cf86534dc1410bcd068d00e7ce151",
+        "event": "phase_end",
+        "phase": "core_dispatch",
+        "operation": "user_message",
+        "duration_ms": 70,
+        "code": "PHASE_COMPLETED"
+      },
+      {
+        "correlation_id": "0ccfa1037fb047c3971f965d6ba4a817",
+        "job_id": "b945f3c37f4613b23df6fb1f85640b52108cf86534dc1410bcd068d00e7ce151",
+        "event": "phase_start",
+        "phase": "response_composition",
+        "operation": "user_message"
+      },
+      {
+        "correlation_id": "0ccfa1037fb047c3971f965d6ba4a817",
+        "job_id": "b945f3c37f4613b23df6fb1f85640b52108cf86534dc1410bcd068d00e7ce151",
+        "event": "phase_end",
+        "phase": "response_composition",
+        "operation": "user_message",
+        "duration_ms": 68,
+        "code": "PHASE_COMPLETED"
+      },
+      {
+        "correlation_id": "0ccfa1037fb047c3971f965d6ba4a817",
+        "job_id": "b945f3c37f4613b23df6fb1f85640b52108cf86534dc1410bcd068d00e7ce151",
+        "event": "phase_start",
+        "phase": "document_analysis",
+        "operation": "user_message"
+      },
+      {
+        "correlation_id": "0ccfa1037fb047c3971f965d6ba4a817",
+        "job_id": "b945f3c37f4613b23df6fb1f85640b52108cf86534dc1410bcd068d00e7ce151",
+        "event": "phase_end",
+        "phase": "document_analysis",
+        "operation": "user_message",
+        "duration_ms": 71,
+        "code": "PHASE_COMPLETED"
+      },
+      {
+        "correlation_id": "0ccfa1037fb047c3971f965d6ba4a817",
+        "job_id": "b945f3c37f4613b23df6fb1f85640b52108cf86534dc1410bcd068d00e7ce151",
+        "event": "phase_start",
+        "phase": "session_persistence",
+        "operation": "user_message"
+      },
+      {
+        "correlation_id": "0ccfa1037fb047c3971f965d6ba4a817",
+        "job_id": "b945f3c37f4613b23df6fb1f85640b52108cf86534dc1410bcd068d00e7ce151",
+        "event": "phase_end",
+        "phase": "session_persistence",
+        "operation": "user_message",
+        "duration_ms": 220,
+        "code": "CORE_EVENT_COMPLETED",
+        "http_status": 200
+      },
+      {
+        "correlation_id": "0ccfa1037fb047c3971f965d6ba4a817",
+        "job_id": "b945f3c37f4613b23df6fb1f85640b52108cf86534dc1410bcd068d00e7ce151",
+        "event": "end",
+        "phase": "session_persistence",
+        "operation": "user_message",
+        "duration_ms": 509,
+        "http_status": 200,
+        "code": "CORE_EVENT_COMPLETED",
+        "outcome": "completed"
+      },
+      {
+        "correlation_id": "1464fb142dde4ed783654a328f9fa943",
+        "job_id": "4dfb73fc71efeaa1765dcd968e94b965f91cd686c3c0c8e2b3bc8bd818b7964c",
+        "event": "start",
+        "phase": "authentication",
+        "operation": "unknown_event"
+      },
+      {
+        "correlation_id": "1464fb142dde4ed783654a328f9fa943",
+        "job_id": "4dfb73fc71efeaa1765dcd968e94b965f91cd686c3c0c8e2b3bc8bd818b7964c",
+        "event": "phase_end",
+        "phase": "authentication",
+        "operation": "unknown_event",
+        "duration_ms": 0,
+        "code": "PHASE_COMPLETED"
+      },
+      {
+        "correlation_id": "1464fb142dde4ed783654a328f9fa943",
+        "job_id": "4dfb73fc71efeaa1765dcd968e94b965f91cd686c3c0c8e2b3bc8bd818b7964c",
+        "event": "phase_start",
+        "phase": "body_validation",
+        "operation": "unknown_event"
+      },
+      {
+        "correlation_id": "1464fb142dde4ed783654a328f9fa943",
+        "job_id": "4dfb73fc71efeaa1765dcd968e94b965f91cd686c3c0c8e2b3bc8bd818b7964c",
+        "event": "phase_end",
+        "phase": "body_validation",
+        "operation": "user_message",
+        "duration_ms": 76,
+        "code": "PHASE_COMPLETED"
+      },
+      {
+        "correlation_id": "1464fb142dde4ed783654a328f9fa943",
+        "job_id": "4dfb73fc71efeaa1765dcd968e94b965f91cd686c3c0c8e2b3bc8bd818b7964c",
+        "event": "phase_start",
+        "phase": "core_dispatch",
+        "operation": "user_message"
+      },
+      {
+        "correlation_id": "1464fb142dde4ed783654a328f9fa943",
+        "job_id": "4dfb73fc71efeaa1765dcd968e94b965f91cd686c3c0c8e2b3bc8bd818b7964c",
+        "event": "phase_end",
+        "phase": "core_dispatch",
+        "operation": "user_message",
+        "duration_ms": 74,
+        "code": "PHASE_COMPLETED"
+      },
+      {
+        "correlation_id": "1464fb142dde4ed783654a328f9fa943",
+        "job_id": "4dfb73fc71efeaa1765dcd968e94b965f91cd686c3c0c8e2b3bc8bd818b7964c",
+        "event": "phase_start",
+        "phase": "response_composition",
+        "operation": "user_message"
+      },
+      {
+        "correlation_id": "1464fb142dde4ed783654a328f9fa943",
+        "job_id": "4dfb73fc71efeaa1765dcd968e94b965f91cd686c3c0c8e2b3bc8bd818b7964c",
+        "event": "phase_end",
+        "phase": "response_composition",
+        "operation": "user_message",
+        "duration_ms": 107,
+        "code": "PHASE_COMPLETED"
+      },
+      {
+        "correlation_id": "1464fb142dde4ed783654a328f9fa943",
+        "job_id": "4dfb73fc71efeaa1765dcd968e94b965f91cd686c3c0c8e2b3bc8bd818b7964c",
+        "event": "phase_start",
+        "phase": "response_incomplete",
+        "operation": "user_message"
+      },
+      {
+        "correlation_id": "1464fb142dde4ed783654a328f9fa943",
+        "job_id": "4dfb73fc71efeaa1765dcd968e94b965f91cd686c3c0c8e2b3bc8bd818b7964c",
+        "event": "phase_end",
+        "phase": "response_incomplete",
+        "operation": "user_message",
+        "duration_ms": 200,
+        "code": "CORE_EVENT_PROCESSING_FAILED",
+        "http_status": 500
+      },
+      {
+        "correlation_id": "1464fb142dde4ed783654a328f9fa943",
+        "job_id": "4dfb73fc71efeaa1765dcd968e94b965f91cd686c3c0c8e2b3bc8bd818b7964c",
+        "event": "end",
+        "phase": "response_incomplete",
+        "operation": "user_message",
+        "duration_ms": 457,
+        "http_status": 500,
+        "code": "CORE_EVENT_PROCESSING_FAILED",
+        "outcome": "rejected_or_failed"
+      },
+      {
+        "correlation_id": "484cc1d95d5d470fa4363fd8ae0cd39a",
+        "job_id": "f41d778372c8b45a22aa6dbf5ad46485ac83e980eb9cff1c0bd028794e18def7",
+        "event": "start",
+        "phase": "authentication",
+        "operation": "unknown_event"
+      },
+      {
+        "correlation_id": "484cc1d95d5d470fa4363fd8ae0cd39a",
+        "job_id": "f41d778372c8b45a22aa6dbf5ad46485ac83e980eb9cff1c0bd028794e18def7",
+        "event": "phase_end",
+        "phase": "authentication",
+        "operation": "unknown_event",
+        "duration_ms": 0,
+        "code": "PHASE_COMPLETED"
+      },
+      {
+        "correlation_id": "484cc1d95d5d470fa4363fd8ae0cd39a",
+        "job_id": "f41d778372c8b45a22aa6dbf5ad46485ac83e980eb9cff1c0bd028794e18def7",
+        "event": "phase_start",
+        "phase": "body_validation",
+        "operation": "unknown_event"
+      },
+      {
+        "correlation_id": "484cc1d95d5d470fa4363fd8ae0cd39a",
+        "job_id": "f41d778372c8b45a22aa6dbf5ad46485ac83e980eb9cff1c0bd028794e18def7",
+        "event": "phase_end",
+        "phase": "body_validation",
+        "operation": "user_message",
+        "duration_ms": 80,
+        "code": "PHASE_COMPLETED"
+      },
+      {
+        "correlation_id": "484cc1d95d5d470fa4363fd8ae0cd39a",
+        "job_id": "f41d778372c8b45a22aa6dbf5ad46485ac83e980eb9cff1c0bd028794e18def7",
+        "event": "phase_start",
+        "phase": "core_dispatch",
+        "operation": "user_message"
+      },
+      {
+        "correlation_id": "484cc1d95d5d470fa4363fd8ae0cd39a",
+        "job_id": "f41d778372c8b45a22aa6dbf5ad46485ac83e980eb9cff1c0bd028794e18def7",
+        "event": "phase_end",
+        "phase": "core_dispatch",
+        "operation": "user_message",
+        "duration_ms": 97,
+        "code": "PHASE_COMPLETED"
+      },
+      {
+        "correlation_id": "484cc1d95d5d470fa4363fd8ae0cd39a",
+        "job_id": "f41d778372c8b45a22aa6dbf5ad46485ac83e980eb9cff1c0bd028794e18def7",
+        "event": "phase_start",
+        "phase": "response_composition",
+        "operation": "user_message"
+      },
+      {
+        "correlation_id": "484cc1d95d5d470fa4363fd8ae0cd39a",
+        "job_id": "f41d778372c8b45a22aa6dbf5ad46485ac83e980eb9cff1c0bd028794e18def7",
+        "event": "phase_end",
+        "phase": "response_composition",
+        "operation": "user_message",
+        "duration_ms": 65,
+        "code": "PHASE_COMPLETED"
+      },
+      {
+        "correlation_id": "484cc1d95d5d470fa4363fd8ae0cd39a",
+        "job_id": "f41d778372c8b45a22aa6dbf5ad46485ac83e980eb9cff1c0bd028794e18def7",
+        "event": "phase_start",
+        "phase": "document_analysis",
+        "operation": "user_message"
+      },
+      {
+        "correlation_id": "484cc1d95d5d470fa4363fd8ae0cd39a",
+        "job_id": "f41d778372c8b45a22aa6dbf5ad46485ac83e980eb9cff1c0bd028794e18def7",
+        "event": "phase_end",
+        "phase": "document_analysis",
+        "operation": "user_message",
+        "duration_ms": 72,
+        "code": "PHASE_COMPLETED"
+      },
+      {
+        "correlation_id": "484cc1d95d5d470fa4363fd8ae0cd39a",
+        "job_id": "f41d778372c8b45a22aa6dbf5ad46485ac83e980eb9cff1c0bd028794e18def7",
+        "event": "phase_start",
+        "phase": "session_persistence",
+        "operation": "user_message"
+      },
+      {
+        "correlation_id": "484cc1d95d5d470fa4363fd8ae0cd39a",
+        "job_id": "f41d778372c8b45a22aa6dbf5ad46485ac83e980eb9cff1c0bd028794e18def7",
+        "event": "phase_end",
+        "phase": "session_persistence",
+        "operation": "user_message",
+        "duration_ms": 219,
+        "code": "CORE_EVENT_COMPLETED",
+        "http_status": 200
+      },
+      {
+        "correlation_id": "484cc1d95d5d470fa4363fd8ae0cd39a",
+        "job_id": "f41d778372c8b45a22aa6dbf5ad46485ac83e980eb9cff1c0bd028794e18def7",
+        "event": "end",
+        "phase": "session_persistence",
+        "operation": "user_message",
+        "duration_ms": 534,
+        "http_status": 200,
+        "code": "CORE_EVENT_COMPLETED",
+        "outcome": "completed"
+      }
+    ],
+    "documentAnalyses": 0,
+    "simulatedProvider": {
+      "mode": "completed",
+      "calls": [
+        {
+          "profile": "reasoning",
+          "promptChars": 11570,
+          "sourceHasConflict": true
+        },
+        {
+          "profile": "live_production",
+          "promptChars": 9895,
+          "sourceChars": 4976,
+          "sourceHasConflict": true
+        },
+        {
+          "profile": "reasoning",
+          "promptChars": 12290,
+          "sourceHasConflict": true
+        },
+        {
+          "profile": "live_production",
+          "promptChars": 10615,
+          "sourceChars": 5696,
+          "sourceHasConflict": true
+        },
+        {
+          "profile": "reasoning",
+          "promptChars": 12290,
+          "sourceHasConflict": true
+        },
+        {
+          "profile": "live_production",
+          "promptChars": 10615,
+          "sourceChars": 5696,
+          "sourceHasConflict": true
+        }
+      ]
+    }
+  },
+  "business_writes": [
+    {
+      "method": "PUT",
+      "path": "/api/projects/prj_cafdb2adbdcb4bc2/business-workspace/production",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/prj_cafdb2adbdcb4bc2/business-workspace/production",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/prj_cafdb2adbdcb4bc2/business-workspace/production",
+      "status": 409
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/prj_cafdb2adbdcb4bc2/business-workspace/production",
+      "status": 200
+    }
+  ]
+}

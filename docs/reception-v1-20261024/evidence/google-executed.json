@@ -1,0 +1,9 @@
+{
+  "suite": "google",
+  "status": "PASS",
+  "database": "disposable PostgreSQL",
+  "serverRestarted": true,
+  "providers": "simulated only",
+  "browser": "Chromium actual",
+  "externalBusinessCalls": 0
+}

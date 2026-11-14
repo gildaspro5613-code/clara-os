@@ -1,0 +1,2074 @@
+[
+  {
+    "file": "src/app/automatisations/page.tsx",
+    "line": 32,
+    "tag": "Link",
+    "attrs": {
+      "key": "{key}",
+      "href": "{href}",
+      "className": "\"block rounded-2xl border border-white/10 bg-white/[0.025] p-6 transition hover:border-cyan-400/25 hover:bg-white/[0.045] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/40\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/app/automatisations/page.tsx",
+    "line": 42,
+    "tag": "Link",
+    "attrs": {
+      "href": "\"/clara?intent=brevo\"",
+      "className": "\"block rounded-2xl border border-white/10 bg-white/[0.025] p-6 transition hover:border-cyan-400/25 hover:bg-white/[0.045] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/40\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/app/clara/page.tsx",
+    "line": 94,
+    "tag": "summary",
+    "attrs": {
+      "className": "\"cursor-pointer text-sm text-cyan-200\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/app/conversations/page.tsx",
+    "line": 48,
+    "tag": "Link",
+    "attrs": {
+      "href": "\"/clara\"",
+      "className": "\"rounded-xl border border-cyan-300/20 bg-cyan-300/[0.08] px-4 py-2 text-sm text-cyan-100 transition hover:bg-cyan-300/[0.12]\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/app/documents/page.tsx",
+    "line": 270,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "onClick": "{() => router.back()}",
+      "className": "\"mb-6 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.035] px-3 py-2 text-sm text-white/60 transition hover:border-white/20 hover:bg-white/[0.06] hover:text-white\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/app/documents/page.tsx",
+    "line": 281,
+    "tag": "input",
+    "attrs": {
+      "ref": "{fileInput}",
+      "type": "\"file\"",
+      "className": "\"hidden\"",
+      "onChange": "{(event) => void handleUpload(event.target.files?.[0])}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/app/documents/page.tsx",
+    "line": 282,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "disabled": "{working !== null||readOnly}",
+      "onClick": "{() => fileInput.current?.click()}",
+      "className": "\"inline-flex items-center gap-2 rounded-xl border border-cyan-300/20 bg-cyan-300/[0.08] px-4 py-2.5 text-sm text-cyan-50 transition hover:bg-cyan-300/[0.12] disabled:opacity-50\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/app/documents/page.tsx",
+    "line": 289,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "disabled": "{working !== null}",
+      "onClick": "{() => navigateTo(-1)}",
+      "className": "\"text-cyan-300\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/app/documents/page.tsx",
+    "line": 290,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "disabled": "{working !== null}",
+      "onClick": "{() => navigateTo(index)}",
+      "className": "\"text-cyan-300\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/app/documents/page.tsx",
+    "line": 291,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "onClick": "{() => void createFolder()}",
+      "disabled": "{working !== null||readOnly}",
+      "className": "\"ml-auto flex items-center gap-2 rounded-lg border border-white/15 px-3 py-2\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/app/documents/page.tsx",
+    "line": 294,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "disabled": "{working !== null}",
+      "onClick": "{() => { destinationGeneration.current++; setMoveTarget(null); }}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/app/documents/page.tsx",
+    "line": 295,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "disabled": "{working !== null}",
+      "onClick": "{() => { setDestinationTrail([]); void browseDestination(); }}",
+      "className": "\"text-cyan-300\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/app/documents/page.tsx",
+    "line": 296,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "disabled": "{working !== null}",
+      "key": "{folder.id}",
+      "className": "\"text-cyan-300\"",
+      "onClick": "{() => { const next = destinationTrail.slice(0, index + 1); setDestinationTrail(next); void browseDestination(folder.id); }}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/app/documents/page.tsx",
+    "line": 298,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "disabled": "{working !== null}",
+      "key": "{folder.id}",
+      "onClick": "{() => { setDestinationTrail(prev => [...prev, { id: folder.id, name: folder.name }]); void browseDestination(folder.id); }}",
+      "className": "\"flex items-center gap-2 rounded-lg border border-white/10 p-3 text-left text-sm\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/app/documents/page.tsx",
+    "line": 299,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "disabled": "{destinationLoading}",
+      "onClick": "{() => void browseDestination(destinationTrail.at(-1)?.id ?? \"\", destinationPageToken)}",
+      "className": "\"mt-3 rounded-lg border border-white/15 px-3 py-2 text-sm\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/app/documents/page.tsx",
+    "line": 300,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "disabled": "{destinationLoading || (destinationTrail.at(-1)?.id ?? \"root\") === moveTarget.parentId || working !== null}",
+      "onClick": "{() => void confirmMove()}",
+      "className": "\"mt-4 rounded-lg bg-cyan-800 px-4 py-2 text-sm disabled:opacity-40\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/app/documents/page.tsx",
+    "line": 302,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "onClick": "{() => setSelected(null)}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/app/documents/page.tsx",
+    "line": 306,
+    "tag": "form",
+    "attrs": {
+      "onSubmit": "{handleSubmit}",
+      "className": "\"mb-6 flex max-w-2xl gap-2\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/app/documents/page.tsx",
+    "line": 309,
+    "tag": "input",
+    "attrs": {
+      "type": "\"text\"",
+      "disabled": "{working !== null}",
+      "value": "{query}",
+      "onChange": "{(event) => setQuery(event.target.value)}",
+      "placeholder": "{t(\"searchPlaceholder\")}",
+      "className": "\"h-12 w-full rounded-xl border border-white/10 bg-white/[0.035] pl-11 pr-4 text-sm text-white outline-none placeholder:text-white/25 focus:border-cyan-400/30\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/app/documents/page.tsx",
+    "line": 311,
+    "tag": "button",
+    "attrs": {
+      "type": "\"submit\"",
+      "disabled": "{working !== null}",
+      "className": "\"rounded-xl border border-white/10 bg-white/[0.05] px-5 text-sm text-white/75 transition hover:bg-white/[0.08] hover:text-white\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/app/documents/page.tsx",
+    "line": 333,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "disabled": "{working !== null}",
+      "onClick": "{() => openFolder(file)}",
+      "className": "\"rounded-xl border border-cyan-300/20 px-4 py-2.5 text-left text-xs text-cyan-100\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/app/documents/page.tsx",
+    "line": 334,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "disabled": "{working !== null}",
+      "onClick": "{() => void handleAnalyze(file)}",
+      "className": "\"flex items-center justify-between rounded-xl border border-cyan-300/15 bg-cyan-300/[0.04] px-4 py-2.5 text-xs text-cyan-50/75 transition hover:bg-cyan-300/[0.08] disabled:opacity-50\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/app/documents/page.tsx",
+    "line": 337,
+    "tag": "a",
+    "attrs": {
+      "href": "{downloadHref(file)}",
+      "className": "\"flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-xs text-white/60 transition hover:bg-white/[0.06] hover:text-white\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/app/documents/page.tsx",
+    "line": 338,
+    "tag": "a",
+    "attrs": {
+      "href": "{file.url}",
+      "target": "\"_blank\"",
+      "rel": "\"noopener noreferrer\"",
+      "className": "\"flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-xs text-white/60 transition hover:bg-white/[0.06] hover:text-white\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/app/documents/page.tsx",
+    "line": 339,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "disabled": "{working !== null||readOnly}",
+      "onClick": "{() => startMove(file)}",
+      "className": "\"rounded-xl border border-white/10 px-4 py-2.5 text-left text-xs text-white/60\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/app/documents/page.tsx",
+    "line": 345,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "disabled": "{loading}",
+      "onClick": "{() => void loadMore()}",
+      "className": "\"mt-6 rounded-xl border border-white/15 px-5 py-3 text-sm text-cyan-100 disabled:opacity-40\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/app/telephonie/page.tsx",
+    "line": 73,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "onClick": "{() => router.back()}",
+      "className": "\"mb-6 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.035] px-3 py-2 text-sm text-white/60 transition hover:border-white/20 hover:bg-white/[0.06] hover:text-white\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/app/telephonie/page.tsx",
+    "line": 129,
+    "tag": "input",
+    "attrs": {
+      "type": "\"tel\"",
+      "value": "{number}",
+      "onChange": "{(event) => {\n                      setNumber(event.target.value);\n                      setStatus(null);\n                      setError(null);\n                    }}",
+      "onKeyDown": "{(event) => {\n                      if (event.key === \"Enter\" && !calling) {\n                        void startCall();\n                      }\n                    }}",
+      "placeholder": "\"+33 6 00 00 00 00\"",
+      "className": "\"\n                      min-w-0\n                      flex-1\n                      rounded-xl\n                      border\n                      border-white/10\n                      bg-white/[0.04]\n                      px-4\n                      py-3\n                      text-sm\n                      text-white\n                      outline-none\n                      placeholder:text-white/20\n                      focus:border-cyan-400/30\n                    \""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/app/telephonie/page.tsx",
+    "line": 160,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "onClick": "{() => void startCall()}",
+      "disabled": "{calling || !number.trim()}",
+      "className": "\"\n                      inline-flex\n                      items-center\n                      gap-2\n                      rounded-xl\n                      border\n                      border-cyan-400/20\n                      bg-cyan-400/10\n                      px-5\n                      text-sm\n                      font-medium\n                      text-cyan-200\n                      transition\n                      hover:bg-cyan-400/15\n                      hover:text-cyan-100\n                      disabled:cursor-not-allowed\n                      disabled:opacity-30\n                    \""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/automatisations/MakeConnectionStatus.tsx",
+    "line": 80,
+    "tag": "select",
+    "attrs": {
+      "aria-label": "{t(\"scenarioKey\")}",
+      "value": "{scenarioKey}",
+      "disabled": "{busy !== null}",
+      "onChange": "{(event) => setScenarioKey(event.target.value)}",
+      "className": "\"mt-4 w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-xs text-white/70 outline-none focus:border-cyan-400/30 disabled:opacity-50\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/automatisations/MakeConnectionStatus.tsx",
+    "line": 85,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "onClick": "{toggleConfiguration}",
+      "disabled": "{busy !== null}",
+      "className": "\"inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-white/70 transition hover:border-cyan-400/25 hover:bg-white/[0.06] disabled:opacity-50\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/automatisations/MakeConnectionStatus.tsx",
+    "line": 86,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "onClick": "{verify}",
+      "disabled": "{busy !== null}",
+      "className": "\"inline-flex items-center gap-2 rounded-xl border border-cyan-400/20 bg-cyan-400/5 px-3 py-2 text-xs text-cyan-200/80 transition hover:bg-cyan-400/10 disabled:opacity-50\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/automatisations/MakeConnectionStatus.tsx",
+    "line": 89,
+    "tag": "form",
+    "attrs": {
+      "onSubmit": "{configure}",
+      "className": "\"mt-5 space-y-3 border-t border-white/10 pt-5\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/automatisations/MakeConnectionStatus.tsx",
+    "line": 90,
+    "tag": "input",
+    "attrs": {
+      "value": "{scenarioKey}",
+      "disabled": "{busy !== null}",
+      "onChange": "{(event) => setScenarioKey(event.target.value)}",
+      "placeholder": "\"notify-team\"",
+      "required": "true",
+      "className": "\"mt-2 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 text-sm normal-case tracking-normal text-white outline-none placeholder:text-white/25 focus:border-cyan-400/30 disabled:opacity-50\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/automatisations/MakeConnectionStatus.tsx",
+    "line": 91,
+    "tag": "input",
+    "attrs": {
+      "type": "\"url\"",
+      "value": "{webhookUrl}",
+      "disabled": "{busy !== null}",
+      "onChange": "{(event) => setWebhookUrl(event.target.value)}",
+      "placeholder": "\"https://hook.eu2.make.com/…\"",
+      "required": "true",
+      "className": "\"mt-2 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 text-sm normal-case tracking-normal text-white outline-none placeholder:text-white/25 focus:border-cyan-400/30 disabled:opacity-50\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/automatisations/MakeConnectionStatus.tsx",
+    "line": 92,
+    "tag": "button",
+    "attrs": {
+      "type": "\"submit\"",
+      "disabled": "{busy !== null}",
+      "className": "\"inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-3 py-2 text-xs font-medium text-slate-950 transition hover:bg-cyan-200 disabled:opacity-50\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/clara/ClaraVoiceWidget.tsx",
+    "line": 163,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "onClick": "{state === \"listening\" ? stopRecording : startRecording}",
+      "disabled": "{isBusy}",
+      "aria-label": "{state === \"listening\" ? t(\"stop\") : t(\"talk\")}",
+      "className": "\"flex h-12 w-12 items-center justify-center rounded-full border border-cyan-400/30 bg-cyan-400/[0.08] text-cyan-300 transition hover:bg-cyan-400/[0.14] disabled:cursor-not-allowed disabled:opacity-45\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/QuickActions.tsx",
+    "line": 46,
+    "tag": "button",
+    "attrs": {
+      "key": "{action.id}",
+      "className": "\"rounded-xl bg-slate-800 px-4 py-2 text-white transition hover:bg-slate-700\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/Stage.tsx",
+    "line": 21,
+    "tag": "GlassPanel",
+    "attrs": {},
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/Stage.tsx",
+    "line": 43,
+    "tag": "GlassPanel",
+    "attrs": {},
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/AcquisitionDecisionPanel.tsx",
+    "line": 42,
+    "tag": "GlassPanel",
+    "attrs": {
+      "title": "{t(\"title\")}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/AcquisitionDecisionPanel.tsx",
+    "line": 60,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "disabled": "{busy !== null}",
+      "onClick": "{() => decide(specialistDecision ? \"approve-specialist\" : \"approve-opportunity\")}",
+      "className": "\"rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 py-2 text-sm font-medium text-cyan-100 transition hover:bg-cyan-300/15 disabled:opacity-50\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/AcquisitionDecisionPanel.tsx",
+    "line": 68,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "disabled": "{busy !== null}",
+      "onClick": "{() => decide(\"defer\")}",
+      "className": "\"rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/75 transition hover:bg-white/10 disabled:opacity-50\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/AcquisitionDecisionPanel.tsx",
+    "line": 76,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "disabled": "{busy !== null}",
+      "onClick": "{() => decide(\"reject\")}",
+      "className": "\"rounded-full border border-white/10 px-4 py-2 text-sm text-white/55 transition hover:bg-white/5 disabled:opacity-50\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/AcquisitionQualificationPanel.tsx",
+    "line": 31,
+    "tag": "GlassPanel",
+    "attrs": {
+      "title": "{ui(\"commercialQualification\")}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/AcquisitionQualificationPanel.tsx",
+    "line": 46,
+    "tag": "Link",
+    "attrs": {
+      "href": "\"/clara#source-details\"",
+      "className": "\"mt-2 inline-flex text-xs text-cyan-300\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/AcquisitionQualificationPanel.tsx",
+    "line": 85,
+    "tag": "Link",
+    "attrs": {
+      "href": "\"/clara?intent=email#commercial-draft\"",
+      "className": "\"text-cyan-300\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/ActionsPanel.tsx",
+    "line": 22,
+    "tag": "GlassPanel",
+    "attrs": {
+      "className": "\"mt-5 ml-4 w-[13rem] px-5 py-4 bg-white/[0.025] border-white/[0.06] shadow-[0_2px_14px_rgba(0,0,0,0.14)]\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/ActionsPanel.tsx",
+    "line": 29,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "className": "\"w-full text-left text-sm text-white/80 hover:text-white/95 transition-colors\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/ActionsPanel.tsx",
+    "line": 37,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "className": "\"w-full text-left text-sm text-white/80 hover:text-white/95 transition-colors\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/ActionsPanel.tsx",
+    "line": 45,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "className": "\"w-full text-left text-sm text-white/80 hover:text-white/95 transition-colors\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/AgendaPanel.tsx",
+    "line": 68,
+    "tag": "GlassPanel",
+    "attrs": {
+      "className": "\"h-auto w-[15rem] px-5 py-4 bg-black/25 border-white/[0.08] shadow-[0_2px_16px_rgba(0,0,0,0.16)]\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/AttentionPanel.tsx",
+    "line": 37,
+    "tag": "GlassPanel",
+    "attrs": {
+      "title": "{t(\"attention\")}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/BriefPanel.tsx",
+    "line": 47,
+    "tag": "GlassPanel",
+    "attrs": {
+      "className": "\"max-w-[18rem] px-6 py-5 bg-[#07111f]/55 border-white/[0.08] shadow-[0_2px_18px_rgba(0,0,0,0.18)] backdrop-blur-[18px]\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/BriefPanel.tsx",
+    "line": 74,
+    "tag": "Link",
+    "attrs": {
+      "href": "\"/missions\"",
+      "className": "\"text-cyan-300/80 hover:text-cyan-200\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/BriefPanel.tsx",
+    "line": 75,
+    "tag": "Link",
+    "attrs": {
+      "href": "\"/clara\"",
+      "className": "\"text-cyan-300/80 hover:text-cyan-200\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/BriefPanel.tsx",
+    "line": 76,
+    "tag": "Link",
+    "attrs": {
+      "href": "\"/conversations\"",
+      "className": "\"text-cyan-300/80 hover:text-cyan-200\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/BriefPanel.tsx",
+    "line": 77,
+    "tag": "a",
+    "attrs": {
+      "href": "\"#acquisition\"",
+      "className": "\"text-amber-200/80 hover:text-amber-100\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/BriefPanel.tsx",
+    "line": 78,
+    "tag": "Link",
+    "attrs": {
+      "href": "\"/documents\"",
+      "className": "\"text-cyan-300/80 hover:text-cyan-200\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/CommercialDraftEditor.tsx",
+    "line": 81,
+    "tag": "input",
+    "attrs": {
+      "value": "{subject}",
+      "onChange": "{(event) => setSubject(event.target.value)}",
+      "className": "\"mt-1 w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-white outline-none focus:border-cyan-300/30\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/CommercialDraftEditor.tsx",
+    "line": 83,
+    "tag": "textarea",
+    "attrs": {
+      "value": "{body}",
+      "onChange": "{(event) => setBody(event.target.value)}",
+      "rows": "{12}",
+      "className": "\"mt-1 w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm leading-relaxed text-white outline-none focus:border-cyan-300/30\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/CommercialDraftEditor.tsx",
+    "line": 87,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "disabled": "{saving}",
+      "onClick": "{() => void save()}",
+      "className": "\"rounded-lg bg-cyan-300/10 px-4 py-2 text-xs text-cyan-100 disabled:opacity-50\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/CommercialDraftEditor.tsx",
+    "line": 88,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "disabled": "{saving}",
+      "onClick": "{() => { setEditing(false); setSubject(draft.subject); setBody(draft.body); }}",
+      "className": "\"rounded-lg border border-white/10 px-4 py-2 text-xs text-white/65\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/CommercialDraftEditor.tsx",
+    "line": 96,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "onClick": "{() => setEditing(true)}",
+      "className": "\"rounded-lg border border-white/10 px-4 py-2 text-xs text-white/75 hover:bg-white/5\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/ConversationsPanel.tsx",
+    "line": 31,
+    "tag": "GlassPanel",
+    "attrs": {
+      "title": "{t(\"latestConversations\")}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/ConversationsPanel.tsx",
+    "line": 63,
+    "tag": "Link",
+    "attrs": {
+      "href": "{recentMessages.length > 0 ? \"/conversations\" : \"/clara\"}",
+      "className": "\"inline-flex text-xs text-cyan-400 transition hover:text-cyan-300\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/EmailSummaryPanel.tsx",
+    "line": 10,
+    "tag": "GlassPanel",
+    "attrs": {
+      "title": "{ui(\"emailSummary\")}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/EmailSummaryPanel.tsx",
+    "line": 16,
+    "tag": "a",
+    "attrs": {
+      "href": "{email.href}",
+      "target": "\"_blank\"",
+      "rel": "\"noopener noreferrer\"",
+      "className": "\"text-cyan-300\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/QuickActionsPanel.tsx",
+    "line": 53,
+    "tag": "GlassPanel",
+    "attrs": {
+      "title": "{t(\"quickActions\")}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/QuickActionsPanel.tsx",
+    "line": 57,
+    "tag": "Link",
+    "attrs": {
+      "key": "{action.id}",
+      "href": "{action.href}",
+      "className": "\"\n              min-w-0\n              w-full\n              min-h-16\n              flex\n              items-center\n              justify-center\n              overflow-hidden\n              rounded-2xl\n              border\n              border-white/10\n              bg-white/5\n              px-2.5\n              py-3\n              text-center\n              text-sm\n              font-medium\n              leading-tight\n              text-white/90\n              whitespace-normal\n              break-words\n              hyphens-auto\n              transition-all\n              duration-200\n              hover:bg-white/10\n              hover:border-white/20\n              hover:scale-[1.02]\n              active:scale-[0.98]\n              sm:px-3\n              sm:py-4\n            \""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/SummaryPanel.tsx",
+    "line": 33,
+    "tag": "GlassPanel",
+    "attrs": {
+      "title": "{t(\"dailySummary\")}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/TasksPanel.tsx",
+    "line": 27,
+    "tag": "GlassPanel",
+    "attrs": {
+      "className": "\"!h-auto !p-4 sm:!p-5\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/panels/TodayPanel.tsx",
+    "line": 18,
+    "tag": "GlassPanel",
+    "attrs": {
+      "title": "\"Aujourd'hui\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/widgets/CockpitActionBar.tsx",
+    "line": 70,
+    "tag": "button",
+    "attrs": {
+      "key": "{action.id}",
+      "type": "\"button\"",
+      "className": "\"group flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm text-white/75 transition hover:border-white/20 hover:bg-white/[0.08] hover:text-white\""
+    },
+    "status": "HORS PÉRIMÈTRE",
+    "reason": "Composant non importé/monté dans le Cockpit, contrôle absent du DOM. Pas une fonction utilisateur proposée."
+  },
+  {
+    "file": "src/components/cockpit/widgets/agenda/AgendaWidget.tsx",
+    "line": 192,
+    "tag": "Link",
+    "attrs": {
+      "href": "\"/agenda\"",
+      "className": "\"\n          mt-5\n          flex\n          items-center\n          gap-1.5\n          text-xs\n          text-white/45\n          transition\n          hover:text-white/75\n        \""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/widgets/clara/ClaraChatWidget.tsx",
+    "line": 250,
+    "tag": "Link",
+    "attrs": {
+      "href": "\"/conversations\"",
+      "className": "\"text-cyan-200\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/widgets/clara/ClaraChatWidget.tsx",
+    "line": 267,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "disabled": "{loading}",
+      "onClick": "{async () => {\n                  setLoading(true);\n                  try {\n                    const response = await fetch(\"/api/clara/physical-actions/approve\", {\n                      method: \"POST\",\n                      headers: { \"Content-Type\": \"application/json\" },\n                      body: JSON.stringify({ proposalId: action.id, conversationId: action.conversationId }),\n                    });\n                    const data = await response.json() as {\n                      success?: boolean;\n                      execution?: {\n                        state?: \"AUTHORIZED_NOT_EXECUTED\" | \"QUEUED\" | \"FAILED\";\n                        commandSent?: boolean;\n                        physicalExecutionConfirmed?: boolean;\n                      };\n                    };\n                    if (!response.ok || !data.success) throw new Error(ui(\"physicalActionApprovalDenied\"));\n                    setPhysicalActions((current) => current.filter((item) => item.id !== action.id));\n                    const execution = data.execution;\n                    const content =\n                      execution?.state === \"QUEUED\"\n                        ? ui(\"actionAuthorizedAndSentToConnectorRuntimeTheCommand\")\n                        : execution?.state === \"FAILED\"\n                          ? ui(\"actionAuthorizedButDeliveryToConnectorRuntimeFailedNo\")\n                          : ui(\"actionAuthorizedPhysicalExecutionIsCurrentlyDisabledNoCommand\");\n                    setMessages((current) => [\n                      ...current,\n                      {\n                        id: crypto.randomUUID(),\n                        role: \"clara\",\n                        content,\n                        createdAt: new Date().toISOString(),\n                      },\n                    ]);\n                  } catch {\n                    setMessages(current=>[...current,{id:crypto.randomUUID(),role:\"clara\",content:t(\"approvalError\"),createdAt:new Date().toISOString()}]);\n                  } finally {\n                    setLoading(false);\n                  }\n                }}",
+      "className": "\"mt-4 inline-flex items-center gap-2 rounded-xl border border-amber-200/30 px-3 py-2 text-xs text-amber-100 disabled:opacity-40\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/widgets/clara/ClaraChatWidget.tsx",
+    "line": 331,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "disabled": "{loading}",
+      "onClick": "{() => void decideApproval(approval, \"approve\")}",
+      "className": "\"inline-flex items-center gap-2 rounded-xl bg-cyan-400 px-3 py-2 text-xs font-semibold text-[#041016] transition hover:bg-cyan-300 disabled:opacity-40\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/widgets/clara/ClaraChatWidget.tsx",
+    "line": 339,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "disabled": "{loading}",
+      "onClick": "{() => void decideApproval(approval, \"reject\")}",
+      "className": "\"inline-flex items-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-xs text-white/60 transition hover:bg-white/5 disabled:opacity-40\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/widgets/clara/ClaraChatWidget.tsx",
+    "line": 355,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "disabled": "{loading}",
+      "onClick": "{()=>void submitOperation(pending)}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/widgets/clara/ClaraChatWidget.tsx",
+    "line": 356,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "disabled": "{loading}",
+      "onClick": "{()=>void cancelPending()}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/widgets/clara/ClaraChatWidget.tsx",
+    "line": 357,
+    "tag": "form",
+    "attrs": {
+      "onSubmit": "{handleSubmit}",
+      "className": "\"mt-4 flex items-center gap-2\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/widgets/clara/ClaraChatWidget.tsx",
+    "line": 361,
+    "tag": "input",
+    "attrs": {
+      "value": "{input}",
+      "onChange": "{(event) => setInput(event.target.value)}",
+      "disabled": "{loading||!!pending||nativeThreadReadOnly}",
+      "autoFocus": "{autoFocus}",
+      "placeholder": "{t(\"placeholder\")}",
+      "className": "\"h-11 flex-1 rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-cyan-400/40\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/widgets/clara/ClaraChatWidget.tsx",
+    "line": 370,
+    "tag": "button",
+    "attrs": {
+      "type": "\"submit\"",
+      "disabled": "{loading || !!pending || nativeThreadReadOnly || !input.trim()}",
+      "aria-label": "{t(\"send\")}",
+      "className": "\"flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/60 transition hover:border-white/20 hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-30\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/widgets/missions/MissionWidget.tsx",
+    "line": 25,
+    "tag": "GlassPanel",
+    "attrs": {
+      "title": "{t(\"mission\")}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/widgets/missions/MissionWidget.tsx",
+    "line": 29,
+    "tag": "Link",
+    "attrs": {
+      "href": "\"/missions\"",
+      "className": "\"mt-4 inline-flex text-xs text-cyan-400 transition hover:text-cyan-300\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/widgets/missions/MissionWidget.tsx",
+    "line": 37,
+    "tag": "GlassPanel",
+    "attrs": {
+      "title": "{ui(\"currentOperationalMission\")}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/widgets/missions/MissionWidget.tsx",
+    "line": 56,
+    "tag": "Link",
+    "attrs": {
+      "href": "\"/missions\"",
+      "className": "\"mt-4 inline-flex text-xs text-cyan-400 transition hover:text-cyan-300\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/widgets/voice/ClaraVoiceWidget.tsx",
+    "line": 157,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "onClick": "{handleToggle}",
+      "aria-label": "{\n        active\n          ? t(\"stop\")\n          : t(\"talk\")\n      }",
+      "className": "\"\n        group\n        relative\n        overflow-hidden\n        w-full\n        rounded-2xl\n        border\n        border-white/10\n        bg-white/[0.035]\n        px-5\n        py-4\n        text-left\n        backdrop-blur-md\n        transition-all\n        duration-300\n        hover:border-cyan-400/20\n        hover:bg-white/[0.05]\n        focus:outline-none\n        focus:ring-1\n        focus:ring-cyan-400/30\n      \""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/widgets/waze/WazeWidget.tsx",
+    "line": 62,
+    "tag": "GlassPanel",
+    "attrs": {},
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/widgets/waze/WazeWidget.tsx",
+    "line": 82,
+    "tag": "input",
+    "attrs": {
+      "type": "\"text\"",
+      "value": "{destination}",
+      "onChange": "{(event) => {\n            setDestination(event.target.value);\n            setWazeUrl(null);\n          }}",
+      "onKeyDown": "{(event) => {\n            if (event.key === \"Enter\") {\n              void prepareNavigation();\n            }\n          }}",
+      "placeholder": "{t(\"destination\")}",
+      "className": "\"\n            min-w-0\n            flex-1\n            rounded-xl\n            border\n            border-white/10\n            bg-white/[0.04]\n            px-3\n            py-2.5\n            text-sm\n            text-white\n            outline-none\n            placeholder:text-white/25\n            focus:border-white/20\n          \""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/widgets/waze/WazeWidget.tsx",
+    "line": 112,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "onClick": "{() => void prepareNavigation()}",
+      "disabled": "{loading || !destination.trim()}",
+      "className": "\"\n            rounded-xl\n            border\n            border-white/10\n            bg-white/[0.04]\n            px-4\n            text-sm\n            text-white/70\n            transition\n            hover:border-white/20\n            hover:bg-white/[0.08]\n            hover:text-white\n            disabled:cursor-not-allowed\n            disabled:opacity-30\n          \""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/widgets/waze/WazeWidget.tsx",
+    "line": 143,
+    "tag": "a",
+    "attrs": {
+      "href": "{wazeUrl}",
+      "target": "\"_blank\"",
+      "rel": "\"noopener noreferrer\"",
+      "className": "\"\n            mt-4\n            flex\n            items-center\n            justify-center\n            rounded-xl\n            border\n            border-white/10\n            bg-white/[0.04]\n            px-4\n            py-2.5\n            text-xs\n            text-white/65\n            transition\n            hover:border-white/20\n            hover:bg-white/[0.08]\n            hover:text-white\n          \""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/cockpit/widgets/weather/WeatherWidget.tsx",
+    "line": 64,
+    "tag": "GlassPanel",
+    "attrs": {},
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/connections/ConnectionsHub.tsx",
+    "line": 80,
+    "tag": "a",
+    "attrs": {
+      "href": "{connectUrl}",
+      "className": "\"inline-flex items-center gap-2 rounded-xl border border-cyan-400/20 bg-cyan-400/[0.07] px-4 py-2.5 text-sm text-cyan-200 transition hover:bg-cyan-400/[0.12]\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/connections/ConnectionsHub.tsx",
+    "line": 82,
+    "tag": "Link",
+    "attrs": {
+      "href": "\"/agenda\"",
+      "className": "\"inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white/65 hover:border-cyan-400/20\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/connections/ConnectionsHub.tsx",
+    "line": 84,
+    "tag": "Link",
+    "attrs": {
+      "href": "\"/automatisations\"",
+      "className": "\"inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white/65 hover:border-cyan-400/20\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/contacts/ContactsDirectory.tsx",
+    "line": 34,
+    "tag": "form",
+    "attrs": {
+      "className": "\"flex gap-3\"",
+      "onSubmit": "{e=>{e.preventDefault();void load(query)}}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/contacts/ContactsDirectory.tsx",
+    "line": 35,
+    "tag": "input",
+    "attrs": {
+      "value": "{query}",
+      "onChange": "{e=>setQuery(e.target.value)}",
+      "placeholder": "{labels.searchPlaceholder}",
+      "className": "\"w-full bg-transparent py-3 text-sm outline-none placeholder:text-white/30\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/contacts/ContactsDirectory.tsx",
+    "line": 36,
+    "tag": "button",
+    "attrs": {
+      "className": "\"rounded-2xl border border-cyan-400/20 bg-cyan-400/10 px-5 text-sm text-cyan-200\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/contacts/ContactsDirectory.tsx",
+    "line": 37,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "onClick": "{()=>void load(query)}",
+      "className": "\"rounded-2xl border border-white/10 px-4 text-white/50\"",
+      "aria-label": "{labels.refresh}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/documents/CanonicalArchivesPanel.tsx",
+    "line": 76,
+    "tag": "select",
+    "attrs": {
+      "disabled": "{busy}",
+      "value": "{workspace}",
+      "onChange": "{e=>void loadWorkspace(e.target.value)}",
+      "className": "\"bg-slate-900\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/documents/CanonicalArchivesPanel.tsx",
+    "line": 77,
+    "tag": "select",
+    "attrs": {
+      "disabled": "{busy||!clients.length}",
+      "value": "{client}",
+      "onChange": "{e=>void loadProjects(e.target.value)}",
+      "className": "\"bg-slate-900\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/documents/CanonicalArchivesPanel.tsx",
+    "line": 78,
+    "tag": "select",
+    "attrs": {
+      "disabled": "{busy||!client}",
+      "value": "{project}",
+      "onChange": "{e=>void inspect(e.target.value)}",
+      "className": "\"bg-slate-900\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/documents/CanonicalArchivesPanel.tsx",
+    "line": 79,
+    "tag": "button",
+    "attrs": {
+      "disabled": "{busy}",
+      "onClick": "{()=>void loadProjects(client,projectAfter)}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/documents/CanonicalArchivesPanel.tsx",
+    "line": 80,
+    "tag": "button",
+    "attrs": {
+      "disabled": "{busy}",
+      "onClick": "{()=>void more()}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/documents/CanonicalArchivesPanel.tsx",
+    "line": 86,
+    "tag": "button",
+    "attrs": {
+      "disabled": "{busy||!current.archivable}",
+      "onClick": "{()=>void archive()}",
+      "className": "\"rounded bg-cyan-800 px-3 py-2 disabled:opacity-40\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/documents/CanonicalArchivesPanel.tsx",
+    "line": 87,
+    "tag": "a",
+    "attrs": {
+      "href": "{current.sourceUrl}",
+      "target": "\"_blank\"",
+      "rel": "\"noopener noreferrer\"",
+      "className": "\"text-cyan-300\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/layout/Header.tsx",
+    "line": 47,
+    "tag": "Link",
+    "attrs": {
+      "href": "\"/\"",
+      "className": "\"block truncate text-lg font-semibold tracking-tight text-white transition-opacity hover:opacity-80\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/layout/Header.tsx",
+    "line": 55,
+    "tag": "input",
+    "attrs": {
+      "type": "\"text\"",
+      "disabled": "true",
+      "title": "{ui(\"unavailable\")}",
+      "placeholder": "{tc(\"search\") + \" — \" + ui(\"unavailable\")}",
+      "aria-label": "{tc(\"search\")}",
+      "className": "\"ml-3 min-w-0 flex-1 bg-transparent text-sm text-white placeholder:text-slate-500 focus:outline-none\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/layout/Header.tsx",
+    "line": 67,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "disabled": "true",
+      "title": "{ui(\"unavailable\")}",
+      "aria-label": "{tc(\"notifications\") + \" — \" + ui(\"unavailable\")}",
+      "className": "\"rounded-lg p-2 text-slate-500 opacity-50\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/layout/Sidebar.tsx",
+    "line": 69,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "aria-label": "{open ? tCommon(\"closeMenu\") : tCommon(\"openMenu\")}",
+      "aria-expanded": "{open}",
+      "onClick": "{() => setOpen((current) => !current)}",
+      "className": "\"fixed left-3 top-3 z-[60] flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-[#0b1524] text-slate-300 shadow-lg transition hover:border-cyan-400/30 hover:text-cyan-300 sm:left-5 sm:top-[15px] lg:hidden\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/layout/Sidebar.tsx",
+    "line": 80,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "aria-label": "{tCommon(\"closeMenu\")}",
+      "onClick": "{() => setOpen(false)}",
+      "className": "\"fixed inset-0 z-40 bg-black/65 backdrop-blur-sm lg:hidden\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/layout/Sidebar.tsx",
+    "line": 123,
+    "tag": "Link",
+    "attrs": {
+      "key": "{item.key}",
+      "href": "{item.href}",
+      "onClick": "{() => setOpen(false)}",
+      "className": "{`\n                        group\n                        relative\n                        flex\n                        items-center\n                        gap-3\n                        rounded-xl border border-transparent\n                        px-3\n                        py-2.5\n                        transition-all\n                        duration-200\n                        ${\n                          active\n                            ? \"border-cyan-400/15 bg-cyan-400/[0.08] text-white shadow-[inset_0_0_20px_rgba(34,211,238,0.03)]\"\n                            : \"text-slate-400 hover:border-white/[0.06] hover:bg-white/[0.04] hover:text-slate-100\"\n                        }\n                      `}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeDocumentsPanel.tsx",
+    "line": 15,
+    "tag": "select",
+    "attrs": {
+      "aria-label": "{t('nativeGoogleConnection')}",
+      "className": "\"bg-slate-900\"",
+      "value": "{connectionId}",
+      "disabled": "{busy}",
+      "onChange": "{e=>{setConnection(e.target.value);setReview(null);setReferences([]);}}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeDocumentsPanel.tsx",
+    "line": 16,
+    "tag": "button",
+    "attrs": {
+      "disabled": "{busy||!connectionId}",
+      "onClick": "{async()=>{if(await command('/api/connections/google',{action:'select',connectionId})){location.reload();}}}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeDocumentsPanel.tsx",
+    "line": 17,
+    "tag": "button",
+    "attrs": {
+      "disabled": "{busy}",
+      "onClick": "{async()=>{const b=await command('/api/connections/google/connect',{});if(b?.authorizationUrl)location.assign(b.authorizationUrl);}}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeDocumentsPanel.tsx",
+    "line": 18,
+    "tag": "input",
+    "attrs": {
+      "className": "\"bg-slate-900\"",
+      "value": "{delegate}",
+      "onChange": "{e=>setDelegate(e.target.value)}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeDocumentsPanel.tsx",
+    "line": 18,
+    "tag": "button",
+    "attrs": {
+      "key": "{action}",
+      "disabled": "{busy||!delegate}",
+      "onClick": "{()=>void command('/api/connections/google',{action,connectionId,userId:delegate})}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeDocumentsPanel.tsx",
+    "line": 18,
+    "tag": "button",
+    "attrs": {
+      "disabled": "{busy}",
+      "onClick": "{async()=>{if(await command('/api/connections/google',{action:'revoke',connectionId}))location.reload();}}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeDocumentsPanel.tsx",
+    "line": 20,
+    "tag": "form",
+    "attrs": {
+      "className": "\"mt-4 flex flex-wrap gap-3\"",
+      "onSubmit": "{async e=>{e.preventDefault();setReview(null);const b=await command('/api/documents',{action:'inspect',fileId});if(b)setReview(b.file);}}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeDocumentsPanel.tsx",
+    "line": 21,
+    "tag": "input",
+    "attrs": {
+      "aria-label": "{t('nativeDocumentId')}",
+      "required": "true",
+      "maxLength": "{400}",
+      "className": "\"bg-slate-900\"",
+      "value": "{fileId}",
+      "onChange": "{e=>{setFile(e.target.value);setReview(null);}}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeDocumentsPanel.tsx",
+    "line": 21,
+    "tag": "button",
+    "attrs": {
+      "disabled": "{busy}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeDocumentsPanel.tsx",
+    "line": 23,
+    "tag": "button",
+    "attrs": {
+      "disabled": "{busy}",
+      "onClick": "{async()=>{if(await command('/api/documents',{action:'bind',fileId:review.id,version:review.version})){setReview(null);location.reload();}}}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeDocumentsPanel.tsx",
+    "line": 24,
+    "tag": "input",
+    "attrs": {
+      "className": "\"bg-slate-900\"",
+      "value": "{question}",
+      "maxLength": "{4000}",
+      "onChange": "{e=>setQuestion(e.target.value)}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeDocumentsPanel.tsx",
+    "line": 25,
+    "tag": "button",
+    "attrs": {
+      "disabled": "{busy}",
+      "onClick": "{async()=>{if(await command('/api/documents',{action:'read',fileId:ref.fileId,question,locale}))await refresh();}}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeEarlierMessages.tsx",
+    "line": 18,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "disabled": "{busy}",
+      "onClick": "{()=>void load()}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeMailPanel.tsx",
+    "line": 29,
+    "tag": "select",
+    "attrs": {
+      "aria-label": "{t('mailAccount')}",
+      "className": "\"bg-slate-900\"",
+      "value": "{connectionId}",
+      "disabled": "{busy}",
+      "onChange": "{e=>{setConnection(e.target.value);setFolder('');setFolders([]);setMessages([]);setOpened(null);setMessage('');setDraft(null);setOperations([]);setReview(null);setApproval(null);}}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeMailPanel.tsx",
+    "line": 30,
+    "tag": "button",
+    "attrs": {
+      "className": "\"m-2 border p-2\"",
+      "disabled": "{busy||!connectionId}",
+      "onClick": "{()=>void perform(refresh)}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeMailPanel.tsx",
+    "line": 32,
+    "tag": "button",
+    "attrs": {
+      "className": "\"m-2 border p-2\"",
+      "disabled": "{busy||!connectionId}",
+      "onClick": "{()=>void perform(async()=>{setFolders((await get('folders')).folders);})}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeMailPanel.tsx",
+    "line": 33,
+    "tag": "select",
+    "attrs": {
+      "aria-label": "{t('mailFolder')}",
+      "className": "\"bg-slate-900\"",
+      "value": "{folder}",
+      "onChange": "{e=>setFolder(e.target.value)}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeMailPanel.tsx",
+    "line": 34,
+    "tag": "button",
+    "attrs": {
+      "className": "\"m-2 border p-2\"",
+      "disabled": "{busy||!owned||!folder}",
+      "onClick": "{()=>void perform(async()=>{await post('sync',{folder});await refresh();})}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeMailPanel.tsx",
+    "line": 36,
+    "tag": "button",
+    "attrs": {
+      "disabled": "{busy||m.quarantined}",
+      "onClick": "{()=>void perform(async()=>{setOpened((await get('message',{messageId:m.id})).message);setMessage(m.id);setReview(null);setApproval(null);})}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeMailPanel.tsx",
+    "line": 37,
+    "tag": "a",
+    "attrs": {
+      "href": "{'/api/native/mail?'+new URLSearchParams({action:'attachment',connectionId,messageId,attachmentId:a.id})}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeMailPanel.tsx",
+    "line": 38,
+    "tag": "input",
+    "attrs": {
+      "disabled": "{busy}",
+      "aria-label": "{t('mailContactName')}",
+      "className": "\"bg-slate-900\"",
+      "value": "{contactName}",
+      "onChange": "{e=>setContactName(e.target.value)}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeMailPanel.tsx",
+    "line": 38,
+    "tag": "input",
+    "attrs": {
+      "disabled": "{busy}",
+      "aria-label": "{t('mailContactEmail')}",
+      "className": "\"bg-slate-900\"",
+      "value": "{contactEmail}",
+      "onChange": "{e=>setContactEmail(e.target.value)}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeMailPanel.tsx",
+    "line": 38,
+    "tag": "button",
+    "attrs": {
+      "disabled": "{busy||!contactName||!contactEmail}",
+      "onClick": "{()=>void perform(async()=>{await post('createContact',{messageId,name:contactName,email:contactEmail,locale});location.reload();})}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeMailPanel.tsx",
+    "line": 39,
+    "tag": "button",
+    "attrs": {
+      "className": "\"m-2 border p-2\"",
+      "disabled": "{busy}",
+      "onClick": "{()=>void perform(async()=>{await post('bind',{messageId});location.reload();})}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeMailPanel.tsx",
+    "line": 40,
+    "tag": "button",
+    "attrs": {
+      "className": "\"m-2 border p-2\"",
+      "disabled": "{busy}",
+      "onClick": "{()=>void perform(async()=>{const d=await post('prepare',{messageId,locale});setDraft(d.draft);setApproval(null);})}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeMailPanel.tsx",
+    "line": 41,
+    "tag": "form",
+    "attrs": {
+      "onSubmit": "{e=>{e.preventDefault();void perform(async()=>{setDraft((await post('save',{messageId:draft.messageId,subject:draft.subject,body:draft.body,recipients:draft.recipients,attachmentIds:draft.attachmentIds})).draft);setApproval(null);setReview(null);});}}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeMailPanel.tsx",
+    "line": 43,
+    "tag": "input",
+    "attrs": {
+      "disabled": "{busy}",
+      "aria-label": "{t('mailTo')}",
+      "className": "\"block w-full bg-slate-900\"",
+      "value": "{draft.recipients.join(', ')}",
+      "onChange": "{e=>{setDraft({...draft,recipients:e.target.value.split(',').map(x=>x.trim())});setApproval(null);}}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeMailPanel.tsx",
+    "line": 44,
+    "tag": "input",
+    "attrs": {
+      "disabled": "{busy}",
+      "aria-label": "{t('mailSubject')}",
+      "className": "\"block w-full bg-slate-900\"",
+      "value": "{draft.subject}",
+      "onChange": "{e=>{setDraft({...draft,subject:e.target.value});setApproval(null);}}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeMailPanel.tsx",
+    "line": 45,
+    "tag": "textarea",
+    "attrs": {
+      "disabled": "{busy}",
+      "aria-label": "{t('mailBody')}",
+      "className": "\"block min-h-32 w-full bg-slate-900\"",
+      "value": "{draft.body}",
+      "onChange": "{e=>{setDraft({...draft,body:e.target.value});setApproval(null);}}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeMailPanel.tsx",
+    "line": 46,
+    "tag": "input",
+    "attrs": {
+      "disabled": "{busy}",
+      "type": "\"checkbox\"",
+      "checked": "{draft.attachmentIds.includes(a.id)}",
+      "onChange": "{e=>{setDraft({...draft,attachmentIds:e.target.checked?[...draft.attachmentIds,a.id]:draft.attachmentIds.filter(id=>id!==a.id)});setApproval(null);}}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeMailPanel.tsx",
+    "line": 47,
+    "tag": "button",
+    "attrs": {
+      "className": "\"m-2 border p-2\"",
+      "disabled": "{busy}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeMailPanel.tsx",
+    "line": 48,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "className": "\"m-2 border p-2\"",
+      "disabled": "{busy}",
+      "onClick": "{()=>void perform(async()=>{await post('submit');await refresh();setReview(null);setApproval(null);})}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeMailPanel.tsx",
+    "line": 49,
+    "tag": "input",
+    "attrs": {
+      "className": "\"bg-slate-900\"",
+      "value": "{delegate}",
+      "onChange": "{e=>setDelegate(e.target.value)}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeMailPanel.tsx",
+    "line": 49,
+    "tag": "button",
+    "attrs": {
+      "disabled": "{busy||!delegate}",
+      "key": "{action}",
+      "onClick": "{()=>void perform(async()=>{await post(action,{userId:delegate});})}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeMailPanel.tsx",
+    "line": 49,
+    "tag": "button",
+    "attrs": {
+      "disabled": "{busy}",
+      "onClick": "{()=>void perform(async()=>{await post('revoke');location.reload();})}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeMailPanel.tsx",
+    "line": 51,
+    "tag": "button",
+    "attrs": {
+      "className": "\"mx-2 border p-2\"",
+      "disabled": "{busy||!['pending','approved'].includes(op.state)}",
+      "onClick": "{()=>void perform(async()=>{const r=await get('review',{operationId:op.id});setReview({id:op.id,envelope:r.envelope});setApproval(null);})}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeMailPanel.tsx",
+    "line": 53,
+    "tag": "button",
+    "attrs": {
+      "className": "\"m-2 border p-2\"",
+      "disabled": "{busy||!owned}",
+      "onClick": "{()=>void perform(async()=>{const b=await post('approve',{operationId:review.id});setApproval({id:review.id,token:b.token});await refresh();})}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeMailPanel.tsx",
+    "line": 54,
+    "tag": "button",
+    "attrs": {
+      "className": "\"m-2 border p-2\"",
+      "disabled": "{busy||!owned||approval?.id!==review.id}",
+      "onClick": "{()=>void perform(async()=>{const a=approval!;setApproval(null);await post('send',{operationId:a.id,token:a.token});setReview(null);await refresh();})}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeScopeSelector.tsx",
+    "line": 22,
+    "tag": "select",
+    "attrs": {
+      "className": "\"bg-slate-900\"",
+      "disabled": "{busy}",
+      "value": "{workspaceId}",
+      "onChange": "{e=>void chooseWorkspace(e.target.value)}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeScopeSelector.tsx",
+    "line": 23,
+    "tag": "select",
+    "attrs": {
+      "className": "\"bg-slate-900\"",
+      "disabled": "{busy||!workspaceId}",
+      "value": "{clientId}",
+      "onChange": "{e=>void chooseClient(e.target.value)}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeScopeSelector.tsx",
+    "line": 24,
+    "tag": "select",
+    "attrs": {
+      "className": "\"bg-slate-900\"",
+      "disabled": "{busy||!clientId}",
+      "value": "{projectId}",
+      "onChange": "{e=>void chooseProject(e.target.value)}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeScopeSelector.tsx",
+    "line": 25,
+    "tag": "button",
+    "attrs": {
+      "disabled": "{busy||!projectId||!canWrite}",
+      "onClick": "{()=>void command({action:'createSession',workspaceId,clientId,projectId})}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeScopeSelector.tsx",
+    "line": 26,
+    "tag": "select",
+    "attrs": {
+      "className": "\"bg-slate-900\"",
+      "value": "{sessionId}",
+      "disabled": "{busy||!projectId}",
+      "onChange": "{e=>setSession(e.target.value)}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeScopeSelector.tsx",
+    "line": 27,
+    "tag": "button",
+    "attrs": {
+      "disabled": "{busy||!projectId||!sessionId}",
+      "onClick": "{()=>void command({action:'selectSession',workspaceId,clientId,projectId,sessionId})}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeScopeSelector.tsx",
+    "line": 29,
+    "tag": "select",
+    "attrs": {
+      "aria-label": "{t('nativeContact')}",
+      "className": "\"bg-slate-900\"",
+      "value": "{contactId}",
+      "disabled": "{busy||!!selectedContact||!canWrite}",
+      "onChange": "{e=>setContactId(e.target.value)}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeScopeSelector.tsx",
+    "line": 29,
+    "tag": "button",
+    "attrs": {
+      "disabled": "{busy||!contactId||!!selectedContact||!canWrite}",
+      "onClick": "{()=>void command({action:'selectAcquisition',submissionId:contactId})}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeScopeSelector.tsx",
+    "line": 29,
+    "tag": "button",
+    "attrs": {
+      "disabled": "{busy||!selectedContact||!canWrite}",
+      "onClick": "{()=>void command({action:'prepareCommercialDraft'})}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeScopeSelector.tsx",
+    "line": 30,
+    "tag": "select",
+    "attrs": {
+      "aria-label": "{t('nativeMissionSelection')}",
+      "className": "\"bg-slate-900\"",
+      "value": "{missionId}",
+      "onChange": "{e=>setMission(e.target.value)}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeScopeSelector.tsx",
+    "line": 30,
+    "tag": "button",
+    "attrs": {
+      "disabled": "{busy||!canWrite||!missionId}",
+      "onClick": "{()=>void command({action:'selectMission',missionId})}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeScopeSelector.tsx",
+    "line": 31,
+    "tag": "form",
+    "attrs": {
+      "className": "\"mt-3 flex flex-wrap gap-3\"",
+      "onSubmit": "{e=>{e.preventDefault();void command({action:'createMission',title,objective});}}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeScopeSelector.tsx",
+    "line": 31,
+    "tag": "input",
+    "attrs": {
+      "required": "true",
+      "maxLength": "{160}",
+      "className": "\"bg-slate-900\"",
+      "value": "{title}",
+      "onChange": "{e=>setTitle(e.target.value)}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeScopeSelector.tsx",
+    "line": 31,
+    "tag": "input",
+    "attrs": {
+      "required": "true",
+      "maxLength": "{4000}",
+      "className": "\"bg-slate-900\"",
+      "value": "{objective}",
+      "onChange": "{e=>setObjective(e.target.value)}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/native/NativeScopeSelector.tsx",
+    "line": 31,
+    "tag": "button",
+    "attrs": {
+      "disabled": "{busy||!canWrite}"
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/components/ui/LocaleSwitcher.tsx",
+    "line": 47,
+    "tag": "select",
+    "attrs": {
+      "value": "{currentLocale}",
+      "lang": "\"zxx\"",
+      "translate": "\"no\"",
+      "onChange": "{handleChange}",
+      "disabled": "{isReloading}",
+      "aria-label": "{t(\"language\")}",
+      "className": "\"notranslate rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[11px] text-slate-400 transition hover:bg-white/10 hover:text-white focus:outline-none disabled:opacity-50\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/modules/missions/MissionsStage.tsx",
+    "line": 105,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "onClick": "{() => setSelectedMissionId(activeMission.id)}",
+      "className": "\"group w-full rounded-3xl border border-white/10 bg-white/[0.045] p-7 text-left shadow-2xl shadow-black/20 transition-all duration-200 hover:border-cyan-400/30 hover:bg-white/[0.055] lg:p-9\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/modules/missions/components/MissionCard.tsx",
+    "line": 40,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "onClick": "{() => onSelect(mission)}",
+      "className": "\"group w-full rounded-2xl border border-white/10 bg-white/[0.035] p-6 text-left transition-all duration-200 hover:border-cyan-400/30 hover:bg-white/[0.055]\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/modules/missions/components/MissionDetail.tsx",
+    "line": 113,
+    "tag": "button",
+    "attrs": {
+      "type": "\"button\"",
+      "onClick": "{onBack}",
+      "className": "\"mb-8 text-xs uppercase tracking-[0.18em] text-white/40 transition-colors hover:text-cyan-400\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  },
+  {
+    "file": "src/modules/missions/components/MissionDetail.tsx",
+    "line": 151,
+    "tag": "button",
+    "attrs": {
+      "key": "{task.id}",
+      "type": "\"button\"",
+      "disabled": "{executingTaskId === task.id}",
+      "onClick": "{() => task.execution ? executeTask(task.id) : toggleTask(task.id)}",
+      "className": "\"group flex w-full items-center gap-4 rounded-xl border border-white/5 bg-white/[0.025] px-4 py-4 text-left transition-all hover:border-cyan-400/20 hover:bg-white/[0.045] disabled:cursor-wait disabled:opacity-60\""
+    },
+    "status": "NON CERTIFIÉ",
+    "reason": "Présence source, à confronter au DOM et aux tests ; peut être conditionnel ou non monté."
+  }
+]

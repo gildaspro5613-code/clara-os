@@ -56,7 +56,7 @@ export function verifyOAuthState(
   if (!state.connectionId || !state.workspaceId || !state.nonce || !state.provider) {
     throw new OAuthError("INVALID_STATE");
   }
-  if (state.expiresAt < now) throw new OAuthError("EXPIRED_STATE");
+  if (!Number.isFinite(state.expiresAt) || state.expiresAt <= now) throw new OAuthError("EXPIRED_STATE");
   if (state.provider !== expected.provider) throw new OAuthError("PROVIDER_MISMATCH");
   const actualNonce = Buffer.from(state.nonce);
   const expectedNonce = Buffer.from(expected.nonce);

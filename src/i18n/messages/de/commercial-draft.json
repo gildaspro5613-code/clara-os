@@ -1,0 +1,14 @@
+{
+  "greeting": "Guten Tag {name},",
+  "anonymousGreeting": "Guten Tag,",
+  "intro": "Vielen Dank für Ihre Anfrage bei Mélodie Digital. Ich habe begonnen, Ihr Projekt zu strukturieren, damit wir Ihre Anfrage weiter prüfen können.",
+  "missing": "Ich benötige noch einige Angaben:",
+  "location": "Könnten Sie den geplanten Veranstaltungsort angeben (Stadt und, wenn möglich, Gelände oder Einrichtung)?",
+  "schedule": "Könnten Sie das geplante Datum oder den Zeitraum der Veranstaltung bestätigen?",
+  "disciplines": "Könnten Sie die technischen Bereiche Ihres Projekts angeben?",
+  "contactName": "Könnten Sie den Namen der Kontaktperson für diese Anfrage bestätigen?",
+  "scheduleConflict": "Außerdem ist ein Datum zu bestätigen: Das angegebene Datum ist {schedule}, während Ihre Nachricht einen relativen Zeitraum nennt. Könnten Sie das richtige Datum bestätigen?",
+  "closing": "Sobald diese Angaben vorliegen, kann ich Ihre Anfrage weiter vorbereiten.",
+  "regards": "Mit freundlichen Grüßen,",
+  "subject": "Ihr Projekt {projectType} — weitere Angaben"
+}

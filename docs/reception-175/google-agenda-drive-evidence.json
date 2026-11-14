@@ -1,0 +1,177 @@
+{
+  "baseline": "2b79a5df8b99bc3f4e392d698e71209e8b99e0ba",
+  "codeCommit": "8f27f7b831eaed7be7392b4656f5c327176e7c5a",
+  "implementationCommits": [
+    "d05370f9e7492a0fd7e7011499735d6c29633c78",
+    "913b7ad10587afb728a2d11ae4ad8851378718ad",
+    "8f27f7b831eaed7be7392b4656f5c327176e7c5a"
+  ],
+  "branch": "fix/os-operational-reception-175",
+  "pr": 176,
+  "draft": true,
+  "decision": {
+    "technicalIsolation": "GO",
+    "productionAndRealBusinessReception": "NO-GO until separately authorized provider, infrastructure and migration certification"
+  },
+  "scope": "Real OS routes, business services, PostgreSQL, SDKs and browser; simulated Google/OpenAI/IONOS only",
+  "codeFiles": [
+    ".github/workflows/native-authority-validation.yml",
+    "db/migrations/020_native_google_workspace.sql",
+    "src/app/api/calendar/route.ts",
+    "src/app/api/connections/google/callback/route.ts",
+    "src/app/api/connections/google/connect/route.ts",
+    "src/app/api/connections/google/route.ts",
+    "src/app/api/native/google/work/route.ts",
+    "src/app/documents/page.tsx",
+    "src/components/cockpit/Stage.tsx",
+    "src/components/cockpit/panels/AgendaPanel.tsx",
+    "src/components/cockpit/widgets/CockpitWidgets.tsx",
+    "src/components/cockpit/widgets/agenda/AgendaWidget.tsx",
+    "src/components/native/NativeDocumentsPanel.tsx",
+    "src/components/native/NativeGoogleWorkPanel.tsx",
+    "src/i18n/messages/de/consolidated-ui.json",
+    "src/i18n/messages/en/consolidated-ui.json",
+    "src/i18n/messages/es/consolidated-ui.json",
+    "src/i18n/messages/fr/consolidated-ui.json",
+    "src/i18n/messages/it/consolidated-ui.json",
+    "src/lib/connectors/google/calendar/calendar-client.ts",
+    "src/lib/core/session.ts",
+    "src/lib/external-capabilities/event-jobs.ts",
+    "src/lib/native/authority.ts",
+    "src/lib/native/google-authority.ts",
+    "src/lib/native/google-work.ts",
+    "src/lib/native/scoped-context.ts",
+    "src/modules/agenda/AgendaStage.tsx",
+    "src/modules/agenda/calendar-window.ts",
+    "src/modules/missions/types/Mission.ts",
+    "src/tests/helpers/native-google-work-fixture.ts",
+    "src/tests/helpers/native-google-work-http-fixture.mjs",
+    "src/tests/helpers/native-runtime-browser-fixture.mts",
+    "src/tests/helpers/native-runtime-browser-preload.mjs",
+    "src/tests/native-google-work-browser.e2e.mjs",
+    "src/tests/native-google-work-postgres.test.ts",
+    "src/tests/native-google-work-restart-browser.e2e.mjs"
+  ],
+  "migration": "020_native_google_workspace.sql, additive, after 012–019; disposable PostgreSQL only",
+  "tests": {
+    "native": {
+      "pass": 55,
+      "fail": 0,
+      "skipped": 0,
+      "codeCommit": "8f27f7b831eaed7be7392b4656f5c327176e7c5a",
+      "command": "CANONICAL_TEST_CONTAINER=clara-canonical-test-postgres node --import tsx --test (11 native suites listed in .github/workflows/native-authority-validation.yml)",
+      "log": "postgres-final.log"
+    },
+    "contracts": {
+      "pass": 45,
+      "fail": 0,
+      "skipped": 0,
+      "files": [
+        "i18n-consolidation.test.ts",
+        "operational-reception.test.tsx",
+        "live-callback-transport.test.ts",
+        "clara-live-product-auth.test.ts",
+        "external-event-message-contract.test.ts",
+        "voice-route-security.test.ts"
+      ],
+      "log": "contracts.log"
+    },
+    "typescript": {
+      "exit": 0,
+      "command": "npx tsc --noEmit --pretty false",
+      "log": "typescript.log"
+    },
+    "lintTargeted": {
+      "exit": 0,
+      "errors": 0,
+      "warnings": 0,
+      "log": "lint-targeted.log"
+    },
+    "build": {
+      "exit": 0,
+      "command": "NEXT_TELEMETRY_DISABLED=1 NEXT_FONT_GOOGLE_MOCKED_RESPONSES=/workspace/lot4ter-reception/font-responses.cjs npm run build -- --webpack",
+      "log": "build.log"
+    },
+    "browser": {
+      "historicalNative": {
+        "pass": 5,
+        "fail": 0,
+        "skipped": 0,
+        "log": "browser-core.log",
+        "implementationCommit": "d05370f9e7492a0fd7e7011499735d6c29633c78"
+      },
+      "historicalClosure": {
+        "pass": 1,
+        "fail": 0,
+        "skipped": 0,
+        "log": "browser-closure.log",
+        "implementationCommit": "d05370f9e7492a0fd7e7011499735d6c29633c78"
+      },
+      "newGoogleRestartAndCockpit": {
+        "pass": 3,
+        "fail": 0,
+        "skipped": 0,
+        "codeCommit": "913b7ad10587afb728a2d11ae4ad8851378718ad",
+        "logs": [
+          "attempts/browser-final-pass-913b7ad.log",
+          "attempts/browser-restart-pass-913b7ad.log",
+          "attempts/browser-cockpit-pass-913b7ad.log"
+        ],
+        "note": "Rerun on final receipt correction captured in delivery archive; GitHub workflow replays all nine on delivery SHA"
+      },
+      "finalCI": {
+        "recipes": 9,
+        "workflow": ".github/workflows/native-authority-validation.yml",
+        "proof": "GitHub checks and delivery-archive github-final.json at exact delivery SHA; no CI conclusion assumed in this document"
+      },
+      "finalLocal": {
+        "codeCommit": "8f27f7b831eaed7be7392b4656f5c327176e7c5a",
+        "expectedRecipes": 3,
+        "proof": "Delivery archive final-local-browser.json and Google/restart/Cockpit logs; no pending run assumed passed"
+      }
+    }
+  },
+  "receiptConcurrency": {
+    "beforeProductionCode": "913b7ad10587afb728a2d11ae4ad8851378718ad",
+    "before": "Deterministic real PostgreSQL overlap: reconciler commits first; initial request incorrectly returns uncertain",
+    "beforeLog": "attempts/receipt-concurrency-before.log",
+    "afterCode": "8f27f7b831eaed7be7392b4656f5c327176e7c5a",
+    "after": "Both requests return same immutable receipt, one mutation, one completed job and one completion Journal entry",
+    "afterLog": "postgres-final.log"
+  },
+  "preexistingFailures": {
+    "globalLint": {
+      "exit": 1,
+      "errors": 9,
+      "warnings": 9,
+      "log": "lint-global.log",
+      "qualification": "Error files unchanged by this lot; targeted changed code has no lint error/warning"
+    },
+    "legacyVitest": {
+      "exit": 1,
+      "pass": 20,
+      "failedTests": 2,
+      "collectionErrors": 1,
+      "log": "vitest-global.log",
+      "unchangedFailures": [
+        "acquisition-store",
+        "decision-brief",
+        "project-intake mock hoist"
+      ]
+    }
+  },
+  "constraintsObserved": [
+    "No real business provider request or real email",
+    "No Production migration, backup, secret or configuration access/change",
+    "No merge or Production/Preview deployment",
+    "No Clara Live change",
+    "Existing PR and branch retained"
+  ],
+  "remainingRealCertification": [
+    "Google APIs/OAuth audience, issuer/sub account, actual scopes and refresh/revocation",
+    "Exact calendar and Drive destination rights, If-Match semantics, checksums and post-write retrieval; inherited/group/shared Drive permissions not certified",
+    "Neon/Vercel target correspondence, database roles/DDL privileges, backup and isolated restoration",
+    "All old workers drained/upgraded before Google preparation; rollback retains native-google job exclusion",
+    "Owner authorization before any merge, migration, deployment or real supplier test"
+  ]
+}

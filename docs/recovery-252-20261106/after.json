@@ -1,0 +1,10 @@
+{
+  "threeTurns": 3,
+  "messagesAfterLostAck": 8,
+  "recoveredWithoutNewThread": true,
+  "completed202Recovered": true,
+  "pendingProtected": true,
+  "lateFinishRejected": true,
+  "projectIsolation": true,
+  "providerSimulated": true
+}

@@ -45,3 +45,13 @@ test("a GPT write call creates an approval instead of executing", async () => {
   assert.equal((approvalInput as { capabilityId: string }).capabilityId, "send-gmail");
   assert.deepEqual(auditEvents.map(({ status }) => status), ["REQUESTED", "DENIED"]);
 });
+
+test('Make acknowledgements remain requested in the durable audit until explicit completion evidence',async()=>{
+ for(const status of [undefined,'accepted','pending','completed'] as const){
+  const events:ToolAuditEvent[]=[];
+  const bridge=new CapabilityToolBridge({async record(e){events.push(e);}},{async create(){throw Error('No second approval may be created');}},
+   {async execute(){return {success:true,message:'Provider acknowledgement only',operationalResult:{success:true,provider:'make',capabilityId:'make.scenario.execute',status},completedAt:new Date()};}});
+  const result=await bridge.execute({callId:'synthetic-operation',name:'make.scenario.execute',arguments:JSON.stringify({scenarioKey:'synthetic-only'})},{actorId:'owner',workspaceId:'isolated-w',plan:'premium',approvedCapabilityIds:['make.scenario.execute']});
+  assert.equal(result.success,true);assert.deepEqual(events.map(e=>e.status),['REQUESTED',status==='completed'?'SUCCEEDED':'REQUESTED']);
+ }
+});

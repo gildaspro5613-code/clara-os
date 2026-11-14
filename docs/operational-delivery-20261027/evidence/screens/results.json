@@ -1,0 +1,65 @@
+{
+  "environment": "isolated PostgreSQL, real Next endpoints, providers simulated; no Production certification",
+  "results": [
+    {
+      "path": "/clara",
+      "status": "PASS rendered authenticated synthetic context",
+      "scope": "page rendering, not provider certification"
+    },
+    {
+      "path": "/missions",
+      "status": "PASS rendered authenticated synthetic context",
+      "scope": "page rendering, not provider certification"
+    },
+    {
+      "path": "/conversations",
+      "status": "PASS rendered authenticated synthetic context",
+      "scope": "page rendering, not provider certification"
+    },
+    {
+      "path": "/contacts",
+      "status": "PASS rendered authenticated synthetic context",
+      "scope": "page rendering, not provider certification"
+    },
+    {
+      "path": "/documents",
+      "status": "PASS rendered authenticated synthetic context",
+      "scope": "page rendering, not provider certification"
+    },
+    {
+      "path": "/messagerie",
+      "status": "PASS rendered authenticated synthetic context",
+      "scope": "page rendering, not provider certification"
+    },
+    {
+      "path": "/agenda",
+      "status": "PASS rendered authenticated synthetic context",
+      "scope": "page rendering, not provider certification"
+    },
+    {
+      "path": "/journal",
+      "status": "PASS rendered authenticated synthetic context",
+      "scope": "page rendering, not provider certification"
+    },
+    {
+      "path": "/brain",
+      "status": "PASS rendered authenticated synthetic context",
+      "scope": "page rendering, not provider certification"
+    },
+    {
+      "path": "/automatisations",
+      "status": "PASS rendered authenticated synthetic context",
+      "scope": "page rendering, not provider certification"
+    },
+    {
+      "path": "/connexions",
+      "status": "PASS rendered authenticated synthetic context",
+      "scope": "page rendering, not provider certification"
+    },
+    {
+      "path": "/",
+      "status": "PASS rendered authenticated synthetic context",
+      "scope": "page rendering, not provider certification"
+    }
+  ]
+}

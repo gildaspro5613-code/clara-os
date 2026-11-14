@@ -1,3 +1,4 @@
+import { nativeOperationFence } from "@/lib/native/authority";
 /**
  * ============================================
  * CLARA OS
@@ -22,6 +23,9 @@ interface ExecuteMissionRequest {
 }
 
 export async function POST(request: Request) {
+  const nativeDenied=await nativeOperationFence(request);
+  if(nativeDenied)return nativeDenied;
+
   try {
     const body =
       (await request.json()) as ExecuteMissionRequest;

@@ -1,0 +1,319 @@
+TAP version 13
+# Subtest: commercial draft modification persists in and reloads from the acquisition record
+ok 1 - commercial draft modification persists in and reloads from the acquisition record
+  ---
+  duration_ms: 1.337074
+  type: 'test'
+  ...
+# Subtest: Clara revises the same durable draft from a conversational instruction
+ok 2 - Clara revises the same durable draft from a conversational instruction
+  ---
+  duration_ms: 0.515056
+  type: 'test'
+  ...
+# Subtest: conversation rewrite persists revision 2 in the acquisition record and survives reload
+ok 3 - conversation rewrite persists revision 2 in the acquisition record and survives reload
+  ---
+  duration_ms: 1.06247
+  type: 'test'
+  ...
+# Subtest: exact E2E replacement phrase is classified as a durable commercial revision
+ok 4 - exact E2E replacement phrase is classified as a durable commercial revision
+  ---
+  duration_ms: 0.324116
+  type: 'test'
+  ...
+# Subtest: commercial substitution wording is also classified as a revision
+ok 5 - commercial substitution wording is also classified as a revision
+  ---
+  duration_ms: 0.136891
+  type: 'test'
+  ...
+# Subtest: commercial confirmation creates an approval and remains fail-closed without Gmail or Brevo
+ok 6 - commercial confirmation creates an approval and remains fail-closed without Gmail or Brevo
+  ---
+  duration_ms: 1.069059
+  type: 'test'
+  ...
+# Subtest: P0 projection preserves the contextual owner session
+ok 7 - P0 projection preserves the contextual owner session
+  ---
+  duration_ms: 0.450322
+  type: 'test'
+  ...
+# Subtest: document output budget is honored while other callers retain their ceiling; incomplete metadata survives
+ok 8 - document output budget is honored while other callers retain their ceiling; incomplete metadata survives
+  ---
+  duration_ms: 75.666804
+  type: 'test'
+  ...
+# Subtest: document failures retain real 500 and safe correlated categories, never fake success
+ok 9 - document failures retain real 500 and safe correlated categories, never fake success
+  ---
+  duration_ms: 557.013826
+  type: 'test'
+  ...
+# Subtest: durable event queue: atomic ownership, session serialization, uncertainty, retention and atomic session/result commit
+ok 10 - durable event queue: atomic ownership, session serialization, uncertainty, retention and atomic session/result commit
+  ---
+  duration_ms: 3252.834423
+  type: 'test'
+  ...
+# Subtest: actual Live Work Cycle payload reaches Core with project identity preserved
+ok 11 - actual Live Work Cycle payload reaches Core with project identity preserved
+  ---
+  duration_ms: 182.723448
+  type: 'test'
+  ...
+# Subtest: slashes and JSON backslashes are valid text, never valid scope identifiers
+ok 12 - slashes and JSON backslashes are valid text, never valid scope identifiers
+  ---
+  duration_ms: 107.049722
+  type: 'test'
+  ...
+# Subtest: malformed event bodies and invalid messages are explicitly refused
+ok 13 - malformed event bodies and invalid messages are explicitly refused
+  ---
+  duration_ms: 51.557973
+  type: 'test'
+  ...
+# Subtest: authentication precedes event validation and other product isolation is unchanged
+ok 14 - authentication precedes event validation and other product isolation is unchanged
+  ---
+  duration_ms: 71.915477
+  type: 'test'
+  ...
+# Subtest: correlated phase logs preserve status and exclude credentials and message contents
+ok 15 - correlated phase logs preserve status and exclude credentials and message contents
+  ---
+  duration_ms: 69.266653
+  type: 'test'
+  ...
+# Subtest: untrusted correlation headers are replaced and auth failures remain observable
+ok 16 - untrusted correlation headers are replaced and auth failures remain observable
+  ---
+  duration_ms: 48.445331
+  type: 'test'
+  ...
+# Subtest: Core failures identify the failed phase and real 500 without logging exception contents
+ok 17 - Core failures identify the failed phase and real 500 without logging exception contents
+  ---
+  duration_ms: 48.439079
+  type: 'test'
+  ...
+# Subtest: durable documentary calls reserve once under concurrency and recover the stored result
+ok 18 - durable documentary calls reserve once under concurrency and recover the stored result
+  ---
+  duration_ms: 42.782116
+  type: 'test'
+  ...
+# Subtest: operation IDs conflict on changed payload and status access is scoped and authenticated
+ok 19 - operation IDs conflict on changed payload and status access is scoped and authenticated
+  ---
+  duration_ms: 29.68307
+  type: 'test'
+  ...
+# Subtest: a crash never authorizes another analysis and session failure cannot erase the completed document result
+ok 20 - a crash never authorizes another analysis and session failure cannot erase the completed document result
+  ---
+  duration_ms: 64.515671
+  type: 'test'
+  ...
+# Subtest: new registry fails closed while legacy consumers do not require its migration
+ok 21 - new registry fails closed while legacy consumers do not require its migration
+  ---
+  duration_ms: 35.522896
+  type: 'test'
+  ...
+# Subtest: incomplete document output persists failure, never a fake completed result or a duplicate analysis
+ok 22 - incomplete document output persists failure, never a fake completed result or a duplicate analysis
+  ---
+  duration_ms: 33.097393
+  type: 'test'
+  ...
+# Subtest: P0-B: real durable session survives new runtime/navigation, ordered history and project/user/session isolation
+ok 23 - P0-B: real durable session survives new runtime/navigation, ordered history and project/user/session isolation
+  ---
+  duration_ms: 1432.280741
+  type: 'test'
+  ...
+# External job {"job_id":"a584074c5c32d21d18a433030494de1d0ee9d0c3a9960b8faf5828f2a1e2e975","correlation_id":"d48a2f8fd0d55d98a4c7ea95904d0422","event":"claimed"}
+# External job {"job_id":"a584074c5c32d21d18a433030494de1d0ee9d0c3a9960b8faf5828f2a1e2e975","correlation_id":"d48a2f8fd0d55d98a4c7ea95904d0422","event":"invocation_end","duration_ms":466}
+# Subtest: P0-C/F: actual worker commits failed status and sanitized session atomically, never completes/replays interrupted output
+ok 24 - P0-C/F: actual worker commits failed status and sanitized session atomically, never completes/replays interrupted output
+  ---
+  duration_ms: 1644.695371
+  type: 'test'
+  ...
+# [CLARA] start: runtime created
+# Subtest: P0-B: native OS cannot inherit an external thread through latest-session or global-mission fallback
+ok 25 - P0-B: native OS cannot inherit an external thread through latest-session or global-mission fallback
+  ---
+  duration_ms: 615.705893
+  type: 'test'
+  ...
+# Subtest: P0-A: actual reasoning receives scoped facts, statuses, production, calculations and provenance
+ok 26 - P0-A: actual reasoning receives scoped facts, statuses, production, calculations and provenance
+  ---
+  duration_ms: 4.075946
+  type: 'test'
+  ...
+# Subtest: P0-A: context limits preserve valid JSON and declare omission without inventing project facts
+ok 27 - P0-A: context limits preserve valid JSON and declare omission without inventing project facts
+  ---
+  duration_ms: 0.658287
+  type: 'test'
+  ...
+# Subtest: P0-B: server history is bounded, chronological, deduplicated and overrides caller-supplied history
+ok 28 - P0-B: server history is bounded, chronological, deduplicated and overrides caller-supplied history
+  ---
+  duration_ms: 1.080457
+  type: 'test'
+  ...
+# Subtest: P0-B: legacy memory cannot leak another user, project or session into reasoning
+ok 29 - P0-B: legacy memory cannot leak another user, project or session into reasoning
+  ---
+  duration_ms: 0.583287
+  type: 'test'
+  ...
+# Subtest: P0-D: project A/B never loads foreign Drive; legitimate non-project Drive still works
+ok 30 - P0-D: project A/B never loads foreign Drive; legitimate non-project Drive still works
+  ---
+  duration_ms: 64.833937
+  type: 'test'
+  ...
+# Subtest: P0-C/E: incomplete provider output retains text, suppresses proposals and signals interruption in five languages
+ok 31 - P0-C/E: incomplete provider output retains text, suppresses proposals and signals interruption in five languages
+  ---
+  duration_ms: 1.927812
+  type: 'test'
+  ...
+# Subtest: P0-C/Live: only authenticated Production scope requests increased output budget
+ok 32 - P0-C/Live: only authenticated Production scope requests increased output budget
+  ---
+  duration_ms: 0.526614
+  type: 'test'
+  ...
+# Subtest: P0-C/Live: compact proposal excludes conversational history and remains scoped
+ok 33 - P0-C/Live: compact proposal excludes conversational history and remains scoped
+  ---
+  duration_ms: 0.788858
+  type: 'test'
+  ...
+# Subtest: P0-C/Live: incomplete compact proposal stays non-actionable
+ok 34 - P0-C/Live: incomplete compact proposal stays non-actionable
+  ---
+  duration_ms: 0.546493
+  type: 'test'
+  ...
+# Subtest: P0-C: complete, limit, filter, timeout, failure and empty output remain distinct
+ok 35 - P0-C: complete, limit, filter, timeout, failure and empty output remain distinct
+  ---
+  duration_ms: 0.392266
+  type: 'test'
+  ...
+# Subtest: P0-C/F: actual external handler retains interrupted generation and returns existing Live-compatible failure
+ok 36 - P0-C/F: actual external handler retains interrupted generation and returns existing Live-compatible failure
+  ---
+  duration_ms: 92.80874
+  type: 'test'
+  ...
+# Subtest: P0-C/F: no failed external generation is exposed as a completed assistant answer
+ok 37 - P0-C/F: no failed external generation is exposed as a completed assistant answer
+  ---
+  duration_ms: 267.299412
+  type: 'test'
+  ...
+# Subtest: P0-C/Live: existing Production proposal shape is complete, bounded and tied to the authorized project/preparation
+ok 38 - P0-C/Live: existing Production proposal shape is complete, bounded and tied to the authorized project/preparation
+  ---
+  duration_ms: 0.380048
+  type: 'test'
+  ...
+# Subtest: P0-C/Live: Production handoff is explicit in the existing composer, without changing the ordinary conversation contract
+ok 39 - P0-C/Live: Production handoff is explicit in the existing composer, without changing the ordinary conversation contract
+  ---
+  duration_ms: 0.511361
+  type: 'test'
+  ...
+# Subtest: P0-C/Live: complete provider prose or foreign/invalid JSON fails as an atomic Core job, with no leaked fragment or automatic rewrite
+ok 40 - P0-C/Live: complete provider prose or foreign/invalid JSON fails as an atomic Core job, with no leaked fragment or automatic rewrite
+  ---
+  duration_ms: 147.31602
+  type: 'test'
+  ...
+# Subtest: P0-C: provider adapter enforces conversational ceiling and timeout without changing other profiles
+ok 41 - P0-C: provider adapter enforces conversational ceiling and timeout without changing other profiles
+  ---
+  duration_ms: 7.772294
+  type: 'test'
+  ...
+# Subtest: P0-D: missing document identity cannot associate a foreign attachment
+ok 42 - P0-D: missing document identity cannot associate a foreign attachment
+  ---
+  duration_ms: 0.2593
+  type: 'test'
+  ...
+# Subtest: P0-B: opaque scope identifiers reject controls that could collide in the durable key
+ok 43 - P0-B: opaque scope identifiers reject controls that could collide in the durable key
+  ---
+  duration_ms: 0.287562
+  type: 'test'
+  ...
+# Subtest: P0 Documents folder selection preserves explicit approval without blocking the browser
+ok 44 - P0 Documents folder selection preserves explicit approval without blocking the browser
+  ---
+  duration_ms: 1.475857
+  type: 'test'
+  ...
+# Subtest: P0 Agenda reuses durable scoped calendars without session selection or automatic writes
+ok 45 - P0 Agenda reuses durable scoped calendars without session selection or automatic writes
+  ---
+  duration_ms: 0.372487
+  type: 'test'
+  ...
+# Subtest: Production V1: actual Live serializer fixture reaches Brain and structured composer without a second text cut
+ok 46 - Production V1: actual Live serializer fixture reaches Brain and structured composer without a second text cut
+  ---
+  duration_ms: 1.915773
+  type: 'test'
+  ...
+# Subtest: Production V1: oversize evidence is refused before a provider call rather than cut inside a source
+ok 47 - Production V1: oversize evidence is refused before a provider call rather than cut inside a source
+  ---
+  duration_ms: 0.250127
+  type: 'test'
+  ...
+# Subtest: Production V1: every selected locale is requested explicitly, without claiming provider language certification
+ok 48 - Production V1: every selected locale is requested explicitly, without claiming provider language certification
+  ---
+  duration_ms: 0.436671
+  type: 'test'
+  ...
+# Subtest: Production V1: foreign nested business identity is rejected before cognition
+ok 49 - Production V1: foreign nested business identity is rejected before cognition
+  ---
+  duration_ms: 26.745238
+  type: 'test'
+  ...
+# Subtest: Production V1 compatible optional fields accept attested schedule and refuse invalid dates/identities
+ok 50 - Production V1 compatible optional fields accept attested schedule and refuse invalid dates/identities
+  ---
+  duration_ms: 0.603547
+  type: 'test'
+  ...
+# Subtest: Production V1: pre-existing request and Brain-summary bounds are disclosed rather than silent
+ok 51 - Production V1: pre-existing request and Brain-summary bounds are disclosed rather than silent
+  ---
+  duration_ms: 0.568004
+  type: 'test'
+  ...
+1..51
+# tests 51
+# suites 0
+# pass 51
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 14307.87872

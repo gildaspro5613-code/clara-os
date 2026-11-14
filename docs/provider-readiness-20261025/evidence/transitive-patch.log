@@ -1,0 +1,44 @@
+npm warn ERESOLVE overriding peer dependency
+npm warn While resolving: @napi-rs/wasm-runtime@1.2.0
+npm warn Found: @emnapi/core@1.10.0
+npm warn node_modules/@emnapi/core
+npm warn   @emnapi/core@"1.10.0" from @unrs/resolver-binding-wasm32-wasi@1.12.2
+npm warn   node_modules/@unrs/resolver-binding-wasm32-wasi
+npm warn     optional @unrs/resolver-binding-wasm32-wasi@"1.12.2" from unrs-resolver@1.12.2
+npm warn     node_modules/unrs-resolver
+npm warn
+npm warn Could not resolve dependency:
+npm warn peer @emnapi/core@"^2.0.0-alpha.3" from @napi-rs/wasm-runtime@1.2.0
+npm warn node_modules/@unrs/resolver-binding-wasm32-wasi/node_modules/@napi-rs/wasm-runtime
+npm warn   @napi-rs/wasm-runtime@"^1.1.4" from @unrs/resolver-binding-wasm32-wasi@1.12.2
+npm warn   node_modules/@unrs/resolver-binding-wasm32-wasi
+npm warn
+npm warn Conflicting peer dependency: @emnapi/core@2.0.0-beta.2
+npm warn node_modules/@emnapi/core
+npm warn   peer @emnapi/core@"^2.0.0-alpha.3" from @napi-rs/wasm-runtime@1.2.0
+npm warn   node_modules/@unrs/resolver-binding-wasm32-wasi/node_modules/@napi-rs/wasm-runtime
+npm warn     @napi-rs/wasm-runtime@"^1.1.4" from @unrs/resolver-binding-wasm32-wasi@1.12.2
+npm warn     node_modules/@unrs/resolver-binding-wasm32-wasi
+npm warn ERESOLVE overriding peer dependency
+npm warn While resolving: @napi-rs/wasm-runtime@1.2.0
+npm warn Found: @emnapi/runtime@1.10.0
+npm warn node_modules/@unrs/resolver-binding-wasm32-wasi/node_modules/@emnapi/runtime
+npm warn   @emnapi/runtime@"1.10.0" from @unrs/resolver-binding-wasm32-wasi@1.12.2
+npm warn   node_modules/@unrs/resolver-binding-wasm32-wasi
+npm warn     optional @unrs/resolver-binding-wasm32-wasi@"1.12.2" from unrs-resolver@1.12.2
+npm warn     node_modules/unrs-resolver
+npm warn
+npm warn Could not resolve dependency:
+npm warn peer @emnapi/runtime@"^2.0.0-alpha.3" from @napi-rs/wasm-runtime@1.2.0
+npm warn node_modules/@unrs/resolver-binding-wasm32-wasi/node_modules/@napi-rs/wasm-runtime
+npm warn   @napi-rs/wasm-runtime@"^1.1.4" from @unrs/resolver-binding-wasm32-wasi@1.12.2
+npm warn   node_modules/@unrs/resolver-binding-wasm32-wasi
+npm warn
+npm warn Conflicting peer dependency: @emnapi/runtime@2.0.0-beta.2
+npm warn node_modules/@emnapi/runtime
+npm warn   peer @emnapi/runtime@"^2.0.0-alpha.3" from @napi-rs/wasm-runtime@1.2.0
+npm warn   node_modules/@unrs/resolver-binding-wasm32-wasi/node_modules/@napi-rs/wasm-runtime
+npm warn     @napi-rs/wasm-runtime@"^1.1.4" from @unrs/resolver-binding-wasm32-wasi@1.12.2
+npm warn     node_modules/@unrs/resolver-binding-wasm32-wasi
+
+up to date in 2s

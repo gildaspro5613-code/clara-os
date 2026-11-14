@@ -13,6 +13,7 @@ export class OAuthAuthorizationService {
     provider: string; connectionId: string; workspaceId: string; nonce: string;
     redirectUri: string; redirectPath: string; scopes?: readonly string[];
     parameters?: Readonly<Record<string, string>>; expiresAt?: number;
+    native?: import("./types").OAuthStatePayload["native"];
   }): URL {
     const provider = this.providers.get(input.provider);
     const state = signOAuthState({
@@ -20,6 +21,7 @@ export class OAuthAuthorizationService {
       workspaceId: input.workspaceId, nonce: input.nonce,
       expiresAt: input.expiresAt ?? Date.now() + 10 * 60_000,
       redirectPath: input.redirectPath,
+      ...(input.native ? {native:input.native}:{}),
     });
     return provider.buildAuthorizationUrl({
       redirectUri: input.redirectUri, state,
@@ -39,6 +41,7 @@ export class OAuthCallbackService {
   async complete(input: {
     provider: string; state: string; nonce: string; code?: string | null;
     redirectUri: string; workspaceId: string;
+    validateTokens?: (tokens:OAuthTokenSet)=>Promise<void>;
   }): Promise<{ redirectPath: string; credentials: OAuthTokenSet }> {
     if (!input.code) throw new OAuthError("MISSING_AUTHORIZATION_CODE");
     const state = verifyOAuthState(input.state, { nonce: input.nonce, provider: input.provider });
@@ -71,6 +74,7 @@ export class OAuthCallbackService {
       }
       throw new OAuthError(isInvalidGrant(error) ? "INVALID_GRANT" : "CODE_EXCHANGE_FAILED");
     }
+    await input.validateTokens?.(update);
     const provider = this.providers.get(input.provider);
     const current = await this.credentials.get<OAuthTokenSet>(connection.id);
     const normalized = mergeOAuthTokens(current, update);

@@ -1,0 +1,37 @@
+✔ P0-A: actual reasoning receives scoped facts, statuses, production, calculations and provenance (5.381863ms)
+✔ P0-A: context limits preserve valid JSON and declare omission without inventing project facts (3.818704ms)
+✔ P0-B: server history is bounded, chronological, deduplicated and overrides caller-supplied history (1.411123ms)
+✔ P0-B: legacy memory cannot leak another user, project or session into reasoning (0.958051ms)
+✔ P0-D: project A/B never loads foreign Drive; legitimate non-project Drive still works (73.24422ms)
+✔ P0-C/E: incomplete provider output retains text, suppresses proposals and signals interruption in five languages (2.880192ms)
+✔ P0-C/Live: only authenticated Production scope requests increased output budget (0.858404ms)
+✔ P0-C/Live: compact proposal excludes conversational history and remains scoped (0.86232ms)
+✔ P0-C/Live: incomplete compact proposal stays non-actionable (0.758966ms)
+✔ P0-C: complete, limit, filter, timeout, failure and empty output remain distinct (0.46554ms)
+✔ P0-C/F: actual external handler retains interrupted generation and returns existing Live-compatible failure (117.113945ms)
+✔ P0-C/F: no failed external generation is exposed as a completed assistant answer (231.818366ms)
+✔ P0-C/Live: existing Production proposal shape is complete, bounded and tied to the authorized project/preparation (0.682032ms)
+✔ P0-C/Live: Production handoff is explicit in the existing composer, without changing the ordinary conversation contract (0.846065ms)
+✔ P0-C/Live: complete provider prose or foreign/invalid JSON fails as an atomic Core job, with no leaked fragment or automatic rewrite (177.656097ms)
+✔ P0-C: provider adapter enforces conversational ceiling and timeout without changing other profiles (13.106532ms)
+✔ P0-D: missing document identity cannot associate a foreign attachment (0.409427ms)
+✔ P0-B: opaque scope identifiers reject controls that could collide in the durable key (0.354125ms)
+✔ P0 Documents folder selection preserves explicit approval without blocking the browser (5.457325ms)
+✔ P0 Agenda reuses durable scoped calendars without session selection or automatic writes (0.911792ms)
+✔ Production V1: actual Live serializer fixture reaches Brain and structured composer without a second text cut (3.646489ms)
+✔ Production V1: oversize evidence is refused before a provider call rather than cut inside a source (0.924912ms)
+✔ Production V1: every selected locale is requested explicitly, without claiming provider language certification (0.661291ms)
+✔ Production V1: foreign nested business identity is rejected before cognition (56.749851ms)
+✔ Production V1 compatible optional fields accept attested schedule and refuse invalid dates/identities (0.539701ms)
+✔ Production V1: pre-existing request and Brain-summary bounds are disclosed rather than silent (0.314346ms)
+✔ Production V1: incomplete analysis keeps its unique cached documentary excerpt and provenance (0.378712ms)
+✔ Production source budget: 11k business context fits losslessly, preserving every source/status/omission (8.299933ms)
+✔ Production source budget: irreducible values and encoding-marker collisions stay fail-closed (1.009006ms)
+ℹ tests 29
+ℹ suites 0
+ℹ pass 29
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4314.915457

@@ -1,3 +1,5 @@
+import NativeDocumentsPanel from "@/components/native/NativeDocumentsPanel";
+import { nativePage } from "@/lib/native/page-fence";
 import { getTranslations } from "next-intl/server";
 // ============================================
 // CLARA OS
@@ -15,6 +17,8 @@ import { resolveOperationalContext } from "@/lib/core/operational-context";
 export const dynamic = "force-dynamic";
 
 export default async function BrainPage() {
+  return nativePage(async()=>{
+
   const ui = await getTranslations("ui");
 
   const { session } = await resolveOperationalContext();
@@ -22,6 +26,7 @@ export default async function BrainPage() {
 
   return (
     <MainLayout>
+      <NativeDocumentsPanel referencesOnly />
       {dashboard ? (
         <BrainStage dashboard={dashboard} />
       ) : (
@@ -47,4 +52,5 @@ export default async function BrainPage() {
       )}
     </MainLayout>
   );
+  });
 }

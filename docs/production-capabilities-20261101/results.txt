@@ -1,0 +1,236 @@
+
+=== regression ===
+✔ existing WeatherAPI engine distinguishes missing config, refusal and invalid data; no invented zero or secret exception (24.559108ms)
+✔ repository company knowledge is bounded by the authenticated native workspace and preserves paths, digests and missing commercial data (1693.53715ms)
+Checked 4060 translated messages.
+Checked 791 static translation calls.
+✔ all five locale dictionaries share identical keys (31.067674ms)
+✔ Clara response language covers every supported locale (0.250269ms)
+✔ every dictionary message is nonempty valid ICU with matching parameters and renders in five languages (165.933603ms)
+✔ all static translation calls in pages, components, modules and API resolve to real catalog keys (275.657667ms)
+✔ new Clara responses use selected locale, preserve original quotations and leave Brain/session data untouched (1.72906ms)
+✔ telephony API localizes errors, preserves public identifiers and never echoes provider exceptions or secrets (75.668885ms)
+✔ native chat localizes empty requests and network failures in all five selected locales (62.969232ms)
+Checked 38 native handler refusals.
+[CLARA] instrumentation ready; business runtime is request-scoped
+✔ native session handler rejects missing, malformed and duplicate cookies before storage or global runtime (85.985435ms)
+✔ default, external and absent explicit selectors cannot resume a global/native fallback (1.604155ms)
+✔ every fenced native HTTP handler refuses anonymous/invalid cookies without entering legacy business logic (186.002046ms)
+✔ unavailable authority never leaks storage details or resumes the legacy runtime (5.137104ms)
+✔ even an explicitly authorized snapshot cannot unlock legacy native mutations (14.753361ms)
+✔ all six native server pages return before invoking any global data loader (61.805441ms)
+✔ reopened chat and native runtime/document handlers still refuse invalid authentication before business code (44.87464ms)
+✔ server instrumentation never imports or starts a global business runtime (2.781461ms)
+✔ Uncertified Google/Brevo/Make connection routes reject invalid OS sessions before storage or provider I/O (119.428095ms)
+✔ a verified native session cannot unlock Google credentials or Make configuration before connector certification (120.167605ms)
+▶ Google native workspace: real PostgreSQL, exact confirmations, immutable scopes, single handoff, recovery and existing stores
+  ✔ consent transactions retain actual grants and reject missing or partial scopes (3093.196823ms)
+  ✔ explicit resource binding, two users/clients/projects and historical/primary/root refusals (6221.505043ms)
+  ✔ prepared encrypted file, exact human confirmation and concurrent one-time execution/replay (10771.763222ms)
+  ✔ lost provider acknowledgement, read-only reconciliation, fresh service/reconnect and no automatic resend (5634.244765ms)
+  ✔ conditional calendar update and Drive content/move preserve IDs, metadata, rights and versions (27650.454922ms)
+  ✔ project and Google resource revocation, read-only delegations, expired consent/proposals (8172.109285ms)
+  ✔ read delegation never becomes write authority; second owner retains independent mailbox/project resources (7330.338005ms)
+  ✔ single HTTP handoff never retries errors; explicit precondition and refusal receipt release scope (12330.911148ms)
+  ✔ uncertain no-effect blocks new handoffs and inbound maintenance cannot consume or expire native Google receipts (5372.048556ms)
+  ✔ 020 additive reapplication and pg_dump restoration preserve every operation/attestation/receipt (1107.314054ms)
+✔ Google native workspace: real PostgreSQL, exact confirmations, immutable scopes, single handoff, recovery and existing stores (93234.072161ms)
+✔ Google import validation rejects oversized bodies, ambiguous identities, native document conversion and offset-less times (2.75247ms)
+▶ IONOS real PostgreSQL: two independent authorities, explicit bindings, exact approvals, concurrent single-use SMTP, revocation and durable restart
+  ✔ Cockpit projects pending canonical operations without transport, secrets or cross-project visibility (2082.399877ms)
+  ✔ Cockpit retains approved as recorded state, never SMTP acceptance (615.72267ms)
+✔ IONOS real PostgreSQL: two independent authorities, explicit bindings, exact approvals, concurrent single-use SMTP, revocation and durable restart (58886.310158ms)
+✔ the existing composer sends the historical personality as instructions in five languages, without a guessed identity or tools (3.361666ms)
+✔ native voice requires current operator, writable project and certified thread; rejects revoked checks and aborted requests (121.020212ms)
+✔ native synthesis only accepts a Clara message read from the exact authorized history; no browser text or foreign message (46.515058ms)
+✔ native readiness stays closed without provider configuration or in protected Recette, without a provider call (14.991151ms)
+✔ voice recovery adopts the existing native pending receipt on 202 without recording or repeating a supplier call (35.283108ms)
+✔ actual chat → Brain → authorized PostgreSQL mission registry → composer → durable history, never mission mutation (11964.582432ms)
+✔ mission read helpers refuse absent native context before any global store access (1.019133ms)
+REVIEW_RACE {"status":409,"secondaryMissionRevoked":"1","newMessageIncludesRevokedTitle":false}
+✔ real chat refuses the review race: secondary mission revoked after read and before finish (8172.176927ms)
+CONCURRENT_REVOCATION_FIRST: actual SQL wait observed; HTTP 409; zero new messages; replay 409
+▶ real concurrent PostgreSQL transactions serialize finalization and secondary-mission revocation
+  ✔ revocation owns the row first: finalizer waits, then refuses without persisting the new exchange (1813.173528ms)
+CONCURRENT_FINALIZATION_FIRST: revoker blocked by finalizer; HTTP 200 committed first; later replay 409; history preserved
+  ✔ finalizer owns the read locks first: revocation cannot commit before the message finalization (2066.598414ms)
+  ✔ the active mission is protected even outside the 100-entry registry projection (1168.905667ms)
+✔ real concurrent PostgreSQL transactions serialize finalization and secondary-mission revocation (8531.457263ms)
+✔ voice authorization uses existing server-owned workspace and operator permissions, rejects foreign origin before auth (75.898133ms)
+✔ four provider routes deny unauthenticated requests before any provider and localize secret-free failures in five languages (75.669937ms)
+ℹ tests 48
+ℹ suites 0
+ℹ pass 48
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 96565.940607
+
+=== browser ===
+TAP version 13
+# Subtest: existing capabilities: cold voice readiness without bypass, Calendar selection/refusal, Weather normalization, native mail authority, company provenance and cyan scrollbars
+ok 1 - existing capabilities: cold voice readiness without bypass, Calendar selection/refusal, Weather normalization, native mail authority, company provenance and cyan scrollbars
+  ---
+  duration_ms: 37155.146595
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 38946.447763
+
+=== voice-browser ===
+✔ Hero native voice: actual microphone recorder, STT/chat/history/TTS, replay and SQL revocation stop recording/provider/audio (55928.07423ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 56486.491639
+
+=== tsc ===
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice
+
+=== lint ===
+
+/workspace/clara-os-capabilities/src/components/cockpit/widgets/weather/WeatherWidget.tsx
+  77:11  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+✖ 1 problem (0 errors, 1 warning)
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice
+
+=== build ===
+
+> clara-os@0.1.0 build
+> next build --webpack
+
+▲ Next.js 16.4.3 (webpack)
+✓ Running next.config.ts took 33ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 6.2s
+  Running TypeScript ...
+  Finished TypeScript in 7.4s ...
+  Collecting page data using 4 workers ...
+  Generating static pages using 4 workers (0/29) ...
+  Generating static pages using 4 workers (7/29) 
+  Generating static pages using 4 workers (14/29) 
+  Generating static pages using 4 workers (21/29) 
+✓ Generating static pages using 4 workers (29/29) in 720ms
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ƒ /
+├ ƒ /_not-found
+├ ƒ /agenda
+├ ƒ /api/auth/google/callback
+├ ƒ /api/auth/google/start
+├ ƒ /api/auth/microsoft/callback
+├ ƒ /api/auth/microsoft/start
+├ ƒ /api/auth/session/logout
+├ ƒ /api/auth/session/status
+├ ƒ /api/calendar
+├ ƒ /api/canonical/registry
+├ ƒ /api/clara/acquisition/commercial-draft
+├ ƒ /api/clara/acquisition/decision
+├ ƒ /api/clara/acquisition/decisions
+├ ƒ /api/clara/acquisition/status/[submissionId]
+├ ƒ /api/clara/actions/navigation
+├ ƒ /api/clara/approvals
+├ ƒ /api/clara/chat
+├ ƒ /api/clara/conversation
+├ ƒ /api/clara/physical-actions/approve
+├ ƒ /api/clara/session
+├ ƒ /api/connections/brevo
+├ ƒ /api/connections/brevo/callback
+├ ƒ /api/connections/brevo/connect
+├ ƒ /api/connections/google
+├ ƒ /api/connections/google/callback
+├ ƒ /api/connections/google/connect
+├ ƒ /api/connections/make/configure
+├ ƒ /api/connections/make/status
+├ ƒ /api/connections/make/verify
+├ ƒ /api/connections/microsoft
+├ ƒ /api/connections/microsoft/callback
+├ ƒ /api/connections/microsoft/cloud-pcs
+├ ƒ /api/connections/microsoft/connect
+├ ƒ /api/contacts
+├ ƒ /api/core/canonical/conversations
+├ ƒ /api/core/canonical/links
+├ ƒ /api/core/canonical/stage
+├ ƒ /api/documents
+├ ƒ /api/documents/live-archives
+├ ƒ /api/elevenlabs/session
+├ ƒ /api/external/capabilities
+├ ƒ /api/external/document-operations/recovery
+├ ƒ /api/external/document-operations/status
+├ ƒ /api/external/event-jobs
+├ ƒ /api/external/event-jobs/status
+├ ƒ /api/external/events
+├ ƒ /api/external/lighting/onboarding/configuration
+├ ƒ /api/external/lighting/onboarding/session
+├ ƒ /api/external/project-intake
+├ ƒ /api/external/sound/onboarding/configuration
+├ ƒ /api/internal/document-operations-purge
+├ ƒ /api/internal/event-jobs-run
+├ ƒ /api/internal/project-intake-worker
+├ ƒ /api/internal/prospect-e2e-trace/[submissionId]
+├ ƒ /api/missions/execute
+├ ƒ /api/missions/resume
+├ ƒ /api/native/conversation-links
+├ ƒ /api/native/documents/authorization
+├ ƒ /api/native/google/work
+├ ƒ /api/native/mail
+├ ƒ /api/native/runtime
+├ ƒ /api/native/stage
+├ ƒ /api/openai/test
+├ ƒ /api/telephony
+├ ƒ /api/voice/speak
+├ ƒ /api/voice/transcribe
+├ ƒ /api/waze
+├ ƒ /api/weather
+├ ƒ /api/webhooks/brevo
+├ ƒ /api/workspace/install
+├ ƒ /automatisations
+├ ƒ /brain
+├ ƒ /clara
+├ ƒ /connexions
+├ ƒ /contacts
+├ ƒ /conversations
+├ ƒ /documents
+├ ○ /icon.svg
+├ ƒ /journal
+├ ƒ /messagerie
+├ ƒ /missions
+├ ƒ /stage-approval
+└ ƒ /telephonie
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

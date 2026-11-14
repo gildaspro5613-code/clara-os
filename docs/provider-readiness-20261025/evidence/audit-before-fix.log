@@ -1,0 +1,34 @@
+✔ a GPT write call creates an approval instead of executing (2.692406ms)
+✖ Make acknowledgements remain requested in the durable audit until explicit completion evidence (4.034938ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4095.162433
+
+✖ failing tests:
+
+test at src/tests/capability-tool-approval.test.ts:2:2194
+✖ Make acknowledgements remain requested in the durable audit until explicit completion evidence (4.034938ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+
+    [
+      'REQUESTED',
+  +   'SUCCEEDED'
+  -   'REQUESTED'
+    ]
+
+      at TestContext.<anonymous> (/workspace/clara-os-v1-reception/src/tests/capability-tool-approval.test.ts:55:44)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'REQUESTED', 'SUCCEEDED' ],
+    expected: [ 'REQUESTED', 'REQUESTED' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

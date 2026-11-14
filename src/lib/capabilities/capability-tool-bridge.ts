@@ -19,6 +19,10 @@
 import {
   CapabilityEngine,
 } from "./capability-engine";
+import {nativeContext} from '@/lib/native/scoped-context';
+import {ConnectorBuilderDirectory} from '@/lib/connectors/core/connector-builder-directory';
+import {executeNativeBuilderToolCall} from '@/lib/connectors/core/native-connector-builder-tool';
+
 
 import {
   CapabilityRegistry,
@@ -48,7 +52,7 @@ export interface CapabilityToolBridgeResult {
   readonly message: string;
   readonly content?: string;
   readonly completedAt: Date;
-  readonly code?: "PLAN_REQUIRED" | "APPROVAL_REQUIRED";
+  readonly code?: "PLAN_REQUIRED" | "APPROVAL_REQUIRED" | "RECETTE_EXTERNAL_EXECUTION_DENIED";
   readonly approvalRequest?: ToolApprovalRequest;
 }
 
@@ -93,6 +97,42 @@ export class CapabilityToolBridge {
           `Unknown Clara capability: "${capabilityId}".`,
         completedAt: new Date(),
       };
+    }
+
+    // Native Connector Builder READ uses one canonical identity and the
+    // reviewed, revocable grant authority. It must never fall back to the
+    // legacy connectionId/workspace argument supplied by the model.
+    const native=nativeContext();
+    if(native){
+      const directory=new ConnectorBuilderDirectory();
+      const providerOperation=directory.listProviders().some(provider=>
+        capabilityId.startsWith(provider.id+'.'));
+      if(providerOperation && !directory.findRead(capabilityId)){
+        // READ/EXECUTE is a property of the reviewed capability, NOT a
+        // model-level approval. Never fall back to the generic executor for a
+        // native Make, Brevo, GitHub or Stripe WRITE/SEND operation.
+        return {
+          success:false,callId:toolCall.callId,capabilityId,
+          message:'NATIVE_CONNECTOR_OPERATION_NOT_CERTIFIED',
+          completedAt:new Date(),
+        };
+      }
+      if(directory.findRead(capabilityId)){
+        if(principal.actorId!==native.userId||
+           principal.workspaceId!==native.scope.workspaceId){
+          return {
+            success:false,callId:toolCall.callId,capabilityId,
+            message:'CONNECTOR_NATIVE_IDENTITY_REQUIRED',
+            completedAt:new Date(),
+          };
+        }
+        const read=await executeNativeBuilderToolCall(toolCall);
+        return {
+          success:read.available,callId:toolCall.callId,capabilityId,
+          message:read.available?'Connector READ completed.':'Connector READ unavailable.',
+          content:read.content,completedAt:new Date(),
+        };
+      }
     }
 
     await this.audit.record({
@@ -163,12 +203,16 @@ export class CapabilityToolBridge {
         workspaceId: principal.workspaceId,
       });
 
+    // An acknowledged Make POST is not yet evidence of business completion.
+    // Keep the existing audit state pending; do not invent a success receipt.
+    const makeAwaitingEvidence = capabilityId === "make.scenario.execute"
+      && result.success && result.operationalResult?.status !== "completed";
     await this.audit.record({
       callId: toolCall.callId,
       capabilityId,
       actorId: principal.actorId,
       workspaceId: principal.workspaceId,
-      status: result.success ? "SUCCEEDED" : "FAILED",
+      status: result.success ? makeAwaitingEvidence ? "REQUESTED" : "SUCCEEDED" : "FAILED",
       message: result.message,
     });
 

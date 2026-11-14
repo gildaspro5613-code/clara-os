@@ -1,3 +1,5 @@
+import { isRecetteRuntime } from "@/lib/recette/external-execution-guard";
+import { assertGoogleSignInAllowed } from "./google-sign-in-policy";
 import { createPublicKey, verify } from "node:crypto";
 import { sql } from "@/lib/core/store/database";
 import { completeVerifiedSignIn } from "./verified-sign-in";
@@ -14,6 +16,7 @@ type JwtClaims = {
   aud?: string;
   azp?: string;
   email?: string;
+  given_name?: string;
   email_verified?: boolean;
   exp?: number;
   hd?: string;
@@ -54,7 +57,8 @@ function decodePart<T>(part: string): T {
 }
 
 async function signingKey(kid: string): Promise<GoogleJwk> {
-  const response = await fetch(GOOGLE_JWKS_ENDPOINT, { cache: "no-store" });
+  assertGoogleSignInAllowed();
+  const response = await fetch(GOOGLE_JWKS_ENDPOINT, { redirect: "error", cache: "no-store",signal:AbortSignal.timeout(15_000) });
   if (!response.ok) throw new Error("GOOGLE_JWKS_UNAVAILABLE");
   const body = await response.json() as { keys?: GoogleJwk[] };
   const key = body.keys?.find((candidate) => candidate.kid === kid && candidate.use !== "enc");
@@ -63,6 +67,7 @@ async function signingKey(kid: string): Promise<GoogleJwk> {
 }
 
 export function googleSignInAuthorizationUrl(state: string, nonce: string): string {
+  assertGoogleSignInAllowed();
   const { clientId, redirectUri } = configuredSignIn();
   const url = new URL(GOOGLE_AUTHORIZATION_ENDPOINT);
   url.searchParams.set("client_id", clientId);
@@ -91,9 +96,12 @@ function googleExchangeFailureCategory(description?: string): string {
 }
 
 async function exchangeCode(code: string): Promise<string> {
+  assertGoogleSignInAllowed();
   const { clientId, clientSecret, redirectUri } = configuredSignIn();
   const response = await fetch(GOOGLE_TOKEN_ENDPOINT, {
     method: "POST",
+    redirect: "error",
+    signal: AbortSignal.timeout(15_000),
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
       client_id: clientId,
@@ -119,8 +127,8 @@ async function exchangeCode(code: string): Promise<string> {
   return body.id_token;
 }
 
-async function verifyIdToken(idToken: string, expectedNonce: string): Promise<JwtClaims> {
-  const { clientId } = configuredSignIn();
+export async function verifyGoogleIdToken(idToken: string, expectedNonce: string, audience?: string): Promise<JwtClaims> {
+  const clientId = audience ?? configuredSignIn().clientId;
   const parts = idToken.split(".");
   if (parts.length !== 3) throw new Error("INVALID_GOOGLE_ID_TOKEN");
   const header = decodePart<JwtHeader>(parts[0]);
@@ -139,14 +147,16 @@ async function verifyIdToken(idToken: string, expectedNonce: string): Promise<Jw
   const now = Math.floor(Date.now() / 1000);
   if (!claims.iss || !GOOGLE_ISSUERS.has(claims.iss) || claims.aud !== clientId) throw new Error("INVALID_GOOGLE_ID_TOKEN_SCOPE");
   if (claims.azp && claims.azp !== clientId) throw new Error("INVALID_GOOGLE_ID_TOKEN_AUTHORIZED_PARTY");
-  if (!claims.exp || claims.exp <= now || (claims.iat && claims.iat > now + 60)) throw new Error("EXPIRED_GOOGLE_ID_TOKEN");
-  if (!claims.nonce || claims.nonce !== expectedNonce) throw new Error("INVALID_GOOGLE_ID_TOKEN_NONCE");
-  if (!claims.sub) throw new Error("INVALID_GOOGLE_IDENTITY");
+  if (!Number.isFinite(claims.exp) || !claims.exp || claims.exp <= now || (claims.iat !== undefined && (!Number.isFinite(claims.iat) || claims.iat > now + 60))) throw new Error("EXPIRED_GOOGLE_ID_TOKEN");
+  if (typeof claims.nonce !== "string" || !claims.nonce || claims.nonce !== expectedNonce) throw new Error("INVALID_GOOGLE_ID_TOKEN_NONCE");
+  if (typeof claims.sub !== "string" || !claims.sub) throw new Error("INVALID_GOOGLE_IDENTITY");
   return claims;
 }
 
 async function bootstrapIfAuthorized(identity: VerifiedIdentity, claims: JwtClaims): Promise<void> {
   if (await findVerifiedUser(identity)) return;
+  // Recette never enrolls an identity or grants owner through an email/bootstrap fallback.
+  if (isRecetteRuntime()) throw new Error("IDENTITY_NOT_ENROLLED");
   const expectedEmail = process.env.CLARA_AUTH_BOOTSTRAP_EMAIL?.trim().toLowerCase();
   const workspaceId =
     process.env.CLARA_MD_WORKSPACE_ID?.trim() ||
@@ -171,14 +181,16 @@ async function bootstrapIfAuthorized(identity: VerifiedIdentity, claims: JwtClai
   `;
 }
 
-export async function completeGoogleSignIn(code: string, state: string, expectedNonce: string): Promise<string> {
+export async function completeGoogleSignIn(code: string, state: string, expectedNonce: string, verifiedDisplayName?:(givenName:string|null)=>void): Promise<string> {
   if (!code.trim()) throw new Error("GOOGLE_AUTHORIZATION_CODE_REQUIRED");
   const idToken = await exchangeCode(code);
-  const claims = await verifyIdToken(idToken, expectedNonce);
+  const claims = await verifyGoogleIdToken(idToken, expectedNonce);
   const consumed = await consumeSignInTransaction("google", state, expectedNonce);
   if (!consumed) throw new Error("INVALID_OR_REPLAYED_SIGN_IN_TRANSACTION");
 
   const identity: VerifiedIdentity = { issuer: "https://accounts.google.com", subject: claims.sub! };
   await bootstrapIfAuthorized(identity, claims);
-  return completeVerifiedSignIn(identity);
+  const token=await completeVerifiedSignIn(identity);
+  verifiedDisplayName?.(typeof claims.given_name==='string'?claims.given_name:null);
+  return token;
 }

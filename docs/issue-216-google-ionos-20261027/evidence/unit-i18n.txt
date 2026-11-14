@@ -1,0 +1,22 @@
+✔ native ACTIVE is registered/selected, never a provider certification or an automatic selection (1.944191ms)
+✔ selected reconnect/pending cannot fall back to another active account (0.441083ms)
+✔ missing selection, missing authority, reconnect and pending are distinct (0.490633ms)
+✔ HTTP refusal dominates an apparently ACTIVE payload and public authority errors are preserved (0.19963ms)
+✔ malformed, duplicate, unknown-status and historical connected flags cannot imply a native connection (1.593406ms)
+Checked 3790 translated messages.
+Checked 751 static translation calls.
+✔ all five locale dictionaries share identical keys (220.578781ms)
+✔ Clara response language covers every supported locale (0.483069ms)
+✔ every dictionary message is nonempty valid ICU with matching parameters and renders in five languages (661.862886ms)
+✔ all static translation calls in pages, components, modules and API resolve to real catalog keys (988.301779ms)
+✔ new Clara responses use selected locale, preserve original quotations and leave Brain/session data untouched (5.315409ms)
+✔ telephony API localizes errors, preserves public identifiers and never echoes provider exceptions or secrets (327.730733ms)
+✔ native chat localizes empty requests and network failures in all five selected locales (210.904008ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5019.418122

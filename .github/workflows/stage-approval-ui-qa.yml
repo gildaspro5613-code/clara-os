@@ -1,0 +1,51 @@
+name: Stage approval UI isolated QA
+on:
+  pull_request:
+    paths:
+      - 'src/app/stage-approval/**'
+      - 'src/tests/stage-approval-ui.test.ts'
+      - 'src/tests/canonical-stage-multidomain*'
+      - 'src/lib/canonical/stage-authority.ts'
+      - 'src/app/api/core/canonical/stage/**'
+      - 'src/app/api/native/stage/**'
+      - 'db/migrations/028_canonical_stage_multidomain.sql'
+      - 'src/tests/helpers/stage-authority-http.mts'
+      - '.github/workflows/stage-approval-ui-qa.yml'
+      - 'src/lib/connectors/internal/lighting-console-configuration-server.ts'
+      - 'src/lib/connectors/internal/chamsys/magicq/configuration-repository.ts'
+      - 'src/app/api/external/lighting/onboarding/configuration/**'
+      - 'src/tests/magicq-configuration-postgres.test.ts'
+      - 'src/tests/helpers/magicq-configuration-http.mts'
+      - 'db/migrations/029_magicq_configuration_revision.sql'
+permissions:
+  contents: read
+jobs:
+  targeted:
+    runs-on: ubuntu-latest
+    env:
+      CANONICAL_TEST_CONTAINER: clara-canonical-test-postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: docker run -d --name "$CANONICAL_TEST_CONTAINER" -e POSTGRES_PASSWORD=isolated-stage-only postgres:16@sha256:9e2cf6287f25c3151f4c9421ccce2b17f3e60061c111a29165e0d2cdd9ff0a97
+      - name: Wait for isolated PostgreSQL
+        run: |
+          for attempt in $(seq 1 30); do
+            if docker exec "$CANONICAL_TEST_CONTAINER" pg_isready -U postgres; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+      - run: node --import tsx --test src/tests/stage-approval-ui.test.ts src/tests/canonical-stage-routes.test.ts src/tests/canonical-stage-postgres.test.ts src/tests/canonical-stage-multidomain-postgres.test.ts src/tests/canonical-stage-multidomain-boundary.test.ts src/tests/canonical-registry-postgres.test.ts src/tests/voice-route-security.test.ts
+      - name: MagicQ configuration CAS, mapping preservation and scoped PostgreSQL
+        env:
+          MAGICQ_TEST_CONTAINER: clara-canonical-test-postgres
+        run: node --import tsx --test src/tests/magicq-configuration-postgres.test.ts src/tests/integration/magicq-persistence-udp.test.ts src/tests/integration/lighting-console-connections-v1.test.ts src/tests/integration/lighting-onboarding-session-v1.test.ts src/tests/integration/lighting-self-service-onboarding-v1.test.ts
+      - run: npx tsc --noEmit
+      - run: npx eslint src/app/stage-approval/route.ts src/tests/stage-approval-ui.test.ts
+      - name: Remove isolated fixture
+        if: always()
+        run: docker rm -f "$CANONICAL_TEST_CONTAINER" || true

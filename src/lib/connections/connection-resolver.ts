@@ -11,6 +11,7 @@ export class ConnectionResolutionError extends Error {
       | "CONNECTION_NOT_FOUND"
       | "CONNECTION_PROVIDER_MISMATCH"
       | "CONNECTION_INACTIVE"
+      | "CONNECTION_WORKSPACE_MISMATCH"
       | "CREDENTIALS_NOT_FOUND",
   ) {
     super(code);
@@ -33,11 +34,15 @@ export class ConnectionResolver {
   async resolve<TCredentials extends object>(
     connectionId: string,
     provider: string,
+    workspaceId?: string,
   ): Promise<ResolvedConnection<TCredentials>> {
     const connection = await this.connections.findById(connectionId);
     if (!connection) throw new ConnectionResolutionError("CONNECTION_NOT_FOUND");
     if (connection.provider !== provider) {
       throw new ConnectionResolutionError("CONNECTION_PROVIDER_MISMATCH");
+    }
+    if (workspaceId && connection.workspaceId !== workspaceId) {
+      throw new ConnectionResolutionError("CONNECTION_WORKSPACE_MISMATCH");
     }
     if (connection.status !== ConnectionStatus.ACTIVE) {
       throw new ConnectionResolutionError("CONNECTION_INACTIVE");

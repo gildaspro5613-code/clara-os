@@ -1,0 +1,22 @@
+✖ Cockpit existing capabilities: authorized Calendar read and refusals, unavailable weather, real local Waze preparation, native voice authority probes without provider invocation (49587.819399ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 51385.30332
+
+✖ failing tests:
+
+test at src/tests/cockpit-capabilities-browser.e2e.mjs:11:1
+✖ Cockpit existing capabilities: authorized Calendar read and refusals, unavailable weather, real local Waze preparation, native voice authority probes without provider invocation (49587.819399ms)
+  locator.waitFor: Timeout 30000ms exceeded.
+  Call log:
+  [2m  - waiting for getByText('Agenda momentanément indisponible.', { exact: true }) to be visible[22m
+  
+      at TestContext.<anonymous> (/workspace/clara-os-capabilities/src/tests/cockpit-capabilities-browser.e2e.mjs:40:261) {
+    name: 'TimeoutError',
+    log: [ "  - waiting for getByText('Agenda momentanément indisponible.', { exact: true }) to be visible" ]
+  }

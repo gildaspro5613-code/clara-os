@@ -1,3 +1,4 @@
+import { nativeOperationFence } from "@/lib/native/authority";
 import { NextResponse } from "next/server";
 import { ConnectionStatus, type Connection } from "@/lib/connections/connection";
 import { DatabaseConnectionRepository } from "@/lib/connections/connection-repository";
@@ -5,13 +6,10 @@ import { CURRENT_WORKSPACE_ID } from "@/lib/connections/current-workspace";
 import { OAuthAuthorizationService } from "@/lib/auth/oauth/service";
 import { oauthProviders } from "@/lib/auth/oauth/providers";
 import { createBrevoOAuthNonce } from "@/lib/connectors/brevo/oauth-state";
+import {brevoReadOAuthStatus} from "@/lib/connectors/brevo/read-oauth-status";
 
 export const dynamic = "force-dynamic";
 const BREVO_OAUTH_COOKIE = "clara_brevo_oauth_nonce";
-
-function configuredScopes(): string[] {
-  return (process.env.BREVO_OAUTH_SCOPES ?? "").split(/[ ,]+/).filter(Boolean);
-}
 
 function pendingConnection(workspaceId: string, scopes: string[]): Connection {
   const now = new Date();
@@ -23,16 +21,19 @@ function pendingConnection(workspaceId: string, scopes: string[]): Connection {
 }
 
 export async function GET(request: Request) {
-  const redirectUri = process.env.BREVO_REDIRECT_URI;
-  if (!redirectUri) return NextResponse.json({ error: "BREVO_REDIRECT_URI is not configured." }, { status: 503 });
+  const denied = await nativeOperationFence(request);
+  if (denied) return denied;
+  const config = brevoReadOAuthStatus();
+  if (!config.ready) return NextResponse.json({ error: "BREVO_READ_OAUTH_CONFIGURATION_REQUIRED" }, { status: 503 });
+  const redirectUri = process.env.BREVO_REDIRECT_URI!;
 
   const repository = new DatabaseConnectionRepository();
-  const scopes = configuredScopes();
+  const scopes = config.scopes;
   let connection = await repository.findByWorkspaceAndProvider(CURRENT_WORKSPACE_ID, "brevo");
   connection = connection ? {
     ...connection,
     status: connection.status === ConnectionStatus.ACTIVE ? ConnectionStatus.ACTIVE : ConnectionStatus.PENDING_AUTHENTICATION,
-    scopes, updatedAt: new Date(),
+    scopes: connection.status === ConnectionStatus.ACTIVE ? connection.scopes : scopes, updatedAt: new Date(),
   } : pendingConnection(CURRENT_WORKSPACE_ID, scopes);
   await repository.save(connection);
 

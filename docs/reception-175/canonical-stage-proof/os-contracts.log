@@ -1,0 +1,27 @@
+✔ actual Live Work Cycle payload reaches Core with project identity preserved (665.158312ms)
+✔ slashes and JSON backslashes are valid text, never valid scope identifiers (168.194863ms)
+✔ malformed event bodies and invalid messages are explicitly refused (150.722146ms)
+✔ authentication precedes event validation and other product isolation is unchanged (108.235408ms)
+✔ correlated phase logs preserve status and exclude credentials and message contents (363.814262ms)
+✔ untrusted correlation headers are replaced and auth failures remain observable (52.485764ms)
+✔ Core failures identify the failed phase and real 500 without logging exception contents (116.565792ms)
+✔ durable documentary calls reserve once under concurrency and recover the stored result (85.361901ms)
+✔ operation IDs conflict on changed payload and status access is scoped and authenticated (65.103192ms)
+✔ a crash never authorizes another analysis and session failure cannot erase the completed document result (176.151233ms)
+✔ new registry fails closed while legacy consumers do not require its migration (49.510591ms)
+✔ incomplete document output persists failure, never a fake completed result or a duplicate analysis (76.947253ms)
+✔ Live transport refuses success without a structured result (99.588152ms)
+✔ Live transport rejects oversized response before decoding and never retries (1.123312ms)
+✔ Live transport refuses redirects and binds its timeout to the body read (3.745915ms)
+✔ Live network and malformed responses fail without leaking errors or retrying (1.268996ms)
+✔ Live timeout aborts a stalled body and leaves an uncertain outcome without retry (5012.271353ms)
+✔ voice authorization uses existing server-owned workspace and operator permissions, rejects foreign origin before auth (117.710204ms)
+✔ four provider routes deny unauthenticated requests before any provider and localize secret-free failures in five languages (221.22924ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8963.872823

@@ -1,3 +1,4 @@
+import {nativeContext} from "@/lib/native/scoped-context";
 /**
  * ============================================
  * CLARA OS
@@ -21,6 +22,8 @@ export async function dispatchEvent(
   clara: Clara,
   event: Event,
 ) {
+  const native=nativeContext();
+  if(native)event={...event,context:{workspaceId:native.scope.workspaceId,userId:native.userId,sessionId:native.scope.sessionId,metadata:{clientId:native.scope.clientId,projectId:native.scope.projectId}}};
   return clara.processEvent(
     event,
   );

@@ -38,7 +38,21 @@ function resolveDefaultUser(): ClaraUserIdentity {
   };
 }
 
+export interface NativeDocumentReference {
+  connectionId:string;fileId:string;version:string;missionId:string;encryptedAnalysis:string;checkedAt:string;
+}
 export interface ClaraSession {
+  /** Server-attested immutable Mission of a native thread; never inferred for old history. */
+  nativeMissionId?:string|null;
+  nativeConsultationVersion?:number|null;
+  googleConnectionId?:string;
+  googleCalendarId?:string;
+  googleFolderId?:string;
+  documentReferences?:NativeDocumentReference[];
+  /** Encrypted standalone email draft for a consultation thread; never an SMTP authority. */
+  standaloneMailDraft?:{schema:string;connectionId:string;messageId:string;revision:number;encryptedDraft:string;updatedAt:string};
+  /** Explicit canonical-authorized commercial selection; no historical inference. */
+  acquisitionSubmissionId?: string;
   state: ClaraState;
   recommendation: Recommendation | null;
   /** Latest complete dashboard produced by a real Brain execution cycle. */

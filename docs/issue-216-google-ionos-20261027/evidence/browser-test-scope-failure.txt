@@ -1,0 +1,19 @@
+Native browser fixture initialized; no production connections.
+✖ Google hub: real owner/delegate authority and revocation, explicit selection, native statuses, five locales and legacy cards (85351.042124ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 88614.709252
+
+✖ failing tests:
+
+test at src/tests/google-native-hub-browser.e2e.mjs:11:1
+✖ Google hub: real owner/delegate authority and revocation, explicit selection, native statuses, five locales and legacy cards (85351.042124ms)
+  ReferenceError: state is not defined
+      at TestContext.<anonymous> (file:///workspace/clara-os-google-hub-216/src/tests/google-native-hub-browser.e2e.mjs:47:193)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)

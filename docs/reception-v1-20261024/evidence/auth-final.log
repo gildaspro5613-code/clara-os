@@ -1,0 +1,11 @@
+✔ OIDC sign-in state and nonce are independent opaque random secrets (2.132508ms)
+✔ rejects malformed or caller-identifying transaction values (0.249948ms)
+✔ verified sign-in rejects invalid identity before any database lookup (1.476632ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 991.838858

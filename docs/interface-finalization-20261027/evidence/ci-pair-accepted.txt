@@ -1,0 +1,11 @@
+Native browser fixture initialized; no production connections.
+✔ commercial browser E2E: authenticated canonical selection → contact → mission → dialogue → journal → draft → cockpit → reload and fresh authenticated session (57615.017107ms)
+✔ P1 browser: mission first/contact first, immutable old conversation, explicit fresh thread and durable idempotent association (71026.35209ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 132811.119686

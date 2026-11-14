@@ -1,0 +1,17 @@
+Checked 3680 translated messages.
+Checked 737 static translation calls.
+✔ all five locale dictionaries share identical keys (687.894554ms)
+✔ Clara response language covers every supported locale (0.631861ms)
+✔ every dictionary message is nonempty valid ICU with matching parameters and renders in five languages (673.664751ms)
+✔ all static translation calls in pages, components, modules and API resolve to real catalog keys (876.708581ms)
+✔ new Clara responses use selected locale, preserve original quotations and leave Brain/session data untouched (20.290589ms)
+✔ telephony API localizes errors, preserves public identifiers and never echoes provider exceptions or secrets (671.731623ms)
+✔ native chat localizes empty requests and network failures in all five selected locales (419.661688ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5987.81008

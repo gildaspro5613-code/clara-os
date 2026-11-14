@@ -1,3 +1,4 @@
+import {readFileSync} from "node:fs";
 import test from "node:test";
 import assert from "node:assert/strict";
 import {moduleFrom} from "./helpers/production-p0-harness";
@@ -10,6 +11,7 @@ import { reasoning } from "@/lib/brain/reasoning";
 import { OpenAIResponsesEngine } from "@/lib/connectors/internal/openai/responses/openai-responses-engine";
 import { composeClaraResponseWithProposal } from "@/lib/brain/response-composer";
 import { responseGeneration } from "@/lib/brain/response-generation";
+import { hasCompleteLiveProductionProposal } from "@/lib/brain/live-production-proposal-guard";
 import { withPersistedConversation } from "@/lib/core/conversation-context";
 import { rememberEvent, clearRememberedEvents } from "@/lib/brain/memory-store";
 import { loadMemory } from "@/lib/brain/memory";
@@ -70,6 +72,48 @@ test("P0-C/E: incomplete provider output retains text, suppresses proposals and 
  for(const locale of ["fr","en","es","de","it"] as const){const session=createSession();const response=await composeClaraResponseWithProposal("Synthetic request",session,locale);assert.equal(response.generation.status,"incomplete");assert.equal(response.generation.failureCategory,"output_truncated");assert.equal(response.generation.recoverable,true);assert.equal(response.physicalAction,undefined);assert.ok(!response.content.includes("CLARA_PHYSICAL_ACTION_PROPOSAL"));assert.match(response.content,/Original quote: "Keep this wording"/);assert.match(prompt,/Préserve les citations/);assert.match(response.content,/interrompue|interrupted|interrumpida|unterbrochen|interrotta/);}
 });
 
+test("P0-C/Live: only authenticated Production scope requests increased output budget",async(t)=>{
+ const requested:{maxTokens?:number;outputProfile?:string}[]=[];
+ t.mock.method(OpenAIResponsesEngine.prototype,"generate",async(input)=>{
+   requested.push({maxTokens:input.maxTokens,outputProfile:input.outputProfile});
+   return result(JSON.stringify({schema:"clara.production.proposal.v1",project_id:"project-a",preparation_id:"prep-a",rows:[{section:"tasks",label:"Verify",value:"Crew to confirm"}]}));
+ });
+ await composeClaraResponseWithProposal("Synthetic request",createSession(),"fr");
+ await composeClaraResponseWithProposal("Synthetic request",createSession(),"fr",{projectId:"project-a",preparationId:"prep-a"});
+ assert.deepEqual(requested,[{maxTokens:3200,outputProfile:"conversation"},{maxTokens:5200,outputProfile:"live_production"}]);
+});
+
+test("P0-C/Live: compact proposal excludes conversational history and remains scoped",async(t)=>{
+ const calls:{prompt:string;instructions?:string;outputProfile?:string;reasoningEffort?:string;maxTokens?:number}[]=[];
+ t.mock.method(OpenAIResponsesEngine.prototype,"generate",async(input)=>{
+   calls.push(input);
+   return result(JSON.stringify({schema:"clara.production.proposal.v1",project_id:"project-a",preparation_id:"prep-a",rows:[{section:"tasks",label:"Confirm crew",value:"Crew count unknown"}]}));
+ });
+ const session=createSession();
+ session.conversation=[{id:"old",role:"user",content:"PRIVATE_UNRELATED_OLD_CHAT",createdAt:new Date().toISOString()}];
+ const output=await composeClaraResponseWithProposal("Prépare la logistique",session,"fr",{projectId:"project-a",preparationId:"prep-a"});
+ assert.equal(output.generation.status,"completed");
+ assert.equal(calls.length,1);
+ assert.equal(calls[0].outputProfile,"live_production");
+ assert.equal(calls[0].reasoningEffort,"low");
+ assert.equal(calls[0].maxTokens,5200);
+ assert.match(calls[0].prompt,/clara.production.proposal.v1/);
+ assert.match(calls[0].prompt,/project-a/);
+ assert.match(calls[0].prompt,/prep-a/);
+ assert.doesNotMatch(calls[0].prompt,/PRIVATE_UNRELATED_OLD_CHAT/);
+ assert.doesNotMatch(calls[0].prompt,/CLARA_PHYSICAL_ACTION_PROPOSAL/);
+ assert.equal(hasCompleteLiveProductionProposal(output.content,{projectId:"project-a",preparationId:"prep-a"}),true);
+});
+
+test("P0-C/Live: incomplete compact proposal stays non-actionable",async(t)=>{
+ t.mock.method(OpenAIResponsesEngine.prototype,"generate",async()=>result('{"schema":"clara.production.proposal.v1",',{responseStatus:"incomplete",incompleteReason:"max_output_tokens"}));
+ const output=await composeClaraResponseWithProposal("Prépare",createSession(),"fr",{projectId:"project-a",preparationId:"prep-a"});
+ assert.equal(output.generation.status,"incomplete");
+ assert.equal(output.generation.failureCategory,"output_truncated");
+ assert.equal(hasCompleteLiveProductionProposal(output.content,{projectId:"project-a",preparationId:"prep-a"}),false);
+ assert.equal(output.physicalAction,undefined);
+});
+
 test("P0-C: complete, limit, filter, timeout, failure and empty output remain distinct",()=>{
  assert.equal(responseGeneration(result("Complete")).status,"completed");
  assert.equal(responseGeneration(result("Partial",{responseStatus:"incomplete",incompleteReason:"max_output_tokens"})).status,"incomplete");
@@ -85,11 +129,149 @@ test("P0-C/F: actual external handler retains interrupted generation and returns
  const current=event();const body={schemaVersion:"clara.unified-core.event.v1",eventType:"USER_MESSAGE",scope:{productId:"clara-live",workspaceId:"shared-workspace",userId:"alice",sessionId:"session-a"},...(current.payload as object)};
  let retained:unknown;
  const response=await route.execute({product:route.products.get("clara-live")!,body,correlationId:"a".repeat(32),jobId:"b".repeat(64),progress:async()=>{},persist:async()=>{throw Error("Partial response cannot complete");},persistFailure:async(category,session)=>{assert.equal(category,"output_truncated");retained=session;}});
- assert.equal(response.status,500);assert.equal((await response.json()).failureCategory,"output_truncated");
- assert.equal((retained as {conversation:{generation?:{status:string}}[]}).conversation[1].generation?.status,"incomplete");
+ assert.equal(response.status,500);
+ const failed=await response.json();
+ assert.equal(failed.code,"CORE_EVENT_PROCESSING_FAILED");
+ assert.equal(failed.failureCategory,"output_truncated");
+ assert.equal(failed.data?.sessionId,"session-a");
+ assert.equal(failed.data?.response,undefined,"failed Core response must not expose a provider fragment");
+ assert.equal(failed.data?.generation?.recoverable,false);
+ const history=(retained as {conversation:{id:string;content:string;generation?:{status:string;recoverable:boolean}}[]}).conversation;
+ assert.equal(history.length,2);
+ assert.equal(history[0].id,"b".repeat(64)+":user");
+ assert.equal(history[1].id,"b".repeat(64)+":clara");
+ assert.equal(history[1].generation?.status,"incomplete");
+ assert.equal(history[1].generation?.recoverable,false);
+ assert.doesNotMatch(history[1].content,/Partial text retained/);
+ assert.match(history[1].content,/Clara n'a pas pu terminer/);
 });
 
 
+
+test("P0-C/F: no failed external generation is exposed as a completed assistant answer",async()=>{
+ for(const generation of [
+   {status:"incomplete" as const,failureCategory:"output_truncated",recoverable:true},
+   {status:"incomplete" as const,failureCategory:"output_filtered",recoverable:true},
+   {status:"timeout" as const,failureCategory:"provider_timeout",recoverable:true},
+   {status:"failed" as const,failureCategory:"provider_failed",recoverable:true},
+ ]){
+   const route=routeHarness(false,undefined,false,undefined,async()=>({content:"PRIVATE_PARTIAL_PROVIDER_FRAGMENT",generation}));
+   const current=event();
+   const body={schemaVersion:"clara.unified-core.event.v1",eventType:"USER_MESSAGE",scope:{productId:"clara-live",workspaceId:"shared-workspace",userId:"alice",sessionId:"session-a"},...(current.payload as object)};
+   let retained:unknown;let failureCategory:string|undefined;
+   const response=await route.execute({
+     product:route.products.get("clara-live")!,body,
+     correlationId:"a".repeat(32),jobId:"c".repeat(64),progress:async()=>{},
+     persist:async()=>{throw Error("Failing generation must not complete");},
+     persistFailure:async(category,session)=>{failureCategory=category;retained=session;},
+   });
+   assert.equal(response.status,500);
+   const payload=await response.json();
+   assert.equal(payload.failureCategory,generation.failureCategory);
+   assert.equal(failureCategory,generation.failureCategory);
+   assert.equal(payload.data?.response,undefined);
+   assert.doesNotMatch(JSON.stringify(payload),/PRIVATE_PARTIAL_PROVIDER_FRAGMENT/);
+   const history=(retained as {conversation:{content:string;generation?:{status:string}}[]}).conversation;
+   assert.equal(history.length,2);
+   assert.equal(history[1].generation?.status,generation.status);
+   assert.doesNotMatch(history[1].content,/PRIVATE_PARTIAL_PROVIDER_FRAGMENT/);
+   assert.match(history[1].content,/nouvelle tentative/);
+ }
+});
+
+
+test("P0-C/Live: existing Production proposal shape is complete, bounded and tied to the authorized project/preparation",()=>{
+ const scope={projectId:"project-a",preparationId:"prep-a"};
+ const payload={schema:"clara.production.proposal.v1",project_id:scope.projectId,preparation_id:scope.preparationId,
+   rows:[{section:"tasks",label:"Check rigging",value:"Rigging details require confirmation",notes:"Technical rider, page 2"}]};
+ const json=JSON.stringify(payload),fence=String.fromCharCode(96).repeat(3);
+ assert.equal(hasCompleteLiveProductionProposal("Réserves à valider.\n"+fence+"json\n"+json+"\n"+fence,scope),true);
+ assert.equal(hasCompleteLiveProductionProposal(json,scope),true);
+ for(const invalid of [
+   "Natural prose without machine rows",
+   fence+"json\n"+json.slice(0,-2),
+   fence+"json\n"+json+"\n"+fence+"\n"+fence+"json\n"+json+"\n"+fence,
+   JSON.stringify({...payload,project_id:"project-b"}),
+   JSON.stringify({...payload,preparation_id:"prep-b"}),
+   JSON.stringify({...payload,rows:[]}),
+   JSON.stringify({...payload,rows:[{...payload.rows[0],section:"unauthorized"}]}),
+   JSON.stringify({...payload,rows:[{...payload.rows[0],operation_id:"execute"}]}),
+   JSON.stringify({...payload,rows:[{...payload.rows[0],label:"x".repeat(301)}]}),
+ ])assert.equal(hasCompleteLiveProductionProposal(invalid,scope),false,invalid.slice(0,85));
+});
+
+test("P0-C/Live: Production handoff is explicit in the existing composer, without changing the ordinary conversation contract",async(t)=>{
+ const scope={projectId:"project-a",preparationId:"prep-a"};
+ const value=JSON.stringify({schema:"clara.production.proposal.v1",project_id:"project-a",preparation_id:"prep-a",
+   rows:[{section:"tasks",label:"Verify crew",value:"Crew assignments are not confirmed"}]});
+ let prompt="";
+ t.mock.method(OpenAIResponsesEngine.prototype,"generate",async(input)=>{prompt=input.prompt;return result(value);});
+ const session=createSession();
+ const complete=await composeClaraResponseWithProposal("Propose des tâches de production",session,"fr",scope);
+ assert.equal(complete.generation.status,"completed");
+ assert.equal(complete.content,value);
+ assert.match(prompt,/clara\.production\.proposal\.v1/);
+ assert.match(prompt,/project-a/);
+ assert.match(prompt,/prep-a/);
+ assert.match(prompt,/aucune proposition|aucun.*statut|aucune.*ligne/i);
+ const generic=await composeClaraResponseWithProposal("Bonjour",session,"fr");
+ assert.equal(generic.content,value);
+ assert.doesNotMatch(prompt,/REMIS LIVE/);
+});
+
+test("P0-C/Live: complete provider prose or foreign/invalid JSON fails as an atomic Core job, with no leaked fragment or automatic rewrite",async()=>{
+ const current=event();
+ const originalContext=(current.payload as {context:Record<string,unknown>}).context;
+ const scope={productId:"clara-live",workspaceId:"project-a",userId:"alice",sessionId:"session-a"};
+ const body={schemaVersion:"clara.unified-core.event.v1",eventType:"USER_MESSAGE",scope,
+   ...(current.payload as object),message:"Prépare la feuille de production.",
+   context:{...originalContext,language:"fr",
+     live:{adviceOnly:true,preparationId:"prep-a"},
+     activePreparation:{id:"prep-a",project_id:"project-a",businessContext:{rows:[{label:"Production"}]}}}};
+ const good=JSON.stringify({schema:"clara.production.proposal.v1",project_id:"project-a",preparation_id:"prep-a",
+   rows:[{section:"tasks",label:"Verify resource",value:"Resource to confirm",notes:"Rider"}]});
+ const success=routeHarness(false,undefined,false,undefined,async()=>({content:good,
+   generation:{status:"completed",recoverable:false}}));
+ let persisted:unknown;
+ const receipt=await success.execute({product:success.products.get("clara-live")!,body,
+   correlationId:"a".repeat(32),jobId:"b".repeat(64),progress:async()=>{},
+   persist:async(data)=>{persisted=data;},persistFailure:async()=>{throw Error("Valid handoff must complete");}});
+ assert.equal(receipt.status,200);
+ assert.equal((await receipt.json()).data.response,good);
+ assert.equal((persisted as {response:string}).response,good);
+ for(const fragment of ["PRIVATE_PROSE_NO_ROWS",JSON.stringify({schema:"clara.production.proposal.v1",
+    project_id:"another-project",preparation_id:"prep-a",rows:[{section:"tasks",label:"Incorrect scope",value:"No"}]})]){
+   const failedRoute=routeHarness(false,undefined,false,undefined,async()=>({content:fragment,
+     generation:{status:"completed",recoverable:false}}));
+   let stored:unknown;let category:string|undefined;
+   const failed=await failedRoute.execute({product:failedRoute.products.get("clara-live")!,body,
+     correlationId:"c".repeat(32),jobId:"d".repeat(64),progress:async()=>{},
+     persist:async()=>{throw Error("Unusable handoff must not complete");},
+     persistFailure:async(c,session)=>{category=c;stored=session;}});
+   assert.equal(failed.status,500);
+   const payload=await failed.json();
+   assert.equal(payload.code,"CORE_EVENT_PROCESSING_FAILED");
+   assert.equal(payload.failureCategory,"invalid_structure");
+   assert.equal(category,"invalid_structure");
+   assert.equal(payload.data?.sessionId,"session-a");
+   assert.equal(payload.data?.response,undefined);
+   assert.equal(payload.data?.generation?.status,"failed");
+   assert.doesNotMatch(JSON.stringify(payload),/PRIVATE_PROSE_NO_ROWS|another-project/);
+   const conversation=(stored as {conversation:{content:string;generation?:{status:string}}[]}).conversation;
+   assert.equal(conversation.length,2);
+   assert.equal(conversation[0].content,body.message);
+   assert.equal(conversation[1].generation?.status,"failed");
+   assert.doesNotMatch(conversation[1].content,/PRIVATE_PROSE_NO_ROWS|another-project/);
+   assert.equal(failedRoute.received.length,1,"Only one Core invocation, no replay");
+ }
+ const scopeMismatch=routeHarness();
+ const invalid=await scopeMismatch.execute({product:scopeMismatch.products.get("clara-live")!,
+   body:{...body,context:{...body.context,live:{adviceOnly:true,preparationId:"prep-other"}}},
+   correlationId:"e".repeat(32),jobId:"f".repeat(64),progress:async()=>{},
+   persist:async()=>{throw Error("No persistence on invalid preparation");}});
+ assert.equal(invalid.status,400);
+ assert.equal(scopeMismatch.received.length,0,"Scope mismatch rejected before dispatch");
+});
 
 test("P0-C: provider adapter enforces conversational ceiling and timeout without changing other profiles",async()=>{
  const calls:Record<string,unknown>[]=[],settings:Record<string,unknown>[]=[];
@@ -99,11 +281,12 @@ test("P0-C: provider adapter enforces conversational ceiling and timeout without
   constructor(options:Record<string,unknown>){settings.push(options);}
   responses={create:async(input:Record<string,unknown>)=>{calls.push(input);return {output:[],output_text:"Partial",status:"incomplete",incomplete_details:{reason:"max_output_tokens"},usage:{output_tokens:input.max_output_tokens}};}};
  }
- const {OpenAIResponsesEngine:Engine}=moduleFrom("src/lib/connectors/internal/openai/responses/openai-responses-engine.ts",{openai:{default:Client}}) as {OpenAIResponsesEngine:typeof OpenAIResponsesEngine};
+ const {OpenAIResponsesEngine:Engine}=moduleFrom("src/lib/connectors/internal/openai/responses/openai-responses-engine.ts",{openai:{default:Client},"@/lib/recette/external-execution-guard":{assertRecetteExternalExecutionBlocked:()=>{}}}) as {OpenAIResponsesEngine:typeof OpenAIResponsesEngine};
  const engine=new Engine();const response=await engine.generate({prompt:"Synthetic",maxTokens:100000,outputProfile:"conversation"});
  assert.equal(calls[0].max_output_tokens,3200);assert.equal(settings[0].timeout,60000);assert.equal(settings[0].maxRetries,0);assert.equal(response.finishReason,"incomplete");
  await engine.generate({prompt:"Synthetic",maxTokens:100000});assert.equal(calls[1].max_output_tokens,2000);assert.equal(settings[1].timeout,undefined);
  await engine.generate({prompt:"Synthetic",maxTokens:100000,outputProfile:"document_analysis"});assert.equal(calls[2].max_output_tokens,6000);
+ await engine.generate({prompt:"Synthetic",maxTokens:100000,outputProfile:"live_production",reasoningEffort:"low"});assert.equal(calls[3].max_output_tokens,5200);assert.equal((calls[3].reasoning as {effort?:string})?.effort,"low");assert.equal(settings[3].timeout,60000);assert.equal(settings[3].maxRetries,0);
 });
 
 
@@ -119,4 +302,168 @@ test("P0-B: opaque scope identifiers reject controls that could collide in the d
  assert.ok(parseBody(body));
  for(const field of ["workspaceId","userId","sessionId"])
   for(const control of ["\u001f","\n","\u007f"])assert.equal(parseBody({...body,scope:{...body.scope,[field]:"first"+control+"second"}}),null);
+});
+
+
+test("P0 Documents folder selection preserves explicit approval without blocking the browser",()=>{
+ const ui=readFileSync("src/components/documents/NativeDocumentDailyPanel.tsx","utf8");
+ assert.doesNotMatch(ui,/window\.confirm\s*\(/);
+ assert.match(ui,/role="dialog" aria-modal="true"/);
+ assert.match(ui,/if\(!folder\|\|busy\|\|!writable\)return/);
+ assert.match(ui,/nativePost\('inspect',\{kind:'folder',resourceId:folder.id\}\)/);
+ assert.match(ui,/nativePost\('bind',\{kind:'folder',resourceId:folder.id,version:inspect.resource.version\}\)/);
+ assert.match(ui,/nativePost\('select',\{kind:'folder',resourceId:folder.id\}\)/);
+ assert.match(ui,/refreshed.capabilities.selectedFolderId!==folder.id/);
+ assert.match(ui,/!refreshed.resources.some\(resource=>resource.kind==='folder'&&resource.id===folder.id\)/);
+ assert.match(ui,/disabled=\{busy\|\|!writable\}/);
+ for(const locale of ["fr","en","es","de","it"]){
+  const messages=JSON.parse(readFileSync(`src/i18n/messages/${locale}/index.json`,"utf8")).documents as Record<string,string>;
+  for(const key of ["workspaceConfirmFolder","workspaceCancelFolder","workspaceFolderChecking","workspaceFolderReady","workspaceSearchFolder"])
+   assert.ok(messages[key]?.trim(),`${locale}:${key}`);
+ }
+});
+
+test("P0 Agenda reuses durable scoped calendars without session selection or automatic writes",()=>{
+ const parser=readFileSync("src/lib/brain/calendar-read-intent.ts","utf8");
+ const source=readFileSync("src/lib/brain/brain-source-registry.ts","utf8");
+ const work=readFileSync("src/lib/native/google-work.ts","utf8");
+ assert.match(parser,/chooseAuthorizedCalendar/);
+ assert.match(parser,/matchesAuthorizedCalendarName/);
+ assert.match(source,/nativeGoogleCommand\('list'\)/);
+ assert.match(source,/googleWorkCommand\('resources',\{connectionId\}\)/);
+ assert.match(source,/googleWorkCommand\('resource',\{connectionId,bindingId/);
+ assert.match(source,/chooseAuthorizedCalendar\(candidates,intent.expectedName/);
+ assert.match(source,/eventsForBoundCalendar\(calendarId,undefined,timeMin,timeMax\)/);
+ assert.match(source,/current.revision!==proof.revision/);
+ assert.match(work,/await this.bound\(id,'calendar'\);await this.calendar\(id\);/);
+ assert.match(work,/return this.eventsForBoundCalendar\(id,pageToken,timeMin,timeMax\)/);
+ assert.doesNotMatch(source,/native\.session\.googleCalendarId\s*=/);
+});
+
+test('Production V1: actual Live serializer fixture reaches Brain and structured composer without a second text cut',async(t)=>{
+ const wire=JSON.parse(readFileSync('docs/reception/production-context-v1/synthetic-event.json','utf8'));
+ const current:Event={id:'synthetic-context',type:EventType.USER_MESSAGE,source:'EXTERNAL_PRODUCT',timestamp:new Date(),context:wire.scope,payload:wire};
+ const source=liveProjectSource(current);assert.ok(source);
+ const data=source.data as Record<string,unknown>;
+ assert.equal(data.truncated,false);
+ const calls:{prompt:string;maxTokens?:number}[]=[];
+ const answer=JSON.stringify({schema:'clara.production.proposal.v1',project_id:'A',preparation_id:'prep-A',rows:[{section:'coordination',label:'Accès avant montage',value:'Conditionner le montage à la confirmation de l’accès ; répartir ensuite les équipes plateau et son.',notes:'Hypothèse de séquencement à valider ; source items access (missing), doc1 page 1 ; aucun horaire attesté.'}]});
+ t.mock.method(OpenAIResponsesEngine.prototype,'generate',async input=>{calls.push(input);return result(calls.length===1?JSON.stringify({intent:'Prepare',summary:'Coordinate missing access and crew',confidence:1,entities:[],actions:[],nextAction:'Review',importance:1,urgency:0,impact:1}):answer);});
+ await reasoning(buildContext(current),{shortTerm:[],longTerm:[],facts:[]},[source]);
+ const session=createSession();session.sources=[source];
+ const composed=await composeClaraResponseWithProposal('Prépare un dossier opérationnel',session,'fr',{projectId:'A',preparationId:'prep-A'});
+ assert.equal(composed.generation.status,'completed');assert.equal(calls.length,2);
+ for(const marker of ['doc1','confirmed','to_verify','missing','stage_model','calculations','worksheets','coverage']){assert.ok(calls[0].prompt.includes(marker),marker+' Brain');assert.ok(calls[1].prompt.includes(marker),marker+' composer');}
+ assert.match(calls[1].prompt,/français/);assert.match(calls[1].prompt,/dépendances/);assert.match(calls[1].prompt,/DOSSIER PARTIEL/);assert.match(calls[1].prompt,/responsable documenté ou à désigner/);
+ assert.equal(calls[1].maxTokens,5200);
+ assert.equal(hasCompleteLiveProductionProposal(composed.content,{projectId:'A',preparationId:'prep-A'}),true);
+ assert.doesNotMatch(calls[1].prompt,/Source summaries clipped/);
+});
+
+test('Production V1: oversize evidence is refused before a provider call rather than cut inside a source',async(t)=>{
+ let calls=0;t.mock.method(OpenAIResponsesEngine.prototype,'generate',async()=>{calls++;return result('must not run');});
+ const session=createSession();session.sources=[{available:true,source:'clara-live-project',data:{project:{id:'A'},activePreparation:{id:'prep-A',businessContext:{items:'x'.repeat(13000)}}},summary:'not a replacement for structured evidence'}];
+ const composed=await composeClaraResponseWithProposal('Prépare',session,'fr',{projectId:'A',preparationId:'prep-A'});
+ assert.equal(calls,0);assert.equal(composed.generation.status,'failed');assert.equal(composed.generation.failureCategory,'source_context_budget');
+});
+
+test('Production V1: every selected locale is requested explicitly, without claiming provider language certification',async(t)=>{
+ const prompts:string[]=[];t.mock.method(OpenAIResponsesEngine.prototype,'generate',async input=>{prompts.push(input.prompt);return result('{}');});
+ for(const locale of ['fr','en','es','de','it'] as const)await composeClaraResponseWithProposal('Prepare',createSession(),locale,{projectId:'A',preparationId:'prep-A'});
+ for(const [i,language] of ['français','anglais','espagnol','allemand','italien'].entries())assert.ok(prompts[i].includes(language));
+ assert.equal(prompts.length,5);
+});
+
+test('Production V1: foreign nested business identity is rejected before cognition',async()=>{
+ const current=event('project-a');const route=routeHarness(false,undefined,false,undefined,async()=>{throw Error('No generation for wrong scope');});
+ const original=(current.payload as {context:Record<string,unknown>}).context;
+ for(const business of [{project_id:'foreign',preparation_id:'prep-a'},{project_id:'project-a',preparation_id:'foreign'}]){
+  const body={schemaVersion:'clara.unified-core.event.v1',eventType:'USER_MESSAGE',scope:{productId:'clara-live',workspaceId:'project-a',userId:'alice',sessionId:'session-a'},...(current.payload as object),context:{...original,live:{adviceOnly:true,preparationId:'prep-a'},activePreparation:{id:'prep-a',project_id:'project-a',businessContext:business}}};
+  const response=await route.execute({product:route.products.get('clara-live')!,body,correlationId:'a'.repeat(32),jobId:'b'.repeat(64),progress:async()=>{}});
+  assert.equal(response.status,400);
+ }
+});
+
+
+test('Production V1 compatible optional fields accept attested schedule and refuse invalid dates/identities',()=>{
+ const payload={schema:'clara.production.proposal.v1',project_id:'A',preparation_id:'prep-A',rows:[{section:'timeline',label:'Montage',value:'À valider',responsible:'Régie déclarée',date:'2026-11-10',time:'08:30',notes:'doc1 page 2 ; documenté, non confirmé'}]};
+ assert.equal(hasCompleteLiveProductionProposal(JSON.stringify(payload),{projectId:'A',preparationId:'prep-A'}),true);
+ for(const field of [{date:'2026-02-30'},{time:'25:00'},{responsible:{userId:'forged'}},{status:'confirmed'},{depends_on:['forged-id']}]){
+  assert.equal(hasCompleteLiveProductionProposal(JSON.stringify({...payload,rows:[{...payload.rows[0],...field}]}),{projectId:'A',preparationId:'prep-A'}),false);
+ }
+});
+
+
+test('Production V1: pre-existing request and Brain-summary bounds are disclosed rather than silent',async(t)=>{
+ let prompt='';t.mock.method(OpenAIResponsesEngine.prototype,'generate',async input=>{prompt=input.prompt;return result('{}');});
+ const session=createSession();
+ await composeClaraResponseWithProposal('x'.repeat(1600),session,'fr',{projectId:'A',preparationId:'prep-A'});
+ assert.match(prompt,/"requestTruncated":true/);assert.match(prompt,/"brainSummaryTruncated":false/);
+});
+
+
+test('Production V1: incomplete analysis keeps its unique cached documentary excerpt and provenance',async(t)=>{
+ const prompts:string[]=[];t.mock.method(OpenAIResponsesEngine.prototype,'generate',async input=>{prompts.push(input.prompt);return result('{}');});
+ for(const complete of [false,true,'stale']){
+  const session=createSession();session.sources=[{available:true,source:'clara-live-project',data:{project:{id:'A'},activePreparation:{id:'prep-A',businessContext:{documents:{rows:[{document_id:'doc1',complete:complete!==false,source_revision:complete==='stale'?'old':'revision-a',analysis:{facts:[]}}]}}},documents:[{id:'doc1',filename:'Synthetic.pdf',source_revision:'revision-a',text:'UNIQUE_CACHED_RIDER_EXCERPT',text_truncated:true}]},summary:'No substitute excerpt'}];
+  await composeClaraResponseWithProposal('Prépare',session,'fr',{projectId:'A',preparationId:'prep-A'});
+ }
+ assert.match(prompts[0],/UNIQUE_CACHED_RIDER_EXCERPT/);assert.match(prompts[0],/"excerpt_truncated":true/);assert.match(prompts[0],/extracted_not_operator_confirmed/);assert.match(prompts[0],/revision-a/);
+ assert.doesNotMatch(prompts[1],/UNIQUE_CACHED_RIDER_EXCERPT/);assert.match(prompts[2],/UNIQUE_CACHED_RIDER_EXCERPT/);assert.equal(prompts.length,3);
+});
+
+// The budget fixture is synthetic, not a copy of a real project or a cognitive-quality test.
+test('Production source budget: 11k business context fits losslessly, preserving every source/status/omission',async(t)=>{
+ const {liveProductionEvidence,compactLiveProductionEvidence}=await import('@/lib/brain/live-production-evidence');
+ const wire=JSON.parse(readFileSync('docs/reception/production-source-budget-20261109/synthetic-event.json','utf8'));
+ const business=wire.context.activePreparation.businessContext;
+ assert.ok(JSON.stringify(business).length>11000);assert.equal(business.omissions.length,40);
+ assert.equal(business.truncated,true);assert.equal(wire.message.length,1083);
+ const source=liveProjectSource({id:'synthetic-budget',type:EventType.USER_MESSAGE,source:'EXTERNAL_PRODUCT',timestamp:new Date(),context:wire.scope,payload:wire});assert.ok(source);
+ assert.equal((source.data as {truncated:boolean}).truncated,false,'The existing reader has not cut this fixture');
+ const raw=liveProductionEvidence(source.data as Record<string,unknown>),encoded=compactLiveProductionEvidence(raw);
+ assert.ok(JSON.stringify(raw).length>12000);assert.ok(encoded.length<=12000);
+ const packed=JSON.parse(encoded);
+ function expand(value:unknown):unknown {
+  if(Array.isArray(value))return value.map(expand);
+  if(value&&typeof value==='object'){
+   const row=value as Record<string,unknown>;
+   if(Object.keys(row).length===1&&Object.hasOwn(row,'$v'))return packed.values[row.$v as number];
+   if(Object.hasOwn(row,'$columns'))return (row.$rows as unknown[][]).map(values=>Object.fromEntries((row.$columns as string[]).map((column,i)=>[column,expand(values[i])])));
+   return Object.fromEntries(Object.entries(row).map(([key,v])=>[key,expand(v)]));
+  }
+  return value;
+ }
+ assert.equal(packed.encoding,'lossless_source_tables_v1');
+ assert.deepEqual(expand(packed.evidence),JSON.parse(JSON.stringify(raw)),'Exact round-trip: no selection, status promotion, provenance loss or extra omissions');
+ for(const marker of ['production','structure','lighting','sound','video','transport','confirmed','to_verify','missing','stale','doc1','revision','coverage','omissions','extracted_not_operator_confirmed'])assert.ok(encoded.includes(marker),marker);
+ const session=createSession();session.sources=[source];let calls=0,prompt='';
+ t.mock.method(OpenAIResponsesEngine.prototype,'generate',async input=>{
+  calls++;prompt=input.prompt;assert.equal(input.maxTokens,5200);assert.equal(input.reasoningEffort,'low');assert.equal(input.outputProfile,'live_production');
+  return result(JSON.stringify({schema:'clara.production.proposal.v1',project_id:'A',preparation_id:'prep-A',rows:['constraints','tasks','timeline','coordination','decisions'].map(section=>({section,label:'Dossier synthétique partiel',value:'À vérifier avant toute action.',notes:'Source doc1 ; statut to_verify ; omissions déclarées.'}))}));
+ });
+ const composed=await composeClaraResponseWithProposal(wire.message,session,'fr',{projectId:'A',preparationId:'prep-A'});
+ assert.equal(calls,1);assert.equal(composed.generation.status,'completed');assert.equal(composed.physicalAction,undefined);
+ assert.equal(prompt.split('SOURCES DISPONIBLES (non certifiées)\n').at(-1),encoded);
+ assert.match(prompt,/DOSSIER PARTIEL/);assert.match(prompt,/Reconstruire les chemins originaux/);
+ assert.equal(hasCompleteLiveProductionProposal(composed.content,{projectId:'A',preparationId:'prep-A'}),true);
+ assert.equal(hasCompleteLiveProductionProposal(composed.content,{projectId:'foreign',preparationId:'prep-A'}),false);
+ assert.equal(hasCompleteLiveProductionProposal(composed.content,{projectId:'A',preparationId:'foreign'}),false);
+});
+
+test('Production source budget: irreducible values and encoding-marker collisions stay fail-closed',async(t)=>{
+ const {compactLiveProductionEvidence}=await import('@/lib/brain/live-production-evidence');
+ const irreducible={businessContext:{facts:'irreducible'.repeat(1400)}};
+ assert.equal(compactLiveProductionEvidence(irreducible),JSON.stringify(irreducible));
+ const collision={businessContext:{$v:0,facts:'x'.repeat(13000)}};
+ assert.equal(compactLiveProductionEvidence(collision),JSON.stringify(collision));
+ const nestedCollision={project:{id:{$v:0}},...irreducible};
+ assert.equal(compactLiveProductionEvidence(nestedCollision),JSON.stringify(nestedCollision));
+ let calls=0;t.mock.method(OpenAIResponsesEngine.prototype,'generate',async()=>{calls++;return result('must not run');});
+ for(const businessContext of [irreducible.businessContext,collision.businessContext]){
+  const session=createSession();session.sources=[{source:'clara-live-project',available:true,summary:'',data:{project:{id:'A'},activePreparation:{id:'prep-A',businessContext}}}];
+  const composed=await composeClaraResponseWithProposal('Prépare',session,'fr',{projectId:'A',preparationId:'prep-A'});
+  assert.equal(composed.generation.failureCategory,'source_context_budget');assert.equal(composed.generation.status,'failed');
+ }
+ assert.equal(calls,0);
 });

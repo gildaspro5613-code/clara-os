@@ -1,15 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import NativeContextMenu from "@/components/native/NativeContextMenu";
 
 import {
   LayoutDashboard,
   Bot,
   ClipboardList,
   MessageCircle,
+  Mail,
   Users,
   Phone,
   Workflow,
@@ -30,6 +32,7 @@ const sections = [
       { key: "missions", href: "/missions", icon: ClipboardList },
       { key: "conversations", href: "/conversations", icon: MessageCircle },
       { key: "contacts", href: "/contacts", icon: Users },
+      { key: "messagerie", href: "/messagerie", icon: Mail },
     ],
   },
   {
@@ -60,14 +63,42 @@ const sections = [
 export default function Sidebar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [desktop, setDesktop] = useState(true);
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 1024px)");
+    const update = () => setDesktop(media.matches);
+    update(); media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
   const t = useTranslations("navigation");
   const tCommon = useTranslations("common");
-  const tc = useTranslations("clara");
+  const menuButton = useRef<HTMLButtonElement>(null);
+  const drawer = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const keydown = (event: KeyboardEvent) => {
+      // A native modal owns Escape and focus while its context controls are open.
+      if (drawer.current?.querySelector('dialog[open]')) return;
+      if (event.key === "Escape") { setOpen(false); menuButton.current?.focus(); }
+      if (event.key === "Tab" && window.innerWidth < 1024) {
+        const controls = [menuButton.current, ...Array.from(drawer.current?.querySelectorAll<HTMLElement>("a[href],button:not(:disabled)") ?? [])].filter((e): e is HTMLElement => !!e && e.getClientRects().length > 0);
+        const first = controls[0], last = controls.at(-1);
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+      }
+    };
+    document.addEventListener("keydown", keydown);
+    return () => document.removeEventListener("keydown", keydown);
+  }, [open]);
+  const mailLabel: Record<string,string> = {fr:"Messagerie",en:"Mail",es:"Correo",de:"E-Mail",it:"Posta"};
+  const locale = useLocale();
 
   return (
     <>
       <button
+        ref={menuButton}
         type="button"
+        aria-controls="clara-navigation"
         aria-label={open ? tCommon("closeMenu") : tCommon("openMenu")}
         aria-expanded={open}
         onClick={() => setOpen((current) => !current)}
@@ -85,7 +116,7 @@ export default function Sidebar() {
         />
       )}
 
-      <aside className={`fixed inset-y-0 left-0 z-50 flex w-[min(17rem,calc(100vw-2.5rem))] flex-col border-r border-white/10 bg-[#060b13]/98 shadow-2xl transition-transform duration-300 lg:w-64 lg:translate-x-0 lg:shadow-none xl:w-72 ${open ? "translate-x-0" : "-translate-x-full"}`}>
+      <aside id="clara-navigation" ref={drawer} inert={!desktop && !open} className={`fixed inset-y-0 left-0 z-50 flex w-[min(17rem,calc(100vw-2.5rem))] flex-col border-r border-white/10 bg-[#060b13]/98 shadow-2xl transition-transform duration-300 lg:w-64 lg:translate-x-0 lg:shadow-none xl:w-72 ${open ? "translate-x-0" : "-translate-x-full"}`}>
       {/* Logo */}
       <div className="border-b border-white/10 px-6 py-4 sm:py-5">
         <div className="flex justify-center">
@@ -123,6 +154,7 @@ export default function Sidebar() {
                     <Link
                       key={item.key}
                       href={item.href}
+                      aria-current={active ? "page" : undefined}
                       onClick={() => setOpen(false)}
                       className={`
                         group
@@ -149,7 +181,7 @@ export default function Sidebar() {
                       <Icon className={active ? "text-cyan-300" : "text-slate-500 transition-colors group-hover:text-slate-300"} size={18} strokeWidth={1.8} />
 
                       <span className="text-[14px] font-medium">
-                        {t(item.key)}
+                        {item.key === "messagerie" ? (mailLabel[locale] ?? mailLabel.fr) : t(item.key)}
                       </span>
                     </Link>
                   );
@@ -162,13 +194,7 @@ export default function Sidebar() {
 
       {/* Footer */}
       <div className="border-t border-white/10 px-5 py-4">
-        <div className="mb-4 flex items-center gap-2">
-          <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-green-500" />
-
-          <span className="text-sm text-slate-300">
-            {tc("ready")}
-          </span>
-        </div>
+        <NativeContextMenu />
 
         <div className="text-xs leading-5 text-slate-500">
           <p className="font-medium text-slate-400">

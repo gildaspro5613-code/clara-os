@@ -48,8 +48,8 @@ export default function ConversationsPanel({
                 </span>
               </div>
 
-              <p className="mt-1 line-clamp-2 text-sm text-white/65">
-                {message.content}
+              <p className="mt-1 text-sm text-white/65">
+                {t("openConversationHistory")}
               </p>
             </div>
           ))
@@ -60,8 +60,8 @@ export default function ConversationsPanel({
             </p>
           </div>
         )}
-        <Link href={recentMessages.length > 0 ? "/conversations" : "/clara"} className="inline-flex text-xs text-cyan-400 transition hover:text-cyan-300">
-          {recentMessages.length > 0 ? t("openConversationHistory") : t("startConversation")}
+        <Link href="/conversations" className="inline-flex text-xs text-cyan-400 transition hover:text-cyan-300">
+          {t("openConversationHistory")}
         </Link>
       </div>
     </GlassPanel>

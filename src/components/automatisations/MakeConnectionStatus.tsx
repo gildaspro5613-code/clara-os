@@ -33,10 +33,13 @@ export default function MakeConnectionStatus() {
 
   useEffect(() => {
     const controller = new AbortController();
-    refreshStatus(controller.signal).catch((error: unknown) => {
-      if (error instanceof Error && error.name === "AbortError") return;
-      setState({ provider: "make", connected: false, status: "UNAVAILABLE", scenarioKeys: [] });
-    });
+    void (async () => {
+      try { await refreshStatus(controller.signal); }
+      catch (error: unknown) {
+        if (controller.signal.aborted || (error instanceof Error && error.name === "AbortError")) return;
+        setState({ provider: "make", connected: false, status: "UNAVAILABLE", scenarioKeys: [] });
+      }
+    })();
     return () => controller.abort();
   }, [refreshStatus]);
 
@@ -82,7 +85,7 @@ export default function MakeConnectionStatus() {
         </select>
       )}
       <div className="mt-6 flex flex-wrap gap-2">
-        <button type="button" onClick={toggleConfiguration} disabled={busy !== null} className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-white/70 transition hover:border-cyan-400/25 hover:bg-white/[0.06] disabled:opacity-50"><Settings2 size={14} /> {status === "NOT_CONFIGURED" ? t("configure") : t("modify")}</button>
+        <button type="button" onClick={toggleConfiguration} disabled={busy !== null || status === "UNAVAILABLE" || status === "LOADING"} className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-white/70 transition hover:border-cyan-400/25 hover:bg-white/[0.06] disabled:opacity-50"><Settings2 size={14} /> {status === "NOT_CONFIGURED" ? t("configure") : t("modify")}</button>
         {canVerify && <button type="button" onClick={verify} disabled={busy !== null} className="inline-flex items-center gap-2 rounded-xl border border-cyan-400/20 bg-cyan-400/5 px-3 py-2 text-xs text-cyan-200/80 transition hover:bg-cyan-400/10 disabled:opacity-50">{busy === "verify" ? <Loader2 className="animate-spin" size={14} /> : <CheckCircle2 size={14} />}{t("verify")}</button>}
       </div>
       {showConfiguration && (

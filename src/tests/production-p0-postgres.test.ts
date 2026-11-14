@@ -48,7 +48,7 @@ test("P0-B: real durable session survives new runtime/navigation, ordered histor
  await pg.runSql(`DELETE FROM clara_sessions WHERE id IN ('${key}','${sessionKey(scope,"project-b")}')`);
 });
 
-test("P0-C/F: actual worker commits failure and partial session atomically, never completes/replays interrupted output",{skip:!container},async()=>{
+test("P0-C/F: actual worker commits failed status and sanitized session atomically, never completes/replays interrupted output",{skip:!container},async()=>{
  const pg=isolatedPostgres(container),store=createEventJobStore(pg.query as unknown as Parameters<typeof createEventJobStore>[0]);
  const jobId=id(),scope=id(),correlation=id().slice(0,32);
  const route=routeHarness(false,undefined,false,undefined,async()=>({content:"Synthetic retained partial",generation:{status:"incomplete",failureCategory:"output_truncated",recoverable:true}}));
@@ -58,7 +58,12 @@ test("P0-C/F: actual worker commits failure and partial session atomically, neve
  const saved=await store.lookup(scope,jobId);assert.equal(saved?.status,"failed");assert.equal(saved?.result,null);assert.equal(saved?.failure_category,"output_truncated");
  const key=sessionKey(body.scope,"project-a");
  const stored=JSON.parse((await pg.runSql(`SELECT data FROM clara_sessions WHERE id='${key}'`)).trim()) as ClaraSession;
- assert.equal(stored.conversation.length,2);assert.equal(stored.conversation[1].content,"Synthetic retained partial");assert.equal(stored.conversation[1].generation?.status,"incomplete");
+ assert.equal(stored.conversation.length,2);
+ assert.equal(stored.conversation[0].content,"Synthetic request");
+ assert.match(stored.conversation[1].content,/Clara could not complete/);
+ assert.doesNotMatch(JSON.stringify(stored.conversation),/Synthetic retained partial/);
+ assert.equal(stored.conversation[1].generation?.status,"incomplete");
+ assert.equal(stored.conversation[1].generation?.recoverable,false);
  assert.equal(await runEventJob(jobId,store,route.execute,()=>route.products),false);assert.equal(route.received.length,1);
  // A completed owner must never be changed by a late failure write.
  const completedId=id();await store.enqueue(scope,completedId,"clara-live","os-workspace",body,correlation);const owner=(await store.claim(completedId))!;
@@ -91,4 +96,32 @@ test("P0-B: native OS cannot inherit an external thread through latest-session o
   "./journal":{Journal:class{async addEntry(){}}},
  }) as typeof import("@/lib/core/clara");
  const started=await new runtime.Clara("synthetic:"+prefix).start();assert.equal(started.mission,null);assert.equal(started.conversation.length,0);
+});
+
+test('Production source budget: compact evidence completes one durable scoped job, without replaying cognition or saving a Live draft',{skip:!container},async(t)=>{
+ const {readFileSync}=await import('node:fs');
+ const {liveProjectSource}=await import('@/lib/brain/live-project-context');
+ const {composeClaraResponseWithProposal}=await import('@/lib/brain/response-composer');
+ const pg=isolatedPostgres(container),store=createEventJobStore(pg.query as unknown as Parameters<typeof createEventJobStore>[0]);
+ const wire=JSON.parse(readFileSync('docs/reception/production-source-budget-20261109/synthetic-event.json','utf8'));
+ wire.scope.sessionId='budget-'+id();
+ const source=liveProjectSource({id:id(),type:EventType.USER_MESSAGE,source:'EXTERNAL_PRODUCT',timestamp:new Date(),context:wire.scope,payload:wire})!;
+ const session=createSession();session.sources=[source];let generations=0;
+ const proposal={schema:'clara.production.proposal.v1',project_id:'A',preparation_id:'prep-A',rows:['constraints','tasks','timeline','coordination','decisions'].map(section=>({section,label:'Réserves du dossier synthétique',value:'Confirmer les dépendances documentées avant toute action.',notes:'doc1 ; à vérifier ; dossier partiel.'}))};
+ t.mock.method(OpenAIResponsesEngine.prototype,'generate',async()=>{generations++;return {success:true,responseStatus:'completed',content:JSON.stringify(proposal),message:'Synthetic',completedAt:new Date()};});
+ const route=routeHarness(false,undefined,false,undefined,()=>composeClaraResponseWithProposal(wire.message,session,'fr',{projectId:'A',preparationId:'prep-A'}));
+ const jobId=id(),scope=id();await store.enqueue(scope,jobId,'clara-live','os-workspace',wire,id().slice(0,32));
+ assert.equal(await runEventJob(jobId,store,route.execute,()=>route.products),true);
+ const saved=await store.lookup(scope,jobId);assert.equal(saved?.status,'completed');assert.equal(generations,1);
+ const composed=(saved?.result as {response:string}).response;
+ const actual=JSON.parse(composed);
+ assert.deepEqual(actual.rows.slice(0,proposal.rows.length),proposal.rows.map(row=>({...row,notes:'Dossier partiel : voir la couverture des sources.\n'+row.notes})));
+ assert.ok(actual.rows.slice(proposal.rows.length).length>0);
+ assert.ok(actual.rows.slice(proposal.rows.length).every((row:typeof proposal.rows[number])=>row.section==='constraints'&&JSON.parse(row.notes).manifest==='live_roadmap_selection_v1'));
+ assert.equal(await store.lookup('foreign-scope',jobId),null);
+ assert.equal(await runEventJob(jobId,store,route.execute,()=>route.products),false);assert.equal(generations,1);
+ const key=sessionKey(wire.scope,'A');const durable=JSON.parse((await pg.runSql(`SELECT data FROM clara_sessions WHERE id='${key}'`)).trim()) as ClaraSession;
+ assert.equal(durable.conversation.length,2);assert.equal(durable.conversation[1].content,composed);
+ // Only OS session/job receipts are persisted by this harness: no Live writer or hardware adapter exists in this path.
+ assert.equal(route.metrics.documentAnalyses,0);
 });

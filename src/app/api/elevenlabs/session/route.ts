@@ -1,3 +1,4 @@
+import { assertRecetteExternalExecutionBlocked } from "@/lib/recette/external-execution-guard";
 /**
  * ============================================
  * CLARA OS
@@ -10,19 +11,25 @@
  * ============================================
  */
 
+import { getTranslations } from "next-intl/server";
+import { authorizeVoiceRequest } from "@/lib/auth/voice-request-authorization";
 import { NextResponse } from "next/server";
 import { elevenLabsConfig } from "@/lib/config/elevenlabs";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const t = await getTranslations("voiceApi");
+  try {
+  if (!await authorizeVoiceRequest(request)) return NextResponse.json({success:false,error:t("operatorRequired")}, {status:403});
+  assertRecetteExternalExecutionBlocked('elevenlabs.signed-session');
   const { apiKey, agentId } = elevenLabsConfig;
 
   if (!apiKey) {
     return NextResponse.json(
       {
         success: false,
-        error: "ELEVENLABS_API_KEY is missing.",
+        error: t("notConfigured"),
       },
-      { status: 500 },
+      { status: 503 },
     );
   }
 
@@ -30,13 +37,12 @@ export async function GET() {
     return NextResponse.json(
       {
         success: false,
-        error: "ELEVENLABS_AGENT_ID is missing.",
+        error: t("notConfigured"),
       },
-      { status: 500 },
+      { status: 503 },
     );
   }
 
-  try {
     const response = await fetch(
       `https://api.elevenlabs.io/v1/convai/conversation/get-signed-url?agent_id=${encodeURIComponent(agentId)}`,
       {
@@ -50,14 +56,13 @@ export async function GET() {
     );
 
     if (!response.ok) {
-      const details = await response.text();
 
       return NextResponse.json(
         {
           success: false,
-          error: `ElevenLabs session error ${response.status}: ${details}`,
+          error: t("sessionUnavailable"),
         },
-        { status: response.status },
+        { status: 502 },
       );
     }
 
@@ -69,7 +74,7 @@ export async function GET() {
       return NextResponse.json(
         {
           success: false,
-          error: "ElevenLabs did not return a signed session URL.",
+          error: t("sessionUnavailable"),
         },
         { status: 502 },
       );
@@ -78,15 +83,12 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       signedUrl: data.signed_url,
-    });
-  } catch (error) {
+    }, {headers:{"Cache-Control":"no-store"}});
+  } catch {
     return NextResponse.json(
       {
         success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "Unable to create ElevenLabs session.",
+        error: t("sessionUnavailable"),
       },
       { status: 500 },
     );

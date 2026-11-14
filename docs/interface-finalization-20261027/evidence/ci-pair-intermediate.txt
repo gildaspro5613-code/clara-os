@@ -1,0 +1,44 @@
+Native browser fixture initialized; no production connections.
+✖ commercial browser E2E: authenticated canonical selection → contact → mission → dialogue → journal → draft → cockpit → reload and fresh authenticated session (49546.75289ms)
+✖ P1 browser: mission first/contact first, immutable old conversation, explicit fresh thread and durable idempotent association (53784.158017ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 106828.351281
+
+✖ failing tests:
+
+test at src/tests/native-commercial-browser.e2e.mjs:11:1
+✖ commercial browser E2E: authenticated canonical selection → contact → mission → dialogue → journal → draft → cockpit → reload and fresh authenticated session (49546.75289ms)
+  AssertionError [ERR_ASSERTION]: false == true
+      at TestContext.<anonymous> (file:///workspace/clara-os-interface/src/tests/native-commercial-browser.e2e.mjs:53:131)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at src/tests/native-mission-contact-browser.e2e.mjs:13:1
+✖ P1 browser: mission first/contact first, immutable old conversation, explicit fresh thread and durable idempotent association (53784.158017ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  true !== false
+
+      at TestContext.<anonymous> (file:///workspace/clara-os-interface/src/tests/native-mission-contact-browser.e2e.mjs:36:10)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

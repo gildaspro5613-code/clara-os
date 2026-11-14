@@ -1,0 +1,77 @@
+Regression
+✔ Google display metadata is encrypted, bounded and bound to one authenticated session; never an authority (3.825153ms)
+✔ Brief uses verified display identity only, never old session or environment fallback (15.072297ms)
+✔ actual callback attaches display only to a completed Google sign-in, clears it on failure (764.824803ms)
+✔ canonical sign-in SQL: durable sessions, workspace membership, expiry, revocation and atomic nonce replay (3985.758722ms)
+✔ historical Tasks uses the authorized mission rather than the old 82 percent fixture (22.457031ms)
+✔ native historical microphone stays disabled and honest in all five languages (16.238343ms)
+✔ the historical action bar navigates existing pages instead of decorative buttons (10.977377ms)
+Checked 38 native handler refusals.
+[CLARA] instrumentation ready; business runtime is request-scoped
+✔ native session handler rejects missing, malformed and duplicate cookies before storage or global runtime (94.801067ms)
+✔ default, external and absent explicit selectors cannot resume a global/native fallback (1.910964ms)
+✔ every fenced native HTTP handler refuses anonymous/invalid cookies without entering legacy business logic (216.707598ms)
+✔ unavailable authority never leaks storage details or resumes the legacy runtime (5.322889ms)
+✔ even an explicitly authorized snapshot cannot unlock legacy native mutations (27.120387ms)
+✔ all six native server pages return before invoking any global data loader (78.630136ms)
+✔ reopened chat and native runtime/document handlers still refuse invalid authentication before business code (79.325833ms)
+✔ server instrumentation never imports or starts a global business runtime (2.872968ms)
+✔ Uncertified Google/Brevo/Make connection routes reject invalid OS sessions before storage or provider I/O (112.419711ms)
+✔ a verified native session cannot unlock Google credentials or Make configuration before connector certification (76.603272ms)
+▶ operational recovery through scoped runtime and real PostgreSQL persistence
+  ✔ consultation in empty thread does not create a mission (726.809521ms)
+  ✔ historical unproven thread cannot be certified by a forged marker (460.048423ms)
+  ✔ explicit command creates an authorized mission (227.885081ms)
+  ✔ consultation cannot replan/reactivate/execute or alter a blocked mission; history remains durable (742.722647ms)
+  ✔ unselected Google connection has precise HTTP diagnostic and no provider access (121.215247ms)
+  ✔ native calendar missing binding and mailbox missing authority are explicit, no global fallback (229.10212ms)
+  ✔ selected-calendar cognition reuses real scoped authority and no mutation transport (4376.297807ms)
+  ✔ Google reauthentication response does not leak a provider message (634.86925ms)
+  ✔ mail cognition reads the authorized encrypted cache only; no SMTP/IMAP and revocation fences commit (2091.051894ms)
+  ✔ 030 reapplication preserves runtime ACL, data and wrapper identities (482.706748ms)
+  ✔ foreign project and revoked session cannot use these paths (230.822779ms)
+✔ operational recovery through scoped runtime and real PostgreSQL persistence (14233.867644ms)
+✔ consultations and ambiguous follow-ups cannot authorize a mission mutation (2.921541ms)
+✔ explicit commands retain the existing mission pipeline (0.173001ms)
+✔ Drive diagnostics only display reviewed public codes, never messages or provider payloads (0.187292ms)
+✔ Google-only Recette exception refuses incomplete, Production, foreign binding and unsafe callback configurations (3.9561ms)
+✔ real Google verifier and completion: signed identity only, one-time state, no Recette bootstrap, no business transport (254.894167ms)
+✔ actual start route refuses invalid Recette before transaction or redirect (53.008968ms)
+✔ actual database entry refuses ambiguous Recette before Neon client construction; outside Recette unchanged (9.003204ms)
+✔ voice authorization uses existing server-owned workspace and operator permissions, rejects foreign origin before auth (79.413916ms)
+✔ four provider routes deny unauthenticated requests before any provider and localize secret-free failures in five languages (77.332301ms)
+ℹ tests 38
+ℹ suites 0
+ℹ pass 38
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 17861.800541
+
+Cockpit V2 HTTPS
+✔ 781 composition Cockpit: actual native mission, five languages and responsive navigation without provider activation (51847.134152ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 52419.123328
+
+Existing Cockpit recovery
+✔ cockpit: real header navigation, native service refusals and durable chat recovery (21848.556827ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 22398.928397
+
+TypeScript PASS
+Targeted ESLint PASS
+Optimized webpack build PASS (existing local font fixture)
+No business provider, Production access, SQL migration or deployment.

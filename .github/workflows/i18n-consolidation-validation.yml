@@ -8,6 +8,13 @@ on:
       - "src/lib/brain/response-composer.ts"
       - "src/app/**/*.tsx"
       - "src/app/api/telephony/route.ts"
+      - "src/app/api/voice/**"
+      - "src/app/api/elevenlabs/**"
+      - "src/lib/presentation/**"
+      - "src/lib/acquisition/commercial-communication-draft.ts"
+      - "src/lib/auth/voice-request-authorization.ts"
+      - "src/tests/operational-reception*"
+      - "src/tests/voice-route-security.test.ts"
       - "src/components/**"
       - "src/modules/**"
       - "src/tests/i18n-consolidation.test.ts"
@@ -26,8 +33,10 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Five-language parity and response-locale contracts
-        run: node --import tsx --test src/tests/i18n-consolidation.test.ts
+        run: node --import tsx --test src/tests/i18n-consolidation.test.ts src/tests/operational-reception.test.tsx src/tests/voice-route-security.test.ts src/tests/commercial-operational-continuity.test.ts src/tests/google-durable-oauth.test.ts
       - name: Typecheck
         run: npx tsc --noEmit --pretty false
       - name: Lint changed i18n surfaces
         run: npx eslint src/app/api/clara/chat/route.ts src/app/api/telephony/route.ts src/app/brain/page.tsx src/app/connexions/page.tsx src/app/conversations/page.tsx src/app/documents/page.tsx src/app/telephonie/page.tsx src/components/cockpit/QuickActions.tsx src/components/cockpit/panels/AcquisitionQualificationPanel.tsx src/components/cockpit/panels/BriefPanel.tsx src/components/cockpit/panels/CommercialDraftEditor.tsx src/components/cockpit/panels/ConversationsPanel.tsx src/components/cockpit/widgets/CockpitActionBar.tsx src/components/cockpit/widgets/clara/ClaraChatWidget.tsx src/components/cockpit/widgets/missions/MissionWidget.tsx src/components/cockpit/widgets/waze/WazeWidget.tsx src/components/connections/ConnectionsHub.tsx src/components/documents/CanonicalArchivesPanel.tsx src/components/layout/Header.tsx src/i18n/request.ts src/tests/i18n-consolidation.test.ts src/i18n/response-language.ts src/lib/brain/response-composer.ts
+      - name: Lint reception corrections
+        run: npx eslint src/components/clara/ClaraStatus.tsx src/components/cockpit/panels/EmailSummaryPanel.tsx src/components/cockpit/panels/SummaryPanel.tsx src/components/cockpit/panels/TasksPanel.tsx src/components/cockpit/widgets/CockpitWidgets.tsx src/lib/acquisition/commercial-communication-draft.ts src/lib/auth/voice-request-authorization.ts src/lib/presentation src/app/clara/page.tsx src/app/missions/page.tsx src/app/api/voice src/app/api/elevenlabs/session src/modules/missions/MissionsStage.tsx src/modules/missions/components/MissionCard.tsx src/modules/journal/JournalStage.tsx src/tests/operational-reception.test.tsx src/tests/voice-route-security.test.ts src/tests/google-durable-oauth.test.ts src/tests/operational-reception-browser.e2e.mjs src/tests/helpers/reception-browser-runtime.mjs

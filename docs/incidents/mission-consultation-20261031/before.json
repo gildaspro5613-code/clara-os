@@ -1,0 +1,32 @@
+{
+  "languageProvider": "SIMULATED; mission registry NOT mocked",
+  "cockpit": [
+    {
+      "title": "Préparer le dossier autorisé",
+      "progress": 17
+    },
+    {
+      "title": "Inventorier accès vérifiés",
+      "progress": 44
+    }
+  ],
+  "modelInputs": [
+    {
+      "phase": "brain",
+      "registry": null,
+      "contextPresent": true
+    },
+    {
+      "phase": "composer",
+      "registry": null,
+      "contextPresent": true
+    }
+  ],
+  "brainContext": {
+    "clientId": "c1",
+    "projectId": "p1",
+    "workspaceId": "w"
+  },
+  "response": "DIAGNOSTIC SIMULÉ : registre des missions absent du prompt.",
+  "missionRowsUnchanged": true
+}

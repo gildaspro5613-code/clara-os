@@ -1,0 +1,77 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {execFileSync} from 'node:child_process';
+import {readFileSync} from 'node:fs';
+import {randomUUID,createHash} from 'node:crypto';
+import {createStageAuthority} from '@/lib/canonical/stage-authority';
+import type {RegistryQuery} from '@/lib/canonical/registry';
+
+test('canonical Stage: real PostgreSQL explicit Light ACL, nonce, expiry, revocation, scope and restart',{skip:!process.env.CANONICAL_TEST_CONTAINER},async(t)=>{
+ const container=process.env.CANONICAL_TEST_CONTAINER!;assert.equal(container,'clara-canonical-test-postgres');
+ const db='stage_'+randomUUID().replaceAll('-','');execFileSync('docker',['exec',container,'createdb','-U','postgres',db]);
+ t.after(()=>execFileSync('docker',['exec',container,'dropdb','-U','postgres',db]));
+ const pg=(s:string)=>execFileSync('docker',['exec',container,'psql','-U','postgres','-d',db,'-qAt','-v','ON_ERROR_STOP=1','-c',s],{encoding:'utf8',stdio:['pipe','pipe','pipe']});
+ for(const f of ['001_authenticated_workspaces','002_verified_auth_identities','008_canonical_client_project_registry','009_canonical_archive_authority','010_canonical_archive_serialization','012_native_resource_authority','027_canonical_stage_decisions'])execFileSync('docker',['exec','-i',container,'psql','-U','postgres','-d',db,'-q','-v','ON_ERROR_STOP=1'],{input:readFileSync('db/migrations/'+f+'.sql'),stdio:['pipe','pipe','pipe']});
+ const hash=(s:string)=>createHash('sha256').update(s).digest('hex');const session=hash('synthetic-authenticated-session'),nonceHash=hash('synthetic-nonce');
+ pg(`INSERT INTO clara_auth_users(id) VALUES('a'),('b');INSERT INTO clara_auth_workspaces(id) VALUES('w'),('foreign');INSERT INTO clara_auth_identities(issuer,subject,user_id) VALUES('fixture','a','a'),('fixture','b','b');INSERT INTO clara_workspace_memberships(user_id,workspace_id,role) VALUES('a','w','owner'),('b','w','member');INSERT INTO clara_auth_sessions(token_hash,user_id,expires_at) VALUES('${session}','a',NOW()+INTERVAL '1 hour');
+ INSERT INTO clara_registry_clients(workspace_id,id,display_name,created_by) VALUES('w','c','Client','a');
+ INSERT INTO clara_registry_projects(workspace_id,id,client_id,display_name,created_by) VALUES('w','p','c','Project','a');
+ INSERT INTO clara_registry_client_access(workspace_id,client_id,user_id,can_read,can_archive,can_manage) VALUES('w','c','a',true,true,true);
+ INSERT INTO clara_registry_project_access(workspace_id,project_id,user_id,can_read,can_archive,can_manage) VALUES('w','p','a',true,true,true);
+ INSERT INTO clara_registry_identity_links(workspace_id,os_user_id,live_user_id,proof_id) VALUES('w','a','u','ip');
+ INSERT INTO clara_registry_project_links(workspace_id,project_id,client_id,live_project_id,live_user_id,os_user_id,proof_id) VALUES('w','p','c','lp','u','a','pp');`);
+ pg(`INSERT INTO clara_sessions(id,data) VALUES('native:stage','{"conversation":[]}');INSERT INTO clara_native_resource_authority(resource_kind,resource_id,owner_user_id,workspace_id,client_id,project_id,snapshot_sha256,reviewed_by,review_reason) VALUES('session','native:stage','a','w','c','p',encode(sha256(convert_to('{"conversation": []}','UTF8')),'hex'),'a','Explicit isolated canonical Stage acceptance');`);
+ const query:RegistryQuery=async(strings,...values)=>{const statement=strings.reduce((s,p,i)=>s+p+(i<values.length?"'"+String(values[i]).replaceAll("'","''")+"'":''),'');return pg(`SELECT row_to_json(r) FROM (${statement})r`).trim().split('\n').filter(Boolean).map(x=>JSON.parse(x));};
+ const ctx={digest:session,workspaceId:'w'},service=createStageAuthority(query);
+ const intent={schemaVersion:'clara.stage-intent.v1',capability:'stage:light:mutate:v1',intentDigest:'a'.repeat(64),scope:{nativeSessionId:'native:stage',workspaceId:'w',osUserId:'a',clientId:'c',projectId:'p',liveUserId:'u',liveProjectId:'lp'}};
+ const id=randomUUID(),payload={id,nonceHash,intent};
+ await assert.rejects(service.command(ctx,'c','p','approve',payload));
+ await service.command(ctx,'c','p','grantLight',{userId:'a',enabled:true});
+ const approved=await service.command(ctx,'c','p','approve',payload);assert.equal(approved.state,'approved');
+ const redemption={id,nonceHash,intentDigest:intent.intentDigest};
+ await assert.rejects(service.command({...ctx,workspaceId:'foreign'},'','','claim',redemption));
+ await assert.rejects(service.command({digest:'',workspaceId:'w'},'','','claim',{...redemption,nonceHash:'b'.repeat(64)}));
+ await assert.rejects(service.command({digest:'',workspaceId:'w'},'','','claim',{...redemption,intentDigest:'b'.repeat(64)}));
+ assert.equal((await service.command({digest:'',workspaceId:'w'},'','','claim',redemption)).state,'claimed');
+ // A new service instance reads the same durable decision, not an in-memory nonce.
+ assert.equal((await createStageAuthority(query).command({digest:'',workspaceId:'w'},'','','claim',redemption)).state,'claimed');
+ await assert.rejects(service.command(ctx,'c','p','revoke',redemption));
+ assert.equal((await service.command(ctx,'c','p','revoke',{...redemption,liveCancellation:'cancelled'})).state,'revoked');
+ await assert.rejects(service.command({digest:'',workspaceId:'w'},'','','claim',redemption));
+ const second={...payload,id:randomUUID(),nonceHash:'c'.repeat(64)};await service.command(ctx,'c','p','approve',second);
+ pg(`UPDATE clara_registry_stage_decisions SET expires_at=NOW()-INTERVAL '1 second' WHERE id='${second.id}'`);
+ await assert.rejects(service.command({digest:'',workspaceId:'w'},'','','claim',{id:second.id,nonceHash:second.nonceHash,intentDigest:intent.intentDigest}));
+ const role='stage_limited_'+randomUUID().replaceAll('-','');
+ pg(`CREATE ROLE ${role} NOLOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE NOREPLICATION;
+ GRANT USAGE ON SCHEMA public TO ${role};
+ GRANT SELECT,UPDATE ON clara_auth_workspaces,clara_auth_sessions,clara_workspace_memberships,clara_registry_identity_links,clara_registry_project_links,clara_registry_clients,clara_registry_projects,clara_registry_client_access,clara_registry_project_access TO ${role};
+ GRANT SELECT ON clara_sessions,clara_missions,clara_native_resource_authority TO ${role};
+ GRANT EXECUTE ON FUNCTION clara_native_read_session(text,text,text,text,text) TO ${role};
+ GRANT SELECT ON clara_auth_identities TO ${role};
+ GRANT SELECT,INSERT,UPDATE ON clara_registry_stage_decisions TO ${role};
+ GRANT INSERT ON clara_registry_audit TO ${role};
+ GRANT USAGE ON SEQUENCE clara_registry_audit_id_seq TO ${role};
+ GRANT EXECUTE ON FUNCTION clara_registry_authority(text,text,text,text,text),clara_registry_stage_command(text,text,text,text,text,jsonb) TO ${role};`);
+ try{
+  assert.equal(pg(`SELECT has_schema_privilege('${role}','public','CREATE')`).trim(),'f');
+  assert.equal(pg(`SELECT rolsuper OR rolbypassrls OR rolcreatedb OR rolcreaterole OR rolreplication FROM pg_roles WHERE rolname='${role}'`).trim(),'f');
+  const limited={id:randomUUID(),nonceHash:'d'.repeat(64),intent};
+  const value=JSON.parse(pg(`SET ROLE ${role};SELECT clara_registry_stage_command('${session}','w','c','p','approve','${JSON.stringify(limited)}'::jsonb)`));
+  assert.equal(value.state,'approved');
+  assert.throws(()=>pg(`SET ROLE ${role};CREATE TABLE stage_forbidden(id int)`));
+ }finally{pg(`DROP OWNED BY ${role};DROP ROLE ${role}`);}
+ const fresh=createHash('sha256').update('fresh-synthetic-session').digest('hex');
+ pg(`INSERT INTO clara_auth_sessions(token_hash,user_id,expires_at) VALUES('${fresh}','a',NOW()+INTERVAL '1 hour');UPDATE clara_auth_sessions SET expires_at=NOW()-INTERVAL '1 second' WHERE token_hash='${session}'`);
+ const renewed={digest:fresh,workspaceId:'w'};
+ const pending=await service.command(renewed,'c','p','list',{nativeSessionId:'native:stage'});
+ assert.ok((pending.decisions as unknown[]).length>=1);
+ assert.equal((await service.command(renewed,'c','p','revoke',{id:second.id,nativeSessionId:'native:stage',liveCancellation:'cancelled'})).state,'revoked');
+ await assert.rejects(service.command({digest:'',workspaceId:'w'},'','','claim',{id:second.id,nonceHash:second.nonceHash,intentDigest:intent.intentDigest}));
+ pg("UPDATE clara_registry_identity_links SET revoked_at=NOW()");
+ await assert.rejects(service.command(ctx,'c','p','inspect',redemption));
+ assert.equal(pg("SELECT has_function_privilege('public','clara_registry_stage_command(text,text,text,text,text,jsonb)','EXECUTE')").trim(),'f');
+ // Migration reapplication preserves all decision and audit history.
+ const count=pg('SELECT count(*) FROM clara_registry_stage_decisions');
+ execFileSync('docker',['exec','-i',container,'psql','-U','postgres','-d',db,'-q','-v','ON_ERROR_STOP=1'],{input:readFileSync('db/migrations/027_canonical_stage_decisions.sql'),stdio:['pipe','pipe','pipe']});
+ assert.equal(pg('SELECT count(*) FROM clara_registry_stage_decisions'),count);
+});

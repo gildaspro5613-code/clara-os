@@ -1,3 +1,7 @@
+import {isLegacyMailDraftChatNotice} from '@/lib/native/mail/chat-notice-filter';
+import NativeEarlierMessages from '@/components/native/NativeEarlierMessages';
+import {nativeContext} from '@/lib/native/scoped-context';
+import { nativePage } from "@/lib/native/page-fence";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import MainLayout from "@/components/layout/MainLayout";
@@ -6,6 +10,8 @@ import { resolveOperationalContext } from "@/lib/core/operational-context";
 export const dynamic = "force-dynamic";
 
 export default async function ConversationsPage() {
+  return nativePage(async()=>{
+
   const ui = await getTranslations("ui");
 
   const [t, locale, session] = await Promise.all([
@@ -13,7 +19,8 @@ export default async function ConversationsPage() {
     getLocale(),
     resolveOperationalContext(),
   ]);
-  const messages = session.session.conversation;
+  // Preserve durable history; remove only the five known synthetic mail receipts from display.
+  const messages = session.session.conversation.filter(message=>!isLegacyMailDraftChatNotice(message));
 
   return (
     <MainLayout>
@@ -45,10 +52,11 @@ export default async function ConversationsPage() {
               </Link>
             </div>
 
+            <NativeEarlierMessages key={nativeContext()?.scope.sessionId} sessionId={nativeContext()?.scope.sessionId} firstMessageId={messages[0]?.id} windowSize={messages.length}/>
             {messages.length > 0 ? (
               <ol className="space-y-3">
                 {messages.map((message) => (
-                  <li key={message.id} className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
+                  <li id={"message-"+message.id} key={message.id} className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
                     <div className="flex items-center justify-between gap-4">
                       <span className="text-xs uppercase tracking-[0.18em] text-cyan-300/70">
                         {message.role === "clara" ? "Clara" : session.session.user.firstName ?? ui("user")}
@@ -71,4 +79,5 @@ export default async function ConversationsPage() {
       </div>
     </MainLayout>
   );
+  });
 }

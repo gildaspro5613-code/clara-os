@@ -1,0 +1,32 @@
+Qualification isolée — 2026-11-03 UTC
+Base Production : 073d04aaedc368d8fe59a7635354798f80eeac37
+
+PASS — 24 tests canoniques/sécurité, zéro ignoré :
+CANONICAL_TEST_CONTAINER=clara-canonical-test-postgres node --import tsx --test src/tests/native-authority.test.ts src/tests/header-account-postgres.test.ts src/tests/verified-sign-in.test.ts src/tests/sign-in-transaction.test.ts src/tests/recette-google-sign-in.test.ts src/tests/google-sign-in-postgres.test.ts src/tests/google-display-name.test.ts src/tests/native-google-oauth.test.ts
+
+PASS — 7 recettes navigateur HTTPS avec PostgreSQL local réel :
+- header-login-browser : 13 pages × 5 langues × desktop/mobile, 130 entrées de matrice ; sélection de projet/fil et reprise ; fermeture Échap/clic extérieur/focus ; refus anonyme, expiré et interutilisateur.
+- operational-delivery-browser : logo officiel, navigation, contrôles privés et diagnostic filtré.
+- interface-finalization-browser : contact, mission explicite, conversation, Journal, persistance, desktop/tablette/mobile et 5 langues.
+- native-functional-closure-browser : contacts, Mission/Journal, messagerie simulée et pièces jointes.
+- native-mission-contact-browser : association explicite, fil immuable, reçu durable/rejeu.
+- native-runtime-browser : sélection, mission/chat persistés, consultation sans mutation, refus interutilisateur/projet/origine.
+- header-account-browser : 5 langues × 3 formats, profil natif, clavier, préférences existantes, déconnexion réelle locale et refus après révocation.
+
+Commandes navigateur (avec DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060, DOCUMENTS_E2E_CHROMIUM=/usr/bin/chromium, NODE_EXTRA_CA_CERTS local et NATIVE_TEST_DATABASE de fixture) :
+node --import tsx --test src/tests/operational-delivery-browser.e2e.mjs
+node --import tsx --test --test-concurrency=1 src/tests/native-runtime-browser.e2e.mjs src/tests/native-mission-contact-browser.e2e.mjs src/tests/interface-finalization-browser.e2e.mjs src/tests/native-functional-closure-browser.e2e.mjs
+node --import tsx --test --test-concurrency=1 src/tests/native-runtime-browser.e2e.mjs src/tests/header-account-browser.e2e.mjs
+node --import tsx --test src/tests/native-runtime-browser.e2e.mjs
+
+Détails de reprise : l'ancien libellé du lien Google attendu par native-runtime a été remplacé dans le test par le libellé traduit actuel ; route et assertion de verrouillage inchangées. Une tentative regroupant compte et runtime a exécuté la déconnexion avant runtime, révoquant le jeton de fixture A ; cette tentative ne constitue pas une recette groupée réussie. Le compte est PASS et native-runtime est ensuite PASS seul sur une fixture PostgreSQL neuve. Les 3 autres non-régressions du groupe sont PASS. Aucun état Production ni ACL applicative n'a été corrigé pour ces tests.
+
+PASS — TypeScript : npx tsc --noEmit --pretty false
+PASS — lint ciblé (composants/test modifiés) : zéro erreur ; un avertissement préexistant sur le logo img de Sidebar, conservé.
+PASS — build optimisé : NEXT_TELEMETRY_DISABLED=1 NEXT_FONT_GOOGLE_MOCKED_RESPONSES=/tmp/clara-voice-fonts.cjs npm run build -- --webpack
+PASS — git diff --check et JSON vercel.json.
+PASS — diff nul par rapport à la base pour NativeScopeSelector, Header, UserAccountMenu, Cockpit/Hero/Stage/widgets, auth, routes OAuth, authority et scoped-context.
+
+42 captures PNG avant/après et matrice 130 résultats dans captures/.
+Fournisseurs simulés, aucune authentification Google réelle ni certification Production.
+Aucun merge, déploiement, migration, changement de secret ou de permission distant.

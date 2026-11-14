@@ -1,0 +1,25 @@
+raccordement,statut,preuve_limite,artefacts
+Mission / contexte canonique,PASS,Identités mission/session/projet conservées ; 624fc09 et branche P1 inchangés.,regression-complete.log; preservation-proof.json
+Rattachement depuis Documents,PASS,"Connexion explicite, inspection et attestation projet sur le faux Drive depuis Chromium.",browser.log; browser-result.json
+Import fournisseur réel,NON TESTÉ,Aucun Google réel : scénario reçu par rattachement de PDF synthétiques.,browser-result.json
+Extraction PDF et contrat structuré,PASS,Parseur réel ; contrat existant clara.document-analysis.v1 ; proposition simulée validée par locators et présence des valeurs dans la source.,structured-analysis.json; regression-complete.log
+Équipements / contraintes / hypothèses / conflits,PASS,"Données de fixture structurées transmises à Brain, hypothèse annotée, valeurs contradictoires conservées ; aucune certification métier indépendante.",structured-analysis.json; provider-proof.json
+Provenance technique,PASS,Document/version/ligne pour chaque fait conservé ; ensemble de sources associé aux ambiguïtés/conflits. Attribution sémantique réelle non certifiée.,structured-analysis.json
+Brain documentaire existant,PASS,DOCUMENT_RECEIVED atteint reasoning ; contexte multi-sources rechargé via BrainSourceContext ; aucun nouveau moteur/store.,regression-complete.log; provider-proof.json
+Conversation Clara contextualisée,PASS,"POST réel, deux sources à la frontière du fournisseur simulé ; restitution et historique visibles dans Clara/Conversations après reprise.",chat-result.json; restart-result.json
+Nouveau fil / même mission,PASS,"Sélection explicite après redémarrage, références retrouvées ; aucun transfert silencieux de l’ancien historique.",restart.log; restart-result.json
+Replanification / conservation des références,PASS,"Défaut navigateur reproduit puis corrigé dans nativeMission, régression dédiée réussie.",before-mission-reference-fix-browser.log; regression-complete.log
+Journal / reçu idempotent,PASS,Même ID rejoué sans nouveau Journal/modèle ; ID réutilisé avec autre contenu refusé ; nouvel ID explicite journalisé.,regression-complete.log; ack-loss-result.json; final-receipt-proof.json
+Perte réelle d’acquittement depuis UI,PASS,Réponse coupée après commit vérifié ; opération gardée dans sessionStorage ; refresh et clic explicite rejouent le reçu sans nouvelle analyse.,ack-loss.log; ack-loss-result.json
+Concurrence / refus des anciens propriétaires,PASS,"Une seule invocation propriétaire, refus 409 du concurrent ; autorité/versions recontrôlées au commit SQL.",regression-complete.log
+Mission B / autre propriétaire / révocations,PASS,"Interprojet et interpropriétaire refusés ; révocation refuse références, reçu documentaire et reçu chat.",browser-result.json; regression-complete.log
+Cockpit / Documents / Brain / Journal,PASS,Panneau existant affiche faits/locators/ambiguïtés/conflits ; événements et références persistants.,documents.png; cockpit-after-restart.png; restart-result.json; final-journal-scopes.json
+Refresh / redémarrage processus,PASS,"Nouveau serveur et navigateur : même mission/conversation/références, reçu retrouvé ; sept surfaces chargées.",restart.log; restart-result.json
+FR / EN / ES / DE / IT,PASS,"Catalogues et paramètres vérifiés, Documents parcouru dans les cinq langues ; PDF identique aux octets source.",regression-complete.log; browser-result.json
+P1 / conversations durables / contrats / sécurité voix,PASS,"Non-régressions natives, archive >100 messages, reçus chat, contrats OS↔Live et refus voix sans fournisseur.",regression-complete.log
+Migration 026 / persistance locale,PASS,"Application et réapplication, reçus conservés, EXECUTE non PUBLIC ; tests de restauration locale existants réussis.",regression-complete.log
+TypeScript / build / lint ciblé,PASS,"tsc --noEmit, build Next, eslint fichiers modifiés, diff --check réussis.",tsc-verified.log; build-complete.log; lint-verified.log
+Lint global,FAIL,9 erreurs et 9 avertissements préexistants : fichiers identiques à 624fc09 ; aucune exclusion ajoutée.,lint-final.json; lint-baseline-comparison.json
+Qualité sémantique réelle / injection modèle réel,NON TESTÉ,"OpenAI simulé. Vérification de garde système, locators et absence de tools ; ne prouve pas une résistance sémantique absolue.",provider-proof.json; regression-complete.log
+Voix / téléphonie / IONOS / Live réels,NON TESTÉ,Aucun fournisseur ni Live contacté. Aucun changement de ces modules.,regression-complete.log
+Disponibilité Production / ancien HTTP 503,NON TESTÉ,Réserve historique inchangée. Proxy de test sans pooling ni retry et préchargements spéculatifs filtrés ; pas de preuve de correction Production.,proxy.log.summary.json; proxy-restart.log.summary.json

@@ -1,0 +1,18 @@
+page,element,statut,preuve,limite
+Documents,Messagerie IONOS existante,FONCTIONNEL,"Panneau existant monté ; route/service/PG réels, fournisseur simulé",Ouverture IMAP réelle à certifier
+Clara,Messagerie et brouillons IONOS,FONCTIONNEL,Recette navigateur IONOS préexistante et campagne commune,Aucun SMTP réel
+Documents,Pagination emails au-delà de 50,FONCTIONNEL,"101 messages PG, pages stables, curseurs et rechargement",Tri par ID ; nouvelle synchronisation visible après actualisation ; capacité existante 500
+Documents,Pièces jointes et rattachements,FONCTIONNEL,Service et chiffrement existants ; tests PG et téléchargement navigateur,Google/IONOS réels non certifiés
+Documents,Isolation/délégation/révocation mail,FONCTIONNEL,"Deux utilisateurs, deux clients, trois projets ; tests PG",Chaque nouvelle lecture revalide ; pas de consultation hors ligne certifiée
+Contacts,Création générale explicite,FONCTIONNEL,"POST, acquisition/attestation/Session/Journal atomiques ; recette UI",Pas de dédoublonnage par email ; contexte explicite requis
+Contacts,Édition générale nom/email,FONCTIONNEL,Version optimiste et conflit de commits concurrents réels ; reprise UI,Refus si brouillon déjà présent
+Contacts,Changement de destinataire avec brouillon existant,BLOQUANT,409 CONTACT_DRAFT_REVIEW_REQUIRED testé ; brouillon conservé,Revue du destinataire à définir sans modification silencieuse
+Agenda,Calendrier natif,BLOQUANT,nativeOperationFence conservé ; 503 sur autorité valide,Autorité calendrier et consentement Google absents
+Documents,Drive lecture/analyse/permissions,FONCTIONNEL,Recettes natives documents/PDF/Core/Brain et révocation existantes,Fournisseur simulé
+Documents,Drive import/création/déplacement,BLOQUANT,Consentement drive.readonly et mutations natives non certifiées,Contrat de destination et consentement d’écriture manquants
+Téléphonie,Appel depuis interface,NON CERTIFIÉ,Indisponibilité explicite ; bouton désactivé,Aucun appel réel ; protections API voix non élargies
+Automatisations,Exécution,NON CERTIFIÉ,Avertissement explicite ; liens de navigation seulement,Aucun fournisseur activé
+Commercial,Contact → Mission → Clara → Journal → brouillon → Cockpit,FONCTIONNEL,Campagne navigateur et PG préexistante rejouée,Aucun envoi réel
+Conversations,"Idempotence, historique durable, reprise et isolation",FONCTIONNEL,Tests PG et navigateur natifs communs,Fournisseurs simulés ; reçus conservés
+OS ↔ Live,Contrats et refus transport,FONCTIONNEL,"Tests de contrats, auth et délais de transport existants",Aucune certification réelle Live ; dépôt inchangé
+Production,"Neon/Vercel, rôles, restauration, fournisseurs",NON CERTIFIÉ,Limites des lots 5/5A conservées,Autorisation administrative préalable ; aucune exécution ici

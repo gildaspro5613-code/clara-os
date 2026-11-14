@@ -1,0 +1,28 @@
+✖ a pending Make acknowledgement is not announced as successful execution (20.801096ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3673.263599
+
+✖ failing tests:
+
+test at src/tests/make-connector.test.ts:2:6307
+✖ a pending Make acknowledgement is not announced as successful execution (20.801096ms)
+  AssertionError [ERR_ASSERTION]: The input was expected to not match the regular expression /executed successfully/i. Input:
+
+  'Make scenario executed successfully.'
+
+      at TestContext.<anonymous> (/workspace/clara-os-v1-reception/src/tests/make-connector.test.ts:159:10)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Make scenario executed successfully.',
+    expected: /executed successfully/i,
+    operator: 'doesNotMatch',
+    diff: 'simple'
+  }
