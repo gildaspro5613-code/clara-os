@@ -60,3 +60,16 @@ Inspection Vercel **en lecture seule** : le seul projet `clara-os-recette` actue
 Le clone Make contient **zéro session d'authentification encore valide**. Le rôle `clara_make_runtime_login` dispose des fonctions READ ciblées mais pas de la chaîne d'écriture complète nécessaire pour une conversation OS persistée ; il ne faut pas élargir ses droits généraux ni créer une fausse session. En conséquence, **ne pas annoncer une disponibilité Make dans OS**. L'opération `grant → READ réel → revoke` doit rester NON TESTÉE.
 
 Une unique réception utilisateur reste conditionnée à une **véritable session OS authentifiée sur le même clone** et à une mise à disposition isolée autorisée séparément, **sans Vercel Preview, merge ou déploiement Production**. Ne plus solliciter l'utilisateur pour des tests unitaires. La prochaine décision doit porter uniquement sur la méthode d'hébergement isolé et ses autorisations, et non sur le jeton déjà validé.
+
+## GO — carte Automatisations fondée sur preuve (14/11/2026)
+
+Le badge Make n'est plus simplement constant sur la branche de travail :
+- `src/app/api/native/make/status/route.ts` consulte une fonction SQL native **après résolution de la session authentifiée**, sans renvoyer d'identifiants ni lancer de scénario fournisseur. Hors clone explicitement autorisé, le statut reste `uncertified`.
+- `src/components/automatisations/MakeAutomationCertification.tsx` fournit les cinq traductions et les états `uncertified`, `configured`, `ready_for_test`, `certified`, `certified_inactive`. La UI ne peut pas afficher un état `certified` si l'API ne renvoie pas de preuve `certified:true`.
+- `src/app/automatisations/page.tsx` utilise ce composant seulement sur la carte Make. Aucune exécution de scénario depuis cette page.
+- `clara_make_runtime_scope.native_make_read_certifications` est une table de preuve vide installée sur le clone, non accessible au rôle runtime. Seul un opérateur habilité et une preuve de réception réelle peuvent créer son entrée. Une connexion `CONFIGURED` n'est jamais une certification.
+- La fonction SQL `native_make_readiness` est `SECURITY DEFINER` et exécutable uniquement par le rôle runtime, pas par le provisionneur ni PUBLIC. Une session factice a été rejetée avec `NATIVE_SCOPE_DENIED`.
+
+**État constaté** : 0 preuve de certification, 0 session d'authentification OS active sur le clone, 0 scénario activé, 0 grant Make actif ; un jeton chiffré, connexion CONFIGURED. **Aucun test utilisateur ni exécution fournisseur** n'a été effectué dans ce lot. Les nouveaux tests sources `src/tests/make-automation-certification.test.ts` sont préparés mais pas encore exécutés ; contrôle de cohérence du code : PASS. La qualification E2E et le déploiement restent NO-GO.
+
+L'environnement Vercel Recette actuel reste relié à une autre base et conserve son interdiction d'appels Make. Ne pas contourn­er sa protection ni créer une certification fictive. Une réception authentifiée unique sur un environnement isolé reste indispensable pour qualifier Clara → Make puis la révocation.
