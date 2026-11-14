@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
- TARGET, assertCloneUrl, assertSqlPreflight, parseKey, encryptEnvelope, decryptEnvelope,
+ TARGET, assertCloneUrl, assertSqlPreflight, parseKey, assertDistinctCloneKey, encryptEnvelope, decryptEnvelope,
 } from './provision-make-clone-credential.mjs';
 
 const goodUrl='postgresql://'+TARGET.role+':placeholder-only@'+TARGET.hostname+'/'+TARGET.database+'?sslmode=require';
@@ -40,4 +40,16 @@ test('roundtrip AES-256-GCM envelope matches CredentialStore format',()=>{
  assert.deepEqual(parseKey(key.toString('base64')),key);
  assert.throws(()=>parseKey('bad-key'));
  assert.throws(()=>decryptEnvelope(envelope,Buffer.alloc(32,38)));
+});
+
+test('distinct legacy key formats do not block a clone key',()=>{
+ const clone=Buffer.alloc(32,37);
+ const other=Buffer.alloc(32,38);
+ assert.equal(assertDistinctCloneKey(clone,'legacy-key-in-a-different-format'),true);
+ assert.equal(assertDistinctCloneKey(clone,other.toString('base64')),true);
+ assert.equal(assertDistinctCloneKey(clone,other.toString('hex')),true);
+ assert.equal(assertDistinctCloneKey(clone,undefined),true);
+ assert.throws(()=>assertDistinctCloneKey(clone,clone.toString('base64')),/separate encryption key/);
+ assert.throws(()=>assertDistinctCloneKey(clone,clone.toString('base64url')),/separate encryption key/);
+ assert.throws(()=>assertDistinctCloneKey(clone,clone.toString('hex')),/separate encryption key/);
 });
