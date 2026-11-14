@@ -1,0 +1,47 @@
+name: Make native onboarding isolated closure
+
+on:
+  push:
+    branches:
+      - fix/builder-make-api-onboarding-20261114
+    paths:
+      - '.github/workflows/make-native-onboarding-closure.yml'
+      - 'src/lib/connectors/make/native-*'
+      - 'src/lib/connectors/core/native-connector-builder-runtime.ts'
+      - 'src/app/api/native/connectors/make/**'
+      - 'src/components/connections/**'
+      - 'src/tests/make-native-*.test.ts'
+      - 'vercel.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  isolated-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Offline Make account and native Drive tests
+        run: |
+          node --import tsx --test \
+            src/tests/make-native-api-onboarding.test.ts \
+            src/tests/make-native-drive-input.test.ts \
+            src/tests/make-native-read-handoff.test.ts \
+            src/tests/connector-builder-native-gateway.test.ts \
+            src/tests/make-on-demand-contract.test.ts
+      - name: TypeScript
+        if: always()
+        run: npx tsc --noEmit --pretty false
+      - name: Next.js build
+        if: always()
+        run: npm run build
