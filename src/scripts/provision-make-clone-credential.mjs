@@ -62,6 +62,28 @@ export function assertDistinctCloneKey(cloneKey,legacyValue){
  return true;
 }
 
+/** Validate the decrypted structure without ever logging or returning the token. */
+export function assertMakeReadCredentials(input){
+ if(!input||typeof input!=='object'||Array.isArray(input)
+   ||Object.keys(input).sort().join('|')!=='api|scenarios')
+   reject('Unexpected credential structure');
+ const {api,scenarios}=input;
+ if(!api||typeof api!=='object'||Array.isArray(api)
+   ||Object.keys(api).sort().join('|')!=='token|zone'
+   ||api.zone!=='eu1'||typeof api.token!=='string'
+   ||api.token.length<16||api.token.length>4096||/[\r\n]/.test(api.token))
+   reject('Unexpected API credential');
+ if(!scenarios||typeof scenarios!=='object'||Array.isArray(scenarios)
+   ||Object.keys(scenarios).join('|')!==TARGET.scenario)
+   reject('Unexpected Make scope');
+ const scenario=scenarios[TARGET.scenario];
+ if(!scenario||typeof scenario!=='object'||Array.isArray(scenario)
+   ||Object.keys(scenario).sort().join('|')!=='scenarioId|transport'
+   ||scenario.transport!=='api'||scenario.scenarioId!==TARGET.scenarioId)
+   reject('Unexpected scenario contract');
+ return true;
+}
+
 export function encryptEnvelope(credentials,key){
  if(!Buffer.isBuffer(key)||key.length!==32)reject('Invalid encryption key');
  const iv=randomBytes(12),cipher=createCipheriv('aes-256-gcm',key,iv);
@@ -92,8 +114,8 @@ function assertNoForeignRuntime(){
 
 async function main(){
  const mode=process.argv[2];
- if(!['--check','--commit'].includes(mode)||process.argv.length!==3)
-   reject('Usage: node src/scripts/provision-make-clone-credential.mjs --check|--commit');
+ if(!['--check','--verify','--commit'].includes(mode)||process.argv.length!==3)
+   reject('Usage: node src/scripts/provision-make-clone-credential.mjs --check|--verify|--commit');
  assertNoForeignRuntime();
  const url=assertCloneUrl(process.env.CLARA_MAKE_CLONE_PROVISIONER_URL);
  const {neon}=await import('@neondatabase/serverless');
@@ -112,6 +134,24 @@ async function main(){
  assertSqlPreflight(meta);
  if(mode==='--check'){
    console.log('CLONE MAKE : role, database and permissions OK. No credentials stored.');
+   return;
+ }
+
+ if(mode==='--verify'){
+   // Independent ciphertext integrity proof with the dedicated clone key.
+   // The DB readback function is fixed to the existing Make connection.
+   const rawKey=process.env.CLARA_MAKE_CLONE_ENCRYPTION_KEY;
+   delete process.env.CLARA_MAKE_CLONE_ENCRYPTION_KEY;
+   const key=parseKey(rawKey);
+   try{
+     assertDistinctCloneKey(key,process.env.CLARA_CREDENTIALS_ENCRYPTION_KEY);
+     const [row]=await sql`SELECT clara_make_runtime_scope.verify_make_ciphertext_readback() AS encrypted`;
+     if(!row||typeof row.encrypted!=='string'||row.encrypted.length>12000)
+       reject('Missing encrypted readback');
+     const candidate=decryptEnvelope(row.encrypted,key);
+     assertMakeReadCredentials(candidate);
+   }finally{key.fill(0);}
+   console.log('MAKE CLONE : AES-256-GCM readback verified; connection remains CONFIGURED. No Make run.');
    return;
  }
 
