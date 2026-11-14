@@ -27,7 +27,7 @@ export default function MakeNativeOnboardingPanel(){
  const [failed,setFailed]=useState(false);
  useEffect(()=>{
   const abort=new AbortController();
-  void fetch('/api/connections/make/status',{cache:'no-store',credentials:'same-origin',signal:abort.signal})
+  void fetch('/api/native/connectors/make/connect',{cache:'no-store',credentials:'same-origin',signal:abort.signal})
    .then(async r=>{
     if(!r.ok)throw Error('unavailable');
     const v:unknown=await r.json();
