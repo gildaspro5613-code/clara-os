@@ -19,7 +19,7 @@ export type MakeScenarioCapability = {
   readonly description: string;
   readonly version: string;
   readonly category: string;
-  readonly inputSchema: typeof parameters;
+  readonly inputSchema: Record<string,{type:string;description:string;required:boolean}>;
 };
 
 export const MakeScenarioPrepareCapabilityDefinition: MakeScenarioCapability = {
@@ -49,14 +49,9 @@ export const MakeDriveFindCapabilityDefinition: MakeScenarioCapability = {
   version: "1.0.0",
   category: "Automation",
   inputSchema: {
-    scenarioKey: {
+    query: {
       type: "string",
-      description: "Must be find-drive-document; never model-controlled in the native READ adapter.",
-      required: false,
-    },
-    payload: {
-      type: "object",
-      description: "Drive search criteria. The native adapter accepts only a bounded query field.",
+      description: "Bounded Google Drive document search query (max 200 characters); no scenario key, account ID or secret.",
       required: true,
     },
   },
