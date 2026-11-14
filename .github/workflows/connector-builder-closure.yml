@@ -45,6 +45,8 @@ jobs:
             src/tests/make-connector.test.ts \
             src/tests/make-on-demand-contract.test.ts
       - name: Strict TypeScript
+        if: always()
         run: npx tsc --noEmit --pretty false
       - name: Next.js build without external providers
+        if: always()
         run: npm run build

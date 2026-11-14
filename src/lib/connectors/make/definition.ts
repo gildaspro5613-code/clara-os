@@ -13,11 +13,6 @@ export const MakeConnectorDefinition: ConnectorDefinition = {
   authentication: { type: "webhook", credentialReference: "connectionId" },
   capabilities: [
     {
-      id: MAKE_CAPABILITIES.DRIVE_FIND,
-      operationType: "READ",
-      description: "Search Drive through the reviewed Make find-drive-document scenario only. No other scenario or WRITE/SEND.",
-    },
-    {
       id: MAKE_CAPABILITIES.SCENARIO_PREPARE,
       operationType: "PREPARE",
       description: "Prepare a typed Make scenario invocation without executing it.",
@@ -26,6 +21,11 @@ export const MakeConnectorDefinition: ConnectorDefinition = {
       id: MAKE_CAPABILITIES.SCENARIO_EXECUTE,
       operationType: "EXECUTE",
       description: "Execute an approved Make scenario through its configured webhook.",
+    },
+    {
+      id: MAKE_CAPABILITIES.DRIVE_FIND,
+      operationType: "READ",
+      description: "Search Drive through the reviewed Make find-drive-document scenario only. No other scenario or WRITE/SEND.",
     },
   ],
 };
