@@ -28,5 +28,5 @@ test('no provider call for WRITE, SEND, non-approved workspace or generic PREPAR
 });
 test('chat-facing bridge refuses invalid search and non-native context',async()=>{
  await assert.rejects(()=>executeCloneNativeMakeDriveRead('  '));
- await assert.rejects(()=>executeCloneNativeMakeDriveRead('test only'),e=>e instanceof Error&&e.message==='NATIVE_SCOPE_REQUIRED');
+ await assert.rejects(()=>executeCloneNativeMakeDriveRead('test only'),e=>e instanceof Error&&e.message==='NATIVE_MAKE_CLONE_RUNTIME_DENIED');
 });
