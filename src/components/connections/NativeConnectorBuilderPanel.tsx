@@ -31,6 +31,18 @@ function visibleName(capabilityId:string,lang:string):string{
 }
 const equal=(a:Item,b:Item)=>a.capabilityId===b.capabilityId&&a.connectionId===b.connectionId&&a.provider===b.provider;
 
+async function loadSnapshot(signal?:AbortSignal):Promise<Snapshot|null>{
+  try{
+   const response=await fetch('/api/native/connectors',{credentials:'same-origin',cache:'no-store',signal});
+   if(!response.ok)throw Error('not available');
+   const data:unknown=await response.json();
+   if(!data||typeof data!=='object'||Array.isArray(data))throw Error('invalid');
+   const candidate=data as Partial<Snapshot>;
+   if(!Array.isArray(candidate.candidates)||!Array.isArray(candidate.authorized))throw Error('invalid');
+   return {candidates:candidate.candidates,authorized:candidate.authorized,certified:false};
+  }catch{return null;}
+}
+
 export default function NativeConnectorBuilderPanel(){
  const locale=useLocale();
  const lang=(locale in locales?locale:'fr') as keyof typeof locales;
@@ -41,19 +53,18 @@ export default function NativeConnectorBuilderPanel(){
  const [busy,setBusy]=useState(false);
  const [error,setError]=useState(false);
  const refresh=async(signal?:AbortSignal)=>{
-  try{
-   const response=await fetch('/api/native/connectors',{credentials:'same-origin',cache:'no-store',signal});
-   if(!response.ok)throw Error('not available');
-   const data:unknown=await response.json();
-   if(!data||typeof data!=='object'||Array.isArray(data))throw Error('invalid');
-   const candidate=data as Partial<Snapshot>;
-   if(!Array.isArray(candidate.candidates)||!Array.isArray(candidate.authorized))throw Error('invalid');
-   setSnapshot({candidates:candidate.candidates,authorized:candidate.authorized,certified:false});
-   setUnavailable(false);
-  }catch{if(!signal?.aborted){setUnavailable(true);setSnapshot(null);}}
+  const nextSnapshot=await loadSnapshot(signal);
+  if(signal?.aborted)return;
+  setSnapshot(nextSnapshot);
+  setUnavailable(nextSnapshot===null);
  };
  useEffect(()=>{
-  const controller=new AbortController();void refresh(controller.signal);
+  const controller=new AbortController();
+  void loadSnapshot(controller.signal).then(nextSnapshot=>{
+   if(controller.signal.aborted)return;
+   setSnapshot(nextSnapshot);
+   setUnavailable(nextSnapshot===null);
+  });
   return ()=>controller.abort();
  },[]);
  const submit=async()=>{
