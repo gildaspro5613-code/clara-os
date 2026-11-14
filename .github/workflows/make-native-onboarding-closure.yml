@@ -39,6 +39,9 @@ jobs:
             src/tests/make-native-read-handoff.test.ts \
             src/tests/connector-builder-native-gateway.test.ts \
             src/tests/make-on-demand-contract.test.ts
+      - name: React UI lint — native Connections
+        if: always()
+        run: npx eslint src/components/connections
       - name: TypeScript
         if: always()
         run: npx tsc --noEmit --pretty false
