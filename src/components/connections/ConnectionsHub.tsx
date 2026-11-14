@@ -1,5 +1,6 @@
 "use client";
 
+import NativeConnectorBuilderPanel from './NativeConnectorBuilderPanel';
 import {nativeGoogleHubState,type NativeGoogleHubState} from "./google-native-status";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -106,6 +107,7 @@ export default function ConnectionsHub() {
         <p className="mt-3 text-xs leading-5 text-white/35">{ui("studioStripeReadPending")}</p>
       </article>
       </div>
+      <NativeConnectorBuilderPanel/>
     </>
   );
 }
