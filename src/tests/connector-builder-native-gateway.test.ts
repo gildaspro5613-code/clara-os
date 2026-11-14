@@ -24,12 +24,14 @@ const execute:NativeConnectorReadExecutor={async execute(){return capabilityResp
 test('Builder reuses declared capabilities; existence is not certification',()=>{
  assert.equal(directory.findRead('github.repository.read')?.provider,'github');
  assert.equal(directory.findRead('brevo.list.read')?.provider,'brevo');
+ assert.equal(directory.findRead('make.drive.find')?.provider,'make');
  assert.equal(directory.findRead('make.scenario.execute'),undefined);
  assert.equal(directory.findRead('brevo.email.send'),undefined);
  assert.equal(directory.getCapability('stripe.payment.read'),undefined,
   'Not in the central CapabilityRegistry; do not auto-publish');
  assert.equal(directory.getProvider('stripe')?.id,'stripe');
  assert.equal(directory.getProvider('make')?.authentication,'webhook');
+ assert.equal(directory.getCapability('make.drive.find')?.effect,'READ');
 });
 
 test('Builder prevents duplicate, unknown and malformed provider declarations',()=>{
