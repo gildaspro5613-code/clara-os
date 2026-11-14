@@ -41,6 +41,27 @@ export function parseKey(value){
  return key;
 }
 
+/** An unrelated legacy Clara key may have a different format.
+ * Refuse genuine key reuse (base64, base64url, or hex) without requiring
+ * the legacy secret to be parseable as a new clone key. Never log either key.
+ */
+export function assertDistinctCloneKey(cloneKey,legacyValue){
+ if(!Buffer.isBuffer(cloneKey)||cloneKey.length!==32)
+   reject('Invalid clone key');
+ if(typeof legacyValue!=='string'||!legacyValue.trim())return true;
+ const raw=legacyValue.trim();
+ let comparison=null;
+ if(/^[0-9a-fA-F]{64}$/.test(raw))comparison=Buffer.from(raw,'hex');
+ else if(/^[A-Za-z0-9+/_-]{43}=?$/.test(raw))
+   comparison=Buffer.from(raw.replace(/-/g,'+').replace(/_/g,'/'),'base64');
+ if(comparison && comparison.length===32){
+   const reused=timingSafeEqual(cloneKey,comparison);
+   comparison.fill(0);
+   if(reused)reject('The clone needs a separate encryption key');
+ }
+ return true;
+}
+
 export function encryptEnvelope(credentials,key){
  if(!Buffer.isBuffer(key)||key.length!==32)reject('Invalid encryption key');
  const iv=randomBytes(12),cipher=createCipheriv('aes-256-gcm',key,iv);
@@ -101,11 +122,8 @@ async function main(){
  const rawKey=process.env.CLARA_MAKE_CLONE_ENCRYPTION_KEY;
  delete process.env.CLARA_MAKE_CLONE_ENCRYPTION_KEY;
  const key=parseKey(rawKey);
- if(process.env.CLARA_CREDENTIALS_ENCRYPTION_KEY){
-   const existing=parseKey(process.env.CLARA_CREDENTIALS_ENCRYPTION_KEY);
-   const reused=timingSafeEqual(key,existing);existing.fill(0);
-   if(reused){key.fill(0);reject('The clone needs a separate encryption key');}
- }
+ try{assertDistinctCloneKey(key,process.env.CLARA_CREDENTIALS_ENCRYPTION_KEY);}
+ catch{key.fill(0);throw new Error('Clone encryption key rejected');}
  if(!process.stdin.isTTY||!process.stdout.isTTY){
    key.fill(0);reject('A direct terminal confirmation is required');
  }
