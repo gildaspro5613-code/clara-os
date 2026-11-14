@@ -1,0 +1,25 @@
+{
+  "checkedAt": "2026-11-14",
+  "osProduction": {
+    "id": "dpl_7S76g5iA6hbABzwxvf4nBF8b2DS5",
+    "target": "production",
+    "readyState": "READY",
+    "meta": {
+      "githubCommitRef": "delivery/clara-os-v1-20261025",
+      "githubCommitSha": "4b4821e3f760f500ea7e8d4df3a6ac7a9ca51a7d",
+      "githubCommitMessage": "Merge pull request #275 from gildaspro5613-code/fix/live-production-context-budget-20261109\n\nfix(os↔live): projection sans perte du contexte Production sous budget",
+      "githubRepo": "clara-os",
+      "githubOrg": "gildaspro5613-code"
+    }
+  },
+  "project": {
+    "id": "prj_jLIZqU5V98I4yl8RCbAaoqgM4KNJ",
+    "name": "clara-os"
+  },
+  "branch": "fix/production-context-276",
+  "repositoryProductionBranch": "delivery/clara-os-v1-20261025",
+  "guard": "vercel.json: git.deploymentEnabled[fix/production-context-276] === false; commit [skip ci]; no workflow_run/pull_request_target; no dispatch",
+  "remoteConfigurationChanged": false,
+  "additionalProjectChecked": "clara-os-recette",
+  "deploymentsOnBranchBeforePublication": 0
+}

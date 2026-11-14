@@ -1,0 +1,16 @@
+{
+  "wire": 16239,
+  "business": 10853,
+  "documents": 2990,
+  "omissions": 3627,
+  "request": 1417,
+  "sourceJson": 13900,
+  "compressed": 12913,
+  "readerTruncated": false,
+  "generation": {
+    "status": "failed",
+    "failureCategory": "source_context_budget",
+    "recoverable": false
+  },
+  "providerCalls": 0
+}

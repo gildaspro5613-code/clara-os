@@ -1,0 +1,46 @@
+▲ Next.js 16.4.3 (webpack)
+✓ Running next.config.ts took 48ms
+
+  Creating an optimized production build ...
+Failed to fetch font `Geist`: https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap
+Please check your network connection.
+
+Retrying 1/3...
+Failed to fetch font `Geist Mono`: https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap
+Please check your network connection.
+
+Retrying 1/3...
+Failed to fetch font `Geist`: https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap
+Please check your network connection.
+
+Retrying 2/3...
+Failed to fetch font `Geist Mono`: https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap
+Please check your network connection.
+
+Retrying 2/3...
+Failed to fetch font `Geist`: https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap
+Please check your network connection.
+
+Retrying 3/3...
+Failed to fetch font `Geist Mono`: https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap
+Please check your network connection.
+
+Retrying 3/3...
+Error: Failed to fetch font `Geist`: https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap
+Please check your network connection.
+    at ignore-listed frames
+Error: Failed to fetch font `Geist Mono`: https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap
+Please check your network connection.
+    at ignore-listed frames
+Failed to compile.
+
+src/app/layout.tsx
+`next/font` error:
+Failed to fetch `Geist` from Google Fonts.
+
+src/app/layout.tsx
+`next/font` error:
+Failed to fetch `Geist Mono` from Google Fonts.
+
+
+> Build failed because of webpack errors

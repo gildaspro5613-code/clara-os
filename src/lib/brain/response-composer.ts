@@ -28,7 +28,7 @@ import { extractPhysicalActionProposal, PHYSICAL_ACTION_PROPOSAL_INSTRUCTIONS, t
 import { safeResponseLocale } from "@/i18n/response-language";
 import { responseGeneration, generationNotice, type ResponseGeneration } from "./response-generation";
 import { object } from "./live-project-context";
-import {liveProductionEvidence, compactLiveProductionEvidence, LIVE_EVIDENCE_ENCODING_INSTRUCTION} from "./live-production-evidence";
+import {liveProductionEvidence, prepareLiveProductionEvidence, withLiveProductionCoverage, LIVE_EVIDENCE_ENCODING_INSTRUCTION} from "./live-production-evidence";
 import type { LiveProductionScope } from "./live-production-proposal-guard";
 
 export interface ComposedClaraResponse {
@@ -154,8 +154,17 @@ export async function composeClaraResponseWithProposal(
     const liveSource=session.sources.find(source=>source.source==='clara-live-project' && source.available);
     const data=object(liveSource?.data), prep=object(data.activePreparation);
     const business=object(prep.businessContext);
-    const evidence=Object.keys(business).length
-      ? compactLiveProductionEvidence(liveProductionEvidence(data)) : sourcesSummary;
+    const cached=data.productionEvidence as ReturnType<typeof prepareLiveProductionEvidence>|undefined;
+    const cachedScope=cached?.coverage?.scope;
+    const validCache=cached&&cached.text.length<=12000&&cachedScope?.project===liveProductionScope.projectId&&cachedScope?.preparation===liveProductionScope.preparationId;
+    if([object(data.project).id,business.project_id].some(id=>id!==undefined&&id!==liveProductionScope.projectId)||[prep.id,business.preparation_id].some(id=>id!==undefined&&id!==liveProductionScope.preparationId)){
+      const failed={status:'failed' as const,failureCategory:'invalid_structure',recoverable:false};return {content:generationNotice(locale ?? 'fr',failed),generation:failed};
+    }
+    if(data.truncated===true&&!Object.keys(business).length&&!validCache){const failed={status:'failed' as const,failureCategory:'source_context_budget',recoverable:false};return {content:generationNotice(locale ?? 'fr',failed),generation:failed};}
+    const prepared=validCache?{...cached,coverage:{...cached.coverage!,upstream:{...cached.coverage!.upstream,requestTruncated:message.length>1500,brainSummaryTruncated:(decision?.summary ?? recommendation?.summary ?? '').length>1600}}}:Object.keys(business).length
+      ? prepareLiveProductionEvidence(liveProductionEvidence(data),message,{requestTruncated:message.length>1500,brainSummaryTruncated:(decision?.summary ?? recommendation?.summary ?? '').length>1600})
+      : {text:sourcesSummary,coverage:undefined};
+    const evidence=prepared.text;
     if(evidence.length>12_000) {
       return {content:generationNotice(locale ?? "fr",{status:"failed",recoverable:false}),
         generation:{status:"failed",failureCategory:"source_context_budget",recoverable:false}};
@@ -185,7 +194,7 @@ export async function composeClaraResponseWithProposal(
       }),
       "project_id et preparation_id doivent correspondre exactement au contexte authentifié fourni.",
       "Sections permises : event, timeline, personnel, transport, accommodation, catering, dressing_rooms, access, security, resources, contacts, documents, tasks, decisions, constraints, coordination.",
-      "Chaque ligne contient section, label (max 300 caractères), value (max 2000), notes (max 1500). Extension compatible : responsible facultatif (max 300, nom/rôle attesté uniquement), date facultative YYYY-MM-DD et time facultative HH:mm exclusivement documentés ; sinon omettre ces champs, jamais inventer une affectation ou un horaire.",
+      "Pour rester dans le budget de sortie existant, rédige au plus cinq lots métier concis : label max 120 caractères, value max 850, notes max 500. La couverture sera ajoutée déterministement, pas inventée par toi. Chaque note cite les identifiants sources et les réserves pertinentes. Extension compatible : responsible facultatif (max 300, nom/rôle attesté uniquement), date facultative YYYY-MM-DD et time facultative HH:mm exclusivement documentés ; sinon omettre ces champs, jamais inventer une affectation ou un horaire.",
       "Si aucune proposition n'est justifiée, retourne rows:[] ; le contrôle existant refusera la génération sans rien sauvegarder.",
       "LANGUE",
       locale ? responseLanguageInstruction(locale) : "Réponds dans la langue de la demande.",
@@ -213,7 +222,9 @@ export async function composeClaraResponseWithProposal(
       // partial text; it must never become an actionable Live proposal.
       return {content:generationNotice(locale ?? "fr",generation),generation};
     }
-    return {content:result.content.trim(),generation};
+    const content=withLiveProductionCoverage(result.content.trim(),prepared.coverage,liveProductionScope,locale ?? 'fr');
+    if(content===null){const failed={status:'failed' as const,failureCategory:'invalid_structure',recoverable:false};return {content:generationNotice(locale ?? 'fr',failed),generation:failed};}
+    return {content,generation};
   }
 
   const taskSummary = mission?.tasks.length

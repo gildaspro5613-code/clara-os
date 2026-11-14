@@ -113,11 +113,15 @@ test('Production source budget: compact evidence completes one durable scoped jo
  const jobId=id(),scope=id();await store.enqueue(scope,jobId,'clara-live','os-workspace',wire,id().slice(0,32));
  assert.equal(await runEventJob(jobId,store,route.execute,()=>route.products),true);
  const saved=await store.lookup(scope,jobId);assert.equal(saved?.status,'completed');assert.equal(generations,1);
- assert.deepEqual(JSON.parse((saved?.result as {response:string}).response),proposal);
+ const composed=(saved?.result as {response:string}).response;
+ const actual=JSON.parse(composed);
+ assert.deepEqual(actual.rows.slice(0,proposal.rows.length),proposal.rows.map(row=>({...row,notes:'Dossier partiel : voir la couverture des sources.\n'+row.notes})));
+ assert.ok(actual.rows.slice(proposal.rows.length).length>0);
+ assert.ok(actual.rows.slice(proposal.rows.length).every((row:typeof proposal.rows[number])=>row.section==='constraints'&&JSON.parse(row.notes).manifest==='live_roadmap_selection_v1'));
  assert.equal(await store.lookup('foreign-scope',jobId),null);
  assert.equal(await runEventJob(jobId,store,route.execute,()=>route.products),false);assert.equal(generations,1);
  const key=sessionKey(wire.scope,'A');const durable=JSON.parse((await pg.runSql(`SELECT data FROM clara_sessions WHERE id='${key}'`)).trim()) as ClaraSession;
- assert.equal(durable.conversation.length,2);assert.equal(durable.conversation[1].content,JSON.stringify(proposal));
+ assert.equal(durable.conversation.length,2);assert.equal(durable.conversation[1].content,composed);
  // Only OS session/job receipts are persisted by this harness: no Live writer or hardware adapter exists in this path.
  assert.equal(route.metrics.documentAnalyses,0);
 });
