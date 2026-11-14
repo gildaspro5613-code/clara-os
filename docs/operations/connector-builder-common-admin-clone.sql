@@ -67,7 +67,7 @@ BEGIN
   JOIN public.clara_connection_credentials cc ON cc.connection_id=co.id
   WHERE co.id=conn_id AND co.workspace_id=w AND co.status='ACTIVE'
     AND co.scopes @> cat.required_scopes
-    AND cat.enabled AND cat.reviewed_by IS NOT NULL
+    AND cat.effect='READ' AND cat.enabled AND cat.reviewed_by IS NOT NULL
     AND cat.reviewed_at IS NOT NULL AND cat.revoked_at IS NULL
   FOR SHARE OF co,cat,cc;
   IF provider_ IS NULL THEN
