@@ -1,0 +1,19 @@
+{"test_origin":"http://127.0.0.1:35411"}
+External job acceptance {"job_id":null,"correlation_id":"0ccfa1037fb047c3971f965d6ba4a817","phase":"authentication","event":"phase_end","code":"PHASE_COMPLETED","duration_ms":0}
+External job acceptance {"job_id":"b945f3c37f4613b23df6fb1f85640b52108cf86534dc1410bcd068d00e7ce151","correlation_id":"0ccfa1037fb047c3971f965d6ba4a817","phase":"body_validation","event":"phase_end","code":"PHASE_COMPLETED","duration_ms":1}
+External job acceptance {"job_id":"b945f3c37f4613b23df6fb1f85640b52108cf86534dc1410bcd068d00e7ce151","correlation_id":"0ccfa1037fb047c3971f965d6ba4a817","event":"accepted","status":"queued","duration_ms":165}
+External job acceptance {"job_id":"b945f3c37f4613b23df6fb1f85640b52108cf86534dc1410bcd068d00e7ce151","correlation_id":"0ccfa1037fb047c3971f965d6ba4a817","event":"phase_end","phase":"job_persistence","http_status":202,"code":"EVENT_JOB_ACCEPTED","duration_ms":167}
+External job {"job_id":"b945f3c37f4613b23df6fb1f85640b52108cf86534dc1410bcd068d00e7ce151","correlation_id":"0ccfa1037fb047c3971f965d6ba4a817","event":"claimed"}
+External job {"job_id":"b945f3c37f4613b23df6fb1f85640b52108cf86534dc1410bcd068d00e7ce151","correlation_id":"0ccfa1037fb047c3971f965d6ba4a817","event":"invocation_end","duration_ms":511}
+External job acceptance {"job_id":null,"correlation_id":"1464fb142dde4ed783654a328f9fa943","phase":"authentication","event":"phase_end","code":"PHASE_COMPLETED","duration_ms":0}
+External job acceptance {"job_id":"4dfb73fc71efeaa1765dcd968e94b965f91cd686c3c0c8e2b3bc8bd818b7964c","correlation_id":"1464fb142dde4ed783654a328f9fa943","phase":"body_validation","event":"phase_end","code":"PHASE_COMPLETED","duration_ms":0}
+External job acceptance {"job_id":"4dfb73fc71efeaa1765dcd968e94b965f91cd686c3c0c8e2b3bc8bd818b7964c","correlation_id":"1464fb142dde4ed783654a328f9fa943","event":"accepted","status":"queued","duration_ms":160}
+External job acceptance {"job_id":"4dfb73fc71efeaa1765dcd968e94b965f91cd686c3c0c8e2b3bc8bd818b7964c","correlation_id":"1464fb142dde4ed783654a328f9fa943","event":"phase_end","phase":"job_persistence","http_status":202,"code":"EVENT_JOB_ACCEPTED","duration_ms":159}
+External job {"job_id":"4dfb73fc71efeaa1765dcd968e94b965f91cd686c3c0c8e2b3bc8bd818b7964c","correlation_id":"1464fb142dde4ed783654a328f9fa943","event":"claimed"}
+External job {"job_id":"4dfb73fc71efeaa1765dcd968e94b965f91cd686c3c0c8e2b3bc8bd818b7964c","correlation_id":"1464fb142dde4ed783654a328f9fa943","event":"invocation_end","duration_ms":458}
+External job acceptance {"job_id":null,"correlation_id":"484cc1d95d5d470fa4363fd8ae0cd39a","phase":"authentication","event":"phase_end","code":"PHASE_COMPLETED","duration_ms":0}
+External job acceptance {"job_id":"f41d778372c8b45a22aa6dbf5ad46485ac83e980eb9cff1c0bd028794e18def7","correlation_id":"484cc1d95d5d470fa4363fd8ae0cd39a","phase":"body_validation","event":"phase_end","code":"PHASE_COMPLETED","duration_ms":0}
+External job acceptance {"job_id":"f41d778372c8b45a22aa6dbf5ad46485ac83e980eb9cff1c0bd028794e18def7","correlation_id":"484cc1d95d5d470fa4363fd8ae0cd39a","event":"accepted","status":"queued","duration_ms":143}
+External job acceptance {"job_id":"f41d778372c8b45a22aa6dbf5ad46485ac83e980eb9cff1c0bd028794e18def7","correlation_id":"484cc1d95d5d470fa4363fd8ae0cd39a","event":"phase_end","phase":"job_persistence","http_status":202,"code":"EVENT_JOB_ACCEPTED","duration_ms":143}
+External job {"job_id":"f41d778372c8b45a22aa6dbf5ad46485ac83e980eb9cff1c0bd028794e18def7","correlation_id":"484cc1d95d5d470fa4363fd8ae0cd39a","event":"claimed"}
+External job {"job_id":"f41d778372c8b45a22aa6dbf5ad46485ac83e980eb9cff1c0bd028794e18def7","correlation_id":"484cc1d95d5d470fa4363fd8ae0cd39a","event":"invocation_end","duration_ms":535}

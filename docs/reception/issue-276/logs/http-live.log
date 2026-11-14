@@ -1,0 +1,49 @@
+..
+=============================== warnings summary ===============================
+../.onboarding/venv/lib/python3.12/site-packages/starlette/formparsers.py:12
+  /workspace/.onboarding/venv/lib/python3.12/site-packages/starlette/formparsers.py:12: PendingDeprecationWarning: Please use `import python_multipart` instead.
+    import multipart
+
+../.onboarding/venv/lib/python3.12/site-packages/reportlab/lib/rl_safe_eval.py:12
+  /workspace/.onboarding/venv/lib/python3.12/site-packages/reportlab/lib/rl_safe_eval.py:12: DeprecationWarning: ast.NameConstant is deprecated and will be removed in Python 3.14; use ast.Constant instead
+    haveNameConstant = hasattr(ast,'NameConstant')
+
+../../tmp/clara-live-light-341/.tmp/stage-secondary-finish/backend/server.py:8194
+  /tmp/clara-live-light-341/.tmp/stage-secondary-finish/backend/server.py:8194: DeprecationWarning:
+          on_event is deprecated, use lifespan event handlers instead.
+
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+
+    @app.on_event("startup")
+
+../.onboarding/venv/lib/python3.12/site-packages/fastapi/applications.py:4495
+../.onboarding/venv/lib/python3.12/site-packages/fastapi/applications.py:4495
+  /workspace/.onboarding/venv/lib/python3.12/site-packages/fastapi/applications.py:4495: DeprecationWarning:
+          on_event is deprecated, use lifespan event handlers instead.
+
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+
+    return self.router.on_event(event_type)
+
+../../tmp/clara-live-light-341/.tmp/stage-secondary-finish/backend/server.py:8429
+  /tmp/clara-live-light-341/.tmp/stage-secondary-finish/backend/server.py:8429: DeprecationWarning:
+          on_event is deprecated, use lifespan event handlers instead.
+
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+
+    @app.on_event("shutdown")
+
+src/tests/production_context_276_reception.py::test_actual_live_context_browser_accept_explicit_save_and_failure
+  /opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/site-packages/websockets/legacy/__init__.py:6: DeprecationWarning: websockets.legacy is deprecated; see https://websockets.readthedocs.io/en/stable/howto/upgrade.html for upgrade instructions
+    warnings.warn(  # deprecated in 14.0 - 2024-11-09
+
+src/tests/production_context_276_reception.py::test_actual_live_context_browser_accept_explicit_save_and_failure
+  /workspace/.onboarding/venv/lib/python3.12/site-packages/uvicorn/protocols/websockets/websockets_impl.py:22: DeprecationWarning: websockets.server.WebSocketServerProtocol is deprecated
+    from websockets.server import WebSocketServerProtocol
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: /workspace/os-context/docs/reception/issue-276/proofs/http-live-junit.xml -
+2 passed, 8 warnings in 41.85s
