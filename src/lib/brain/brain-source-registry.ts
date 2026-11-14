@@ -224,13 +224,35 @@ export async function buildBrainSources(
       });
     }
 
+    if(builderReads.length){
+      // A single explicit user READ may be selected by Clara from the same
+      // approved list. The server validates the selected capability and SQL
+      // authorizations before AND after the provider call. One choice, no
+      // automatic retry, no WRITE/SEND, no connection selection from GPT.
+      const {selectAndExecuteNativeBuilderRead}=await import('@/lib/connectors/core/native-connector-builder-selection');
+      const outcome=await selectAndExecuteNativeBuilderRead(extractMessage(event),builderReads);
+      if(outcome){
+        contexts.push({
+          source:'connector-builder-read',
+          available:outcome.available,
+          data:outcome.available
+            ? {capabilityId:outcome.capabilityId,provider:outcome.source,result:outcome.content}
+            : null,
+          summary:outcome.available
+            ? String(outcome.content??'') 
+            : 'CONNECTOR_READ_UNAVAILABLE: no confirmed provider result; no retry, WRITE or SEND was performed.',
+        });
+      }
+    }
+
     const revalidate=(key:string,check:()=>Promise<void>)=>{
       native.documentRevalidators??=new Map();native.documentRevalidators.set(key,check);
       native.documentRevalidate=async()=>{for(const verify of native.documentRevalidators!.values())await verify();};
     };
     // The provider key remains server-side. An explicit Brevo READ request
     // must pass the existing native session and company workspace authority.
-    if(/\bbrevo\b/i.test(extractMessage(event))){
+    if(/\bbrevo\b/i.test(extractMessage(event)) &&
+       !builderReads.some(({provider})=>provider==='brevo')){
       const {brevoReadKindFromMessage,readBrevoBounded,brevoReadFailureCode}=await import('@/lib/connectors/brevo/api-key-read');
       const kind=brevoReadKindFromMessage(extractMessage(event));
       if(native.scope.workspaceId!==CURRENT_WORKSPACE_ID){
