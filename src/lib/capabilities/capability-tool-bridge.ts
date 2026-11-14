@@ -105,6 +105,18 @@ export class CapabilityToolBridge {
     const native=nativeContext();
     if(native){
       const directory=new ConnectorBuilderDirectory();
+      const providerOperation=directory.listProviders().some(provider=>
+        capabilityId.startsWith(provider.id+'.'));
+      if(providerOperation && !directory.findRead(capabilityId)){
+        // READ/EXECUTE is a property of the reviewed capability, NOT a
+        // model-level approval. Never fall back to the generic executor for a
+        // native Make, Brevo, GitHub or Stripe WRITE/SEND operation.
+        return {
+          success:false,callId:toolCall.callId,capabilityId,
+          message:'NATIVE_CONNECTOR_OPERATION_NOT_CERTIFIED',
+          completedAt:new Date(),
+        };
+      }
       if(directory.findRead(capabilityId)){
         if(principal.actorId!==native.userId||
            principal.workspaceId!==native.scope.workspaceId){
