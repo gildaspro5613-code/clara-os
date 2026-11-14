@@ -13,6 +13,23 @@ export const runtime='nodejs';
 export const dynamic='force-dynamic';
 const headers={'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'};
 
+/** Scoped non-secret connection status; never uses the global MD workspace. */
+export async function GET(request:Request){
+ try{
+  return await withNativeScope(request,false,async()=>{
+   const ctx=nativeContext();
+   if(!ctx)throw new RegistryError(403,'MAKE_NATIVE_SESSION_REQUIRED');
+   const rows=await sql`
+    SELECT status FROM clara_connections
+    WHERE workspace_id=${ctx.scope.workspaceId} AND provider='make'
+    LIMIT 1
+   ` as Array<{status:string}>;
+   return Response.json({provider:'make',status:rows[0]?.status??'NOT_CONFIGURED',
+    connected:rows[0]?.status==='ACTIVE',certified:false},{headers});
+  });
+ }catch(e){return nativeFailure(e);}
+}
+
 /** One-time, owner-approved supplier onboarding inside Clara OS itself.
  * The API token is encrypted before SQL and never returned or logged.
  * A successful provider metadata GET is not an E2E certification.
