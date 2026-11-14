@@ -39,12 +39,19 @@ export function verifyMakeDriveScenarioContract(
  const iface=record(interfaceEnvelope?.interface??interfaceEnvelope);
  const inputs=iface?.input;
  const blueprintEnvelope=record(blueprintResponse);
- let raw=blueprintEnvelope?.blueprint??blueprintEnvelope?.response??blueprintResponse;
+ const inner=record(blueprintEnvelope?.response);
+ let raw=blueprintEnvelope?.blueprint??inner?.blueprint??
+  blueprintEnvelope?.response??blueprintResponse;
  if(typeof raw==='string'){
   if(raw.length>MAX_BLUEPRINT_BYTES)return false;
   try{raw=JSON.parse(raw);}catch{return false;}
  }
- const outer=record(raw),blueprint=record(outer?.blueprint??outer);
+ let outer=record(raw);
+ if(typeof outer?.blueprint==='string'){
+  if(outer.blueprint.length>MAX_BLUEPRINT_BYTES)return false;
+  try{outer=record(JSON.parse(outer.blueprint));}catch{return false;}
+ }
+ const blueprint=record(outer?.blueprint??outer);
  const flow=blueprint?.flow;
  if(!scenario||!iface||!Array.isArray(inputs)||!blueprint||!Array.isArray(flow)||
    flow.length!==MODULES.length)return false;
@@ -56,7 +63,7 @@ export function verifyMakeDriveScenarioContract(
  if(!names.every((x,i)=>x===MODULES[i]))return false;
  // Refuse nested routing/branches that could execute something other than READ.
  if(flow.some(part=>{const x=record(part);return !x||x.routes!==undefined||
-   x.flow!==undefined||x.mapper===undefined;}))return false;
+   x.flow!==undefined;}))return false;
  const defined=new Map<string,{required:boolean;type:string}>();
  for(const entry of inputs){
   const v=record(entry);
