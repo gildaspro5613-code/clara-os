@@ -19,6 +19,10 @@
 import {
   CapabilityEngine,
 } from "./capability-engine";
+import {nativeContext} from '@/lib/native/scoped-context';
+import {ConnectorBuilderDirectory} from '@/lib/connectors/core/connector-builder-directory';
+import {executeNativeBuilderToolCall} from '@/lib/connectors/core/native-connector-builder-tool';
+
 
 import {
   CapabilityRegistry,
@@ -93,6 +97,30 @@ export class CapabilityToolBridge {
           `Unknown Clara capability: "${capabilityId}".`,
         completedAt: new Date(),
       };
+    }
+
+    // Native Connector Builder READ uses one canonical identity and the
+    // reviewed, revocable grant authority. It must never fall back to the
+    // legacy connectionId/workspace argument supplied by the model.
+    const native=nativeContext();
+    if(native){
+      const directory=new ConnectorBuilderDirectory();
+      if(directory.findRead(capabilityId)){
+        if(principal.actorId!==native.userId||
+           principal.workspaceId!==native.scope.workspaceId){
+          return {
+            success:false,callId:toolCall.callId,capabilityId,
+            message:'CONNECTOR_NATIVE_IDENTITY_REQUIRED',
+            completedAt:new Date(),
+          };
+        }
+        const read=await executeNativeBuilderToolCall(toolCall);
+        return {
+          success:read.available,callId:toolCall.callId,capabilityId,
+          message:read.available?'Connector READ completed.':'Connector READ unavailable.',
+          content:read.content,completedAt:new Date(),
+        };
+      }
     }
 
     await this.audit.record({
