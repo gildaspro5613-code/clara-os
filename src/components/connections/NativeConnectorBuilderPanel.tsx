@@ -63,7 +63,7 @@ export default function NativeConnectorBuilderPanel(){
    const response=await fetch('/api/native/connectors',{
     method:'POST',credentials:'same-origin',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({...pending.item,operation:pending.operation,approved:true}),
+    body:JSON.stringify({connectionId:pending.item.connectionId,capabilityId:pending.item.capabilityId,operation:pending.operation,approved:true}),
    });
    // Only the server-reported change counts. Never show success optimistically.
    if(!response.ok)throw Error('not confirmed');
