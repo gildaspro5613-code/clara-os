@@ -41,3 +41,25 @@ Tests TypeScript disponibles : `src/tests/connector-builder-native-gateway.test.
 Un seul candidat transversal, puis deux parcours représentatifs : GitHub ou Brevo READ via l'autorité commune et Make scénario READ via le catalogue spécifique sécurisé. Réception de leur exécution depuis une session Clara OS réelle, avec audit/revocation, en conservant les droits Production intacts jusqu'à GO. Ne pas exiger de l'utilisateur des tests unitaires ni lui faire manipuler les identifiants.
 
 **NO-GO permanent tant que non validé :** READY, merge, Preview Vercel, déploiement Production, activation WRITE/SEND et opérations fournisseur.
+
+## Complément — raccordement adaptateurs et entrée Brain (même lot)
+
+- `src/lib/connectors/core/native-connector-builder-runtime.ts` : couche réutilisable `nativeBuilderReadAuthority`, `nativeBuilderReadAudit`, accès au `CredentialStore` par la fonction SQL unique `native_read(..., 'credentials')`, résolution de connexion confinée, puis délégation aux adaptateurs GitHub/Brevo/Stripe **existants**. Aucune lecture directe de coffre par le rôle limité.
+- `src/lib/connectors/core/native-connector-builder-admin.ts` : API interne unique `grant/revoke` exigeant une approbation explicite et un contexte natif écrivable, dont le SQL revérifie l'identité du signataire et les droits owner/admin. Aucune route publique ni consentement tacite.
+- `src/lib/connectors/core/native-connector-builder-tool.ts` : entrée générique pour une future invocation par le Brain depuis une session Clara native, avec nom de capacité déclaré, JSON borné, zéro identité ou connexion fournie par le modèle, refus sans session, pas de retry automatique.
+- Test `src/tests/connector-builder-native-gateway.test.ts` enrichi : refus des capacités WRITE/SEND et appel hors session, faux résultat, révocation pendant l'appel, entrée malformée. **À exécuter avant candidature Ready ou livraison ; ne pas annoncer PASS sans trace réelle.**
+
+### Préflight final en lecture seule
+
+Branche GitHub existante, HEAD `9237424350442e68184989a4a102edaac4f834bc` ; uniquement en isolation.
+Base Neon : 0 capacité approuvée/activée dans le Builder, 0 grant, 0 journal, 0 session authentifiée non expirée ; Make toujours `CONFIGURED`. Ni PUBLIC ni le rôle provisionneur ne peuvent exécuter les fonctions de lecture/admin du Builder. Les tests négatifs sur SQL du clone ont refusé la session inventée.
+
+### Définition de « terminé »
+
+Le Builder ne sera **pas qualifié comme utilisable** tant que les contrôles suivants ne seront pas obtenus dans Clara OS avec la session réelle :
+1. Un registre et une autorité applicative unique opérationnels sur la base existante (pas de copie du clone SQL hardcodée).
+2. Une sélection/autorisation exploitable depuis l'interface ou la conversation pour un fournisseur déjà intégré, sans commandes SQL de l'utilisateur.
+3. Deux fournisseurs différents passant le même chemin `grant → READ → revoke → refus`, avec journal et résultat réellement confirmé. Les cas Make scénario READ et Brevo sont des priorités, mais leur certification fournisseur demeure distincte.
+4. Une proposition de livraison Production et plan de retour arrière soumis au GO explicite du propriétaire.
+
+Le travail conservé dans cette branche est un **socle transversal candidat**, non la preuve d'un Builder complet ou d'un connecteur Make opérationnel.
