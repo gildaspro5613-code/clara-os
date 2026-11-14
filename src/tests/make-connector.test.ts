@@ -21,7 +21,7 @@ function fakeHttp(response: Response) {
   };
 }
 
-test("Make definition exposes only prepare and execute V1 capabilities", () => {
+test("Make definition preserves prepare/execute and declares one isolated READ business capability", () => {
   assert.equal(MakeConnectorDefinition.id, "make");
   assert.deepEqual(MakeConnectorDefinition.authentication, {
     type: "webhook",
@@ -38,6 +38,10 @@ test("Make definition exposes only prepare and execute V1 capabilities", () => {
   assert.equal(
     MakeConnectorDefinition.capabilities.find(({ id }) => id === MAKE_CAPABILITIES.SCENARIO_EXECUTE)?.operationType,
     "EXECUTE",
+  );
+  assert.equal(
+    MakeConnectorDefinition.capabilities.find(({ id }) => id === MAKE_CAPABILITIES.DRIVE_FIND)?.operationType,
+    "READ",
   );
 });
 
