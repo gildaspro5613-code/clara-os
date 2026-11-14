@@ -184,6 +184,30 @@ export function nativeBuilderReadExecutor(
    if(!response.success||response.status!=='completed')
     throw new RegistryError(503,'CONNECTOR_BUILDER_PROVIDER_FAILED');
    data=response.data;
+  }else if(request.provider==='make' &&
+           request.capabilityId==='make.drive.find'){
+   // The provider's generic EXECUTE endpoint is used only as an implementation
+   // detail of this SINGLE catalog-reviewed READ scenario. Never permit a
+   // model-controlled scenarioKey or arbitrary Make run, send or write.
+   const keys=Object.keys(request.input);
+   if(keys.length!==1||keys[0]!=='query'||
+      typeof request.input.query!=='string'||
+      !request.input.query.trim()||request.input.query.length>200)
+    throw new RegistryError(400,'CONNECTOR_BUILDER_MAKE_QUERY_DENIED');
+   const {MakeConnectorAdapter}=await import('@/lib/connectors/make/adapter');
+   const {MAKE_CAPABILITIES}=await import('@/lib/connectors/make/definition');
+   const adapter=new MakeConnectorAdapter(connection);
+   const response=await adapter.execute(request.connectionId,{
+     capability:MAKE_CAPABILITIES.SCENARIO_EXECUTE,
+     input:{scenarioKey:'find-drive-document',payload:{query:request.input.query}},
+   });
+   const receipt=response.data;
+   if(!receipt||typeof receipt!=='object'||!('ok' in receipt)||
+      receipt.ok!==true||!('executionStatus' in receipt)||
+      receipt.executionStatus!=='completed'||
+      !('scenarioKey' in receipt)||receipt.scenarioKey!=='find-drive-document')
+    throw new RegistryError(503,'CONNECTOR_BUILDER_MAKE_RECEIPT_DENIED');
+   data=receipt.data;
   }else if(request.provider==='stripe'){
    const {StripeConnectorAdapter}=await import('@/lib/connectors/stripe/adapter');
    const adapter=new StripeConnectorAdapter(connection);
