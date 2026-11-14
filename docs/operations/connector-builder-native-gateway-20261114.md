@@ -63,3 +63,15 @@ Le Builder ne sera **pas qualifié comme utilisable** tant que les contrôles su
 4. Une proposition de livraison Production et plan de retour arrière soumis au GO explicite du propriétaire.
 
 Le travail conservé dans cette branche est un **socle transversal candidat**, non la preuve d'un Builder complet ou d'un connecteur Make opérationnel.
+
+## Mise à jour — découverte et pont central (14 novembre)
+
+- `src/lib/connectors/core/native-connector-builder-discovery.ts` et SQL `docs/operations/connector-builder-native-discovery-clone.sql` ajoutés : la découverte ne publie que les capacités READ **déjà consenties**, vérifiées dans la session canonique utilisateur/workspace/client/projet, dont la connexion fournisseur est ACTIVE. La liste ne contient aucun secret et la lecture d'un catalogue n'est pas un appel fournisseur.
+- `src/lib/brain/brain-source-registry.ts` publie ces seules capacités autorisées comme contexte cognitif non exécutable. Aucun outil n'est automatiquement activé parce qu'un fournisseur figure dans le catalogue.
+- `src/lib/capabilities/capability-tool-bridge.ts` route les capacités READ reconnues, lorsqu'un contexte natif existe, vers `executeNativeBuilderToolCall` et la même passerelle auditée. Refus si l'identité ou l'espace du principal ne correspondent pas à la session ; pas de fallback sur les paramètres hérités `connectionId` fournis par le modèle. Le chemin historique sans contexte natif demeure inchangé.
+- La découverte SQL a été installée uniquement sur le clone Neon isolé. Refus réel d'une fausse session : `NATIVE_SCOPE_DENIED` / SQLSTATE 42501. Autorisation EXECUTE du rôle limité : oui ; PUBLIC : non. Le rôle limité ne peut pas interroger la table des grants directement.
+- Après ces opérations : 0 capacité activée, 0 grant, 0 entrée d'audit, 0 session OS authentifiée active, connexion Make toujours `CONFIGURED`.
+
+**Limitations non levées :** la conversation native ne déclenche pas encore le `CognitiveToolLoop` avec outils ; l'entrée Builder est raccordée au pont de capacités existant, sans activation automatique dans le cycle Brain actuel. Les définitions Make READ ne sont pas encore normalisées dans le catalogue commun. Les scripts SQL de clone ont encore un rôle/une base/une entreprise de qualification explicites et ne constituent pas une migration multi-tenant de Production. Le test complet depuis une vraie session Clara et les nouveaux tests TypeScript ne sont pas exécutés : **ne pas annoncer le Builder fonctionnel ou livré.**
+
+**Budget / sécurité :** aucun environnement Vercel créé, pas de preview, pas de déploiement, pas de merge, aucun appel fournisseur ni nouvelle consommation Make/Brevo, aucun secret lu ou renvoyé.
