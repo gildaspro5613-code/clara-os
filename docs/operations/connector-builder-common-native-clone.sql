@@ -9,6 +9,7 @@ GRANT USAGE ON SCHEMA clara_connector_builder TO clara_make_runtime_login;
 CREATE TABLE IF NOT EXISTS clara_connector_builder.read_catalog (
  provider TEXT NOT NULL CHECK (provider ~ '^[a-z][a-z0-9_-]{0,63}$'),
  capability_id TEXT NOT NULL CHECK (capability_id ~ '^[a-z][a-z0-9._:-]{1,119}$'),
+ effect TEXT NOT NULL DEFAULT 'READ' CHECK (effect='READ'),
  required_scopes JSONB NOT NULL DEFAULT '[]'::jsonb
   CHECK (jsonb_typeof(required_scopes)='array'),
  contract_revision INTEGER NOT NULL CHECK (contract_revision>0),
@@ -110,7 +111,7 @@ BEGIN
  WHERE gr.workspace_id=w AND gr.client_id=c AND gr.project_id=p
    AND gr.owner_user_id=actor AND gr.capability_id=requested_capability
    AND gr.revoked_at IS NULL AND gr.revision>0
-   AND cat.enabled AND cat.revoked_at IS NULL
+   AND cat.effect='READ' AND cat.enabled AND cat.revoked_at IS NULL
    AND cat.reviewed_by IS NOT NULL AND cat.reviewed_at IS NOT NULL
    AND conn.scopes @> cat.required_scopes
  ORDER BY gr.revision DESC,gr.connection_id
