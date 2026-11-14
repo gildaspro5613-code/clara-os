@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
- TARGET, assertCloneUrl, assertSqlPreflight, parseKey, assertDistinctCloneKey, encryptEnvelope, decryptEnvelope,
+ TARGET, assertCloneUrl, assertSqlPreflight, parseKey, assertDistinctCloneKey, assertMakeReadCredentials, encryptEnvelope, decryptEnvelope,
 } from './provision-make-clone-credential.mjs';
 
 const goodUrl='postgresql://'+TARGET.role+':placeholder-only@'+TARGET.hostname+'/'+TARGET.database+'?sslmode=require';
@@ -52,4 +52,17 @@ test('distinct legacy key formats do not block a clone key',()=>{
  assert.throws(()=>assertDistinctCloneKey(clone,clone.toString('base64')),/separate encryption key/);
  assert.throws(()=>assertDistinctCloneKey(clone,clone.toString('base64url')),/separate encryption key/);
  assert.throws(()=>assertDistinctCloneKey(clone,clone.toString('hex')),/separate encryption key/);
+});
+
+test('readback accepts only one approved READ scenario and never exposes token',()=>{
+ const ok={api:{token:'valid-fixture-placeholder',zone:'eu1'},
+  scenarios:{'find-drive-document':{transport:'api',scenarioId:7295042}}};
+ assert.equal(assertMakeReadCredentials(ok),true);
+ for(const invalid of [
+  {...ok,api:{...ok.api,token:'short'}},
+  {...ok,api:{...ok.api,zone:'us1'}},
+  {...ok,scenarios:{...ok.scenarios,'notify-team':{transport:'api',scenarioId:7291299}}},
+  {...ok,scenarios:{'find-drive-document':{transport:'api',scenarioId:7295055}}},
+  {...ok,unexpected:'unapproved'},
+ ]) assert.throws(()=>assertMakeReadCredentials(invalid));
 });
