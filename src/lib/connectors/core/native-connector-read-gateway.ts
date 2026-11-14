@@ -61,9 +61,13 @@ const same=(proof:NativeConnectorReadProof|null,request:NativeConnectorReadReque
  Number.isSafeInteger(proof.revision)&&proof.revision>0&&
  Number.isSafeInteger(proof.catalogRevision)&&proof.catalogRevision>0);
 
-const restrictedNames=new Set(['__proto__','prototype','constructor','token','apiKey',
- 'api_key','secret','authorization','webhookUrl','connectionId','workspaceId',
- 'clientId','projectId','userId','sessionId']);
+const restrictedNames=new Set(['__proto__','prototype','constructor','token','apikey',
+ 'secret','authorization','webhookurl','connectionid','workspaceid',
+ 'clientid','projectid','userid','sessionid','password','accesskey','credential',
+ 'privatekey','clientsecret','refreshtoken','accesstoken']);
+const isRestrictedName=(name:string)=>restrictedNames.has(
+ name.toLowerCase().replace(/[_\\-]/g,'')
+);
 function boundedInput(input:unknown):input is Record<string,unknown>{
  if(!input||typeof input!=='object'||Array.isArray(input)||
     Object.getPrototypeOf(input)!==Object.prototype)return false;
@@ -75,7 +79,7 @@ function boundedInput(input:unknown):input is Record<string,unknown>{
   if(typeof value!=='object'||Object.getPrototypeOf(value)!==Object.prototype)return false;
   const pairs=Object.entries(value);
   return pairs.length<=30&&pairs.every(([key,val])=>
-   key.length<=100&&!restrictedNames.has(key)&&visit(val,depth+1));
+   key.length<=100&&!isRestrictedName(key)&&visit(val,depth+1));
  };
  try{return visit(input,0)&&JSON.stringify(input).length<=4096;}
  catch{return false;}
