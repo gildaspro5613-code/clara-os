@@ -31,6 +31,16 @@ function visibleName(capabilityId:string,lang:string):string{
 }
 const equal=(a:Item,b:Item)=>a.capabilityId===b.capabilityId&&a.connectionId===b.connectionId&&a.provider===b.provider;
 
+async function loadSnapshot(signal?:AbortSignal):Promise<Snapshot>{
+ const response=await fetch('/api/native/connectors',{credentials:'same-origin',cache:'no-store',signal});
+ if(!response.ok)throw Error('not available');
+ const data:unknown=await response.json();
+ if(!data||typeof data!=='object'||Array.isArray(data))throw Error('invalid');
+ const candidate=data as Partial<Snapshot>;
+ if(!Array.isArray(candidate.candidates)||!Array.isArray(candidate.authorized))throw Error('invalid');
+ return {candidates:candidate.candidates,authorized:candidate.authorized,certified:false};
+}
+
 export default function NativeConnectorBuilderPanel(){
  const locale=useLocale();
  const lang=(locale in locales?locale:'fr') as keyof typeof locales;
@@ -40,20 +50,30 @@ export default function NativeConnectorBuilderPanel(){
  const [pending,setPending]=useState<Pending|null>(null);
  const [busy,setBusy]=useState(false);
  const [error,setError]=useState(false);
- const refresh=async(signal?:AbortSignal)=>{
+ const refresh=async()=>{
   try{
-   const response=await fetch('/api/native/connectors',{credentials:'same-origin',cache:'no-store',signal});
-   if(!response.ok)throw Error('not available');
-   const data:unknown=await response.json();
-   if(!data||typeof data!=='object'||Array.isArray(data))throw Error('invalid');
-   const candidate=data as Partial<Snapshot>;
-   if(!Array.isArray(candidate.candidates)||!Array.isArray(candidate.authorized))throw Error('invalid');
-   setSnapshot({candidates:candidate.candidates,authorized:candidate.authorized,certified:false});
+   setSnapshot(await loadSnapshot());
    setUnavailable(false);
-  }catch{if(!signal?.aborted){setUnavailable(true);setSnapshot(null);}}
+  }catch{
+   setUnavailable(true);
+   setSnapshot(null);
+  }
  };
  useEffect(()=>{
-  const controller=new AbortController();void refresh(controller.signal);
+  const controller=new AbortController();
+  // The fetch is an external synchronization. State is updated only after
+  // its asynchronous response, never synchronously inside this effect.
+  void loadSnapshot(controller.signal)
+   .then(next=>{
+    if(controller.signal.aborted)return;
+    setSnapshot(next);
+    setUnavailable(false);
+   })
+   .catch(()=>{
+    if(controller.signal.aborted)return;
+    setUnavailable(true);
+    setSnapshot(null);
+   });
   return ()=>controller.abort();
  },[]);
  const submit=async()=>{
