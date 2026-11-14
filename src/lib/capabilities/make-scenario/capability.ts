@@ -39,3 +39,25 @@ export const MakeScenarioExecuteCapabilityDefinition: MakeScenarioCapability = {
   category: "Automation",
   inputSchema: parameters,
 };
+
+// This is a single reviewed READ business scenario. The generic Make execute
+// capability remains EXECUTE and is never routed through native READ.
+export const MakeDriveFindCapabilityDefinition: MakeScenarioCapability = {
+  id: MAKE_CAPABILITIES.DRIVE_FIND,
+  name: "Find Drive document through Make",
+  description: "Read-only search of Drive using the approved find-drive-document Make scenario.",
+  version: "1.0.0",
+  category: "Automation",
+  inputSchema: {
+    scenarioKey: {
+      type: "string",
+      description: "Must be find-drive-document; never model-controlled in the native READ adapter.",
+      required: false,
+    },
+    payload: {
+      type: "object",
+      description: "Drive search criteria. The native adapter accepts only a bounded query field.",
+      required: true,
+    },
+  },
+};
