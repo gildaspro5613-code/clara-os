@@ -1,0 +1,42 @@
+name: Voice Custom LLM isolated qualification
+on:
+  push:
+    branches:
+      - restore/august-voice-authority-bridge-20261102
+    paths:
+      - 'src/lib/voice/custom-llm-isolated.ts'
+      - 'src/tests/custom-llm-isolated.test.ts'
+      - 'src/lib/voice/native-brain-adapter.ts'
+      - 'src/tests/native-brain-adapter.test.ts'
+      - 'src/lib/voice/voice-revocation-guard.ts'
+      - 'src/tests/voice-revocation-guard.test.ts'
+      - 'src/lib/voice/native-voice-lease-authority.ts'
+      - 'src/tests/native-voice-lease-authority.test.ts'
+      - 'src/lib/voice/continuous-voice-revocation-monitor.ts'
+      - 'src/tests/continuous-voice-revocation-monitor.test.ts'
+      - 'src/lib/voice/elevenlabs-session-revocation.ts'
+      - 'src/tests/elevenlabs-session-revocation.test.ts'
+      - 'src/app/api/voice/lease-status/route.ts'
+      - '.github/workflows/voice-custom-llm-isolated.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Isolated protocol fixture
+        run: node --import tsx --test src/tests/custom-llm-isolated.test.ts src/tests/native-brain-adapter.test.ts src/tests/voice-revocation-guard.test.ts src/tests/native-voice-lease-authority.test.ts src/tests/continuous-voice-revocation-monitor.test.ts src/tests/elevenlabs-session-revocation.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit --pretty false
+      - name: Targeted lint
+        run: npx eslint src/lib/voice/custom-llm-isolated.ts src/tests/custom-llm-isolated.test.ts src/lib/voice/native-brain-adapter.ts src/tests/native-brain-adapter.test.ts src/lib/voice/voice-revocation-guard.ts src/tests/voice-revocation-guard.test.ts src/lib/voice/native-voice-lease-authority.ts src/tests/native-voice-lease-authority.test.ts src/lib/voice/continuous-voice-revocation-monitor.ts src/tests/continuous-voice-revocation-monitor.test.ts src/lib/voice/elevenlabs-session-revocation.ts src/tests/elevenlabs-session-revocation.test.ts src/app/api/voice/lease-status/route.ts
+      - name: Production-compatible build (no deploy)
+        run: npm run build
