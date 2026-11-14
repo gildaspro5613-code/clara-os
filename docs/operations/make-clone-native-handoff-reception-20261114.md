@@ -44,3 +44,19 @@ Vérification en lecture seule du clone, sans accès aux jetons : **0 session d'
 **Décision d'ingénierie : ne plus demander à l'utilisateur de relancer des tests unitaires ou des commandes de contrôle sur ce lot.** La condition bloquante est une *session OS réellement authentifiée, dans un environnement isolé relié au clone*, pas un défaut de chiffrement. Ne pas créer un faux digest ni relâcher les contrôles Recette pour produire artificiellement un PASS. Reprendre uniquement lorsqu'une session isolée réelle est disponible; effectuer alors une **réception intégrée unique** grant → READ Drive → revoke → refus, avec consultation du journal, puis demander un GO distinct pour toute livraison.
 
 Aucune activation, aucun appel Make, aucune fusion ni aucun déploiement lors de ce point d'arrêt.
+
+## Raccordement conversationnel minimal — GO du 14 novembre
+
+- `src/lib/native/scoped-context.ts` : la lecture de session sur le **clone exact** utilise désormais le wrapper de lecture `clara_make_runtime_scope.native_runtime_read`. La voie d'écriture et le comportement de Production restent inchangés.
+- `src/lib/native/make-read-intent.ts` : sélection limitée à une demande explicite de recherche Drive **avec Make**, comportant un titre entre guillemets (exemple : « Clara, cherche avec Make dans Google Drive le document « Test Clara ». »). Aucune sélection implicite à partir d'un document.
+- `src/lib/brain/brain-source-registry.ts` : la demande explicite passe par `executeCloneNativeMakeDriveRead`; faute d'autorisation, une réponse indisponible est fournie au Brain, **sans appel Make**, repli fournisseur ni résultat inventé.
+- `src/lib/native/make-clone-read-bridge.ts` : vérification d'environnement isolé avant toute tentative d'accès.
+- Le test de refus hors clone a été aligné. **Ces ajouts n'ont pas encore de preuve de compilation ni de session OS réelle.**
+
+### Constat d'hébergement et arrêt sans déploiement
+
+Inspection Vercel **en lecture seule** : le seul projet `clara-os-recette` actuel est lié au projet `prj_lgt74rXSoT2jPHDkC1Yw1y2TWdxz`, avec un environnement personnalisé `clara-os-recette`; sa configuration source réclame un autre clone Neon (`br-crimson-feather-b2zr00sf`). Le garde-fou `assertRecetteExternalExecutionBlocked('make.api')` est toujours actif dans le client Make. Aucun nouvel environnement OS isolé, authentifié, connecté au clone Make n'a été trouvé dans les ressources Vercel inspectées.
+
+Le clone Make contient **zéro session d'authentification encore valide**. Le rôle `clara_make_runtime_login` dispose des fonctions READ ciblées mais pas de la chaîne d'écriture complète nécessaire pour une conversation OS persistée ; il ne faut pas élargir ses droits généraux ni créer une fausse session. En conséquence, **ne pas annoncer une disponibilité Make dans OS**. L'opération `grant → READ réel → revoke` doit rester NON TESTÉE.
+
+Une unique réception utilisateur reste conditionnée à une **véritable session OS authentifiée sur le même clone** et à une mise à disposition isolée autorisée séparément, **sans Vercel Preview, merge ou déploiement Production**. Ne plus solliciter l'utilisateur pour des tests unitaires. La prochaine décision doit porter uniquement sur la méthode d'hébergement isolé et ses autorisations, et non sur le jeton déjà validé.
