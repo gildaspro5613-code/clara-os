@@ -207,6 +207,23 @@ export async function buildBrainSources(
   if(native){
     const company=nativeCompanyKnowledge(event);
     const contexts: BrainSourceContext[] = company?[company]:[];
+
+    // Discover only already granted READ capabilities. The Builder never
+    // advertises an unreviewed connector as operational and never invokes a
+    // provider merely because a catalog entry exists.
+    const {discoverNativeConnectorReads}=await import('@/lib/connectors/core/native-connector-builder-discovery');
+    const builderReads=await discoverNativeConnectorReads();
+    if(builderReads.length){
+      const published=builderReads.map(({provider,capabilityId})=>({provider,capabilityId}));
+      contexts.push({
+        source:'connector-builder',available:true,data:{readCapabilities:published},
+        summary:JSON.stringify({
+          policy:'Only scoped, previously approved READ capability metadata. These labels do not authorize execution, WRITE/SEND, or connection changes; invoke only through the certified native Builder tool. No provider was queried by this discovery.',
+          readCapabilities:published,
+        }),
+      });
+    }
+
     const revalidate=(key:string,check:()=>Promise<void>)=>{
       native.documentRevalidators??=new Map();native.documentRevalidators.set(key,check);
       native.documentRevalidate=async()=>{for(const verify of native.documentRevalidators!.values())await verify();};
