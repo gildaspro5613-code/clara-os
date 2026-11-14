@@ -197,6 +197,19 @@ export function nativeBuilderReadExecutor(
     throw new RegistryError(400,'CONNECTOR_BUILDER_MAKE_QUERY_DENIED');
    const {nativeMakeDriveReadPayload}=await import('@/lib/connectors/make/native-drive-read-payload');
    const payload=nativeMakeDriveReadPayload(s.workspaceId,request.input);
+   // A scenario can change after account setup. Recheck the approved LIVE
+   // read-only blueprint on every supplier call, without running it.
+   const {verifyMakeReadConnection}=await import('@/lib/connectors/make/native-api-onboarding');
+   const nativeCredentials=await connection.resolve<import('@/lib/connectors/make/types').MakeWebhookCredentials>(
+    request.connectionId,'make',request.workspaceId,
+   );
+   const api=nativeCredentials.credentials.api;
+   const config=nativeCredentials.credentials.scenarios['find-drive-document'];
+   if(!api||config?.transport!=='api'||
+      !await verifyMakeReadConnection({
+       token:api.token,zone:api.zone,scenarioId:config.scenarioId,
+      }))
+    throw new RegistryError(403,'CONNECTOR_BUILDER_MAKE_SCENARIO_CHANGED');
    const {MakeConnectorAdapter}=await import('@/lib/connectors/make/adapter');
    const {MAKE_CAPABILITIES}=await import('@/lib/connectors/make/definition');
    const adapter=new MakeConnectorAdapter(connection);
