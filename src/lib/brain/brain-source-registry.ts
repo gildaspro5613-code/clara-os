@@ -225,22 +225,22 @@ export async function buildBrainSources(
     }
 
     if(builderReads.length){
-      // A single explicit user READ may be selected by Clara from the same
-      // approved list. The server validates the selected capability and SQL
-      // authorizations before AND after the provider call. One choice, no
-      // automatic retry, no WRITE/SEND, no connection selection from GPT.
-      const {selectAndExecuteNativeBuilderRead}=await import('@/lib/connectors/core/native-connector-builder-selection');
-      const outcome=await selectAndExecuteNativeBuilderRead(extractMessage(event),builderReads);
-      if(outcome){
+      // One explicit READ selection, no automatic retries or account choice.
+      const {eligibleConnectorReadNames,selectAndExecuteNativeBuilderRead}=
+        await import('@/lib/connectors/core/native-connector-builder-selection');
+      const message=extractMessage(event);
+      if(eligibleConnectorReadNames(message,builderReads).length){
+        const outcome=await selectAndExecuteNativeBuilderRead(message,builderReads);
         contexts.push({
           source:'connector-builder-read',
-          available:outcome.available,
-          data:outcome.available
-            ? {capabilityId:outcome.capabilityId,provider:outcome.source,result:outcome.content}
+          available:outcome?.available===true,
+          data:outcome?.available
+            ? {capabilityId:outcome.capabilityId,provider:outcome.source,
+               result:outcome.content}
             : null,
-          summary:outcome.available
-            ? String(outcome.content??'') 
-            : 'CONNECTOR_READ_UNAVAILABLE: no confirmed provider result; no retry, WRITE or SEND was performed.',
+          summary:outcome?.available
+            ? String(outcome.content??'')
+            : 'CONNECTOR_READ_UNAVAILABLE: no confirmed provider result; no retry, WRITE or SEND was performed. Never invent a lookup result.',
         });
       }
     }
