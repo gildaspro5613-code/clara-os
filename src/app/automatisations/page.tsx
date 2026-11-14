@@ -3,6 +3,7 @@ import {getLocale,getTranslations} from 'next-intl/server';
 import {CalendarDays,FileText,Mail,Megaphone,Workflow,ArrowUpRight,ShieldCheck} from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import {automationCards,automationCopy} from '@/lib/automations/automation-cards';
+import MakeAutomationCertification from '@/components/automatisations/MakeAutomationCertification';
 
 const icons={calendar:CalendarDays,documents:FileText,email:Mail,brevo:Megaphone,make:Workflow};
 
@@ -28,7 +29,9 @@ export default async function AutomatisationsPage(){
        return <article key={card.key} data-automation-card={card.key} className="group flex min-h-[252px] min-w-0 flex-col rounded-[24px] border border-cyan-300/15 bg-gradient-to-br from-[#152536]/85 via-[#0d1b2b]/95 to-[#091421] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.17)] transition-colors hover:border-cyan-300/35 sm:p-7">
         <div className="flex items-start justify-between gap-3">
          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-cyan-300/20 bg-cyan-300/10"><Icon size={24} strokeWidth={1.7} aria-hidden="true" className="text-cyan-300"/></span>
-         <span className="max-w-[65%] rounded-full border border-white/15 bg-white/[0.04] px-3 py-1 text-right text-[11px] font-medium leading-4 text-slate-200">{status}</span>
+         {card.key==='make'
+         ? <MakeAutomationCertification locale={locale}/>
+         : <span className="max-w-[65%] rounded-full border border-white/15 bg-white/[0.04] px-3 py-1 text-right text-[11px] font-medium leading-4 text-slate-200">{status}</span>}
         </div>
         <h3 className="mt-6 break-words text-xl font-semibold leading-snug text-white">{label.title}</h3>
         <p className="mt-2 flex-1 break-words text-sm leading-6 text-slate-300/75">{label.description}</p>
