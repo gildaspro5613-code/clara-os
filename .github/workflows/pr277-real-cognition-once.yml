@@ -52,7 +52,7 @@ jobs:
           import {createSession} from './src/lib/core/session.ts';
           import {OpenAIResponsesEngine} from './src/lib/connectors/internal/openai/responses/openai-responses-engine.ts';
           import {hasCompleteLiveProductionProposal} from './src/lib/brain/live-production-proposal-guard.ts';
-          import {EventType} from '@/types';
+          // EventType.USER_MESSAGE is the literal USER_MESSAGE; avoid ESM barrel export mismatch.
           
           const expectedSha = '194a8852a251ca1564e9c42c35175420fe734c1b';
           if (!process.env.OPENAI_API_KEY || process.env.OPENAI_MODEL !== 'gpt-5.5') {
@@ -62,7 +62,7 @@ jobs:
           if (JSON.stringify(wire).length !== 16239) throw new Error('Sanitized fixture changed');
           const scope = {projectId:'A',preparationId:'prep-A'};
           const source = liveProjectSource({
-            id:'test-real-provider-once-277',type:EventType.USER_MESSAGE,source:'EXTERNAL_PRODUCT',
+            id:'test-real-provider-once-277',type:'USER_MESSAGE',source:'EXTERNAL_PRODUCT',
             timestamp:new Date(),context:wire.scope,payload:wire
           });
           if (!source || !source.available) throw new Error('Isolated source was not loaded');
