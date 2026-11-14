@@ -17,6 +17,8 @@ on:
       - 'src/tests/recette-network-provider-denials.test.ts'
       - 'src/tests/recette-attestation-authorization.test.ts'
       - '.github/workflows/clara-os-recette-security.yml'
+      - '.github/workflows/clara-os-independent-recette.yml'
+      - '.github/scripts/recette-*.test.mjs'
 permissions:
   contents: read
 jobs:
@@ -27,6 +29,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+          fetch-depth: 0 # provenance checks compare the historical transport and delivery candidate
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -34,6 +37,8 @@ jobs:
       - run: npm ci --ignore-scripts
       - name: Recette offline denial contracts
         run: node --import tsx --test src/tests/recette-external-execution-guard.test.ts
+      - name: Manual candidate preflight and locked deployment transport
+        run: node --test .github/scripts/recette-candidate-preflight.test.mjs .github/scripts/recette-deployment-api.test.mjs
       - name: Recette authentication and isolation contracts
         run: node --import tsx --test src/tests/recette-auth-isolation.test.ts
       - name: Google authentication-only exception and database isolation

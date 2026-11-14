@@ -1,0 +1,35 @@
+✔ manual preflight verifies the approved delivery source, never a default branch (627.818213ms)
+✔ preflight never activates the historical write controller or weakens its identity checks (4.458293ms)
+✔ workflow has three write locks and default read-only verification; exact source and secret preserved (558.755811ms)
+✔ source SHA, parent, repository and configuration verified without a Git provider link (12.599027ms)
+✔ actual b2a51dd schedules are present and cause refusal before all HTTP, without changing source (91.344928ms)
+✔ missing configuration, malformed or nonempty crons cannot use an undocumented override (2.639462ms)
+✔ synthetic upload transport deduplicates exact bytes then creates once on exact target (117.536815ms)
+✔ linked project, wrong project/team/name or conflicting Environment denied before POST (24.4619ms)
+✔ missing secret or incorrect approved SHA makes no HTTP requests (0.400657ms)
+✔ 401/403 metadata refusal stops immediately without POST or fallback (10.522708ms)
+✔ lost create acknowledgement, 408/5xx or 401/403 never cause second creation (37.980223ms)
+✔ wrong returned source metadata, project, team or custom target is uncertain and never announced READY (26.230144ms)
+✔ ambiguous deployment ID or URL never yields a certified identity or triggers a retry (4.969311ms)
+✔ build failure and polling interruption never repeat creation; successful polling checks source again (32.843915ms)
+✔ verify_only runs custom Environment preflight unconditionally and reports only read-only bindings (6.974004ms)
+✔ read-only preflight refuses foreign identities, absent or conflicting Environments without any POST (8.667729ms)
+✔ preflight 401/403 stops immediately without retry or fallback and never reflects sensitive errors (7.564924ms)
+✔ real source manifest includes every approved byte; Production schedules remain unchanged (31750.372572ms)
+ℹ {"uniqueUploads":1054,"uniqueBytes":11050141,"creationJsonBytes":124390}
+✔ wrong parent, unrelated business diff or additional configuration changes are refused (9.975252ms)
+✔ actual project check accepts only unlinked project and rejects existing Git links (387.999856ms)
+✔ driver write authorization is false by default: no Git access or HTTP even with a token (2.851095ms)
+✔ upload 401/403 stops immediately; partial uploads never permit deployment creation (11.920342ms)
+✔ upload timeout, 408/5xx or unexpected success response is uncertain without retry or create (5.416769ms)
+✔ upload uses exact binary bytes, deduplicates content but preserves every manifest path (5.056082ms)
+✔ unsafe or unsupported source paths are refused before all HTTP (2.253187ms)
+✔ creation with unreadable acknowledgement remains uncertain; no second creation or false receipt (1.594491ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 26
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 34029.450071
