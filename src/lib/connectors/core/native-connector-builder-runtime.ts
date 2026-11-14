@@ -1,5 +1,6 @@
 import {RegistryError} from '@/lib/canonical/registry';
 import {nativeContext} from '@/lib/native/scoped-context';
+import {builderSql} from './native-connector-builder-sql';
 import type {ConnectionRepository} from '@/lib/connections/connection-repository';
 import {ConnectionStatus,type Connection} from '@/lib/connections/connection';
 import {CredentialStore,type CredentialPersistence} from '@/lib/connections/credential-store';
@@ -43,7 +44,7 @@ export const nativeBuilderReadAuthority:NativeConnectorReadAuthority={
     ctx.scope.sessionId!==request.scope.sessionId)return null;
   try{
    const s=ctx.scope;
-   const rows=await ctx.query`
+   const rows=await builderSql`
     SELECT clara_connector_builder.native_read(
      ${s.digest},${s.workspaceId},${s.clientId},${s.projectId},
      ${s.sessionId},${request.capabilityId},'authorize'
@@ -64,7 +65,7 @@ export const nativeBuilderReadAudit:NativeConnectorReadAudit={
    s.clientId!==event.clientId||s.projectId!==event.projectId)
    throw new RegistryError(403,'CONNECTOR_BUILDER_AUDIT_SCOPE_DENIED');
   const reason=event.reason?.slice(0,240)??null;
-  await ctx.query`
+  await builderSql`
    SELECT clara_connector_builder.native_read_audit(
     ${s.digest},${s.workspaceId},${s.clientId},${s.projectId},
     ${s.sessionId},${event.provider},${event.capabilityId},
@@ -118,7 +119,7 @@ function scopedCredentials(
    const ctx=scopedContext(),s=ctx.scope;
    if(id!==expected.connectionId||!requestMatchesNative(request))
     throw new RegistryError(403,'CONNECTOR_BUILDER_SCOPE_DENIED');
-   const rows=await ctx.query`
+   const rows=await builderSql`
     SELECT clara_connector_builder.native_read(
      ${s.digest},${s.workspaceId},${s.clientId},${s.projectId},
      ${s.sessionId},${request.capabilityId},'credentials'

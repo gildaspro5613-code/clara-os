@@ -1,5 +1,6 @@
 import {RegistryError} from '@/lib/canonical/registry';
 import {nativeContext} from '@/lib/native/scoped-context';
+import {builderSql} from './native-connector-builder-sql';
 import {ConnectorBuilderDirectory} from './connector-builder-directory';
 
 /** A single explicit READ grant/revoke entry for every approved connector.
@@ -36,7 +37,7 @@ export function nativeBuilderAdmin(
   // The SQL command revalidates signed identity and writable client+project
   // and commits grant+audit in one transaction, with revisioned revocation.
   try{
-   const rows=await ctx.query`
+   const rows=await builderSql`
     SELECT clara_connector_builder.native_admin(
      ${s.digest},${s.workspaceId},${s.clientId},${s.projectId},
      ${s.sessionId},${operation},

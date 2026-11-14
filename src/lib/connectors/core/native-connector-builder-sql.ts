@@ -17,9 +17,10 @@ export function ensureSameBuilderDatabase(
      !['postgres:','postgresql:'].includes(builder.protocol)||
      !app.username||!builder.username||
      app.username===builder.username||
-     !app.hostname||host(app.hostname)!==host(builder.hostname)||
+     !app.hostname||!host(app.hostname).endsWith('.neon.tech')||
+     host(app.hostname)!==host(builder.hostname)||
      app.pathname!==builder.pathname||
-     app.port!==builder.port)
+     (app.port||'5432')!==(builder.port||'5432'))
    throw new Error('builder database scope mismatch');
  }catch{
   // Never echo connection strings, usernames, hosts or passwords.

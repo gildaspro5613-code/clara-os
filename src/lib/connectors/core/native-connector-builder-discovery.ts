@@ -1,4 +1,5 @@
 import {nativeContext} from '@/lib/native/scoped-context';
+import {builderSql} from './native-connector-builder-sql';
 import {ConnectorBuilderDirectory} from './connector-builder-directory';
 
 /** A provider is visible to Clara only after the canonical native session,
@@ -50,7 +51,7 @@ export async function discoverNativeConnectorReads(
  if(!ctx)return [];
  const s=ctx.scope;
  try{
-  const rows=await ctx.query`
+  const rows=await builderSql`
    SELECT clara_connector_builder.native_discover(
     ${s.digest},${s.workspaceId},${s.clientId},${s.projectId},
     ${s.sessionId}

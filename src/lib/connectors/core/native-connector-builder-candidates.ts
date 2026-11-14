@@ -1,4 +1,5 @@
 import {nativeContext} from '@/lib/native/scoped-context';
+import {builderSql} from './native-connector-builder-sql';
 import {ConnectorBuilderDirectory} from './connector-builder-directory';
 
 export type NativeConnectorReadCandidate=Readonly<{
@@ -37,7 +38,7 @@ export async function nativeConnectorCandidates(
  if(!ctx)return [];
  const s=ctx.scope;
  try{
-  const rows=await ctx.query`
+  const rows=await builderSql`
    SELECT clara_connector_builder.native_candidates(
     ${s.digest},${s.workspaceId},${s.clientId},
     ${s.projectId},${s.sessionId}
