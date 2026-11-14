@@ -106,3 +106,20 @@ Cette section remplace les constats obsolètes des paragraphes précédents conc
 4. Tant que ces preuves ne sont pas disponibles : **NO-GO Ready / merge / Preview / Production / WRITE / SEND**. Le code est candidat, pas livré.
 
 Le principe produit est maintenu : une intégration fournisseur se fait une fois au niveau de la plateforme ; chaque client autorise ensuite son propre compte depuis une interface, sans code, SQL ou Codespaces.
+
+## Validation CI isolée — 14 novembre 2026, clôture technique
+
+**Preuve GitHub Actions** : [Connector Builder native isolated closure — run #3](https://github.com/gildaspro5613-code/clara-os/actions/runs/43627026088), exécuté sur le commit `f118feb85a253f1c7c3a209210f2b9dbacc43995`.
+
+- Tests isolés (Builder, sélection, GitHub READ, Make adaptateur et contrat API) : **37/37 PASS**, zéro échec et zéro saut.
+- Vérification stricte `npx tsc --noEmit --pretty false` : **PASS**.
+- `npm run build` / Next.js : **PASS** (29 pages statiques générées).
+- Préflight SQL négatif réalisé sur le clone Neon : fausse session, lecture et approbation non autorisées refusées ; 0 entrée catalogue activée, 0 grant, 0 journal d'exécution, 0 session OS active. Make toujours `CONFIGURED`, jeton chiffré conservé.
+- Préflight Vercel en lecture seule : **aucun déploiement Preview de cette branche**, Production inchangée (SHA `fab9ada1f2f28c9dba87e7672c9f4d26423279fa` lors de la vérification).
+- Le premier passage CI avait révélé une attente d'ordre Make et le deuxième des erreurs de typage du pont natif ; les corrections sont intégrées au SHA ci-dessus. **La preuve définitive est uniquement la troisième exécution au vert.**
+
+### Qualification qui manque avant le GO de livraison
+
+Ce statut PASS confirme la **clôture technique du candidat en isolation**, pas l'activation en Production, l'authentification d'une session sur le clone ni la disponibilité métier de Make/Brevo. En particulier, la migration multi-tenant 032 est **préparée mais non installée en Production**, le rôle SQL applicatif et la clé de coffre de destination doivent être vérifiés ; aucune authentification de fournisseur, exécution Make réelle ni certification client n'est attestée.
+
+Ne pas modifier le logiciel Live ni activer de commande scénique. Conserver **NO-GO pour Ready, fusion, Vercel Preview et Production** jusqu'à GO utilisateur de livraison distinct et préflight sauvegarde/retour arrière.
