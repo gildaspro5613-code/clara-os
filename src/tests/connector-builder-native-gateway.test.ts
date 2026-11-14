@@ -157,3 +157,22 @@ test('native model-tool gateway refuses unsupported commands, forged JSON and no
  assert.equal(noContext.code,'CONNECTOR_READ_UNAVAILABLE');
  assert.equal(calls,0);
 });
+
+test('discovery rejects undeclared, forged and stale capability entries',async()=>{
+ const {filterAuthorizedNativeConnectorReads,discoverNativeConnectorReads}=await import('@/lib/connectors/core/native-connector-builder-discovery');
+ const base={provider:'github',capabilityId:'github.repository.read',
+  connectionId:'connection-a',revision:2,catalogRevision:1};
+ assert.deepEqual(filterAuthorizedNativeConnectorReads([base],directory),[base]);
+ for(const altered of [
+  {...base,provider:'brevo'},
+  {...base,capabilityId:'make.scenario.execute'},
+  {...base,connectionId:'invalid with spaces'},
+  {...base,revision:0},
+  {...base,catalogRevision:0},
+ ]){
+  assert.deepEqual(filterAuthorizedNativeConnectorReads([altered],directory),[]);
+ }
+ assert.deepEqual(filterAuthorizedNativeConnectorReads([base,base],directory),[]);
+ assert.deepEqual(await discoverNativeConnectorReads(directory),[],
+  'Without a real signed native context the Builder advertises no capabilities');
+});
