@@ -6,6 +6,10 @@ import {readFileSync,writeFileSync,renameSync,mkdirSync} from 'node:fs';
 import {createHash,X509Certificate,randomUUID} from 'node:crypto';
 const origin=process.env.DOCUMENTS_E2E_ORIGIN,db=process.env.NATIVE_TEST_DATABASE;
 if(!origin||new URL(origin).hostname!=='127.0.0.1'||!/^native_browser_[a-f0-9]{32}$/.test(db??''))throw Error('Disposable HTTPS fixture only');
+const entry=process.env.NATIVE_VOICE_ENTRY??'cockpit';
+if(!['cockpit','clara'].includes(entry))throw Error('Known voice entry required');
+const entryUrl=new URL(entry==='clara'?'/clara':'/',origin).href;
+const voiceSelector=entry==='clara'?'button[data-native-voice]':'[data-cockpit-hero] button[data-native-voice]';
 const pg=sql=>execFileSync('docker',['exec','clara-canonical-test-postgres','psql','-U','postgres','-d',db,'-qAt','-v','ON_ERROR_STOP=1','-c',sql],{encoding:'utf8',stdio:'pipe'}).trim();
 const file='/tmp/native-fixture-voice-'+db;
 const state=()=>JSON.parse(readFileSync(file,'utf8'));
@@ -41,8 +45,8 @@ test('Hero native voice: actual microphone recorder, STT/chat/history/TTS, repla
    const Original=window.Audio;window.Audio=function(...args){const audio=new Original(...args);window.voiceAudios.push(audio);const play=audio.play.bind(audio),pause=audio.pause.bind(audio);audio.play=()=>{window.voicePlayback.plays++;return play();};audio.pause=()=>{window.voicePlayback.pauses++;return pause();};return audio;};
   });
   const page=await context.newPage();const requests=[],spoken=[],receipts=new Set();page.on('request',r=>{requests.push(r.url());if(new URL(r.url()).pathname==='/api/voice/speak')spoken.push(r.postDataJSON().messageId);});page.on('response',async r=>{if(new URL(r.url()).pathname==='/api/clara/chat'&&r.status()===200){const data=await r.json();receipts.add(data.conversation.filter(m=>m.role==='clara').at(-1).id);}});
-  const button=()=>page.locator('[data-cockpit-hero] button[data-native-voice]').filter({visible:true});
-  const ready=async()=>{await page.goto(origin);await button().waitFor();await page.waitForFunction(()=>{return [...document.querySelectorAll('button[data-native-voice]')].some(b=>b.offsetParent!==null&&!b.disabled);});};
+  const button=()=>page.locator(voiceSelector).filter({visible:true});
+  const ready=async()=>{await page.goto(entryUrl);await button().waitFor();await page.waitForFunction(()=>{return [...document.querySelectorAll('button[data-native-voice]')].some(b=>b.offsetParent!==null&&!b.disabled);});};
   const record=async()=>{await button().click();await page.waitForFunction(()=>window.voiceRecorders.length&&window.voiceRecorders.at(-1).state==='recording');await page.evaluate(()=>{window.voiceSignal=0.2;});};
   const stopRecording=async()=>{await page.waitForTimeout(500);await page.evaluate(()=>{window.voiceSignal=0;});};
   const history=async()=>{const response=await call(cookie,'/api/clara/conversation'+query+'&thread='+scope.sessionId+'&limit=100');assert.equal(response.status,200);return (await response.json()).messages;};
@@ -100,6 +104,22 @@ test('Hero native voice: actual microphone recorder, STT/chat/history/TTS, repla
   await record();await stopRecording();for(let i=0;i<200&&state().calls.filter(p=>p.includes('text-to-speech')).length<=ttsBefore;i++)await new Promise(r=>setTimeout(r,50));assert.equal(state().calls.filter(p=>p.includes('text-to-speech')).length,ttsBefore+1);await button().click();await waitAbort(aborted);assert.equal((await history()).length,stopHistory+2,'Committed chat survives cancelled synthesis, without duplicate');
   setState({speakDelayMs:0,failStt:true});await record();await stopRecording();await button().getByText(JSON.parse(readFileSync('src/i18n/messages/fr/index.json','utf8')).voice.retry,{exact:true}).waitFor();assert.equal((await history()).length,stopHistory+2);
   setState({failStt:false});await record();await button().click();assert.equal((await history()).length,stopHistory+2,'Recovery requires a new explicit activation and does not replay transcription');
+  if(entry==='clara'){
+   await ready();const prior=await history(),audioCalls=state().calls.length;
+   const typed='Je poursuis cette même conversation par écrit.';
+   await page.locator('textarea').fill(typed);
+   const answer=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/clara/chat'&&r.request().method()==='POST');
+   await page.locator('textarea').press('Enter');assert.equal((await answer).status(),200);
+   const written=await history();assert.equal(written.length,prior.length+2);assert.equal(written.at(-2).content,typed);
+   assert.equal(state().calls.length,audioCalls,'Typing with voice stopped must not invoke speech providers');
+   setState({seconds:0.2});await record();await stopRecording();
+   await page.waitForFunction(()=>window.voicePlayback.plays===1&&window.voiceRecorders.length>=2);
+   await button().click();const combined=await history();assert.equal(combined.length,written.length+2);
+   await ready();assert.deepEqual(await history(),combined);
+   await page.getByRole('log').getByText(typed,{exact:true}).waitFor();
+   if(process.env.VOICE_VISUAL_DIR)await page.screenshot({path:process.env.VOICE_VISUAL_DIR+'/clara-text-voice-history.png',animations:'disabled'});
+   console.info('CLARA_PAGE_CONTINUITY: typed and spoken turns share one SQL history; reload preserved all messages; no autonomous speech on typing.');
+  }
   assert.ok(spoken.length>=3);for(const id of spoken)assert.ok(receipts.has(id),'Synthesized reply belongs to its committed chat receipt');
   assert.ok(!requests.some(url=>url.includes('/api/elevenlabs/session')||url.includes('api.elevenlabs.io')));assert.equal(readFileSync('/tmp/native-fixture-global-attempts-'+db,'utf8'),'');await context.close();
  }finally{await browser.close();pg("UPDATE clara_registry_project_access SET revoked_at=NULL WHERE workspace_id='w' AND project_id='p2' AND user_id='a'");pg("UPDATE clara_auth_sessions SET revoked_at=NULL WHERE user_id='a'");}
@@ -113,7 +133,7 @@ test('startup checks: actual delayed SQL reads share one request; timeout, brows
  try{
   const context=await browser.newContext({viewport:{width:390,height:844}});await context.addCookies([{name:'clara_auth_session',value:'A'.repeat(43),url:origin},{name:'clara_native_selection',value:selection.slice(selection.indexOf('=')+1),url:origin},{name:'NEXT_LOCALE',value:'fr',url:origin}]);await context.route('**/*',r=>new URL(r.request().url()).origin===origin?r.continue():r.abort());
   await context.addInitScript(()=>{window.startupMics=0;window.startupErrors=[];const original=window.fetch;window.fetch=async(...args)=>{try{return await original(...args);}catch(error){if(String(args[0]).includes('/api/voice/transcribe'))window.startupErrors.push({name:error.name});throw error;}};Object.defineProperty(navigator,'mediaDevices',{configurable:true,value:{getUserMedia:async()=>{window.startupMics++;throw new DOMException('Private fixture device detail','NotAllowedError');}}});});
-  const page=await context.newPage();await page.goto(origin);const button=page.locator('[data-cockpit-hero] button[data-native-voice]').filter({visible:true});const ready=()=>page.waitForFunction(()=>[...document.querySelectorAll('button[data-native-voice]')].some(b=>b.offsetParent&&!b.disabled));await ready();
+  const page=await context.newPage();await page.goto(entryUrl);const button=page.locator(voiceSelector).filter({visible:true});const ready=()=>page.waitForFunction(()=>[...document.querySelectorAll('button[data-native-voice]')].some(b=>b.offsetParent&&!b.disabled));await ready();
   let monitoring=false,maxPending=0;const pending=new Set(),reads=[];
   page.on('request',r=>{if(monitoring&&new URL(r.url()).pathname==='/api/voice/transcribe'){pending.add(r);maxPending=Math.max(maxPending,pending.size);}});page.on('requestfinished',r=>pending.delete(r));page.on('requestfailed',r=>pending.delete(r));page.on('response',r=>{if(monitoring&&new URL(r.url()).pathname==='/api/voice/transcribe')reads.push(r);});
   writeFileSync(delayFile,JSON.stringify({delayMs:350}));monitoring=true;await button.click();await page.waitForFunction(()=>window.startupMics===1);await button.getByText(JSON.parse(readFileSync('src/i18n/messages/fr/index.json','utf8')).voice.failed,{exact:true}).waitFor();monitoring=false;
@@ -121,6 +141,6 @@ test('startup checks: actual delayed SQL reads share one request; timeout, brows
   writeFileSync(delayFile,JSON.stringify({delayMs:2000}));await button.click();await page.waitForFunction(()=>window.startupErrors.some(e=>e.name==='TimeoutError'));await page.waitForFunction(()=>[...document.querySelectorAll('button[data-native-voice]')].filter(b=>b.offsetParent).every(b=>b.disabled));assert.equal(await page.evaluate(()=>window.startupMics),1);
   writeFileSync(delayFile,JSON.stringify({delayMs:0}));const stillAuthorized=await call(cookie,'/api/voice/transcribe'+query);assert.equal(stillAuthorized.status,200);assert.equal((await stillAuthorized.json()).success,true);console.info('STARTUP_TIMEOUT: browser TimeoutError at unchanged bound; same SQL authority still valid; no additional microphone');
   await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await ready();
-  pg("UPDATE clara_registry_project_access SET revoked_at=NOW() WHERE workspace_id='w' AND project_id='p1' AND user_id='a'");const denied=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/voice/transcribe'&&r.status()===403);await button.click();assert.equal((await denied).status(),403);await page.waitForFunction(()=>[...document.querySelectorAll('button[data-native-voice]')].filter(b=>b.offsetParent).every(b=>b.disabled));assert.equal(await page.evaluate(()=>window.startupMics),1);assert.equal(await page.locator('[data-cockpit-hero]').evaluate(e=>e.textContent.includes('Private fixture')),false);await context.close();
+  pg("UPDATE clara_registry_project_access SET revoked_at=NOW() WHERE workspace_id='w' AND project_id='p1' AND user_id='a'");const denied=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/voice/transcribe'&&r.status()===403);await button.click();assert.equal((await denied).status(),403);await page.waitForFunction(()=>[...document.querySelectorAll('button[data-native-voice]')].filter(b=>b.offsetParent).every(b=>b.disabled));assert.equal(await page.evaluate(()=>window.startupMics),1);assert.equal(await page.locator('body').evaluate(e=>e.textContent.includes('Private fixture')),false);await context.close();
  }finally{writeFileSync(delayFile,JSON.stringify({delayMs:0}));await browser.close();pg("UPDATE clara_registry_project_access SET revoked_at=NULL WHERE workspace_id='w' AND project_id='p1' AND user_id='a'");}
 });

@@ -1,0 +1,39 @@
+✔ Clara page mounts existing native voice beside text using the same certified conversation (111.906213ms)
+✔ uncertified native conversation keeps voice disabled without falling back to the legacy provider (34.194224ms)
+✔ changing the selected conversation keys both interfaces to the new native session (18.448487ms)
+✔ page authority refuses before loading a conversation or exposing an audio control (19.451306ms)
+✔ non-native page keeps its existing provider component and never invents native scope (23.434696ms)
+✔ business date is Paris day independently of the host and browser timezone (27.363137ms)
+✔ full dates use the five existing locales, including weekday and year (2.773356ms)
+✔ Calendar windows use actual Paris midnight, including 23/25-hour DST days (2.532388ms)
+✔ presentation preserves missing selection, reconnect, denied, expired and unavailable states (0.176031ms)
+✔ SSR has a deterministic date placeholder and closed settings; no provider data or writes on render (80.58065ms)
+✔ Agenda periods reuse bounded Paris windows across DST and weeks (4.848034ms)
+✔ Agenda consent wording changes no Cockpit state and never hides a refusal (0.267507ms)
+✔ one-time calendar picker remains closed on SSR: no implicit account, calendar, provider call, or write (4.118773ms)
+✔ historical Tasks uses the authorized mission rather than the old 82 percent fixture (4.81149ms)
+✔ native historical microphone stays disabled and honest in all five languages (17.692656ms)
+✔ the historical action bar navigates existing pages instead of decorative buttons (6.279609ms)
+✔ Mission GlassPanel interface labels are translated in all five languages while stored titles and next actions remain verbatim (26.141534ms)
+✔ native voice requires current operator, writable project and certified thread; rejects revoked checks and aborted requests (96.374503ms)
+✔ native synthesis only accepts a Clara message read from the exact authorized history; no browser text or foreign message (17.740863ms)
+✔ native readiness stays closed without provider configuration or in protected Recette, without a provider call (9.831587ms)
+✔ voice recovery adopts the existing native pending receipt on 202 without recording or repeating a supplier call (34.639095ms)
+✔ voice startup: a pre-start readiness response cannot undo a newer authority refusal (39.552124ms)
+✔ voice startup: unchanged active timeout fails closed but is not an access refusal (34.26495ms)
+✔ voice startup: a real HTTP denial retains its public status/code and stops before microphone (23.301343ms)
+✔ voice startup: browser microphone rejection is distinct from authority and contains no private error text (27.129703ms)
+✔ voice startup: initial readiness keeps its 10 s bound and never opens the microphone (31.90602ms)
+✔ voice startup: explicit stop wins over a late active denial without restarting or replacing the failure (29.951981ms)
+✔ voice startup: HTTP denial survives a malformed body; certification conflict is not called an ACL refusal (25.771598ms)
+✔ voice startup: periodic and foreground checks share one pending authority read without changing the 3 s bound (37.794407ms)
+✔ voice authorization uses existing server-owned workspace and operator permissions, rejects foreign origin before auth (66.545084ms)
+✔ four provider routes deny unauthenticated requests before any provider and localize secret-free failures in five languages (85.958269ms)
+ℹ tests 31
+ℹ suites 0
+ℹ pass 31
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3170.301947

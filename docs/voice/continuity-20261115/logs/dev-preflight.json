@@ -1,0 +1,13 @@
+[
+  {
+    "path": "/clara",
+    "status": 200,
+    "seconds": 12.79,
+    "bytes": 100718
+  },
+  {
+    "path": "/api/native/runtime",
+    "error": "RemoteDisconnected",
+    "seconds": 35.57
+  }
+]

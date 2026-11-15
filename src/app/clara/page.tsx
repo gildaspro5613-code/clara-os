@@ -7,6 +7,7 @@ import { buildCommercialQualificationDraft } from "@/lib/acquisition/commercial-
 import { loadProjectIntake } from "@/lib/intake/md-project-intake-inbox";
 import MainLayout from "@/components/layout/MainLayout";
 import ClaraVoiceWidget from "@/components/clara/ClaraVoiceWidget";
+import NativeClaraVoiceWidget from "@/components/cockpit/widgets/voice/ClaraVoiceWidget";
 import ClaraChatWidget from "@/components/cockpit/widgets/clara/ClaraChatWidget";
 import { resolveOperationalContext } from "@/lib/core/operational-context";
 
@@ -27,6 +28,9 @@ export default async function ClaraPage({
   const ui = await getTranslations("ui");
   const params = await searchParams;
   const { session, acquisition } = await resolveOperationalContext();
+  const native = nativeContext();
+  const selected = native?.scope;
+  const voiceScope = selected ? {workspaceId:selected.workspaceId,clientId:selected.clientId,projectId:selected.projectId,sessionId:selected.sessionId} : undefined;
   const intake = acquisition && !acquisition.commercialDraft ? await loadProjectIntake(acquisition.workspaceId, acquisition.submissionId).catch(() => null) : null;
   const draft = acquisition?.commercialDraft ?? (acquisition && intake ? buildCommercialQualificationDraft(acquisition, intake.intake) : null);
   const mission = session.mission;
@@ -98,7 +102,7 @@ export default async function ClaraPage({
             initialMessages={session.conversation}
             userFirstName={session.user.firstName}
           />
-          {nativeContext()?<p className="text-sm text-white/60">{ui("nativeProviderBlocked")}</p>:<ClaraVoiceWidget />}
+          {native ? <NativeClaraVoiceWidget key={voiceScope?.sessionId??"voice-locked"} scope={voiceScope} disabled={!voiceScope||!nativeThreadCertified(session)} /> : <ClaraVoiceWidget />}
         </div>
         <NativeDocumentsPanel referencesOnly />
       </div>

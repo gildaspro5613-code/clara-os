@@ -1,0 +1,33 @@
+{
+  "date_utc": "2026-11-15T07:10:46.181357+00:00",
+  "base_sha": "9ea289efd039ba396fb146dfbd257efeec733a6a",
+  "branch": "fix/voice-text-continuity-20261115",
+  "unit_tests": {
+    "os": {
+      "pass": 31,
+      "fail": 0
+    },
+    "live_primitives": {
+      "pass": 42,
+      "fail": 0,
+      "storage": "doubles only"
+    }
+  },
+  "typecheck": {
+    "exit_code": 0,
+    "command": "node node_modules/typescript/bin/tsc --noEmit --incremental false --pretty false",
+    "max_heap_mib": 2048,
+    "initial_1536_mib_exit_code": 134
+  },
+  "eslint_exit_code": 0,
+  "browser_syntax_exit_code": 0,
+  "git_diff_check_exit_code": 0,
+  "standard_build": "NOT EXECUTED; fonts.googleapis.com and fonts.gstatic.com proxy CONNECT 403",
+  "browser_e2e": "NOT EXECUTED; development warm-up stopped at disk 11 MiB free and cgroup 8308760576 / 8589934592 bytes",
+  "runtime": "Next dev --webpack, real local PostgreSQL fixture initialized, no completed voice flow",
+  "cleanup": "Only our app/proxy process groups, owned no-network tmpfs PostgreSQL container and generated .next output stopped/removed",
+  "provider_calls": 0,
+  "real_microphone_used": false,
+  "real_device_tested": false,
+  "remote_configuration_changed": false
+}
