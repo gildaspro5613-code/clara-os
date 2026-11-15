@@ -25,7 +25,7 @@ export const MakeConnectorDefinition: ConnectorDefinition = {
     {
       id: MAKE_CAPABILITIES.DRIVE_FIND,
       operationType: "READ",
-      description: "Search Drive through the reviewed Make find-drive-document scenario only. No other scenario or WRITE/SEND.",
+      description: "Read-only named file or folder search via approved Make scenario; optionally constrain a file search to a previously found folder. No other scenario or WRITE/SEND.",
     },
   ],
 };
