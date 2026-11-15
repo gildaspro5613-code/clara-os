@@ -190,13 +190,11 @@ export function nativeBuilderReadExecutor(
    // The provider's generic EXECUTE endpoint is used only as an implementation
    // detail of this SINGLE catalog-reviewed READ scenario. Never permit a
    // model-controlled scenarioKey or arbitrary Make run, send or write.
-   const keys=Object.keys(request.input);
-   if(keys.length!==1||keys[0]!=='query'||
-      typeof request.input.query!=='string'||
-      !request.input.query.trim()||request.input.query.length>200)
-    throw new RegistryError(400,'CONNECTOR_BUILDER_MAKE_QUERY_DENIED');
    const {nativeMakeDriveReadPayload}=await import('@/lib/connectors/make/native-drive-read-payload');
-   const payload=nativeMakeDriveReadPayload(s.workspaceId,request.input);
+   // Plain filename/folder search; optional folder ID can only narrow READ.
+   let payload:ReturnType<typeof nativeMakeDriveReadPayload>;
+   try{payload=nativeMakeDriveReadPayload(s.workspaceId,request.input);}
+   catch{throw new RegistryError(400,'CONNECTOR_BUILDER_MAKE_QUERY_DENIED');}
    // A scenario can change after account setup. Recheck the approved LIVE
    // read-only blueprint on every supplier call, without running it.
    const {verifyMakeReadConnection}=await import('@/lib/connectors/make/native-api-onboarding');
@@ -208,7 +206,7 @@ export function nativeBuilderReadExecutor(
    if(!api||config?.transport!=='api'||
       !await verifyMakeReadConnection({
        token:api.token,zone:api.zone,scenarioId:config.scenarioId,
-      }))
+      },fetch,typeof payload.folderId==='string'))
     throw new RegistryError(403,'CONNECTOR_BUILDER_MAKE_SCENARIO_CHANGED');
    const {MakeConnectorAdapter}=await import('@/lib/connectors/make/adapter');
    const {MAKE_CAPABILITIES}=await import('@/lib/connectors/make/definition');
