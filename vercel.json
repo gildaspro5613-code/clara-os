@@ -12,6 +12,7 @@
   ],
   "git": {
     "deploymentEnabled": {
+      "fix/make-drive-query-boundary": false,
       "fix/make-drive-native-failure-diagnostics-20261115": false,
       "fix/make-drive-folder-lookup-20261115": false,
       "fix/make-onboarding-http-diagnostic-20261115": false,

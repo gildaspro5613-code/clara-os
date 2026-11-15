@@ -1,0 +1,47 @@
+name: Make Drive selector - targeted validation
+
+on:
+  push:
+    branches:
+      - fix/make-drive-query-boundary
+    paths:
+      - '.github/workflows/make-drive-selector-targeted.yml'
+      - 'src/lib/connectors/core/native-connector-builder-selection.ts'
+      - 'src/tests/make-native-selector-contract.test.ts'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: make-drive-selector-targeted-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  make-selector:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      CI: 'true'
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install reproducibly without lifecycle scripts
+        run: npm ci --ignore-scripts
+      - name: Targeted offline contracts (no provider credentials or calls)
+        run: |
+          node --import tsx --test \
+            src/tests/make-native-selector-contract.test.ts \
+            src/tests/make-native-drive-input.test.ts \
+            src/tests/connector-builder-native-selection.test.ts \
+            src/tests/connector-builder-native-gateway.test.ts \
+            src/tests/make-native-read-handoff.test.ts \
+            src/tests/make-connector.test.ts \
+            src/tests/make-on-demand-contract.test.ts
+      - name: Focused lint
+        run: npx eslint src/lib/connectors/core/native-connector-builder-selection.ts src/tests/make-native-selector-contract.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit --pretty false
