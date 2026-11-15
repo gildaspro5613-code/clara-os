@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - fix/builder-make-api-onboarding-20261114
+      - fix/make-onboarding-http-diagnostic-20261115
     paths:
       - '.github/workflows/make-native-onboarding-closure.yml'
       - 'src/lib/connectors/make/native-*'
