@@ -1,0 +1,107 @@
+{
+  "checked_utc": "2026-11-15 09:34:16 UTC",
+  "mode": "READ ONLY; no remote configuration modified",
+  "projects": {
+    "os": {
+      "id": "prj_jLIZqU5V98I4yl8RCbAaoqgM4KNJ",
+      "name": "clara-os",
+      "production": {
+        "id": "dpl_FqVzsmq3Xie86KJc8Ww2Zg99ZD5U",
+        "url": "clara-gvahq5rcc-melodie-digital.vercel.app",
+        "createdAt": 1794720655202,
+        "readyState": "READY",
+        "target": "production"
+      },
+      "latest_commit": "9ea289efd039ba396fb146dfbd257efeec733a6a",
+      "latest_ref": "delivery/clara-os-v1-20261025",
+      "baseline_deployment_ids": [
+        "dpl_FqVzsmq3Xie86KJc8Ww2Zg99ZD5U",
+        "dpl_HF41JEvqvFwjCjjYYwPyYhcvWsMA",
+        "dpl_BdBvcz9QNXZTnTjtGDoJbaJ7WXrC",
+        "dpl_4EvsRurh5pSVgFnsNBmfeCxoC9hu",
+        "dpl_7S76g5iA6hbABzwxvf4nBF8b2DS5",
+        "dpl_CxzS5VNsaAhHxKbP5gRzk5L6JUzU",
+        "dpl_DAhAR5BmQh3paZRuiHCSyqpd9ooT",
+        "dpl_72VLqArbqoy3uyiiy35zN6QKZKpK",
+        "dpl_77ZeX9PLEncht6G2ZabMEsQLvZGZ",
+        "dpl_2GrKtyVY26g4qJEYcWszKLFNEv4t"
+      ]
+    },
+    "live": {
+      "id": "prj_vLIQPhFxUmAo5vTBBQ9rnVpSQlLn",
+      "name": "clara-live",
+      "production": {
+        "id": "dpl_4RoN2wz2vx3PAf3JzF36kM3fNpAX",
+        "url": "clara-live-7dpwmfs53-melodie-digital.vercel.app",
+        "createdAt": 1794639110356,
+        "readyState": "READY",
+        "target": "production"
+      },
+      "latest_commit": "e4c7fe209db914dc7e65595f6c58ad0ed2659154",
+      "latest_ref": "deploy/clara-live-api",
+      "baseline_deployment_ids": [
+        "dpl_4RoN2wz2vx3PAf3JzF36kM3fNpAX",
+        "dpl_FmtmyxdYcdZLp4fPnS5rXfN2i9Z4",
+        "dpl_J2S1MaAKxNg5NdTYY7YVnvX12HXH",
+        "dpl_ECsgnZedtmV33xW3F341uB2vk1B5",
+        "dpl_BnGAMo3BvPNgqS8uxM2TouaGTJsh",
+        "dpl_8nK97iE5ebidBPiZ7J3wfALVvaft",
+        "dpl_DtjrdJZaTXNZp8RTfZamRtThPUp1",
+        "dpl_8MV6URSpBjhTu9pJP5MtG3YkbFjb",
+        "dpl_8G2kwUo2CAyiJ5mLLfD4nxHru5bz",
+        "dpl_3Z8USfnemsYDjSVjbfJpLB6vS97V"
+      ]
+    },
+    "api": {
+      "id": "prj_nIMcXuFrQpGzz2oJLeZ8GcwQkYm7",
+      "name": "clara-live-api",
+      "production": {
+        "id": "dpl_AcSKASyPRLfAR9UCG4hXHVqnQZxr",
+        "url": "clara-live-8rl2btwq9-melodie-digital.vercel.app",
+        "createdAt": 1794639110477,
+        "readyState": "READY",
+        "target": "production"
+      },
+      "latest_commit": "e4c7fe209db914dc7e65595f6c58ad0ed2659154",
+      "latest_ref": "deploy/clara-live-api",
+      "baseline_deployment_ids": [
+        "dpl_AcSKASyPRLfAR9UCG4hXHVqnQZxr",
+        "dpl_EFYFm3p6BekXuMae6jD1Wtny8fPp",
+        "dpl_BHG9ZKosZMMUuGKU2Msa4xAm5HK6",
+        "dpl_rT5bnPPk7Ux3NYPebxrnYQ5cf7N3",
+        "dpl_5amr8SxyJUF4PkzQfXgBFwEpDAV4",
+        "dpl_vDv9yggJ8zpyN9PdWbpAGhq9yRpz",
+        "dpl_4QGtAAuy1YaPnyhqZ6m218SzBq4D",
+        "dpl_2NV696cEzfhePjPJYDcHgvzKQWkg",
+        "dpl_4eGxZ3fg8pCmV5nBBgsRfD7z83o2",
+        "dpl_2Q2RmEJKzUqTzWzsM2HM7xxQevpP"
+      ]
+    }
+  },
+  "exclusions": {
+    "os": {
+      "branch": "fix/voice-text-continuity-20261115",
+      "files": [
+        "vercel.json"
+      ],
+      "deploymentEnabled": false
+    },
+    "live": {
+      "branch": "fix/live-voice-text-continuity-20261115",
+      "files": [
+        "vercel.json",
+        "frontend/vercel.json",
+        "backend/vercel.json"
+      ],
+      "deploymentEnabled": false
+    }
+  },
+  "publication": {
+    "commit_skip_ci": true,
+    "branch_only": true,
+    "draft_only": true,
+    "no_merge": true,
+    "no_ready": true,
+    "no_deploy": true
+  }
+}

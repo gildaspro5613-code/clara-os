@@ -49,6 +49,7 @@ test('native synthesis only accepts a Clara message read from the exact authoriz
 test('native readiness stays closed without provider configuration or in protected Recette, without a provider call',async()=>{
  const config:{apiKey?:string;voiceId?:string}={apiKey:'synthetic',voiceId:'synthetic'};let recette=false;
  const handlers=load('src/app/api/voice/transcribe/route.ts',{
+  '@/lib/voice/transcription':{MAX_VOICE_AUDIO_BYTES:15*1024*1024,VoiceTranscriptionError:Error,transcribeVoiceAudio:()=>{throw Error('Readiness must not call a provider');}},
   '@/lib/native/voice':{hasNativeVoiceScope:()=>true,nativeVoiceOperation:async(_r:Request,fn:()=>Promise<Response>)=>{try{return await fn();}catch(e){return nativeFailure(e);}}},
   'next-intl/server':{getTranslations:async()=>((key:string)=>key)},'next/server':{NextResponse:Response},
   '@/lib/auth/voice-request-authorization':{authorizeVoiceRequest:()=>{throw Error('No legacy fallback');}},

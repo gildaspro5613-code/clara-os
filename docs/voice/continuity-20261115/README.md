@@ -1,88 +1,73 @@
-# Voix et texte Clara OS / Live — premier correctif isolé
+# Clara OS / Live — voix et texte, réception isolée
 
-Date : 15 novembre 2026. Objectif utilisateur : communiquer avec la même Clara par voix et par texte, avec conservation de la conversation et du contexte projet. Aucun Ready, merge, déploiement, changement de fournisseur ou appel payant autorisé dans cette passe.
+15 novembre 2026. But : parler et écrire à Clara dans le même contexte autorisé, retrouver ses messages et pouvoir interrompre la voix. Aucun Ready, merge, déploiement, changement distant, matériel ou fournisseur payant dans cette passe.
 
-## Références réellement contrôlées
+## Références et périmètre
 
-- OS : `delivery/clara-os-v1-20261025`, **9ea289efd039ba396fb146dfbd257efeec733a6a**. Le déploiement Vercel Production `dpl_FqVzsmq3Xie86KJc8Ww2Zg99ZD5U` est READY et son `githubCommitSha` correspond. `main` est plus ancien et n'a pas été utilisé comme base.
-- Checkout isolé : `/workspace/os-voice-20261115`, branche `fix/voice-text-continuity-20261115`. Autres branches et worktrees préservés.
-- Live : branche de livraison `deploy/clara-live-api`, **e4c7fe209db914dc7e65595f6c58ad0ed2659154**. Les fichiers de délégation et les quatre tests audités correspondent exactement à cette référence. Aucun fichier Live modifié.
-- OS #227 reste Draft et suspendue ; #228 reste Draft. Les adaptateurs expérimentaux de #228 ne sont pas un raccordement fournisseur opérationnel et n'ont pas été activés.
+- OS : base Production réellement contrôlée `delivery/clara-os-v1-20261025`, **9ea289efd039ba396fb146dfbd257efeec733a6a**, Vercel `dpl_FqVzsmq3Xie86KJc8Ww2Zg99ZD5U` READY. `main` plus ancien n'a pas servi de base.
+- Branche `fix/voice-text-continuity-20261115`, **Draft #281 existante**. Premier commit `44b861dfb08cd9d7c69dfa31f544a22405ba336a`, puis consolidation de cette même PR. Les branches #227/#228 et les autres chantiers restent intacts.
+- Live : base Production **e4c7fe209db914dc7e65595f6c58ad0ed2659154**, branche indépendante `fix/live-voice-text-continuity-20261115`. Son rapport et sa PR contiennent les preuves Live/Mongo ; ce dépôt OS ne reçoit aucun writer Live.
 
-## Défaut démontré et correction
+## Corrections confirmées
 
-Le cockpit OS monte déjà `src/components/cockpit/widgets/voice/ClaraVoiceWidget.tsx` avec une sélection native. En revanche, `src/app/clara/page.tsx` remplaçait systématiquement la voix par un message d'indisponibilité dès que le contexte était natif. Un utilisateur pouvait donc retrouver son dialogue textuel mais pas le contrôle vocal dans cette page, indépendamment de sa configuration ElevenLabs.
+| Constat | Correction | Preuve |
+|---|---|---|
+| `/clara` désactivait la voix dans tout contexte natif alors que le cockpit possède déjà le composant autorisé. | Montage du **même** `ClaraVoiceWidget` avec les seuls workspace/client/projet/session certifiés. | Tests de page et recette Next/Chromium/PostgreSQL. Aucun principal ou digest dans les props navigateur. |
+| Chat et voix étaient des éléments frères portant la même clé React. | Clés React distinctes ; même identifiant réel de conversation. | Test de changement de session et navigateur sans erreur de clés/hydratation. |
+| Live ne raccordait pas ses délégations audio au service OS. | Trois routes produit audio utilisant le registre de capacités existant, le fournisseur ElevenLabs existant et une preuve Live courante. | Six tests de sécurité produit, positif HTTP bilatéral Live et refus 401 sur les trois vraies routes compilées par Next. |
+| Le STT natif et le service produit auraient autrement dupliqué la logique fournisseur. | Extraction de l'opération Scribe existante, réutilisation du cycle audio borné et du même moteur TTS. | Non-régression des routes natives, du secret fournisseur et de la révocation, puis navigateur natif réel. |
+| La recette HTTPS locale ne transmettait pas les upgrades HMR, empêchant la réception en mode développement. | Proxy **de test** : transmission opaque des seuls chemins HMR locaux permis ; aucun retry et aucun relâchement de frontière applicative. | Six tests du proxy et hydratation de l'application réelle. |
 
-La correction monte **ce même composant existant** à côté du chat. La portée transmise au navigateur contient seulement `workspaceId`, `clientId`, `projectId`, `sessionId`, jamais l'acteur, le principal ou ses données d'authentification. Voix et texte utilisent la même clé de session. Une conversation non certifiée conserve le bouton désactivé, sans repli vers l'ancien agent autonome.
+Aucun Brain, modèle de réponse, writer, schéma Stage, autorisation native ou connecteur matériel n'est changé.
 
-Le hook, les routes STT/TTS, le Brain, les permissions et les writers ne changent pas. Aucun nouveau composant ni moteur. Les libellés FR/EN/ES/DE/IT du composant natif existant sont réutilisés.
+## Chaînes réellement raccordées
 
-Fichiers applicatifs : **`src/app/clara/page.tsx` uniquement**. Autres fichiers : test de page, extension opt-in de la recette navigateur existante, exclusion AntiPreview de cette seule branche dans `vercel.json`, présent rapport et journaux.
+**OS natif** : widget existant → hook existant → `/api/voice/transcribe` → `/api/clara/chat` → historique PostgreSQL natif → `/api/voice/speak` lié au message exact → lecture HTMLAudio → écoute suivante. Le fournisseur audio ne devient jamais l'autorité cognitive.
 
-## Chaîne réutilisée et garanties
+**Live** : contrôle micro dans sa conversation existante → backend Live authentifié → OS `voice:conversation` → callback Live vérifiant la délégation signée et sa consommation atomique → STT → **envoi textuel Live actuel** → message Mongo complet attesté → même service audio OS → navigateur. Aucun historique parallèle ; aucun accès natif OS accordé par un token produit. `conversation:link` reste une capacité distincte et n'autorise pas la voix.
 
-`ClaraVoiceWidget` → `useClaraRuntimeVoice` → `/api/voice/transcribe` → `/api/clara/chat` → historique natif → `/api/voice/speak` → lecture audio → reprise de l'écoute.
+Le service produit est fermé par défaut : produit `clara-live` authentifié, capacité vocale explicitement configurée, workspace serveur, callback autorisé, configuration ElevenLabs et délégation courante sont tous nécessaires. Les callbacks revérifient utilisateur/projet/session, empreinte du contenu, TTL et reçu avant, pendant (500 ms) et après le fournisseur. Le résultat est encore vérifié avant restitution. Aucune permission distante n'a été attribuée ici.
 
-- Démarrage explicite ; le micro n'est pas ouvert par le rendu de la page.
-- Même opération de conversation et même historique que le texte ; aucune seconde cognition ElevenLabs ajoutée.
-- STT/TTS : autorisation OS native, droit opérateur `connections:manage`, projet autorisé et fil certifié. Revalidation existante et arrêt en cas de révocation conservés.
-- La synthèse native reçoit un `messageId` appartenant au fil autorisé ; aucun texte arbitraire de navigateur n'est ajouté à cette route.
-- Aucun droit matériel, envoi de show, autorisation étendue ou écriture de préparation ajouté.
+Les routes natives conservent `connections:manage`, la certification du fil, l'isolation et la révocation PostgreSQL existantes. Une réponse d'un autre fil, un texte arbitraire du navigateur, un fournisseur interrompu ou une issue incertaine ne déclenchent ni lecture ni relance automatique. Les validations métier restent humaines.
 
-## Tests réellement exécutés
+## Résultats exécutés
 
 | Contrôle | Résultat | Preuve |
 |---|---|---|
-| Nouveau test de page sur la base, avant correction | 2 PASS / 3 FAIL : absence du composant natif | `logs/page-before.log` |
-| Test de page + native-voice + voice-route-security + historical-cockpit et sa dépendance agenda | **31 PASS / 0 FAIL** | `logs/voice-unit.log` |
-| Primitives de délégation Live, quatre fichiers copiés exactement depuis la branche de livraison, sans conftest métier | **42 PASS / 0 FAIL** ; doubles de stockage | `logs/live-voice-primitives.log` |
-| TypeScript complet, `--noEmit --incremental false` | **PASS** à 2048 MiB ; premier essai 1536 MiB arrêté par la limite de heap | `logs/typecheck.log`, `logs/typecheck-1536-oom.log`, `checks.json` |
-| ESLint : page, nouveau test, recette navigateur adaptée | **PASS** | `logs/lint.log` |
-| Syntaxe Node de la recette et `git diff --check` | **PASS** | `checks.json` |
-| PostgreSQL jetable, initialisation par la fixture existante | PASS initialisation seulement ; pas une réception de conversation persistée | `logs/postgres-fixture.log` |
-| Recette navigateur voix/texte et captures | **NON EXÉCUTÉE** : préchauffage de l'application interrompu pour manque de ressources | `logs/dev-preflight.json`, `logs/native-app.log` |
-| Build standard Production | **NON EXÉCUTÉ / NON VALIDÉ** : accès Google Fonts refusé par le proxy, ressources insuffisantes constatées en développement | `checks.json` |
-| Fournisseurs ElevenLabs / OpenAI réels et iPhone/Safari réel | **NON EXÉCUTÉS** | Aucun appel ni dépense fournisseur dans cette passe |
+| Tests de page, voix native, routes fournisseur, historique et produit ; proxy HTTP/HMR | **43 PASS, 0 FAIL, 0 ignoré** | `logs/final-voice-tests.log` |
+| TypeScript complet | **PASS** avec heap 2048 MiB | `logs/typescript-shared-audio.log` ; première tentative à 1536 MiB OOM conservée, aucune modification du code pour la masquer |
+| ESLint ciblé des fichiers applicatifs | **PASS** | `logs/eslint-voice.log` |
+| Chromium / Next.js 16.4.3 Turbopack / HTTPS / PostgreSQL réels | **2 PASS, 0 FAIL** | `logs/browser-clara.log`, `browser-recheck-result.json` |
+| Trois routes produit compilées par Next, sans autorité produit | **401 attendu pour chacune**, aucun fournisseur | `logs/product-next-route-refusals.json` |
+| Live : handlers et Mongo réels, primitives existantes | **59 PASS** | Rapport de la PR Live, pas une simulation de stockage |
+| Live : UI, cinq cockpits et viewer | **86 PASS** et build optimisé **PASS** | Rapport Live ; le test viewer JSDOM ne certifie pas WebGL |
+| Live : navigateur compilé / HTTPS bilatéral / reprise des services | **PASS** | Rapport et captures de la PR Live |
+| Build Next Production complet | **NON VALIDÉ ici** | Accès Google Fonts bloqué ; aucun faux téléchargement, remplacement de police ou changement de configuration |
+| Fournisseur audio/cognitif réel, microphone humain, Safari/iPhone physique | **NON EXÉCUTÉ** | Aucun accès fournisseur de réception autorisé employé |
+| GitHub Actions | **NON DÉCLENCHÉ** | Budget préservé, commits `[skip ci]` |
 
-Les nouveaux tests de page vérifient la portée exacte, l'absence du principal dans les props, la même clé voix/texte, le changement de session, le refus avant chargement et le maintien du verrou sur fil non certifié. Les 31 tests OS emploient des fournisseurs/stockages simulés : ils ne constituent pas une réception audio ni une preuve de révocation sur PostgreSQL réel.
+Le navigateur natif vérifie trois tours vocaux sur une activation micro, le temps réel de lecture d'un HTMLAudioElement, interruption pendant écoute/fournisseur/lecture, historique SQL et identifiant du message synthétisé, réponse perdue après commit puis reprise sans nouveau STT, révocation projet et session, et texte → voix → reload avec le même historique. Le second scénario vérifie les lectures SQL retardées, une seule vérification d'autorité en cours, le timeout inchangé, le refus du micro et un vrai 403.
 
-La recette navigateur existante est préparée pour `NATIVE_VOICE_ENTRY=clara` (par défaut, son parcours cockpit reste inchangé). Elle ajoute la continuité voix → saisie textuelle → voix → rechargement dans le même historique SQL. Cette extension est validée syntaxiquement et par lint, **pas exécutée** dans cet environnement. Les exigences existantes de reprise, non-duplication, arrêt du micro/audio et refus d'accès n'ont pas été retirées.
+Les pistes, MediaRecorder, lecture audio, HTTP et bases sont réels. **Le signal micro et les réponses ElevenLabs/OpenAI sont simulés** : ces tests ne certifient ni transcription humaine, ni timbre de Clara, ni fournisseur réel. La recette est compilée par **Next dev**, avec le fallback de police fourni par Next lorsque Google Fonts est inaccessible ; elle n'est jamais présentée comme un build Production réussi.
 
-## Blocage environnemental, sans faux PASS
+## Environnement et preuves
 
-L'application Next en développement a répondu HTTP 200 à `/clara` **sans session authentifiée** ; cela ne prouve pas l'ouverture d'une conversation. Next a utilisé son repli de police natif après le refus de téléchargement de Geist/Geist Mono. Aucun téléchargement de police fictif n'a été injecté, aucun fichier de police ni configuration Next modifié.
+Les journaux d'échecs initiaux sont conservés. Les défauts de harnais ont été identifiés avant reprise : dépendances dupliquées, sorties de test dans le répertoire surveillé par Tailwind, espace disque et résolution relative des externals du cache déplacé. Aucun refus applicatif ni test n'a été enlevé pour obtenir un PASS.
 
-Pendant le préchauffage suivant, il ne restait que 11 MiB sur le disque ; la consommation cgroup approchait 8,3 Go pour une limite de 8 Gio. Arrêt des processus app/proxy créés pour cette passe et du seul conteneur PostgreSQL jetable créé, sans réseau ni volume persistant. Seule la sortie `.next` générée dans ce nouveau worktree a été supprimée. Aucun volume, sauvegarde, clé de chiffrement ni donnée existante supprimé. L'espace a été libéré après la fermeture des processus. Aucun essai navigateur supplémentaire lancé à l'aveugle.
+Les dépendances immuables ont été comparées avant déduplication ; seules des copies identiques et des caches de compilateur générés ont été concernés. Les données Mongo jetables propres à cette recette ont été contrôlées puis supprimées pour libérer de l'espace. Aucun volume métier, archive, clé de sauvegarde ou fichier constructeur n'a été supprimé.
 
-Prérequis de reprise : environnement disposant réellement de marge disque/mémoire pour Next + Chromium + PostgreSQL et accès aux polices nécessaires au build. Reprendre la recette existante, sans réécriture ni nouvelle infrastructure cloud.
+La recette native finale utilise le même Next et les mêmes packages, un PostgreSQL `postgres:17-alpine` sans réseau, lecture seule sauf tmpfs nécessaires, et un dossier `.next` généré sur le volume `/tmp` libre. La structure relative `node_modules` du cache et `NODE_PATH` permettent de résoudre les externals réels ; aucun package ou réponse fournisseur n'est substitué pour compiler. Les traces et profils Chromium restent **hors du checkout surveillé**. Les seuls certificats de test sont privés, hors dépôt.
 
-## Configuration fournisseur — présence uniquement
+Captures : `captures/desktop.png`, `captures/mobile.png`, `captures/clara-text-voice-history.png`. Elles proviennent du navigateur réel sur données synthétiques. `evidence.sha256` inventorie les preuves et `tested-files.sha256` les fichiers testés.
 
-Inspection Vercel en lecture seule, sans déchiffrement ni utilisation des valeurs : `ELEVENLABS_API_KEY` et `ELEVENLABS_VOICE_ID` sont déclarées pour Production. Les paramètres de l'ancien agent conversationnel sont seulement présents sur une ancienne branche Preview. Le pipeline natif actuel n'exige pas cet agent.
+## Réception réelle restante et décision
 
-Cette présence ne certifie ni validité de clé, abonnement, modèle, voix, quota, accès réseau ni fonctionnement sonore. Aucun secret n'a été copié vers l'environnement local, aucun paramètre distant modifié. L'utilisation d'une configuration Production pour un test isolé n'est pas présumée autorisée.
+**GO pour le raccordement déterministe en isolation. NO-GO pour une certification fournisseur ou une activation Production.**
 
-## Clara Live — dépendance d'autorité encore manquante
+La présence de `ELEVENLABS_API_KEY` et `ELEVENLABS_VOICE_ID` en Production OS a été constatée par métadonnées seulement : valeurs non lues, validité et timbre non testés. Une réception réelle nécessite un accès fournisseur autorisé en isolation et un budget accepté. Elle devra vérifier une phrase humaine, sa réponse Clara et la voix réellement choisie, puis l'interruption et le retour au texte. Aucun secret ne doit être envoyé dans la conversation ou les preuves publiques.
 
-Le dialogue Live reste textuel (`frontend/src/context/ClaraConversationContext.jsx`, `ClaraConversation.jsx`). Les primitives `backend/voice_delegation_contract.py`, `voice_delegation_protocol.py`, `voice_delegation_mongo.py` et `voice_session_revocation.py` ne sont raccordées à aucun endpoint vocal métier.
+Live reste vocalement fermé sans capacité produit explicite, callback et index d'intégrité ; aucun de ces réglages Production n'a été modifié. Son contrat impose un projet ; le global reste textuel. L'association des identités ou historiques OS/Live ne se déduit jamais de la seule voix. Les limites de révocation JWT et de taille d'historique existantes restent documentées côté Live. Les documents, paramètres métier et Stage ne sont jamais sauvegardés automatiquement par le contrôle vocal.
 
-Le routeur `backend/conversation_links.py` permet consentement, vérification et arrêt d'une **association `conversation:link`**. Il ne délivre pas `voice:conversation` et refuse de certifier l'arrêt lorsqu'une session vocale n'a pas d'acquittement vérifié. Le jeton produit OS/Live n'est pas une identité utilisateur OS ; un JWT Live ne constitue pas la session OS requise par les routes vocales natives. Réutiliser ce lien comme un droit vocal implicite serait un contournement.
+Les trois déploiements Production existants sont conservés ; branches vocales exclues dans les fichiers Vercel existants. Une mise à jour de Draft n'est ni Ready, ni merge, ni activation. Les tests ont été ajoutés aux suites existantes sans créer de job CI supplémentaire.
 
-### Raccord minimal à qualifier avant activation Live
-
-1. Partir des associations canoniques déjà consenties et vérifier côté serveur leurs identités OS/Live, workspace/client/projet et fils de conversation. Aucune correspondance par nom, email ou dernier projet.
-2. Raccorder émission et consommation de la délégation vocale existante avec une autorisation explicite `voice:conversation`, durée bornée, langue, anti-rejeu et refus durable après révocation. Ne pas remplacer ce consentement par le jeton produit.
-3. Faire transiter chaque transcription par le dialogue et le writer durables existants ; restituer uniquement la réponse attestée du bon tour. Les identités de message OS et Live doivent être résolues et contrôlées, jamais assimilées arbitrairement.
-4. Arrêt effectif des pistes micro, de la lecture et des requêtes à la révocation, au changement de projet et à la fermeture ; aucune reprise automatique d'une opération d'issue inconnue.
-5. Recette bilatérale HTTP/PostgreSQL/MongoDB isolée : bon fil, interprojets/utilisateurs, expiration, rejeu, révocation, indisponibilité et reprise, puis essai fournisseur réel plafonné autorisé et réception Safari iPhone.
-
-Ce raccord n'est **pas implémenté** par ce correctif UI. Aucune route, nouveau fournisseur, nouvel agent, autorité ou writer parallèle créé. L'ancien SDK conversationnel et ses expérimentations Custom LLM ne sont pas activés.
-
-## Décision et prochaine réception
-
-- Correctif UI OS : **PASS tests locaux et TypeScript**, prêt à examiner en Draft, pas réceptionné en navigateur.
-- Conversation vocale OS réelle : **NON RÉCEPTIONNÉE**, fournisseur et appareil réels non testés.
-- Voix Live : **BLOCKED** par le raccord d'autorité décrit ci-dessus, aucune fausse commande microphone ajoutée.
-- Ready / fusion / Preview / Production : **NO-GO**. Pas d'Actions payante ni d'appel cognitif/audio réel. Aucun changement aux ateliers Live, Stage Model ou connecteurs matériels.
-
-Les fichiers et empreintes dans `tested-files.sha256` permettent d'identifier le correctif testé. La configuration AntiPreview exclut uniquement `fix/voice-text-continuity-20261115` ; tout éventuel commit est marqué `[skip ci]`. Les autres branches et les PR #227/#228/#277/#356 sont conservées.
+Le journal applicatif Next complet est conservé dans `logs/native-app-recheck.log.gz` ; le fichier `.log` lisible en donne un extrait. Les journaux Git retirent uniquement les espaces de fin de ligne.

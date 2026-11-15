@@ -102,7 +102,7 @@ export default async function ClaraPage({
             initialMessages={session.conversation}
             userFirstName={session.user.firstName}
           />
-          {native ? <NativeClaraVoiceWidget key={voiceScope?.sessionId??"voice-locked"} scope={voiceScope} disabled={!voiceScope||!nativeThreadCertified(session)} /> : <ClaraVoiceWidget />}
+          {native ? <NativeClaraVoiceWidget key={voiceScope?'voice:'+voiceScope.sessionId:"voice-locked"} scope={voiceScope} disabled={!voiceScope||!nativeThreadCertified(session)} /> : <ClaraVoiceWidget />}
         </div>
         <NativeDocumentsPanel referencesOnly />
       </div>

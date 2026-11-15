@@ -1,0 +1,55 @@
+{
+  "scope": "Compiled Next development app, real local PostgreSQL/HTTPS/Chromium; simulated providers and microphone, no Production access",
+  "database": "native_browser_e13b35b95c664c388503d63c0cb30164",
+  "started_utc": "2026-11-15T09:18:52.073712+00:00",
+  "browser_executed": true,
+  "root_free_after_postgres_bytes": 192585728,
+  "generated_next_output": "/tmp/clara-os-voice-cache-root-20261115/.next",
+  "warmup": [
+    {
+      "path": "/clara",
+      "status": 200,
+      "seconds": 5.69,
+      "bytes": 103231
+    },
+    {
+      "path": "/api/native/runtime",
+      "status": 401,
+      "seconds": 2.13,
+      "bytes": 60
+    },
+    {
+      "path": "/api/voice/transcribe",
+      "status": 403,
+      "seconds": 0.62,
+      "bytes": 17
+    },
+    {
+      "path": "/api/voice/speak",
+      "status": 405,
+      "seconds": 0.5,
+      "bytes": 0
+    },
+    {
+      "path": "/api/clara/chat",
+      "status": 405,
+      "seconds": 1.45,
+      "bytes": 0
+    },
+    {
+      "path": "/api/clara/conversation",
+      "status": 401,
+      "seconds": 0.61,
+      "bytes": 60
+    },
+    {
+      "path": "/api/connections/google",
+      "status": 401,
+      "seconds": 0.45,
+      "bytes": 60
+    }
+  ],
+  "browser_exit_code": 0,
+  "ended_utc": "2026-11-15T09:21:45.641567+00:00",
+  "owned_processes_and_container_stopped": true
+}

@@ -5,11 +5,11 @@ import { NextResponse } from "next/server";
 
 import { elevenLabsConfig } from "@/lib/config/elevenlabs";
 import { assertRecetteExternalExecutionBlocked } from "@/lib/recette/external-execution-guard";
+import {MAX_VOICE_AUDIO_BYTES,transcribeVoiceAudio,VoiceTranscriptionError} from '@/lib/voice/transcription';
 
 export const dynamic = "force-dynamic";
 
-const ELEVENLABS_STT_URL = "https://api.elevenlabs.io/v1/speech-to-text";
-const MAX_AUDIO_BYTES = 15 * 1024 * 1024;
+const MAX_AUDIO_BYTES = MAX_VOICE_AUDIO_BYTES;
 
 export async function GET(request:Request){
  if(!hasNativeVoiceScope(request))return Response.json({success:false},{status:403});
@@ -55,51 +55,9 @@ async function transcribe(request:Request,signal?:AbortSignal,native=false){
       );
     }
 
-    const payload = new FormData();
-    payload.append("file", audio, audio.name || "clara-voice.webm");
-    payload.append("model_id", "scribe_v2");
-
-    const response = await fetch(ELEVENLABS_STT_URL, {
-      method: "POST",
-      headers: {
-        "xi-api-key": apiKey,
-      },
-      body: payload,
-      cache: "no-store",
-      signal,
-    });
-
-    const data = (await response.json()) as {
-      text?: string;
-      language_code?: string;
-      detail?: unknown;
-    };
-
-    if (!response.ok) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: t("transcriptionFailed"),
-        },
-        { status: 502 },
-      );
-    }
-
-    const text = data.text?.trim();
-
-    if (!text) {
-      return NextResponse.json(
-        { success: false, message: t("noSpeech") },
-        { status: 422 },
-      );
-    }
-
-    return NextResponse.json({
-      success: true,
-      text,
-      language: data.language_code ?? null,
-    });
-  } catch {
+    return NextResponse.json({success:true,...await transcribeVoiceAudio(audio,signal)});
+  } catch(error) {
+    if(error instanceof VoiceTranscriptionError)return NextResponse.json({success:false,message:t(error.messageKey)},{status:error.status});
     return NextResponse.json(
       {
         success: false,

@@ -22,16 +22,22 @@ export async function authorizeNativeVoice(request:Request){
  * Recheck after completion before releasing transcription/audio to the caller.
  */
 export async function nativeVoiceOperation(request:Request,run:(scope:Awaited<ReturnType<typeof authorizeNativeVoice>>,signal:AbortSignal)=>Promise<Response>){
+ return bufferedVoiceOperation(request,authorizeNativeVoice,run);
+}
+
+/** Shared buffered-audio lifecycle. The caller supplies its own authority;
+ * this helper never turns product credentials into a native OS principal. */
+export async function bufferedVoiceOperation<T>(request:Request,authorize:(request:Request)=>Promise<T>,run:(scope:T,signal:AbortSignal)=>Promise<Response>){
  const controller=new AbortController();let timer:ReturnType<typeof setInterval>|undefined,checking=false;let failure:unknown;
  const cancel=()=>controller.abort();request.signal.addEventListener('abort',cancel,{once:true});
  try{
-  const scope=await authorizeNativeVoice(request);
+  const scope=await authorize(request);
   if(request.signal.aborted)throw new RegistryError(409,'NATIVE_VOICE_INTERRUPTED');
-  timer=setInterval(()=>{if(checking)return;checking=true;authorizeNativeVoice(request).catch(error=>{failure=error;controller.abort();}).finally(()=>{checking=false;});},500);
+  timer=setInterval(()=>{if(checking)return;checking=true;authorize(request).catch(error=>{failure=error;controller.abort();}).finally(()=>{checking=false;});},500);
   const response=await run(scope,controller.signal);
   if(failure)throw failure;
   if(controller.signal.aborted)throw new RegistryError(409,'NATIVE_VOICE_INTERRUPTED');
-  await authorizeNativeVoice(request);
+  await authorize(request);
   response.headers.set('Cache-Control','no-store');return response;
  }catch(error){return nativeFailure(failure??error);}
  finally{if(timer)clearInterval(timer);request.signal.removeEventListener('abort',cancel);controller.abort();}

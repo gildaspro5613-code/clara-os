@@ -1,0 +1,15 @@
+{
+  "date_utc": "2026-11-15T07:25:41.970423+00:00",
+  "type": "identical installed dependency deduplication and generated compiler-cache removal",
+  "entries_compared": 67915,
+  "sha256_inventory": "e30c20dc36b097ac590d607b5d24875b5194920445efa9ee89965594bae63819",
+  "canonical_dependencies": "/tmp/clara-live-light-341/frontend/node_modules",
+  "deduplicated_path": "/tmp/clara-live-light-341/.tmp/reception-1cdd4d9/frontend/node_modules",
+  "path_preserved_by_symlink": true,
+  "compiler_cache_removed": "/workspace/os-context/.next/cache",
+  "database_archive_key_capture_deleted": false,
+  "memory_before": 6355460096,
+  "memory_after": 5615677440,
+  "root_free_bytes": 934666240,
+  "tmp_free_bytes": 678879232
+}

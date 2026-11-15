@@ -1,0 +1,28 @@
+---------------------------
+[project]/src/app/globals.css [app-client] (css)
+
+Caused by:
+- reading file "/workspace/os-voice-20261115/.tmp/runtime/playwright_chromiumdev_profile-KVj1sn/SingletonSocket"
+- No such device or address (os error 6)
+
+Debug info:
+- Execution of subscribe_issues_and_diags_operation failed
+- Execution of <AppEndpoint as Endpoint>::server_changed failed
+- Execution of *Project::server_changed failed
+- Execution of *AppEndpointOutput::server_assets failed
+- Execution of AppEndpoint::output failed
+- Execution of AppProject::app_module_graphs failed
+- Execution of *<AppEndpoint as Endpoint>::additional_entries failed
+- Execution of ModuleGraph::from_graphs failed
+- Execution of ModuleGraph::from_graphs_inner failed
+- Execution of SingleModuleGraph::new_with_entries_visited_intern failed
+- [project]/src/app/globals.css [app-client] (css)
+- Execution of primary_chunkable_referenced_modules failed
+- Execution of <CssModule as Module>::references failed
+- Execution of parse_css failed
+- Execution of <PostCssTransformedAsset as Asset>::content failed
+- Execution of PostCssTransformedAsset::process failed
+- Execution of evaluate_webpack_loader failed
+- Execution of <DiskFileSystem as FileSystem>::read failed
+- reading file "/workspace/os-voice-20261115/.tmp/runtime/playwright_chromiumdev_profile-KVj1sn/SingletonSocket"
+- No such device or address (os error 6)

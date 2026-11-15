@@ -1,0 +1,53 @@
+✔ Clara page mounts existing native voice beside text using the same certified conversation (97.476601ms)
+✔ uncertified native conversation keeps voice disabled without falling back to the legacy provider (21.253093ms)
+✔ changing the selected conversation keys both interfaces to the new native session (10.383585ms)
+✔ page authority refuses before loading a conversation or exposing an audio control (9.98866ms)
+✔ non-native page keeps its existing provider component and never invents native scope (36.232112ms)
+✔ business date is Paris day independently of the host and browser timezone (18.471303ms)
+✔ full dates use the five existing locales, including weekday and year (3.945738ms)
+✔ Calendar windows use actual Paris midnight, including 23/25-hour DST days (4.020569ms)
+✔ presentation preserves missing selection, reconnect, denied, expired and unavailable states (0.304261ms)
+✔ SSR has a deterministic date placeholder and closed settings; no provider data or writes on render (76.642308ms)
+✔ Agenda periods reuse bounded Paris windows across DST and weeks (5.195523ms)
+✔ Agenda consent wording changes no Cockpit state and never hides a refusal (0.201309ms)
+✔ one-time calendar picker remains closed on SSR: no implicit account, calendar, provider call, or write (2.711485ms)
+✔ historical Tasks uses the authorized mission rather than the old 82 percent fixture (2.970319ms)
+✔ native historical microphone stays disabled and honest in all five languages (14.677219ms)
+✔ the historical action bar navigates existing pages instead of decorative buttons (5.901942ms)
+✔ Mission GlassPanel interface labels are translated in all five languages while stored titles and next actions remain verbatim (24.923769ms)
+✔ isolated proxy: a pooled connection can reset, fresh forwarding preserves one request per socket (23.547776ms)
+ISOLATED_PROXY_UPSTREAM_ERROR ECONNRESET
+✔ isolated proxy: an upstream reset is explicit 503 and never causes a second handoff (3.990063ms)
+✔ isolated proxy: losing a response after headers cannot become a false complete receipt or retry (14.230555ms)
+✔ isolated proxy: browser cancellation closes the in-flight upstream without a retry (3.609859ms)
+ISOLATED_PROXY_UPSTREAM_ERROR ECONNRESET
+✔ isolated dev proxy forwards one Next HMR upgrade, opaque bytes and end-of-stream (4.032216ms)
+✔ isolated dev proxy rejects every non-HMR upgrade without reaching upstream (1.217647ms)
+✔ native voice requires current operator, writable project and certified thread; rejects revoked checks and aborted requests (107.280097ms)
+✔ native synthesis only accepts a Clara message read from the exact authorized history; no browser text or foreign message (31.083714ms)
+✔ native readiness stays closed without provider configuration or in protected Recette, without a provider call (21.649949ms)
+✔ voice recovery adopts the existing native pending receipt on 202 without recording or repeating a supplier call (61.426508ms)
+✔ voice startup: a pre-start readiness response cannot undo a newer authority refusal (30.30597ms)
+✔ voice startup: unchanged active timeout fails closed but is not an access refusal (35.125714ms)
+✔ voice startup: a real HTTP denial retains its public status/code and stops before microphone (68.988013ms)
+✔ voice startup: browser microphone rejection is distinct from authority and contains no private error text (76.357803ms)
+✔ voice startup: initial readiness keeps its 10 s bound and never opens the microphone (50.099372ms)
+✔ voice startup: explicit stop wins over a late active denial without restarting or replacing the failure (44.254777ms)
+✔ voice startup: HTTP denial survives a malformed body; certification conflict is not called an ACL refusal (50.800894ms)
+✔ voice startup: periodic and foreground checks share one pending authority read without changing the 3 s bound (57.485452ms)
+✔ product voice is denied without product, explicit voice grant, callback, credential or provider configuration; readiness never calls a provider (476.394338ms)
+✔ bounded audio requires the issued content hash and a current consumed Live proof before shared STT; completion is acknowledged and rechecked (38.658088ms)
+✔ foreign workspace, wrong operation, permissions, invalid expiry, content alteration and arbitrary synthesis text refuse without provider IO (217.444146ms)
+✔ only exact persisted assistant narrative may be synthesized; no text supplied by the browser and no private provider diagnostics (67.030868ms)
+✔ malformed Live proof and unconfirmed completion never release audio; cleanup is attempted even when consume response was lost (56.047973ms)
+✔ revocation during provider work aborts its signal and releases neither partial nor complete audio, without retry (527.593648ms)
+✔ voice authorization uses existing server-owned workspace and operator permissions, rejects foreign origin before auth (91.468625ms)
+✔ four provider routes deny unauthenticated requests before any provider and localize secret-free failures in five languages (127.391332ms)
+ℹ tests 43
+ℹ suites 0
+ℹ pass 43
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5637.03582

@@ -38,8 +38,9 @@ test('Clara page mounts existing native voice beside text using the same certifi
  const h=pageHarness(),tree=await h.run(),voice=tree.filter(e=>e.type===NativeVoice),chat=tree.find(e=>e.type===Chat)!;
  assert.equal(voice.length,1);assert.equal(tree.some(e=>e.type===LegacyVoice),false);
  assert.deepEqual(JSON.parse(JSON.stringify(voice[0].props.scope)),scope);
- assert.equal(voice[0].props.disabled,false);assert.equal(voice[0].key,scope.sessionId);
+ assert.equal(voice[0].props.disabled,false);assert.equal(voice[0].key,'voice:'+scope.sessionId);
  assert.equal(chat.props.nativeSessionId,scope.sessionId);assert.equal(chat.key,scope.sessionId);
+ assert.notEqual(voice[0].key,chat.key,'Sibling widget keys must differ while conversation scope stays identical');
  assert.equal(chat.props.initialMessages,h.messages);assert.equal(chat.props.nativeThreadReadOnly,false);
  assert.ok(!JSON.stringify(voice[0].props).includes('never-send'));
 });
@@ -51,7 +52,7 @@ test('uncertified native conversation keeps voice disabled without falling back 
 });
 test('changing the selected conversation keys both interfaces to the new native session',async()=>{
  const tree=await pageHarness({sessionId:'session-b'}).run();
- assert.equal(tree.find(e=>e.type===NativeVoice)?.key,'session-b');
+ assert.equal(tree.find(e=>e.type===NativeVoice)?.key,'voice:session-b');
  assert.equal(tree.find(e=>e.type===Chat)?.key,'session-b');
  assert.equal((tree.find(e=>e.type===NativeVoice)?.props.scope as typeof scope).sessionId,'session-b');
 });

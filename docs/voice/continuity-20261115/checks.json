@@ -1,33 +1,53 @@
 {
-  "date_utc": "2026-11-15T07:10:46.181357+00:00",
+  "date_utc": "2026-11-15T09:31:01.304031+00:00",
   "base_sha": "9ea289efd039ba396fb146dfbd257efeec733a6a",
   "branch": "fix/voice-text-continuity-20261115",
-  "unit_tests": {
-    "os": {
-      "pass": 31,
-      "fail": 0
-    },
-    "live_primitives": {
-      "pass": 42,
-      "fail": 0,
-      "storage": "doubles only"
-    }
+  "os_unit_proxy": {
+    "pass": 43,
+    "fail": 0,
+    "skip": 0,
+    "log": "logs/final-voice-tests.log"
   },
-  "typecheck": {
-    "exit_code": 0,
-    "command": "node node_modules/typescript/bin/tsc --noEmit --incremental false --pretty false",
-    "max_heap_mib": 2048,
-    "initial_1536_mib_exit_code": 134
+  "os_native_browser": {
+    "pass": 2,
+    "fail": 0,
+    "log": "logs/browser-clara.log",
+    "storage": "Actual isolated PostgreSQL, Next dev Turbopack, HTTPS and Chromium",
+    "suppliers": "SIMULATED",
+    "real_microphone": false
   },
+  "product_next_routes": {
+    "401_expected": 3,
+    "log": "logs/product-next-route-refusals.json"
+  },
+  "typecheck_exit_code": 0,
+  "typecheck_heap_mib": 2048,
   "eslint_exit_code": 0,
-  "browser_syntax_exit_code": 0,
+  "yaml_shell_exit_code": 0,
   "git_diff_check_exit_code": 0,
-  "standard_build": "NOT EXECUTED; fonts.googleapis.com and fonts.gstatic.com proxy CONNECT 403",
-  "browser_e2e": "NOT EXECUTED; development warm-up stopped at disk 11 MiB free and cgroup 8308760576 / 8589934592 bytes",
-  "runtime": "Next dev --webpack, real local PostgreSQL fixture initialized, no completed voice flow",
-  "cleanup": "Only our app/proxy process groups, owned no-network tmpfs PostgreSQL container and generated .next output stopped/removed",
-  "provider_calls": 0,
-  "real_microphone_used": false,
-  "real_device_tested": false,
-  "remote_configuration_changed": false
+  "standard_next_production_build": "NOT VALIDATED; blocked Google Fonts, no fake downloads",
+  "live_backend": {
+    "pass": 59,
+    "fail": 0,
+    "storage": "Actual isolated MongoDB; suppliers simulated"
+  },
+  "live_frontend": {
+    "pass": 86,
+    "fail": 0
+  },
+  "live_browser": "Separate compiled Live and real OS audio handlers / HTTPS / Mongo; see Live PR report",
+  "real_supplier_requests": 0,
+  "physical_device_tested": false,
+  "remote_configuration_changed": false,
+  "github_actions_triggered": false,
+  "deployment_authorized": false,
+  "protected_paths_unchanged": [
+    "db/migrations",
+    "src/lib/brain",
+    "src/lib/core",
+    "src/lib/canonical",
+    "src/lib/auth",
+    "src/lib/external-capabilities",
+    "src/lib/connectors"
+  ]
 }
