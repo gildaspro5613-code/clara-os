@@ -33,6 +33,7 @@ function record(value:unknown):Record<string,unknown>|null{
 
 export function verifyMakeDriveScenarioContract(
  details:unknown,scenarioInterface:unknown,blueprintResponse:unknown,scenarioId:number,
+ requireFolderSupport=false,
 ):boolean{
  const d=record(details),scenario=record(d?.scenario??d);
  const interfaceEnvelope=record(scenarioInterface);
@@ -71,8 +72,24 @@ export function verifyMakeDriveScenarioContract(
    return false;
   defined.set(v.name,{type:v.type,required:v.required===true});
  }
- if(defined.size>3||![...defined.keys()].every(n=>['query','workspaceId','missionId'].includes(n)))
-  return false;
+ const folderAware=defined.has('folderId');
+ if(defined.size>4||![...defined.keys()].every(n=>['query','workspaceId','missionId','folderId'].includes(n)))return false;
+ if(requireFolderSupport&&!folderAware)return false;
+ if(folderAware){
+  if(defined.get('folderId')?.required!==false||
+     !['text','string'].includes(defined.get('folderId')?.type??''))return false;
+  const search=record(record(flow[1])?.mapper);
+  const out=record(record(flow[2])?.mapper);
+  // V2 contract: exactly the provider's plain-name read + optional folder.
+  // Refuse custom raw Drive queries, arbitrary mappings and huge result sets.
+  if(search?.select!=='map'||search.retrieve!=='file_folder'||
+     search.searchType!=='title'||search.operator!=='contains'||
+     search.query!=='{{1.query}}'||search.folderId!=='{{1.folderId}}'||
+     !Number.isSafeInteger(Number(search.limit))||Number(search.limit)<1||
+     Number(search.limit)>10||
+     out?.fileId!=='{{2.id}}'||out.fileName!=='{{2.name}}'||
+     out.mimeType!=='{{2.mimeType}}')return false;
+ }
  return defined.get('workspaceId')?.required===true&&
   defined.get('query')?.required===true&&
   ['text','string'].includes(defined.get('workspaceId')?.type??'')&&
@@ -100,6 +117,7 @@ class MakeReadVerificationError extends Error{
  */
 export async function verifyMakeReadConnectionDetailed(
  input:MakeReadConnectionInput,fetcher:typeof fetch=fetch,
+ requireFolderSupport=false,
 ):Promise<MakeReadVerificationResult>{
  const root=`https://${input.zone}.make.com/api/v2/scenarios/${input.scenarioId}`;
  const controller=new AbortController();
@@ -127,7 +145,7 @@ export async function verifyMakeReadConnectionDetailed(
   const details=await get('');
   const contract=await get('/interface');
   const blueprint=await get('/blueprint?draft=false');
-  return verifyMakeDriveScenarioContract(details,contract,blueprint,input.scenarioId)?
+  return verifyMakeDriveScenarioContract(details,contract,blueprint,input.scenarioId,requireFolderSupport)?
    {ok:true}:{ok:false,code:'MAKE_SCENARIO_CONTRACT_MISMATCH'};
  }catch(error){
   return {ok:false,code:error instanceof MakeReadVerificationError?
@@ -137,6 +155,7 @@ export async function verifyMakeReadConnectionDetailed(
 /** Keep the established boolean interface for existing callers. */
 export async function verifyMakeReadConnection(
  input:MakeReadConnectionInput,fetcher:typeof fetch=fetch,
+ requireFolderSupport=false,
 ):Promise<boolean>{
- return (await verifyMakeReadConnectionDetailed(input,fetcher)).ok;
+ return (await verifyMakeReadConnectionDetailed(input,fetcher,requireFolderSupport)).ok;
 }
