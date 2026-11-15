@@ -1,5 +1,5 @@
 import {ConnectorBuilderDirectory} from './connector-builder-directory';
-import {executeNativeConnectorRead,type NativeConnectorReadAudit,
+import {executeNativeConnectorRead,NativeConnectorReadDenied,type NativeConnectorReadAudit,
  type NativeConnectorReadAuthority,type NativeConnectorReadExecutor} from './native-connector-read-gateway';
 import {nativeBuilderReadAuthority,nativeBuilderReadAudit,nativeBuilderReadExecutor} from './native-connector-builder-runtime';
 
@@ -54,8 +54,11 @@ export async function executeNativeBuilderToolCall(
   // Result is untrusted and bounded by the gateway. No credentials are
   // included; the caller must treat content as untrusted evidence only.
   return {...base,available:true,source:context.source,content:context.summary};
- }catch{
-  // Do not expose provider/API/SQL errors or attempt automatic retries.
-  return {...base,available:false,code:'CONNECTOR_READ_UNAVAILABLE'};
+ }catch(error){
+  // Only fixed, reviewed backend codes may travel back to the Brain;
+  // never show raw provider, SQL or credential errors.
+  return {...base,available:false,code:'CONNECTOR_READ_UNAVAILABLE',
+   ...(error instanceof NativeConnectorReadDenied&&error.safeReason?
+     {content:error.safeReason}:{})};
  }
 }

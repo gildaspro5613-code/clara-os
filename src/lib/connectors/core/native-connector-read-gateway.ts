@@ -1,5 +1,6 @@
 import {ConnectorBuilderDirectory} from './connector-builder-directory';
 import {nativeContext} from '@/lib/native/scoped-context';
+import {RegistryError} from '@/lib/canonical/registry';
 
 /** A universal READ execution gate, not a second provider engine.
  * A server-side adapter executes only after a durable, revocable native grant
@@ -47,9 +48,23 @@ export class NativeConnectorReadDenied extends Error{
   'NATIVE_SCOPE_REQUIRED'|'CONNECTOR_READ_NOT_DECLARED'|
   'CONNECTOR_READ_INPUT_INVALID'|'CONNECTOR_READ_AUTHORITY_REQUIRED'|
   'CONNECTOR_READ_PROOF_DENIED'|'CONNECTOR_READ_RESULT_DENIED'|
-  'CONNECTOR_READ_AUTHORITY_REVOKED'|'CONNECTOR_READ_PROVIDER_UNAVAILABLE'){
+  'CONNECTOR_READ_AUTHORITY_REVOKED'|'CONNECTOR_READ_PROVIDER_UNAVAILABLE',
+  public readonly safeReason?:string){
   super(code);this.name='NativeConnectorReadDenied';
  }
+}
+/** Only reviewed, fixed backend error codes can reach audit/Brain.
+ * Never serialize provider HTTP bodies, SQL messages, tokens or arguments.
+ */
+const SAFE_MAKE_READ_CODES=new Set([
+ 'CONNECTOR_BUILDER_MAKE_QUERY_DENIED',
+ 'CONNECTOR_BUILDER_MAKE_SCENARIO_CHANGED',
+ 'CONNECTOR_BUILDER_MAKE_RECEIPT_DENIED',
+]);
+export function safeNativeConnectorReadFailureReason(provider:string,error:unknown):string{
+ if(provider==='make'&&error instanceof RegistryError&&
+    SAFE_MAKE_READ_CODES.has(error.code))return error.code;
+ return 'Provider unavailable; no automatic retry';
 }
 const same=(proof:NativeConnectorReadProof|null,request:NativeConnectorReadRequest):proof is NativeConnectorReadProof=>
  Boolean(proof&&proof.userId===request.scope.userId&&
@@ -117,10 +132,12 @@ export async function executeScopedConnectorRead(
    workspaceId:scope.workspaceId,connectionId:initial.connectionId,
    provider:cap.provider,capabilityId,input,
   });
- }catch{
+ }catch(error){
+  const reason=safeNativeConnectorReadFailureReason(cap.provider,error);
   await audit.record({...metadata,phase:'FAILED',connectionId:initial.connectionId,
-   reason:'Provider unavailable; no automatic retry'});
-  throw new NativeConnectorReadDenied('CONNECTOR_READ_PROVIDER_UNAVAILABLE');
+   reason});
+  throw new NativeConnectorReadDenied('CONNECTOR_READ_PROVIDER_UNAVAILABLE',
+   reason==='Provider unavailable; no automatic retry'?undefined:reason);
  }
  // Every external result is untrusted. Re-check the grant even if the
  // provider already completed. Never release data after revocation.

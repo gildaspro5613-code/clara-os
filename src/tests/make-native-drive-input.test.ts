@@ -17,6 +17,17 @@ test('Clara normalizes old Drive syntax to a plain name and scopes searches to a
   query:' fiche technique ',folderId:'1RTSEAngersValidId_2026',
  }),{workspaceId:'melodie-digital',query:'fiche technique',folderId:'1RTSEAngersValidId_2026'});
 });
+test('first folder lookup treats omitted, null and blank optional folderId as unscoped',()=>{
+ for(const folderId of [undefined,null,'']){
+  const input=folderId===undefined?{query:'RTSE Angers'}:{query:'RTSE Angers',folderId};
+  assert.deepEqual(nativeMakeDriveReadPayload('melodie-digital',input),{
+   workspaceId:'melodie-digital',query:'RTSE Angers',
+  });
+ }
+ assert.deepEqual(nativeMakeDriveReadPayload('melodie-digital',{
+  query:'D-Cables et Coffrets 2.pdf',folderId:'1RTSEAngersValidId_2026',
+ }),{workspaceId:'melodie-digital',query:'D-Cables et Coffrets 2.pdf',folderId:'1RTSEAngersValidId_2026'});
+});
 test('Model cannot select a different tenant, scenario or action',()=>{
  for(const input of [
   {query:'fiche',workspaceId:'another-customer'},

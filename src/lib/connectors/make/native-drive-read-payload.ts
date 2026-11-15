@@ -24,10 +24,15 @@ export function nativeMakeDriveReadPayload(
   throw new Error('MAKE_DRIVE_READ_INPUT_INVALID');
  let folderId:string|undefined;
  if(Object.prototype.hasOwnProperty.call(input,'folderId')){
-  if(typeof input.folderId!=='string'||
-     !/^[A-Za-z0-9_-]{8,160}$/.test(input.folderId))
-   throw new Error('MAKE_DRIVE_READ_FOLDER_INVALID');
-  folderId=input.folderId;
+  const raw=input.folderId;
+  // Strict model-tool schemas can supply null or an empty string for the
+  // optional first-search folder. Both mean "no folder yet"; an actual
+  // folder ID is still required to be a bounded Drive identifier.
+  if(raw!==null&&raw!==undefined&&raw!==''){
+   if(typeof raw!=='string'||!/^[A-Za-z0-9_-]{8,160}$/.test(raw))
+    throw new Error('MAKE_DRIVE_READ_FOLDER_INVALID');
+   folderId=raw;
+  }
  }
  return folderId===undefined?{workspaceId,query}:{workspaceId,query,folderId};
 }
