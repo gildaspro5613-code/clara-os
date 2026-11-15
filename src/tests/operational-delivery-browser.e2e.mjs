@@ -44,6 +44,19 @@ test('delivery UI: official logo, business navigation, private advanced controls
     await closeContextSelection(page);
    }
    if(path==='documents')await page.getByText(/\[NATIVE_GOOGLE_EXPLICIT_SELECTION_REQUIRED\]/).waitFor();
+   if(path==='connexions'){
+    // The visible Make card must use the native scoped status and reach its
+    // actual credential form, never the forbidden historical Make status route.
+    const makeCard=page.locator('article').filter({has:page.getByRole('heading',{name:'Make',exact:true})});
+    const uiLabels=JSON.parse(readFileSync('src/i18n/messages/fr/consolidated-ui.json','utf8'));
+    await makeCard.getByText(uiLabels.notConnected,{exact:true}).first().waitFor();
+    assert.equal(await makeCard.getByText(uiLabels.unavailable,{exact:true}).count(),0);
+    const configure=makeCard.getByRole('link',{name:uiLabels.configure,exact:true});
+    assert.equal(await configure.getAttribute('href'),'#make-native-onboarding');
+    await configure.click();
+    await page.locator('#make-native-onboarding').getByLabel('Jeton API Make',{exact:true}).waitFor({state:'visible'});
+    assert.equal(await page.locator('#make-native-onboarding input[type=password]').count(),1);
+   }
    assert.equal(await page.locator('[data-native-authority]').count(),0,path);
    await page.screenshot({path:out+'/'+(path||'cockpit')+'-desktop.png',fullPage:true});
    results.push({path:'/'+path,status:'PASS rendered authenticated synthetic context',scope:'page rendering, not provider certification'});

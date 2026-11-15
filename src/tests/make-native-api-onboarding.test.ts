@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
  validateMakeReadConnectionInput,verifyMakeDriveScenarioContract,
- verifyMakeReadConnection,makeNativeDriveCredentials,
+ verifyMakeReadConnection,verifyMakeReadConnectionDetailed,makeNativeDriveCredentials,
 } from '@/lib/connectors/make/native-api-onboarding';
 
 const scenarioId=7295042;
@@ -71,4 +71,29 @@ test('API onboarding sends only three GET metadata checks and never executes sup
 test('API failures and unverifiable blueprints do not activate the connection',async()=>{
  assert.equal(await verifyMakeReadConnection(input,async()=>new Response('denied',{status:403})),false);
  assert.equal(await verifyMakeReadConnection(input,async()=>new Response('not-json',{status:200})),false);
+});
+
+test('supplier rejection, scope, missing scenario, rate limit and invalid response have fixed safe codes',async()=>{
+ for(const [status,code] of [
+  [401,'MAKE_TOKEN_REJECTED'],
+  [403,'MAKE_TOKEN_PERMISSION_DENIED'],
+  [404,'MAKE_SCENARIO_UNAVAILABLE'],
+  [429,'MAKE_PROVIDER_RATE_LIMITED'],
+  [502,'MAKE_PROVIDER_UNREACHABLE'],
+ ] as const){
+  const result=await verifyMakeReadConnectionDetailed(input,async()=>new Response('private-upstream-details',{status}));
+  assert.deepEqual(result,{ok:false,code});
+  assert.ok(!JSON.stringify(result).includes(input.token));
+  assert.ok(!JSON.stringify(result).includes('private-upstream-details'));
+ }
+ assert.deepEqual(await verifyMakeReadConnectionDetailed(input,async()=>new Response('broken JSON',{status:200})),
+  {ok:false,code:'MAKE_PROVIDER_RESPONSE_INVALID'});
+ let calls=0;
+ const rejected=await verifyMakeReadConnectionDetailed(input,async()=>{
+  calls++;
+  return new Response(JSON.stringify(calls===1?details:calls===2?iface:
+   {blueprint:JSON.stringify({flow:[flow[0],{...flow[1],module:'google-drive:deleteFile'},flow[2]]})}),{status:200});
+ });
+ assert.deepEqual(rejected,{ok:false,code:'MAKE_SCENARIO_CONTRACT_MISMATCH'});
+ assert.equal(calls,3);
 });
