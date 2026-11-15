@@ -1,4 +1,5 @@
 import test from 'node:test';
+import {safeMakeConnectCode,makeHttpConnectFailure} from '@/components/connections/make-connect-error';
 import assert from 'node:assert/strict';
 import {
  validateMakeReadConnectionInput,verifyMakeDriveScenarioContract,
@@ -96,4 +97,16 @@ test('supplier rejection, scope, missing scenario, rate limit and invalid respon
  });
  assert.deepEqual(rejected,{ok:false,code:'MAKE_SCENARIO_CONTRACT_MISMATCH'});
  assert.equal(calls,3);
+});
+
+test('native Make UI never hides a safe unknown server code behind generic text',()=>{
+ assert.deepEqual(makeHttpConnectFailure(503,{success:false,code:'NATIVE_AUTHORITY_UNAVAILABLE'}),
+  {kind:'http',status:503,code:'NATIVE_AUTHORITY_UNAVAILABLE'});
+ assert.deepEqual(makeHttpConnectFailure(403,{success:false,code:'REGISTRY_ACCESS_DENIED'}),
+  {kind:'http',status:403,code:'REGISTRY_ACCESS_DENIED'});
+ assert.deepEqual(makeHttpConnectFailure(422,{success:false,code:'MAKE_SCENARIO_CONTRACT_MISMATCH'}),
+  {kind:'http',status:422,code:'MAKE_SCENARIO_CONTRACT_MISMATCH'});
+ assert.deepEqual(makeHttpConnectFailure(502,'Not JSON'),{kind:'http',status:502,code:null});
+ for(const secret of ['private-credential-value','MAKE_test-raw-message with spaces',{}])
+  assert.equal(safeMakeConnectCode(secret),null);
 });

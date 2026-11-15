@@ -3,6 +3,7 @@
 import {useEffect,useState} from 'react';
 import {useLocale} from 'next-intl';
 import {ShieldCheck,LockKeyhole} from 'lucide-react';
+import {makeHttpConnectFailure,type MakeConnectFailure} from './make-connect-error';
 
 type State='loading'|'available'|'registered'|'connected'|'unavailable';
 const texts={
@@ -30,6 +31,14 @@ const diagnostics:Record<string,Record<'fr'|'en'|'es'|'de'|'it',string>>={
  MAKE_CONNECTION_ALREADY_EXISTS:{fr:'Une connexion Make existe déjà pour cet espace ; aucune clé n’a été remplacée.',en:'A Make connection already exists in this workspace.',es:'Ya existe una conexión Make en este espacio.',de:'Es besteht bereits eine Make-Verbindung.',it:'Una connessione Make esiste già.'},
 };
 
+const fallbacks={
+ fr:{network:'La requête n’a pas reçu de réponse exploitable de Clara OS. Vérifiez la connexion ou la session avant un nouvel essai.',http:'Clara OS a refusé la connexion',response:'Clara OS n’a pas confirmé la connexion : réponse inattendue. Aucun succès ne peut être annoncé.',input:'Numéro du scénario ou jeton obligatoire.'},
+ en:{network:'The request did not receive a valid Clara OS response. Check the connection or session.',http:'Clara OS refused this connection',response:'Clara OS did not confirm the connection: unexpected response.',input:'Scenario ID and token are required.'},
+ es:{network:'La solicitud no recibió una respuesta válida de Clara OS.',http:'Clara OS rechazó la conexión',response:'Clara OS no confirmó la conexión.',input:'El ID del escenario y el token son obligatorios.'},
+ de:{network:'Keine gültige Antwort von Clara OS. Verbindung oder Sitzung prüfen.',http:'Clara OS hat die Verbindung abgelehnt',response:'Clara OS hat die Verbindung nicht bestätigt.',input:'Szenario-ID und Token sind erforderlich.'},
+ it:{network:'Nessuna risposta valida da Clara OS. Verifica connessione o sessione.',http:'Clara OS ha rifiutato il collegamento',response:'Clara OS non ha confermato il collegamento.',input:'ID scenario e token obbligatori.'},
+} as const;
+
 export default function MakeNativeOnboardingPanel({onConnected}:{onConnected?:()=>void}){
  const locale=useLocale();
  const lang=(locale in texts?locale:'fr') as keyof typeof texts;
@@ -41,8 +50,7 @@ export default function MakeNativeOnboardingPanel({onConnected}:{onConnected?:()
  const [confirmation,setConfirmation]=useState(false);
  const [approved,setApproved]=useState(false);
  const [busy,setBusy]=useState(false);
- const [failed,setFailed]=useState(false);
- const [failureCode,setFailureCode]=useState<string|null>(null);
+ const [failure,setFailure]=useState<MakeConnectFailure|null>(null);
  useEffect(()=>{
   const abort=new AbortController();
   void fetch('/api/native/connectors/make/connect',{cache:'no-store',credentials:'same-origin',signal:abort.signal})
@@ -59,25 +67,34 @@ export default function MakeNativeOnboardingPanel({onConnected}:{onConnected?:()
  const connect=async()=>{
   if(busy||!approved||!confirmation)return;
   const id=Number(scenario);
-  if(!Number.isSafeInteger(id)||id<1||!token.trim()){setFailureCode('MAKE_INVALID_CONNECTION');setFailed(true);return;}
-  setBusy(true);setFailed(false);setFailureCode(null);
+  if(!Number.isSafeInteger(id)||id<1||!token.trim()){
+   setFailure({kind:'input',code:'MAKE_INVALID_CONNECTION',status:null});
+   return;
+  }
+  setBusy(true);setFailure(null);
   try{
    const r=await fetch('/api/native/connectors/make/connect',{
     method:'POST',credentials:'same-origin',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({approved:true,token,scenarioId:id,zone}),
    });
+   // Never trust a success HTTP code without explicit native confirmation.
+   const result:unknown=await r.json().catch(()=>null);
    if(!r.ok){
-    // Never surface raw Make errors, bodies or secrets; use only safe fixed labels.
-    const result:unknown=await r.json().catch(()=>null);
-    const code=result&&typeof result==='object'&&!Array.isArray(result)?
-     (result as Record<string,unknown>).code:null;
-    setFailureCode(typeof code==='string'?code:null);
-    throw Error('not confirmed');
+    setFailure(makeHttpConnectFailure(r.status,result));
+    return;
+   }
+   const data=result&&typeof result==='object'&&!Array.isArray(result)?
+    result as Record<string,unknown>:null;
+   if(data?.provider!=='make'||data.connected!==true||data.status!=='ACTIVE'){
+    setFailure({kind:'response',status:r.status,code:null});
+    return;
    }
    setToken('');setStatus('connected');setConfirmation(false);setApproved(false);onConnected?.();
-  }catch{setFailed(true);}
-  finally{setBusy(false);}
+  }catch{
+   // A request failure is not evidence that the API token is invalid.
+   setFailure({kind:'network',status:null,code:null});
+  }finally{setBusy(false);}
  };
  return <section id="make-native-onboarding" aria-labelledby="make-native-title" className="mt-7 scroll-mt-32 rounded-2xl border border-cyan-400/20 bg-white/[0.025] p-6">
   <h2 id="make-native-title" className="flex items-center gap-2 text-lg font-medium text-white">
@@ -120,8 +137,11 @@ export default function MakeNativeOnboardingPanel({onConnected}:{onConnected?:()
         className="rounded-xl border border-white/15 px-4 py-3 text-sm text-white/70">{t.cancel}</button>
       </div>
      </div>}
-    {failed&&<p role="alert" className="text-sm text-amber-200">
-     {failureCode&&diagnostics[failureCode]?diagnostics[failureCode][lang]:t.error}
+    {failure&&<p role="alert" className="text-sm text-amber-200">
+     {failure.code&&diagnostics[failure.code] ? diagnostics[failure.code][lang] :
+      failure.kind==='http' ?
+       `${fallbacks[lang].http} (HTTP ${failure.status??'?'}${failure.code?' · '+failure.code:''}).` :
+      fallbacks[lang][failure.kind]}
     </p>}
    </div>}
  </section>;

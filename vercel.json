@@ -12,6 +12,7 @@
   ],
   "git": {
     "deploymentEnabled": {
+      "fix/make-onboarding-http-diagnostic-20261115": false,
       "fix/builder-make-api-onboarding-20261114": false,
       "fix/connector-builder-native-gateway-20261114": false,
       "fix/production-context-276": false,
