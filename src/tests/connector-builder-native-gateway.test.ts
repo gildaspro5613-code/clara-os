@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import type {ConnectorDefinition} from '@/lib/connectors/core/connector';
+import {RegistryError} from '@/lib/canonical/registry';
 import {ConnectorBuilderDirectory} from '@/lib/connectors/core/connector-builder-directory';
 import {executeScopedConnectorRead,executeNativeConnectorRead,NativeConnectorReadDenied,
  type NativeConnectorReadAuthority,type NativeConnectorReadExecutor,type NativeConnectorReadAudit,
@@ -125,6 +126,36 @@ test('incomplete or unrelated supplier receipts are never certified as READ',asy
  }
 });
 
+test('Make native failure codes are audit-safe, no raw provider or SQL error is ever exposed',async()=>{
+ const makeKey='make.drive.find';
+ const makeProof={...proof,provider:'make',capabilityId:makeKey};
+ for(const reason of [
+  'CONNECTOR_BUILDER_MAKE_QUERY_DENIED',
+  'CONNECTOR_BUILDER_MAKE_SCENARIO_CHANGED',
+  'CONNECTOR_BUILDER_MAKE_RECEIPT_DENIED',
+ ]){
+  const eventsHere:Array<{phase:string;reason?:string}>=[];
+  let calls=0;
+  await assert.rejects(executeScopedConnectorRead(scope,makeKey,{query:'RTSE Angers'},
+   directory,{async authorize(){return makeProof;}},
+   {async execute(){calls++;throw new RegistryError(403,reason);}},
+   {async record(e){eventsHere.push(e);}}),
+   (err:unknown)=>err instanceof NativeConnectorReadDenied &&
+    err.code==='CONNECTOR_READ_PROVIDER_UNAVAILABLE'&&err.safeReason===reason);
+  assert.equal(calls,1);
+  assert.deepEqual(eventsHere.map(x=>x.phase),['REQUESTED','FAILED']);
+  assert.equal(eventsHere[1].reason,reason);
+ }
+ const auditRows:Array<{phase:string;reason?:string}>=[];
+ await assert.rejects(executeScopedConnectorRead(scope,makeKey,{query:'RTSE Angers'},
+  directory,{async authorize(){return makeProof;}},
+  {async execute(){throw Error('Provider token PRIVATE_KEY_123 and upstream request body');}},
+  {async record(e){auditRows.push(e);}}),
+  (err:unknown)=>err instanceof NativeConnectorReadDenied &&
+   err.code==='CONNECTOR_READ_PROVIDER_UNAVAILABLE'&&err.safeReason===undefined);
+ assert.equal(auditRows.at(-1)?.reason,'Provider unavailable; no automatic retry');
+ assert.doesNotMatch(JSON.stringify(auditRows),/PRIVATE_KEY_123/);
+});
 test('audit must succeed before any provider call',async()=>{
  let calls=0;
  await assert.rejects(executeScopedConnectorRead(scope,key,{},directory,authorize,
