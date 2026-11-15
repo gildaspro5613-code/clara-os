@@ -28,7 +28,7 @@ globalThis.fetch=async(input,init)=>{
   const missionFinalize=body.query.trimStart().startsWith('WITH native_mission_finalize_input AS MATERIALIZED')&&body.query.includes('FOR SHARE OF authority, mission');
   // Exactly this scoped, read-only Make status query is exercised by the new Connections panel.
   // The synthetic workspace and parameter list must match; arbitrary SQL stays forbidden.
-  const makeStatusRead=/^SELECT status FROM clara_connections WHERE workspace_id\\s*=\\s*\\$1 AND provider\\s*=\\s*'make' LIMIT 1$/.test(normalized)&&body.params?.length===1&&body.params[0]==='w';
+  const makeStatusRead=normalized==="SELECT status FROM clara_connections WHERE workspace_id=$1 AND provider='make' LIMIT 1"&&body.params?.length===1&&body.params[0]==='w';
   if(!logout&&!missionFinalize&&!makeStatusRead&&!accountIdentity&&!accountMembership&&!accountGoogle&&!/^SELECT clara_(native_|registry_)/.test(body.query)&&!/^SELECT m.workspace_id FROM clara_auth_sessions s JOIN clara_workspace_memberships/.test(body.query)){appendFileSync(attemptsFile,'GLOBAL_LOADER_ATTEMPT\n');throw Error('Global SQL loader forbidden in native browser fixture');}
   const statement=body.query.replace(/\$(\d+)/g,(_,n)=>literal(body.params[Number(n)-1]));
   try{
