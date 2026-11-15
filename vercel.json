@@ -12,6 +12,7 @@
   ],
   "git": {
     "deploymentEnabled": {
+      "fix/builder-make-api-onboarding-20261114": false,
       "fix/connector-builder-native-gateway-20261114": false,
       "fix/production-context-276": false,
       "integration/p0-stage-approval-ui": false,
