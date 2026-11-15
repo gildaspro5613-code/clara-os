@@ -6,7 +6,7 @@ import {nativeFailure} from '@/lib/native/authority';
 import {encryptCredentialPayload} from '@/lib/connections/credential-store';
 import {
  makeNativeDriveCredentials,validateMakeReadConnectionInput,
- verifyMakeReadConnection,
+ verifyMakeReadConnectionDetailed,
 } from '@/lib/connectors/make/native-api-onboarding';
 
 export const runtime='nodejs';
@@ -87,8 +87,12 @@ export async function POST(request:Request){
    ` as Array<{id:string}>;
    if(existing.length)
     throw new RegistryError(409,'MAKE_CONNECTION_ALREADY_EXISTS');
-   if(!await verifyMakeReadConnection(cfg))
-    throw new RegistryError(422,'MAKE_READ_SCENARIO_NOT_VERIFIED');
+   const verification=await verifyMakeReadConnectionDetailed(cfg);
+   if(!verification.ok)
+    throw new RegistryError(
+     verification.code==='MAKE_PROVIDER_UNREACHABLE'||verification.code==='MAKE_PROVIDER_RATE_LIMITED'?503:422,
+     verification.code,
+    );
    const id=randomUUID();
    const encrypted=encryptCredentialPayload(makeNativeDriveCredentials(cfg));
    // One database statement: create the connection and encrypted secret
