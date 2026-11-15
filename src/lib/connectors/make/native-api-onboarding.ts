@@ -86,13 +86,21 @@ export function makeNativeDriveCredentials(input:MakeReadConnectionInput):MakeWe
  };
 }
 
-/** Three READ-only requests. No supplier run, webhook, activate or update.
- * This validates the blueprint and the exact required query/workspace inputs.
- * No result, error or status contains the token.
+export type MakeReadVerificationFailure=
+ 'MAKE_TOKEN_REJECTED'|'MAKE_TOKEN_PERMISSION_DENIED'|
+ 'MAKE_SCENARIO_UNAVAILABLE'|'MAKE_PROVIDER_RATE_LIMITED'|
+ 'MAKE_PROVIDER_UNREACHABLE'|'MAKE_PROVIDER_RESPONSE_INVALID'|
+ 'MAKE_SCENARIO_CONTRACT_MISMATCH';
+export type MakeReadVerificationResult={ok:true}|{ok:false;code:MakeReadVerificationFailure};
+class MakeReadVerificationError extends Error{
+ constructor(readonly code:MakeReadVerificationFailure){super(code);}
+}
+/** Three supplier GETs only. Public diagnostic codes are fixed and safe:
+ * never expose the token or an upstream response body/exception.
  */
-export async function verifyMakeReadConnection(
+export async function verifyMakeReadConnectionDetailed(
  input:MakeReadConnectionInput,fetcher:typeof fetch=fetch,
-):Promise<boolean>{
+):Promise<MakeReadVerificationResult>{
  const root=`https://${input.zone}.make.com/api/v2/scenarios/${input.scenarioId}`;
  const controller=new AbortController();
  const timeout=setTimeout(()=>controller.abort(),12_000);
@@ -103,15 +111,32 @@ export async function verifyMakeReadConnection(
     headers:{Authorization:`Token ${input.token}`,Accept:'application/json'},
     cache:'no-store',redirect:'error',signal:controller.signal,
    });
-   if(!response.ok)throw Error('MAKE_PROVIDER_UNAVAILABLE');
+   if(!response.ok){
+    if(response.status===401)throw new MakeReadVerificationError('MAKE_TOKEN_REJECTED');
+    if(response.status===403)throw new MakeReadVerificationError('MAKE_TOKEN_PERMISSION_DENIED');
+    if(response.status===404)throw new MakeReadVerificationError('MAKE_SCENARIO_UNAVAILABLE');
+    if(response.status===429)throw new MakeReadVerificationError('MAKE_PROVIDER_RATE_LIMITED');
+    throw new MakeReadVerificationError('MAKE_PROVIDER_UNREACHABLE');
+   }
    const text=await response.text();
-   if(!text||text.length>MAX_BLUEPRINT_BYTES)throw Error('MAKE_PROVIDER_RESPONSE_INVALID');
-   return JSON.parse(text) as unknown;
+   if(!text||text.length>MAX_BLUEPRINT_BYTES)
+    throw new MakeReadVerificationError('MAKE_PROVIDER_RESPONSE_INVALID');
+   try{return JSON.parse(text) as unknown;}
+   catch{throw new MakeReadVerificationError('MAKE_PROVIDER_RESPONSE_INVALID');}
   };
   const details=await get('');
   const contract=await get('/interface');
   const blueprint=await get('/blueprint?draft=false');
-  return verifyMakeDriveScenarioContract(details,contract,blueprint,input.scenarioId);
- }catch{return false;}
- finally{clearTimeout(timeout);}
+  return verifyMakeDriveScenarioContract(details,contract,blueprint,input.scenarioId)?
+   {ok:true}:{ok:false,code:'MAKE_SCENARIO_CONTRACT_MISMATCH'};
+ }catch(error){
+  return {ok:false,code:error instanceof MakeReadVerificationError?
+   error.code:'MAKE_PROVIDER_UNREACHABLE'};
+ }finally{clearTimeout(timeout);}
+}
+/** Keep the established boolean interface for existing callers. */
+export async function verifyMakeReadConnection(
+ input:MakeReadConnectionInput,fetcher:typeof fetch=fetch,
+):Promise<boolean>{
+ return (await verifyMakeReadConnectionDetailed(input,fetcher)).ok;
 }
