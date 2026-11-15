@@ -110,3 +110,35 @@ test('native Make UI never hides a safe unknown server code behind generic text'
  for(const secret of ['private-credential-value','MAKE_test-raw-message with spaces',{}])
   assert.equal(safeMakeConnectCode(secret),null);
 });
+
+test('folder-aware Make scenario V2 accepts only name search and a verified folder mapping',()=>{
+ const folderIface={interface:{input:[
+  {name:'workspaceId',type:'text',required:true},
+  {name:'query',type:'text',required:true},
+  {name:'folderId',type:'text',required:false},
+  {name:'missionId',type:'text',required:false},
+ ]}};
+ const v2Flow=[
+  {...flow[0]},
+  {...flow[1],mapper:{
+   select:'map',retrieve:'file_folder',searchType:'title',operator:'contains',
+   query:'{{1.query}}',folderId:'{{1.folderId}}',limit:1,
+  }},
+  {...flow[2],mapper:{
+   fileId:'{{2.id}}',fileName:'{{2.name}}',mimeType:'{{2.mimeType}}',
+  }},
+ ];
+ const payload={blueprint:JSON.stringify({flow:v2Flow})};
+ assert.equal(verifyMakeDriveScenarioContract(details,folderIface,payload,scenarioId,true),true);
+ assert.equal(verifyMakeDriveScenarioContract(details,iface,blueprint,scenarioId,true),false);
+ for(const changed of [
+  {retrieve:'file'},{retrieve:'folder'},{searchType:'custom'},
+  {query:'{{1.queryUnsafe}}'},{folderId:'{{1.workspaceId}}'},
+  {operator:'='},{limit:100},
+ ]){
+  const wrong={...v2Flow[1],mapper:{...v2Flow[1].mapper,...changed}};
+  assert.equal(verifyMakeDriveScenarioContract(details,folderIface,{
+   blueprint:JSON.stringify({flow:[v2Flow[0],wrong,v2Flow[2]]}),
+  },scenarioId,true),false);
+ }
+});
