@@ -3,11 +3,13 @@ on:
   # Exercise the exact Make onboarding branch against the full native browser receipt.
   # No Preview, Production deployment or supplier call is involved.
   push:
-    branches: [fix/builder-make-api-onboarding-20261114]
+    branches: [fix/builder-make-api-onboarding-20261114, fix/make-drive-folder-lookup-20261115]
     paths:
       - '.github/workflows/native-authority-validation.yml'
       - 'src/tests/helpers/native-runtime-browser-preload.mjs'
       - 'src/app/api/native/connectors/make/**'
+      - 'src/lib/connectors/make/native-*'
+      - 'src/lib/connectors/core/native-connector-builder-runtime.ts'
       - 'src/components/connections/**'
   pull_request:
     branches: [delivery/clara-os-v1-20261025, main, consolidation/clara-os-clean-base, fix/native-documents-brain-continuity-20261022, fix/os-operational-reception-175, chore/recette-effective-binding-attestation]
