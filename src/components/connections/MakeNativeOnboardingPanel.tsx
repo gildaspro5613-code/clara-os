@@ -13,6 +13,23 @@ const texts={
  it:{title:'Connettere Make a Clara',intro:'Collega Make per ricerche Drive autorizzate.',token:'Token API Make',scenario:'ID scenario Drive',zone:'Regione Make',confirm:'Verifica e collega',secondary:'Confermare la connessione?',cancel:'Annulla',required:'Permessi: scenarios:read, scenarios:write e scenarios:run. Scenario limitato alla ricerca Drive.',safe:'Token cifrato. La connessione non esegue scenari.',working:'Verifica sicura…',success:'Make collegato. Aggiorna i permessi di Clara.',connected:'Make già configurato per questo spazio.',unavailable:'Stato connessione non disponibile. Nessuna modifica.',error:'Connessione non verificata. Controlla token, permessi e scenario.',approved:'Autorizzo la connessione Make a questo spazio Clara.',placeholder:'Inserisci token solo qui'},
 } as const;
 
+// Each message is fixed in code; never render upstream errors or credentials.
+const diagnostics:Record<string,Record<'fr'|'en'|'es'|'de'|'it',string>>={
+ MAKE_INVALID_CONNECTION:{fr:'Vérifiez le numéro du scénario, la région EU1 et le format du jeton.',en:'Check the scenario ID, region and token format.',es:'Compruebe el ID, la región y el formato del token.',de:'Szenario-ID, Region und Tokenformat prüfen.',it:'Controlla ID scenario, regione e formato del token.'},
+ MAKE_TOKEN_REJECTED:{fr:'Make a rejeté ce jeton API (401). Vérifiez son type et son statut dans Make.',en:'Make rejected this API token (401).',es:'Make rechazó este token API (401).',de:'Make hat dieses API-Token abgelehnt (401).',it:'Make ha rifiutato questo token API (401).'},
+ MAKE_TOKEN_PERMISSION_DENIED:{fr:'Make refuse les autorisations du jeton (403). Vérifiez scenarios:read et l’accès au scénario.',en:'Make denied token permissions (403). Check scenarios:read.',es:'Make denegó los permisos del token (403).',de:'Make hat Tokenrechte abgelehnt (403).',it:'Make ha negato i permessi del token (403).'},
+ MAKE_SCENARIO_UNAVAILABLE:{fr:'Ce jeton ne peut pas accéder au scénario demandé dans Make (404).',en:'This token cannot access the selected scenario (404).',es:'El token no puede acceder a este escenario (404).',de:'Das Token kann nicht auf dieses Szenario zugreifen (404).',it:'Il token non può accedere a questo scenario (404).'},
+ MAKE_PROVIDER_RATE_LIMITED:{fr:'Make limite temporairement ses appels API (429). Ne renouvelez pas le jeton.',en:'Make temporarily rate-limited API calls (429).',es:'Make limita temporalmente las llamadas API (429).',de:'Make begrenzt API-Aufrufe vorübergehend (429).',it:'Make limita temporaneamente le chiamate API (429).'},
+ MAKE_PROVIDER_UNREACHABLE:{fr:'Clara OS ne parvient pas à joindre Make. Aucun compte enregistré.',en:'Clara OS cannot reach Make. No account registered.',es:'Clara OS no puede contactar Make.',de:'Clara OS kann Make nicht erreichen.',it:'Clara OS non riesce a raggiungere Make.'},
+ MAKE_PROVIDER_RESPONSE_INVALID:{fr:'La réponse de Make n’est pas exploitable. Vérification technique nécessaire ; ne régénérez pas le jeton.',en:'Make response is invalid. A technical check is required.',es:'La respuesta Make no es válida.',de:'Make-Antwort ungültig.',it:'La risposta di Make non è valida.'},
+ MAKE_SCENARIO_CONTRACT_MISMATCH:{fr:'Le scénario est accessible, mais sa structure ne correspond pas au contrat Drive approuvé. Vérification technique nécessaire.',en:'Scenario accessible but its Drive contract differs from the approved one.',es:'El escenario no coincide con el contrato Drive aprobado.',de:'Das Szenario weicht vom freigegebenen Drive-Vertrag ab.',it:'Lo scenario non corrisponde al contratto Drive approvato.'},
+ MAKE_CONNECTION_PERMISSION_DENIED:{fr:'La session Clara ne possède pas les droits de gestion du client et projet sélectionnés.',en:'This Clara session lacks management rights for the selected client and project.',es:'La sesión Clara carece de permisos de gestión.',de:'Dieser Clara-Sitzung fehlen Verwaltungsrechte.',it:'Questa sessione Clara non ha i diritti di gestione.'},
+ EXPLICIT_NATIVE_SCOPE_REQUIRED:{fr:'Sélectionnez votre espace, client, projet et session native Clara.',en:'Select the Clara workspace, client, project and native session.',es:'Seleccione espacio, cliente, proyecto y sesión Clara.',de:'Clara-Arbeitsbereich, Kunde, Projekt und Sitzung auswählen.',it:'Seleziona spazio, cliente, progetto e sessione Clara.'},
+ NATIVE_THREAD_REVIEW_REQUIRED:{fr:'Cette conversation historique ne permet pas la connexion. Ouvrez une session native actuelle.',en:'Historical thread: use a current native session.',es:'Conversación histórica: seleccione una sesión actual.',de:'Historischer Chat: aktuelle Sitzung verwenden.',it:'Conversazione storica: usa una sessione attuale.'},
+ NATIVE_CONVERSATION_MIGRATION_REQUIRED:{fr:'Le protocole de la session Clara n’est pas prêt. Aucun compte Make enregistré.',en:'Clara native session protocol is unavailable.',es:'El protocolo de sesión Clara no está disponible.',de:'Das Clara-Sitzungsprotokoll ist nicht verfügbar.',it:'Il protocollo della sessione Clara non è disponibile.'},
+ MAKE_CONNECTION_ALREADY_EXISTS:{fr:'Une connexion Make existe déjà pour cet espace ; aucune clé n’a été remplacée.',en:'A Make connection already exists in this workspace.',es:'Ya existe una conexión Make en este espacio.',de:'Es besteht bereits eine Make-Verbindung.',it:'Una connessione Make esiste già.'},
+};
+
 export default function MakeNativeOnboardingPanel({onConnected}:{onConnected?:()=>void}){
  const locale=useLocale();
  const lang=(locale in texts?locale:'fr') as keyof typeof texts;
@@ -25,6 +42,7 @@ export default function MakeNativeOnboardingPanel({onConnected}:{onConnected?:()
  const [approved,setApproved]=useState(false);
  const [busy,setBusy]=useState(false);
  const [failed,setFailed]=useState(false);
+ const [failureCode,setFailureCode]=useState<string|null>(null);
  useEffect(()=>{
   const abort=new AbortController();
   void fetch('/api/native/connectors/make/connect',{cache:'no-store',credentials:'same-origin',signal:abort.signal})
@@ -41,15 +59,22 @@ export default function MakeNativeOnboardingPanel({onConnected}:{onConnected?:()
  const connect=async()=>{
   if(busy||!approved||!confirmation)return;
   const id=Number(scenario);
-  if(!Number.isSafeInteger(id)||id<1||!token.trim()){setFailed(true);return;}
-  setBusy(true);setFailed(false);
+  if(!Number.isSafeInteger(id)||id<1||!token.trim()){setFailureCode('MAKE_INVALID_CONNECTION');setFailed(true);return;}
+  setBusy(true);setFailed(false);setFailureCode(null);
   try{
    const r=await fetch('/api/native/connectors/make/connect',{
     method:'POST',credentials:'same-origin',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({approved:true,token,scenarioId:id,zone}),
    });
-   if(!r.ok)throw Error('not confirmed');
+   if(!r.ok){
+    // Never surface raw Make errors, bodies or secrets; use only safe fixed labels.
+    const result:unknown=await r.json().catch(()=>null);
+    const code=result&&typeof result==='object'&&!Array.isArray(result)?
+     (result as Record<string,unknown>).code:null;
+    setFailureCode(typeof code==='string'?code:null);
+    throw Error('not confirmed');
+   }
    setToken('');setStatus('connected');setConfirmation(false);setApproved(false);onConnected?.();
   }catch{setFailed(true);}
   finally{setBusy(false);}
@@ -95,7 +120,9 @@ export default function MakeNativeOnboardingPanel({onConnected}:{onConnected?:()
         className="rounded-xl border border-white/15 px-4 py-3 text-sm text-white/70">{t.cancel}</button>
       </div>
      </div>}
-    {failed&&<p role="alert" className="text-sm text-amber-200">{t.error}</p>}
+    {failed&&<p role="alert" className="text-sm text-amber-200">
+     {failureCode&&diagnostics[failureCode]?diagnostics[failureCode][lang]:t.error}
+    </p>}
    </div>}
  </section>;
 }
