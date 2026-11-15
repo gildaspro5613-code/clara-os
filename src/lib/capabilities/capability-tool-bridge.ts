@@ -129,7 +129,8 @@ export class CapabilityToolBridge {
         const read=await executeNativeBuilderToolCall(toolCall);
         return {
           success:read.available,callId:toolCall.callId,capabilityId,
-          message:read.available?'Connector READ completed.':'Connector READ unavailable.',
+          message:read.available?'Connector READ completed.':
+           read.content?'Connector READ unavailable: '+read.content:'Connector READ unavailable.',
           content:read.content,completedAt:new Date(),
         };
       }
