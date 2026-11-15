@@ -105,7 +105,11 @@ export async function POST(request:Request){
       ${id},${scope.workspaceId},'make','ACTIVE',
       ${JSON.stringify(['make:scenario:find-drive-document'])}::jsonb,NOW(),NOW()
      )
-     ON CONFLICT (workspace_id,provider) DO NOTHING
+     -- Production enforces one Make account per workspace through a PARTIAL
+     -- unique index (non-Google/non-IONOS providers). An unqualified conflict
+     -- target cannot infer that index; DO NOTHING without a target uses every
+     -- real unique index and still refuses a duplicate via rows.length below.
+     ON CONFLICT DO NOTHING
      RETURNING id
     )
     INSERT INTO clara_connection_credentials(connection_id,encrypted_payload,updated_at)
