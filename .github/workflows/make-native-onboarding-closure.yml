@@ -6,12 +6,17 @@ on:
       - fix/builder-make-api-onboarding-20261114
       - fix/make-onboarding-http-diagnostic-20261115
       - fix/make-drive-folder-lookup-20261115
+      - fix/make-drive-native-failure-diagnostics-20261115
     paths:
       - '.github/workflows/make-native-onboarding-closure.yml'
       - 'src/lib/connectors/make/native-*'
       - 'src/lib/capabilities/make-scenario/**'
       - 'src/lib/connectors/make/definition.ts'
       - 'src/lib/connectors/core/native-connector-builder-runtime.ts'
+      - 'src/lib/connectors/core/native-connector-read-gateway.ts'
+      - 'src/lib/connectors/core/native-connector-builder-tool.ts'
+      - 'src/lib/capabilities/capability-tool-bridge.ts'
+      - 'src/tests/connector-builder-native-gateway.test.ts'
       - 'src/app/api/native/connectors/make/**'
       - 'src/components/connections/**'
       - 'src/tests/make-native-*.test.ts'
