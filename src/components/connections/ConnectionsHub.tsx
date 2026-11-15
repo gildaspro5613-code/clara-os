@@ -16,7 +16,7 @@ const providers = [
   { id: "google" as const, title: "Google Workspace", endpoint: "/api/connections/google", icon: Cloud },
   { id: "microsoft" as const, title: "Microsoft 365 · Windows 365", endpoint: "/api/connections/microsoft", icon: Building2 },
   { id: "brevo" as const, title: "Brevo", endpoint: "/api/native/brevo/status", icon: Cloud },
-  { id: "make" as const, title: "Make", endpoint: "/api/connections/make/status", icon: Workflow },
+  { id: "make" as const, title: "Make", endpoint: "/api/native/connectors/make/connect", icon: Workflow },
 ];
 
 function label(ui: ReturnType<typeof useTranslations>, status?: Status) {
@@ -36,7 +36,7 @@ function detail(ui: ReturnType<typeof useTranslations>, id: Provider, state?: St
   if (state.error?.includes("AUTH_REQUIRED")) return ui("signInWorkspace");
   if (state.status === "RECONNECT_REQUIRED") return ui("checkConfiguration");
   if (state.status === "UNAVAILABLE" || state.connected===undefined) return ui("unavailable");
-  if (id === "make" && state.connected) return ui("makeScenarioCount",{count:state.scenarioKeys?.length??0});
+  if (id === "make" && state.connected) return ui("connected");
   return ui(state.connected ? "connectionOperational" : "serviceNotLinked");
 }
 
@@ -93,11 +93,14 @@ export default function ConnectionsHub() {
               )}
               {id === "google" && <Link href="/documents" className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white/65 hover:border-cyan-400/20"><ShieldCheck size={14} />{" "}{ui("googleHub_documents")}</Link>}
               {id === "microsoft" && state?.connected && <span className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white/55"><ShieldCheck size={14} />{" "}{ui("windows365Authorized")}</span>}
-              {id === "make" && <Link href="/automatisations" className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white/65 hover:border-cyan-400/20"><Settings2 size={14} /> {state?.connected ? ui("manage") : ui("configure")}</Link>}
+              {id === "make" && <a href="#make-native-onboarding" className="inline-flex items-center gap-2 rounded-xl border border-cyan-300/25 bg-cyan-400/[0.07] px-4 py-2.5 text-sm text-cyan-200 hover:bg-cyan-400/[0.12]"><Settings2 size={14} /> {state?.connected ? ui("manage") : ui("configure")}</a>}
             </div>
           </article>
         );
       })}
+      </div>
+      <MakeNativeOnboardingPanel onConnected={()=>setStates(current=>({...current,make:{provider:"make",status:"ACTIVE",connected:true}}))}/>
+      <div className="mt-7 grid gap-4 md:grid-cols-2">
       <article className="flex min-h-[285px] flex-col rounded-2xl border border-white/10 bg-white/[0.018] p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03]"><CreditCard className="text-white/55" size={21} strokeWidth={1.6} /></div>
@@ -108,7 +111,6 @@ export default function ConnectionsHub() {
         <p className="mt-3 text-xs leading-5 text-white/35">{ui("studioStripeReadPending")}</p>
       </article>
       </div>
-      <MakeNativeOnboardingPanel/>
       <NativeConnectorBuilderPanel/>
     </>
   );

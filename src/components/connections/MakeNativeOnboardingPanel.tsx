@@ -13,7 +13,7 @@ const texts={
  it:{title:'Connettere Make a Clara',intro:'Collega Make per ricerche Drive autorizzate.',token:'Token API Make',scenario:'ID scenario Drive',zone:'Regione Make',confirm:'Verifica e collega',secondary:'Confermare la connessione?',cancel:'Annulla',required:'Permessi: scenarios:read, scenarios:write e scenarios:run. Scenario limitato alla ricerca Drive.',safe:'Token cifrato. La connessione non esegue scenari.',working:'Verifica sicura…',success:'Make collegato. Aggiorna i permessi di Clara.',connected:'Make già configurato per questo spazio.',unavailable:'Stato connessione non disponibile. Nessuna modifica.',error:'Connessione non verificata. Controlla token, permessi e scenario.',approved:'Autorizzo la connessione Make a questo spazio Clara.',placeholder:'Inserisci token solo qui'},
 } as const;
 
-export default function MakeNativeOnboardingPanel(){
+export default function MakeNativeOnboardingPanel({onConnected}:{onConnected?:()=>void}){
  const locale=useLocale();
  const lang=(locale in texts?locale:'fr') as keyof typeof texts;
  const t=texts[lang];
@@ -50,11 +50,11 @@ export default function MakeNativeOnboardingPanel(){
     body:JSON.stringify({approved:true,token,scenarioId:id,zone}),
    });
    if(!r.ok)throw Error('not confirmed');
-   setToken('');setStatus('connected');setConfirmation(false);setApproved(false);
+   setToken('');setStatus('connected');setConfirmation(false);setApproved(false);onConnected?.();
   }catch{setFailed(true);}
   finally{setBusy(false);}
  };
- return <section aria-labelledby="make-native-title" className="mt-7 rounded-2xl border border-cyan-400/20 bg-white/[0.025] p-6">
+ return <section id="make-native-onboarding" aria-labelledby="make-native-title" className="mt-7 scroll-mt-32 rounded-2xl border border-cyan-400/20 bg-white/[0.025] p-6">
   <h2 id="make-native-title" className="flex items-center gap-2 text-lg font-medium text-white">
    <LockKeyhole size={20} className="text-cyan-300"/>{t.title}
   </h2>
