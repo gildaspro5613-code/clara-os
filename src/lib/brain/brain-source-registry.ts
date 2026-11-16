@@ -238,7 +238,18 @@ export async function buildBrainSources(
         await import('@/lib/connectors/core/native-connector-builder-selection');
       const message=extractMessage(event);
       if(eligibleConnectorReadNames(message,builderReads).length){
-        const outcome=await selectAndExecuteNativeBuilderRead(message,builderReads);
+        // Carry only a previously certified Drive folder in this exact native
+        // session. Calendar's separate READ authority and route remain unchanged.
+        const {confirmedMakeDriveFolderFromRead,makeDriveFolderHintForRequest}=
+          await import('@/lib/connectors/core/native-make-drive-folder-continuity');
+        const readScope={userId:native.userId,workspaceId:native.scope.workspaceId,
+          clientId:native.scope.clientId,projectId:native.scope.projectId,sessionId:native.scope.sessionId};
+        const recentFolder=makeDriveFolderHintForRequest(native.session.lastConfirmedMakeDriveFolder,readScope,message);
+        const outcome=await selectAndExecuteNativeBuilderRead(message,builderReads,undefined,recentFolder??undefined);
+        if(outcome?.available===true&&outcome.capabilityId==='make.drive.find'&&outcome.source==='make'){
+          const confirmed=confirmedMakeDriveFolderFromRead(outcome.content,readScope);
+          if(confirmed)native.session.lastConfirmedMakeDriveFolder=confirmed;
+        }
         contexts.push({
           source:'connector-builder-read',
           available:outcome?.available===true,

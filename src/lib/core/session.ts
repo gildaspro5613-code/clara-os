@@ -10,6 +10,7 @@
 import type { ResponseGeneration } from "@/lib/brain/response-generation";
 import type { Recommendation } from "@/types";
 import type { BrainSourceContext } from "@/lib/brain/brain-source";
+import type {NativeMakeDriveRecentFolder} from '@/lib/connectors/core/native-make-drive-folder-continuity';
 import type { BrainDashboard } from "@/lib/brain/dashboard";
 import type { Mission } from "@/modules/missions/types/Mission";
 import { ClaraState } from "./state";
@@ -48,6 +49,8 @@ export interface ClaraSession {
   googleConnectionId?:string;
   googleCalendarId?:string;
   googleFolderId?:string;
+  /** One last Make Drive folder receipt from this native chat; never an access grant. */
+  lastConfirmedMakeDriveFolder?:NativeMakeDriveRecentFolder;
   documentReferences?:NativeDocumentReference[];
   /** Encrypted standalone email draft for a consultation thread; never an SMTP authority. */
   standaloneMailDraft?:{schema:string;connectionId:string;messageId:string;revision:number;encryptedDraft:string;updatedAt:string};
