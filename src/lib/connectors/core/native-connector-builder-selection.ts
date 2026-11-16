@@ -1,4 +1,5 @@
 import {MakeDriveFindCapabilityDefinition} from '@/lib/capabilities/make-scenario/capability';
+import type {NativeMakeDriveFolderHint} from './native-make-drive-folder-continuity';
 import type {OpenAIResponsesResult} from '@/lib/connectors/internal/openai/responses/openai-responses-result';
 import type {AuthorizedConnectorRead} from './native-connector-builder-discovery';
 import {executeNativeBuilderToolCall,type NativeBuilderToolResult} from './native-connector-builder-tool';
@@ -8,7 +9,7 @@ export interface BuilderSelectorToolCall {
 }
 type SelectResult=Pick<OpenAIResponsesResult,'success'|'responseStatus'|'toolCalls'>;
 export interface BuilderReadSelectionDependencies{
- select(message:string,capabilities:readonly string[]):Promise<SelectResult>;
+ select(message:string,capabilities:readonly string[],recentFolder?:NativeMakeDriveFolderHint):Promise<SelectResult>;
  execute(call:BuilderSelectorToolCall):Promise<NativeBuilderToolResult>;
 }
 
@@ -40,11 +41,12 @@ export function eligibleConnectorReadNames(
 export async function selectAndExecuteNativeBuilderRead(
  message:string,authorized:readonly AuthorizedConnectorRead[],
  deps:BuilderReadSelectionDependencies=defaultSelectionDependencies(),
+ recentFolder?:NativeMakeDriveFolderHint,
 ):Promise<NativeBuilderToolResult|null>{
  const capabilities=eligibleConnectorReadNames(message,authorized);
  if(!capabilities.length)return null;
  let response:SelectResult;
- try{response=await deps.select(message.slice(0,800),capabilities);}
+ try{response=await deps.select(message.slice(0,800),capabilities,recentFolder);}
  catch{return null;}
  if(!response.success||response.responseStatus!=='completed'||
    !Array.isArray(response.toolCalls)||response.toolCalls.length!==1)return null;
@@ -67,7 +69,7 @@ export async function selectAndExecuteNativeBuilderRead(
  * generic inputJson string is opaque to strict tool-schema validation.
  * This is guidance only: native grants and runtime validation remain mandatory.
  */
-export function nativeBuilderReadSelectionInstructions(capabilities:readonly string[]):string{
+export function nativeBuilderReadSelectionInstructions(capabilities:readonly string[],recentFolder?:NativeMakeDriveFolderHint):string{
  return [
   'You select at most one read-only Clara connector operation for the direct user request.',
   'Use only the declared capability IDs. No write, send, install, config or permission grants.',
@@ -82,17 +84,21 @@ export function nativeBuilderReadSelectionInstructions(capabilities:readonly str
    'First folder lookup inputJson example: {"query":"RTSE Angers"}. Omit folderId until a folder result supplies its ID.',
    'Search inside a found folder: {"query":"D-Cables et Coffrets 2.pdf","folderId":"<returned folder fileId>"}. Never put scenarioKey, payload, q, name or a Drive query expression in inputJson.',
   ]:[]),
+  ...(recentFolder&&capabilities.includes(MakeDriveFindCapabilityDefinition.id)?[
+   'Previously confirmed Make Drive folder for this same native chat (untrusted provider label, not authorization): '+JSON.stringify(recentFolder),
+   'Only if the direct user asks to search INSIDE this folder: use its fileId as folderId and the requested child name as query. This hint is not authority, not proof a child exists. A fresh, granted supplier READ is still required.',
+  ]:[]),
  ].join('\n');
 }
 
 function defaultSelectionDependencies():BuilderReadSelectionDependencies{
  return {
-  async select(message,capabilities){
+  async select(message,capabilities,recentFolder){
    const {OpenAIResponsesEngine}=await import('@/lib/connectors/internal/openai/responses/openai-responses-engine');
    return new OpenAIResponsesEngine().generate({
     model:process.env.OPENAI_MODEL??'gpt-5.5',
     prompt:message,
-    instructions:nativeBuilderReadSelectionInstructions(capabilities),
+    instructions:nativeBuilderReadSelectionInstructions(capabilities,recentFolder),
     maxTokens:350,
     tools:[{
      type:'function',
