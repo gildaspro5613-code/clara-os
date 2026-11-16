@@ -1,0 +1,42 @@
+name: Make Drive folder continuity - targeted validation
+
+on:
+  push:
+    branches:
+      - fix/make-drive-parent-continuity-20261116
+
+permissions:
+  contents: read
+
+concurrency:
+  group: make-drive-parent-continuity-20261116
+  cancel-in-progress: true
+
+jobs:
+  folder-continuity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      CI: 'true'
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts
+      - name: Run targeted contracts without provider access
+        run: |
+          node --import tsx --test \
+            src/tests/make-drive-folder-continuity.test.ts \
+            src/tests/make-native-selector-contract.test.ts \
+            src/tests/connector-builder-native-selection.test.ts \
+            src/tests/make-native-drive-input.test.ts \
+            src/tests/connector-builder-native-gateway.test.ts \
+            src/tests/make-native-read-handoff.test.ts
+      - name: Focused lint
+        run: npx eslint src/lib/connectors/core/native-make-drive-folder-continuity.ts src/lib/connectors/core/native-connector-builder-selection.ts src/lib/brain/brain-source-registry.ts src/lib/core/session.ts src/tests/make-drive-folder-continuity.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit --pretty false
