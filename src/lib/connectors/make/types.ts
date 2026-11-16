@@ -34,6 +34,8 @@ export interface MakeWebhookCredentials {
   scenarios: Record<string, MakeScenarioConfiguration>;
   /** Optional, only for explicitly registered on-demand API scenarios. */
   api?: MakeApiCredentials;
+  /** Backend-reviewed resource/identity binding; never accepted from model input. */
+  calendarReadBinding?: MakeCalendarReadBinding;
 }
 
 export interface MakeScenarioInvocation {
@@ -58,4 +60,15 @@ export interface MakeScenarioExecutionResult {
   executionStatus: MakeScenarioExecutionStatus;
   executionId?: string;
   data: unknown;
+}
+
+/** Must be explicitly reviewed with the native grant and durable Google binding.
+ * No connection label, email or inferred account is an authorization source.
+ */
+export interface MakeCalendarReadBinding {
+  googleConnectionId: string;
+  googleSubject: string;
+  calendarId: string;
+  calendarName: string;
+  makeConnectionId: number;
 }

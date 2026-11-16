@@ -1,3 +1,4 @@
+import {makeCalendarRead,makeCalendarReadState,makeCalendarReadRequested,makeCalendarReadFailureMessage} from '@/lib/connectors/make/native-calendar-read-contract';
 import {createHash} from 'node:crypto';
 import {MELODIE_DIGITAL_IDENTITY} from '@/lib/knowledge/melodie-digital/identity';
 import {MELODIE_DIGITAL_VISION} from '@/lib/knowledge/melodie-digital/vision';
@@ -205,6 +206,13 @@ export async function buildBrainSources(
 ): Promise<BrainSourceContext[]> {
   const native=nativeContext();
   if(native){
+    const makeCalendarRequested=makeCalendarReadRequested(extractMessage(event));
+    const calendarState=makeCalendarReadState(native);
+    if(makeCalendarRequested){
+      calendarState.provider='make';
+      calendarState.expectedCalendarName=parseNativeCalendarReadIntent(extractMessage(event),now).expectedName;
+    }
+    else if(calendarSource.shouldLoad(event))calendarState.provider='native';
     const company=nativeCompanyKnowledge(event);
     const contexts: BrainSourceContext[] = company?[company]:[];
 
@@ -240,9 +248,15 @@ export async function buildBrainSources(
             : null,
           summary:outcome?.available
             ? String(outcome.content??'')
-            : 'CONNECTOR_READ_UNAVAILABLE: no confirmed provider result; no retry, WRITE or SEND was performed. Never invent a lookup result.',
+            : makeCalendarRequested&&(!outcome||makeCalendarRead(outcome.capabilityId))
+              ? makeCalendarReadFailureMessage(outcome?.content)
+              : 'CONNECTOR_READ_UNAVAILABLE: no confirmed provider result; no retry, WRITE or SEND was performed. Never invent a lookup result.',
         });
       }
+    }
+
+    if(makeCalendarRequested&&!builderReads.some(read=>makeCalendarRead(read.capabilityId))){
+      contexts.push({source:'connector-builder-read',available:false,data:null,summary:makeCalendarReadFailureMessage()});
     }
 
     const revalidate=(key:string,check:()=>Promise<void>)=>{
@@ -268,6 +282,7 @@ export async function buildBrainSources(
       if(contexts.some(context=>context.source===source.id))continue;
       try{
         if(source.id==='google-calendar'){
+          if(makeCalendarRequested)continue; // Explicit Make route never doubles with native READ, including failures.
           const intent=parseNativeCalendarReadIntent(extractMessage(event),now);
           if(intent.kind==='unsupported'){
             contexts.push({source:source.id,available:false,data:null,summary:'GOOGLE_CALENDAR_RANGE_UNSUPPORTED: explicit dates are missing, ambiguous or invalid. No provider queried. This does not invalidate any previously confirmed Google write receipt.'});continue;
@@ -320,6 +335,7 @@ export async function buildBrainSources(
           const start=new Date(now);start.setHours(0,0,0,0);const end=new Date(start);end.setDate(end.getDate()+1);
           const timeMin=intent.kind==='range'?intent.timeMin:start.toISOString();
           const timeMax=intent.kind==='range'?intent.timeMax:end.toISOString();
+          calendarState.started=true;
           const result=await work.eventsForBoundCalendar(calendarId,undefined,timeMin,timeMax);
           revalidate('calendar:'+connectionId,async()=>{
             const current=await googleAuthority(connectionId);

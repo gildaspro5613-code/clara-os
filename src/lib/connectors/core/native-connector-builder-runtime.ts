@@ -1,4 +1,5 @@
 import {RegistryError} from '@/lib/canonical/registry';
+import {makeCalendarRead,claimMakeCalendarRead,nativeMakeCalendarReadInput} from '@/lib/connectors/make/native-calendar-read-contract';
 import {nativeContext} from '@/lib/native/scoped-context';
 import {builderSql} from './native-connector-builder-sql';
 import type {ConnectionRepository} from '@/lib/connections/connection-repository';
@@ -222,6 +223,27 @@ export function nativeBuilderReadExecutor(
       !('scenarioKey' in receipt)||receipt.scenarioKey!=='find-drive-document')
     throw new RegistryError(503,'CONNECTOR_BUILDER_MAKE_RECEIPT_DENIED');
    data=receipt.data;
+  }else if(request.provider==='make'&&makeCalendarRead(request.capabilityId)){
+   claimMakeCalendarRead(ctx);
+   const input=nativeMakeCalendarReadInput(request.capabilityId,request.input);
+   const nativeCredentials=await connection.resolve<import('@/lib/connectors/make/types').MakeWebhookCredentials>(
+    request.connectionId,'make',request.workspaceId,
+   );
+   const {executeMakeCalendarRead,authorizeNativeMakeCalendar}=await import('@/lib/connectors/make/native-calendar-read');
+   const {MakeConnectorAdapter}=await import('@/lib/connectors/make/adapter');
+   const {MAKE_CAPABILITIES}=await import('@/lib/connectors/make/definition');
+   const adapter=new MakeConnectorAdapter(connection);
+   const result=await executeMakeCalendarRead(request.capabilityId,s.workspaceId,input,nativeCredentials.credentials,{
+    authorize:authorizeNativeMakeCalendar,
+    async invoke(invocation){
+     const response=await adapter.execute(request.connectionId,{capability:MAKE_CAPABILITIES.SCENARIO_EXECUTE,input:invocation});
+     return response.data;
+    },
+   });
+   ctx.documentRevalidators??=new Map();
+   ctx.documentRevalidators.set('make-calendar:'+request.connectionId,result.revalidate);
+   ctx.documentRevalidate=async()=>{for(const verify of ctx.documentRevalidators!.values())await verify();};
+   data=result.data;
   }else if(request.provider==='stripe'){
    const {StripeConnectorAdapter}=await import('@/lib/connectors/stripe/adapter');
    const adapter=new StripeConnectorAdapter(connection);
