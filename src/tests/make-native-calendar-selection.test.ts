@@ -30,6 +30,63 @@ test('Calendar selection is explicit Make opt-in; ordinary Calendar uses native;
  assert.doesNotMatch(instructions,/make-fixture|fixture-subject|fixture-calendar/);
 });
 
+test('explicit Make Calendar READ accepts standalone non-modification instructions',()=>{
+ const positives=[
+  'Cherche les événements du calendrier via Make',
+  message,
+  message+', ne modifie rien.',
+  message+' sans rien modifier.',
+  'Ne modifie rien ; '+message,
+  'Sans rien modifier, '+message,
+  'NE MODIFIE RIEN et '+message,
+  message+' ; ne modifie rien et sans rien modifier.',
+ ];
+ for(const text of positives){
+  assert.equal(makeCalendarReadRequested(text),true,text);
+  assert.deepEqual(eligibleConnectorReadNames(text,[...allowed,drive]),allowed.map(c=>c.capabilityId).sort(),text);
+ }
+});
+
+test('non-modification phrases cannot hide a real WRITE, SEND, DELETE or exception',()=>{
+ for(const action of [
+  'modifie le rendez-vous', 'modifier le rendez-vous', 'crée un événement',
+  'supprime le rendez-vous', 'envoie une invitation', 'déplace le rendez-vous',
+  'réserve le créneau', 'change l’horaire', 'ajoute un événement', 'annule le rendez-vous',
+  'create an event', 'delete the event', 'send an invitation', 'update the event', 'modify the event', 'remove the event',
+ ]){
+  for(const guard of ['', ', ne modifie rien', ', sans rien modifier']){
+   const text=message+guard+' ; puis '+action;
+   assert.equal(makeCalendarReadRequested(text),false,text);
+   assert.ok(!eligibleConnectorReadNames(text,allowed).length,text);
+  }
+ }
+ for(const text of [
+  message+', ne modifie rien sauf l’horaire',
+  message+', sans rien modifier, sauf l’horaire',
+  message+', ne modifie rien mais change l’horaire',
+  message+', ne modifie rien au rendez-vous sauf son horaire',
+ ])assert.equal(makeCalendarReadRequested(text),false,text);
+});
+
+test('non-modification instructions do not opt native Calendar into Make or grant unavailable READs',async()=>{
+ for(const text of [
+  'Cherche les événements du calendrier, ne modifie rien.',
+  'Cherche les événements du calendrier sans rien modifier.',
+  message+' sans Make, ne modifie rien.',
+  message+' sans rien modifier ; utilise Google Calendar natif.',
+ ]){
+  assert.equal(makeCalendarReadRequested(text),false,text);
+  assert.deepEqual(eligibleConnectorReadNames(text,allowed),[],text);
+ }
+ let calls=0;
+ const result=await selectAndExecuteNativeBuilderRead(message+', ne modifie rien.',[],{
+  async select(){calls++;throw Error('No cognitive call without a grant');},
+  async execute(){calls++;throw Error('No execution without a grant');},
+ });
+ assert.equal(result,null);assert.equal(calls,0);
+ assert.deepEqual(eligibleConnectorReadNames('Cherche RTSE Angers avec Make, ne modifie rien.',[...allowed,drive]),['make.drive.find']);
+});
+
 function request(){return new Request('https://os.fixture/api?workspaceId=workspace-a&clientId=client-a&projectId=project-a&sessionId=native:fixture',{headers:{cookie:'clara_auth_session='+'A'.repeat(43)}});}
 const nativeData=()=>({userId:'user-a',session:{...createSession(),googleConnectionId:calendarBinding.googleConnectionId,googleCalendarId:calendarBinding.calendarId},missions:[],journal:[]});
 
@@ -76,13 +133,15 @@ test('no grant on explicit Make Calendar route: clear refusal, zero Google fallb
    if(strings.join('').includes('clara_native_google_command')){googleCalls++;return [{data:{connections:[]}}];}
    return [{data:nativeData()}];
   };
-  await withNativeScope(request(),false,async()=>{
-   const sources=await buildBrainSources({type:'USER_MESSAGE',payload:{message}} as Event,new Date('2026-11-16T10:00:00Z'));
-   assert.equal(makeCalendarReadState(nativeContext()!).provider,'make');
-   assert.equal(googleCalls,0);
-   const read=sources.find(s=>s.source==='connector-builder-read');
-   assert.equal(read?.available,false);assert.match(read?.summary??'',/pas autorisée|configurée/);
-  },query);
+  for(const text of [message,message+', ne modifie rien.',message+' sans rien modifier.']){
+   await withNativeScope(request(),false,async()=>{
+    const sources=await buildBrainSources({type:'USER_MESSAGE',payload:{message:text}} as Event,new Date('2026-11-16T10:00:00Z'));
+    assert.equal(makeCalendarReadState(nativeContext()!).provider,'make');
+    assert.equal(googleCalls,0);
+    const read=sources.find(s=>s.source==='connector-builder-read');
+    assert.equal(read?.available,false);assert.match(read?.summary??'',/pas autorisée|configurée/);
+   },query);
+  }
   await withNativeScope(request(),false,async()=>{
    await buildBrainSources({type:'USER_MESSAGE',payload:{message:'Montre mon calendrier le 17 novembre 2026'}} as Event,new Date('2026-11-16T10:00:00Z'));
    assert.equal(makeCalendarReadState(nativeContext()!).provider,'native');assert.equal(googleCalls,1);

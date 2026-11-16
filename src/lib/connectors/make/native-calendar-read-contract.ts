@@ -67,8 +67,12 @@ export function nativeMakeCalendarReadInput(capabilityId:string,input:unknown):M
 
 /** Make is explicit opt-in. Ordinary Calendar reads stay on the existing native path. */
 export function makeCalendarReadRequested(message:string):boolean{
+ // Ignore only complete, unambiguous non-modification clauses in the WRITE
+ // veto. Keep the original message for READ/provider detection and cognition.
+ // Exceptions or unfinished clauses stay subject to the conservative veto.
+ const actions=message.replace(/\b(?:ne\s+modifie\s+rien|sans\s+rien\s+modifier)\b(?!\s*[,;:]?\s*(?:sauf|except[eé]?|mais)(?=\s|[.!?;,:]|$))(?=\s*(?:[.!?;,\n]|$|et\b))/giu,' ');
  return /\b(?:vérifi\w*|verifi\w*|check|cherch\w*|recherch\w*|trouv\w*|find|search|lis|lire|list\w*|montre\w*|show|consult\w*|disponibilit\w*|availability|free.?busy)\b/iu.test(message)&&
-  !/\b(?:crée\w*|création|create|supprim\w*|delete|send|envoi\w*|modifi\w*|déplac\w*|book|réserv\w*)\b/iu.test(message)&&
+  !/\b(?:crée\w*|création|create|supprim\w*|delete|send|envoi\w*|modifi\w*|chang\w*|ajout\w*|annul\w*|effac\w*|déplac\w*|modify|update|remove|cancel|invite|book|réserv\w*)\b/iu.test(actions)&&
   /\b(?:agenda|calendrier|calendar|disponibilit\w*|availability|free.?busy|events?|événements?|rdv|rendez-vous)\b/iu.test(message)&&
   /\b(?:via|avec|through|using|with)\s+make\b/iu.test(message)&&
   !/\b(?:google\s+calendar\s+natif|native\s+google\s+calendar|sans\s+make|without\s+make)\b/iu.test(message);

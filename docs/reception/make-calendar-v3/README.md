@@ -115,7 +115,7 @@ sélection reste identique pour les demandes Drive ; les contrats Drive ajoutés
 par #286 sont conservés. Aucun fichier Clara Live, migration, route de gestion,
 schéma de persistance ou fichier package/lockfile modifié.
 
-## Validation et coût
+## Validation initiale et coût
 
 Commande locale principale (réseau interdit ; autorité SQL et fournisseurs simulés) :
 
@@ -174,6 +174,48 @@ son temps d'exécution habituel, sans secrets fournisseur. Après un futur GO,
 chaque demande explicite Make implique au plus une sélection cognitive, trois
 GET de vérification et un run, sans polling ni retry. Aucun run de réception réel
 n'est autorisé par cette PR.
+
+## Correctif ciblé PR #287 — consignes de non-modification
+
+Base du correctif : `fed5997e79369586b3a3d5de7a03ab500479423f`.
+Le veto WRITE cherchait `modifi*` sans distinguer « ne modifie rien » et
+« sans rien modifier » d'une demande d'écriture. Un test ajouté avant correction
+reproduit le refus injustifié de la première formulation.
+
+Seules ces deux consignes complètes sont neutralisées pour le veto WRITE, à une
+fin de clause, devant une ponctuation ou une coordination « et ». Le message
+original reste utilisé pour identifier la lecture, Calendar et Make, et pour
+la sélection cognitive. Les clauses incomplètes et les exceptions « sauf »,
+« excepté » ou « mais » restent refusées. Une véritable demande d'écriture,
+d'envoi ou de suppression ailleurs dans le message reste bloquante ; les verbes
+explicites change/ajoute/annule/efface/modify/update/remove/cancel/invite sont
+également couverts pour empêcher qu'une consigne négative masque un autre ordre.
+Ce traitement borné n'est pas une analyse générale de toutes les négations.
+
+Périmètre de cette reprise : uniquement `native-calendar-read-contract.ts`,
+`make-native-calendar-selection.test.ts` et ce rapport. Aucun changement du
+routage natif, des grants, du gateway, de Drive, de Make ou de la configuration.
+Trois tests ajoutés couvrent les lectures positives, les consignes négatives,
+les vrais ordres WRITE/SEND/DELETE et les exceptions. Le test des sources Brain
+vérifie aussi que les deux formulations, sans grant, restent sur un refus Make
+sans lecture native de remplacement.
+
+Validation de cette reprise uniquement (la batterie initiale de 104 tests
+ci-dessus n'est pas relancée) :
+
+```sh
+node --import ./src/tests/helpers/make-calendar-offline.mjs --import tsx --test \
+ src/tests/make-native-calendar-selection.test.ts \
+ src/tests/connector-builder-native-selection.test.ts \
+ src/tests/make-native-selector-contract.test.ts \
+ src/tests/make-native-drive-input.test.ts
+```
+
+**22 pass, 0 fail, 0 skipped**. TypeScript sans émission et ESLint ciblé sur les
+deux fichiers TypeScript du correctif passent ; `git diff --check` passe.
+Aucun nouvel appel cognitif payant, accès Make/Google/Neon ou essai fournisseur.
+Dépendances locales existantes réutilisées ; limites de simulation et prérequis
+de réception inchangés. La PR existante reste Draft, sans Preview ni déploiement.
 
 ## Prérequis et réception minimale après GO séparé
 
