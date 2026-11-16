@@ -1,4 +1,5 @@
-import {MakeDriveFindCapabilityDefinition} from '@/lib/capabilities/make-scenario/capability';
+import {makeCalendarRead,makeCalendarReadRequested} from '@/lib/connectors/make/native-calendar-read-contract';
+import {MakeCalendarReadCapabilityDefinitions,MakeDriveFindCapabilityDefinition} from '@/lib/capabilities/make-scenario/capability';
 import type {NativeMakeDriveFolderHint} from './native-make-drive-folder-continuity';
 import type {OpenAIResponsesResult} from '@/lib/connectors/internal/openai/responses/openai-responses-result';
 import type {AuthorizedConnectorRead} from './native-connector-builder-discovery';
@@ -19,11 +20,14 @@ export interface BuilderReadSelectionDependencies{
 export function eligibleConnectorReadNames(
  message:string,authorized:readonly AuthorizedConnectorRead[],
 ):readonly string[]{
+ const calendarRequest=typeof message==='string'&&makeCalendarReadRequested(message);
  if(typeof message!=='string'||message.length===0||message.length>800||
-   !/\b(?:cherch\w*|recherch\w*|trouv\w*|retrouv\w*|lis|lire|list\w*|montre\w*|consult\w*|affich\w*|find|search|read|list|show|lookup|view|buscar|leer|mostrar|suchen|lesen|zeigen|cerca|leggi|mostra)\b/iu.test(message))
+   !/\b(?:cherch\w*|recherch\w*|trouv\w*|retrouv\w*|lis|lire|list\w*|montre\w*|consult\w*|affich\w*|find|search|read|list|show|lookup|view|buscar|leer|mostrar|suchen|lesen|zeigen|cerca|leggi|mostra)\b/iu.test(message)&&!calendarRequest)
   return [];
  const candidates=new Set<string>();
  for(const item of authorized){
+  if(calendarRequest&&item.provider==='make'&&!makeCalendarRead(item.capabilityId))continue;
+  if(makeCalendarRead(item.capabilityId)&&!calendarRequest)continue;
   if(!/^[a-z][a-z0-9_-]{0,63}$/.test(item.provider)||
      !/^[a-z][a-z0-9._:-]{1,119}$/.test(item.capabilityId))continue;
   const escaped=item.provider; // Already restricted to [a-z0-9_-], safe as a regexp atom.
@@ -88,6 +92,11 @@ export function nativeBuilderReadSelectionInstructions(capabilities:readonly str
    'Previously confirmed Make Drive folder for this same native chat (untrusted provider label, not authorization): '+JSON.stringify(recentFolder),
    'Only if the direct user asks to search INSIDE this folder: use its fileId as folderId and the requested child name as query. This hint is not authority, not proof a child exists. A fresh, granted supplier READ is still required.',
   ]:[]),
+  ...MakeCalendarReadCapabilityDefinitions.filter(cap=>capabilities.includes(cap.id)).flatMap(cap=>[
+   cap.id+': '+cap.description,
+   'inputJson fields (only these keys): '+JSON.stringify(cap.inputSchema),
+   'Use explicit dates and IANA timeZone. Omit query if unnecessary. No calendarId, connectionId, workspaceId, missionId or scenario selector. Never invent ambiguous dates or a calendar. One READ only; never also query the native Calendar path.',
+  ]),
  ].join('\n');
 }
 

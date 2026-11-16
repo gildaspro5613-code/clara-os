@@ -61,3 +61,24 @@ export const MakeDriveFindCapabilityDefinition: MakeScenarioCapability = {
     },
   },
 };
+
+const calendarRangeParameters = {
+  start: {type:"string",description:"Inclusive RFC3339 date/time with offset matching timeZone, e.g. 2026-11-17T09:00:00+01:00. Never infer an ambiguous date.",required:true},
+  end: {type:"string",description:"Exclusive RFC3339 date/time with offset matching timeZone; after start, at most 31 days later.",required:true},
+  timeZone: {type:"string",description:"Explicit IANA time zone, e.g. Europe/Paris. Used by Clara for validation/presentation; not sent as a Make input.",required:true},
+};
+
+export const MakeCalendarReadCapabilityDefinitions: readonly MakeScenarioCapability[] = [
+  {
+    id:MAKE_CAPABILITIES.CALENDAR_AVAILABILITY,
+    name:"Check Calendar availability through Make",version:"1.0.0",category:"Automation",
+    description:"Read busy ranges in the previously selected, authorized project calendar. Use Make only when explicitly requested; otherwise prefer native Google Calendar. An empty response cannot certify availability with this scenario's current output contract.",
+    inputSchema:calendarRangeParameters,
+  },
+  {
+    id:MAKE_CAPABILITIES.CALENDAR_SEARCH,
+    name:"Search Calendar events through Make",version:"1.0.0",category:"Automation",
+    description:"Search events in the previously selected, authorized project calendar. Use Make only when explicitly requested; otherwise prefer native Google Calendar. Current scenario returns a single matching event, not an exhaustive list; no result cannot prove the calendar empty.",
+    inputSchema:{...calendarRangeParameters,query:{type:"string",description:"Optional plain text search, max 200 characters. Omit when not needed. Never a scenario or calendar selector.",required:false}},
+  },
+];
