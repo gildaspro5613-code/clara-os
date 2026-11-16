@@ -1,0 +1,11 @@
+{
+  ".github/workflows/native-authority-validation.yml": "4831ba2356d62d57f34ba27788f17c005fe740128f32918a83fd45570082b744",
+  "db/migrations/027_canonical_stage_decisions.sql": "4796e17f0493252393ef72821d1f4e3be60154814bc95f349856a71edb70d99b",
+  "src/app/api/core/canonical/stage/route.ts": "0da7464ed57e54324df2edf6f89df8c196a93b247ecec25e6419c2045a02427a",
+  "src/app/api/native/stage/route.ts": "55e73dbd9236512952f2980f59c71322c4ef878563f27f4eeaa85e7fffcb5fb2",
+  "src/lib/canonical/stage-authority.ts": "8e755b0ff13148825db7135859328867222e5ae48e3abb2b357dbfbde1228dac",
+  "src/tests/canonical-stage-postgres.test.ts": "f85f59e8a77fa4ef9fe8bc6431308faf0ab54debfb2086d9c6f2dc29693d6ba8",
+  "src/tests/canonical-stage-routes.test.ts": "b39042fbdf70a60735c7d7fe42ac6efd955c8c8456aec168e2d87661a88423cf",
+  "src/tests/helpers/stage-authority-http.mts": "6301299a2a042db09041b2fcd895cb27ecac96939f3e26b6c7d7466e8fdad40b",
+  "vercel.json": "b97585b8749076a7c3c8c62e0829f89b0f886d15f89085d16418b0c075ec8d7e"
+}

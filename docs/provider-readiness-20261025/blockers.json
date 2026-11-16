@@ -1,0 +1,42 @@
+[
+  {
+    "id": "EXP-01",
+    "gravite": "P0 avant ouverture Make",
+    "symptome": "Le parcours natif Make/Brevo est explicitement refusé ; wrapper {scenarioKey,payload,source}, absence de lien métier complet contactId/mission et reçus/incertitudes",
+    "preuve": "Code et tests, pas panne fournisseur",
+    "action_minimale": "Raccorder dans les autorités et registres existants seulement après preuve du mapping et de la portée exacte ; conserver fence tant que non reçu",
+    "validation": "Contrats, réattestation, concurrence/idempotence, reçu métier et Journal/Cockpit",
+    "statut": "OUVERT pour exploitation Make depuis OS",
+    "bloquant_exploitation_transverse": true
+  },
+  {
+    "id": "EXP-02",
+    "gravite": "P1 transport UI ; P0 avant effets non maîtrisés",
+    "symptome": "Page Téléphonie fermée ; routes de transport sans reçu de tentative idempotent ni lien mission/Journal",
+    "preuve": "Source actuelle ; transport historiquement réel confirmé par propriétaire",
+    "action_minimale": "Préserver le transport ; raccorder autorité/approbation et reçu durables existants avant réactivation UI complète. Aucun appel dans ce lot",
+    "validation": "Refus anonymes, même origine/workspace, aucun POST clavier, ID fournisseur attesté ; persistance/J1 actuelle ne certifie pas encore les appels",
+    "statut": "OUVERT pour journée complète vocale tracée",
+    "bloquant_exploitation_transverse": true
+  },
+  {
+    "id": "EXP-03",
+    "gravite": "P0 avant environnement réel",
+    "symptome": "Aucun déploiement/secret/base fournisseur de réception lu ou modifié ici ; valeurs runtime non attestées dans cette mission",
+    "preuve": "Limite d’accès et d’autorisation ; pas absence de configuration",
+    "action_minimale": "Autoriser l’instance cible et vérifier les valeurs effectives avec le mécanisme existant, sans les exposer ; recette contrôlée R1–R4",
+    "validation": "Historique de sauvegarde/restauration et migrations conservé ; aucune migration nouvelle ni distante",
+    "statut": "OPÉRATION AUTORISÉE DISTINCTE REQUISE",
+    "bloquant_exploitation_transverse": true
+  },
+  {
+    "id": "EXP-04",
+    "gravite": "P2 hors réception contrôlée",
+    "symptome": "Source IONOS V1 b02b1dd inaccessible, Brief global/voix contextuelle enrichie non reçus",
+    "preuve": "Recherches locales/archives/branche distante et HTTP422 ; 117 tests non comptés",
+    "action_minimale": "Récupérer source/bundle si disponible ; ne pas reconstruire. Le socle contrôlé reste reçu indépendamment",
+    "validation": "Preuves #176/#199/#202 et 137 preuves intactes",
+    "statut": "NE BLOQUE PAS lecture/brouillons du socle ; autonomie non activée",
+    "bloquant_exploitation_transverse": false
+  }
+]

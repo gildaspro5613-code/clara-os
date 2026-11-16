@@ -1,0 +1,22 @@
+✔ Google reconnect: real PostgreSQL status gate, unchanged rights, existing connection and exact scopes (6960.589587ms)
+Checked 38 native handler refusals.
+[CLARA] instrumentation ready; business runtime is request-scoped
+✔ native session handler rejects missing, malformed and duplicate cookies before storage or global runtime (65.168624ms)
+✔ default, external and absent explicit selectors cannot resume a global/native fallback (1.508477ms)
+✔ every fenced native HTTP handler refuses anonymous/invalid cookies without entering legacy business logic (165.875419ms)
+✔ unavailable authority never leaks storage details or resumes the legacy runtime (4.0927ms)
+✔ even an explicitly authorized snapshot cannot unlock legacy native mutations (13.452995ms)
+✔ all six native server pages return before invoking any global data loader (54.266994ms)
+✔ reopened chat and native runtime/document handlers still refuse invalid authentication before business code (46.015155ms)
+✔ server instrumentation never imports or starts a global business runtime (1.977258ms)
+✔ Uncertified Google/Brevo/Make connection routes reject invalid OS sessions before storage or provider I/O (78.767514ms)
+✔ a verified native session cannot unlock Google credentials or Make configuration before connector certification (57.084953ms)
+✔ Google connector reuses canonical RS256 issuer/subject validation; nonce, audience, expiry, forged keys and account substitution are rejected before credential mutation (169.869284ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8618.383597

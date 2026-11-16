@@ -1,0 +1,30 @@
+✔ Make definition exposes only prepare and execute V1 capabilities (2.134756ms)
+✔ prepare does not resolve credentials or perform network I/O (0.494888ms)
+✔ execute resolves the webhook from the credential store rather than user input (38.363302ms)
+✔ unknown scenario keys fail before any webhook call (1.250045ms)
+✔ webhook client rejects non-HTTPS destinations (0.63779ms)
+✖ HTTP 200 with an explicit provider failure never produces a completed Make receipt (4.354646ms)
+✔ Make transport timeouts perform one handoff and are never a success receipt (0.525383ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 6
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 543.269443
+
+✖ failing tests:
+
+test at src/tests/make-connector.test.ts:2:4970
+✖ HTTP 200 with an explicit provider failure never produces a completed Make receipt (4.354646ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (/workspace/clara-os-v1-reception/src/tests/make-connector.test.ts:140:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }

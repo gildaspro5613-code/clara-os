@@ -1,3 +1,4 @@
+import {nativeContext} from "@/lib/native/scoped-context";
 /**
  * ============================================
  * CLARA OS
@@ -37,7 +38,7 @@ export function shouldRemember(
     }
   })();
 
-  if (shouldRetain) {
+  if (shouldRetain && !nativeContext()) {
     rememberEvent(event);
   }
 

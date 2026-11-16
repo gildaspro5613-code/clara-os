@@ -1,0 +1,27 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+import {execFileSync,execFile} from 'node:child_process';
+import {promisify} from 'node:util';
+import {readNativeSearch} from '@/lib/native/search-view';
+import {nativeCommands,withNativeScope,nativeContext,nativeMission} from '@/lib/native/scoped-context';
+import {googleProofHash} from '@/lib/native/google-authority';
+import type {RegistryQuery} from '@/lib/canonical/registry';
+import {JournalEntryType} from '@/lib/core/journal-entry';
+test('header search projects only the existing authorized PostgreSQL snapshot, never writes, and refuses revoked/foreign/expired contexts',{skip:!process.env.CANONICAL_TEST_CONTAINER},async t=>{
+ const previousOrigin=process.env.CLARA_AUTH_APP_ORIGIN;process.env.CLARA_AUTH_APP_ORIGIN='https://fixture.invalid';t.after(()=>{if(previousOrigin===undefined)delete process.env.CLARA_AUTH_APP_ORIGIN;else process.env.CLARA_AUTH_APP_ORIGIN=previousOrigin;});
+ const db='native_browser_'+randomUUID().replaceAll('-',''),container='clara-canonical-test-postgres';
+ execFileSync(process.execPath,['--import','tsx','src/tests/helpers/native-runtime-browser-fixture.mts',db],{stdio:'pipe'});t.after(()=>execFileSync('docker',['exec',container,'dropdb','-U','postgres',db]));
+ const pg=(s:string)=>execFileSync('docker',['exec',container,'psql','-U','postgres','-d',db,'-qAt','-v','ON_ERROR_STOP=1','-c',s],{encoding:'utf8',stdio:'pipe'}).trim();
+ const query:RegistryQuery=async(strings,...values)=>{const statement=strings.reduce((s,p,i)=>s+p+(i<values.length?"'"+String(values[i]).replaceAll("'","''")+"'":''),'');assert.ok(statement.startsWith('SELECT clara_native_runtime_command('));try{const r=await promisify(execFile)('docker',['exec',container,'psql','-U','postgres','-d',db,'-qAt','-v','ON_ERROR_STOP=1','-v','VERBOSITY=verbose','-c',`SELECT row_to_json(r) FROM (${statement})r`]);return r.stdout.trim().split('\n').filter(Boolean).map(l=>JSON.parse(l));}catch(e){throw {code:String((e as {stderr:unknown}).stderr).match(/ERROR:\s+([A-Z0-9]{5}):/)?.[1]};}};
+ const command=nativeCommands(query),scope=(sid:string,u='A',p='p1')=>({digest:googleProofHash(u.repeat(43)),workspaceId:'w',clientId:'c1',projectId:p,sessionId:sid});
+ const req=(sid:string,u='A',p='p1')=>new Request('https://fixture.invalid',{headers:{origin:'https://fixture.invalid',cookie:'clara_auth_session='+u.repeat(43)+'; clara_native_selection='+encodeURIComponent(JSON.stringify({workspaceId:'w',clientId:'c1',projectId:p,sessionId:sid}))}});
+ const seed=async(title:string,u='A',p='p1')=>{const sid=String((await command(scope('native:new',u,p),'create')).sessionId);await withNativeScope(req(sid,u,p),true,async()=>{const ctx=nativeContext()!,mission={id:'new',title,objective:'Search isolated fixture',progress:0,status:'planned' as const,priority:'medium' as const,tasks:[],createdAt:new Date()};nativeMission(mission);ctx.session.mission=mission;ctx.entries.push({id:randomUUID(),type:JournalEntryType.ACTION,createdAt:new Date(),summary:title+' journal'});},query);return sid;};
+ const sid=await seed('SEARCH_ALLOWED'),foreign=await seed('SEARCH_OTHER_OWNER','B');await seed('SEARCH_OTHER_PROJECT','A','p2');
+ const snapshot=()=>pg("SELECT jsonb_build_object('missions',(SELECT jsonb_agg(to_jsonb(m) ORDER BY id) FROM clara_missions m),'sessions',(SELECT jsonb_agg(to_jsonb(s) ORDER BY id) FROM clara_sessions s),'journal',(SELECT jsonb_agg(to_jsonb(j) ORDER BY id) FROM clara_journal_entries j))");
+ const before=snapshot(),result=await readNativeSearch(req(sid),'SEARCH_',query);assert.equal(result.state,'ready');if(result.state!=='ready')throw Error();assert.deepEqual(result.groups.missions.map(m=>m.label),['SEARCH_ALLOWED']);assert.ok(result.groups.journal.some(j=>j.label==='SEARCH_ALLOWED journal'));assert.ok(!JSON.stringify(result).includes('OTHER_'));assert.deepEqual(result.groups.conversations,[]);assert.equal(snapshot(),before,'Search must not update missions, sessions or Journal');
+ const contacts=await readNativeSearch(req(sid),'PRIVATE_',query);assert.equal(contacts.state,'ready');if(contacts.state==='ready')assert.deepEqual(contacts.groups.contacts.map(c=>c.label),['PRIVATE_prospect-a']);
+ assert.equal((await readNativeSearch(req(sid,'B'),'SEARCH_',query)).state,'denied');assert.equal((await readNativeSearch(req(sid,'A','p2'),'SEARCH_',query)).state,'denied');assert.equal((await readNativeSearch(req(sid,'D'),'SEARCH_',query)).state,'denied');assert.equal((await readNativeSearch(new Request('https://fixture.invalid'),'SEARCH_',query)).state,'denied');
+ pg("UPDATE clara_native_resource_authority SET revoked_at=NOW() WHERE resource_kind='session' AND resource_id='"+sid+"' AND revoked_at IS NULL");assert.equal((await readNativeSearch(req(sid),'SEARCH_',query)).state,'denied');
+ const safe=await readNativeSearch(req(foreign,'B'),'SEARCH_',async()=>{throw Error('SECRET_NEVER_EXPOSE');});assert.deepEqual(safe,{state:'unavailable'});assert.ok(!JSON.stringify(safe).includes('SECRET'));
+});

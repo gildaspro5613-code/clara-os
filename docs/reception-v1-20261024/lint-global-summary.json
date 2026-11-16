@@ -1,0 +1,90 @@
+{
+  "errors": 9,
+  "warnings": 9,
+  "files": [
+    {
+      "file": "src/app/api/weather/route.ts",
+      "errors": 0,
+      "warnings": 1,
+      "unchangedFromBase": true
+    },
+    {
+      "file": "src/components/automatisations/MakeConnectionStatus.tsx",
+      "errors": 1,
+      "warnings": 0,
+      "unchangedFromBase": true
+    },
+    {
+      "file": "src/components/clara/ClaraRecommendation.tsx",
+      "errors": 1,
+      "warnings": 0,
+      "unchangedFromBase": true
+    },
+    {
+      "file": "src/components/cockpit/panels/TodayPanel.tsx",
+      "errors": 2,
+      "warnings": 0,
+      "unchangedFromBase": true
+    },
+    {
+      "file": "src/components/cockpit/widgets/weather/WeatherWidget.tsx",
+      "errors": 0,
+      "warnings": 2,
+      "unchangedFromBase": true
+    },
+    {
+      "file": "src/components/layout/Sidebar.tsx",
+      "errors": 0,
+      "warnings": 1,
+      "unchangedFromBase": true
+    },
+    {
+      "file": "src/lib/capabilities/magicq-lighting/executor.ts",
+      "errors": 0,
+      "warnings": 1,
+      "unchangedFromBase": true
+    },
+    {
+      "file": "src/lib/capabilities/workspace-install/workflow.ts",
+      "errors": 0,
+      "warnings": 1,
+      "unchangedFromBase": true
+    },
+    {
+      "file": "src/lib/connectors/internal/google/gmail/google-gmail-engine.ts",
+      "errors": 0,
+      "warnings": 2,
+      "unchangedFromBase": true
+    },
+    {
+      "file": "src/lib/connectors/internal/google/sheets/google-sheets-engine.ts",
+      "errors": 0,
+      "warnings": 1,
+      "unchangedFromBase": true
+    },
+    {
+      "file": "src/lib/core/store/database.ts",
+      "errors": 1,
+      "warnings": 0,
+      "unchangedFromBase": true
+    },
+    {
+      "file": "src/tests/integration/lighting-console-connections-v1.test.ts",
+      "errors": 1,
+      "warnings": 0,
+      "unchangedFromBase": true
+    },
+    {
+      "file": "src/tests/integration/lighting-self-service-onboarding-v1.test.ts",
+      "errors": 1,
+      "warnings": 0,
+      "unchangedFromBase": true
+    },
+    {
+      "file": "src/tests/integration/magicq-hardware-test-readiness.test.ts",
+      "errors": 2,
+      "warnings": 0,
+      "unchangedFromBase": true
+    }
+  ]
+}

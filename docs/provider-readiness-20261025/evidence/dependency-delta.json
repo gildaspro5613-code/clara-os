@@ -1,0 +1,62 @@
+[
+  {
+    "path": "node_modules/@typescript-eslint/typescript-estree/node_modules/brace-expansion",
+    "before": "5.0.8",
+    "after": "5.0.12"
+  },
+  {
+    "path": "node_modules/axios",
+    "before": "1.19.0",
+    "after": "1.20.0"
+  },
+  {
+    "path": "node_modules/brace-expansion",
+    "before": "1.1.17",
+    "after": "1.1.21"
+  },
+  {
+    "path": "node_modules/follow-redirects",
+    "before": "1.16.0",
+    "after": "1.16.1"
+  },
+  {
+    "path": "node_modules/glob/node_modules/brace-expansion",
+    "before": "2.1.4",
+    "after": "2.1.7"
+  },
+  {
+    "path": "node_modules/mailparser",
+    "before": "3.9.39",
+    "after": "3.9.43"
+  },
+  {
+    "path": "node_modules/mailparser/node_modules/@zone-eu/mailsplit",
+    "before": null,
+    "after": "5.4.25"
+  },
+  {
+    "path": "node_modules/mailparser/node_modules/libmime",
+    "before": null,
+    "after": "5.4.9"
+  },
+  {
+    "path": "node_modules/mailparser/node_modules/libqp",
+    "before": null,
+    "after": "2.1.3"
+  },
+  {
+    "path": "node_modules/nodemailer",
+    "before": "10.1.1",
+    "after": "10.1.4"
+  },
+  {
+    "path": "node_modules/qs",
+    "before": "6.15.3",
+    "after": "6.16.1"
+  },
+  {
+    "path": "node_modules/zod",
+    "before": "4.4.3",
+    "after": "4.6.7"
+  }
+]

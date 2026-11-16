@@ -1,0 +1,20 @@
+{
+  "base": "origin/deploy/clara-live-api",
+  "head": "59fbac42d940eae0925524aae1691b50d01f0261",
+  "changedTrackedFiles": 784,
+  "sensitiveNamedFiles": [],
+  "patternMatchesRequireReview": [
+    {
+      "file": "backend/tests/connector_onboarding_http.mts",
+      "categories": [
+        "4"
+      ],
+      "urlClassification": [
+        "synthetic-reserved"
+      ]
+    }
+  ],
+  "scope": "Read-only heuristic on candidate tracked delta; no values logged. This is not proof that every historical commit contains no secret.",
+  "workingTree": "",
+  "review": "No key/token pattern match. All URL matches reviewed as local PostgreSQL test fixtures or documentation placeholders; no sensitive-named tracked file."
+}

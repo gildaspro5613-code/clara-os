@@ -1,0 +1,703 @@
+{
+  "schemaVersion": "clara.unified-core.event.v1",
+  "eventType": "USER_MESSAGE",
+  "scope": {
+    "productId": "clara-live",
+    "workspaceId": "A",
+    "userId": "u",
+    "sessionId": "session-A"
+  },
+  "message": "Prépare les cinq lots Production : synthèse et contraintes, feuille de route, planning conditionnel, coordination multimétier et arbitrages. Distingue les faits confirmés des informations à vérifier, manquantes et périmées. Cite chaque source, sa révision et les réserves. Ne crée aucun horaire, réservation ou validation technique. Explique les dépendances entre structure, lumière, son, vidéo et logistique. Les omissions du contexte ne signifient pas une absence dans Live. Les équipes doivent vérifier les cheminements communs avant installation. Le montage de structure conditionne les accrochages lumière ; la position de régie conditionne les liaisons son et vidéo. Les horaires, les effectifs et les disponibilités restent à confirmer. Aucun plan ne vaut validation des charges ni certification électrique. Les propositions doivent distinguer les décisions humaines attendues des seules informations enregistrées.  Les équipes doivent vérifier les cheminements communs avant installation. Le montage de structure conditionne les accrochages lumière ; la position de régie con",
+  "project": {
+    "id": "A",
+    "name": null,
+    "client": null,
+    "type": null,
+    "date": null,
+    "environments": null,
+    "description": null
+  },
+  "context": {
+    "surface": "clara-live",
+    "language": "fr",
+    "effectiveTier": "pro",
+    "projectContext": {
+      "project": {
+        "id": "A",
+        "name": null,
+        "client": null,
+        "type": null,
+        "date": null,
+        "environments": null,
+        "description": null
+      },
+      "documents": [
+        {
+          "id": "doc1",
+          "filename": "synthetic.pdf",
+          "mime": "application/pdf",
+          "size": null,
+          "created_at": "2026-01-01",
+          "text": "Extrait synthétique non certifié : accès et montage sous réserve de validation humaine. Le dossier mentionne un plateau partagé par structure, lumière, son et vidéo. Les passages de câbles et les circulations doivent être coordonnés ; les responsabilités et les horaires ne sont pas validés. Aucune charge suspendue, disponibilité de personnel ou réservation de matériel ne peut être déduite de cet extrait. Extrait synthétique non certifié : accès et montage sous réserve de validation humaine. Le dossier mentionne un plateau partagé par structure, lumière, son et vidéo. Les passages de câbles et les circulations doivent être coordonnés ; les responsabilités et les horaires ne sont pas validés. Aucune charge suspendue, disponibilité de personnel ou réservation de matériel ne peut être déduite de cet extrait. Extrait synthétique non certifié : accès et montage sous réserve de validation humaine. Le dossier mentionne un plateau partagé par structure, lumière, son et vidéo. Les passages de câbles et les circulations doivent être coordonnés ; les responsabilités et les horaires ne sont pas validés. Aucune charge suspendue, disponibilité de personnel ou réservation de matériel ne peut être déduite de cet extrait. Extrait synthétique non certifié : accès et montage sous réserve de validation humaine. Le dossier mentionne un plateau partagé par structure, lumière, son et vidéo. Les passages de câbles et les circulations doivent être coordonnés ; les responsabilités et les horaires ne so",
+          "text_truncated": true,
+          "project_id": "A",
+          "extracted_at": null,
+          "source_revision": "0df024eeaa3364dc1dce9d36496c63e5016a7789dfb8dac74b0a3daf595492a4",
+          "revision_state": "available"
+        }
+      ],
+      "preparations": [
+        {
+          "id": "prep-A",
+          "project_id": "A"
+        }
+      ],
+      "computations": {},
+      "document_selection": {
+        "state": "available",
+        "limit": 20,
+        "association": "selected_preparation",
+        "preparation_revision": "073a53c7d32f14c3d411b4c844e6fcdb44b143c88c2449e607a7ffb89ff6d8a4",
+        "excerpt_char_budget": 2500
+      }
+    },
+    "activePreparation": {
+      "id": "prep-A",
+      "project_id": "A",
+      "businessContext": {
+        "project_id": "A",
+        "preparation_id": "prep-A",
+        "revision": "073a53c7d32f14c3d411b4c844e6fcdb44b143c88c2449e607a7ffb89ff6d8a4",
+        "consistency": "individual_source_reads",
+        "policy": "saved_data_only_no_execution",
+        "limits": {
+          "bytes": 18000,
+          "rows_per_list": 60,
+          "documents": 20
+        },
+        "items": {
+          "state": "available",
+          "source": "effective_items",
+          "excluded_source_count": 2,
+          "rows": [
+            {
+              "id": "fact-0",
+              "section": "access",
+              "label": "Accès camion",
+              "value": "Accès quai à confirmer avant tout montage ; conditionne le déchargement et les équipes.",
+              "status": "missing",
+              "source": "manual",
+              "source_document_id": "doc1",
+              "provenance": {
+                "source": "operator",
+                "locator": "page 1",
+                "revision": "073a53c7d32f14c3d411b4c844e6fcdb44b143c88c2449e607a7ffb89ff6d8a4"
+              }
+            },
+            {
+              "id": "fact-1",
+              "section": "rigging",
+              "label": "Suspensions",
+              "value": "Points d’accroche documentés mais validation de charge absente ; suspendre toute conclusion de sécurité.",
+              "status": "to_verify",
+              "source": "manual",
+              "source_document_id": "doc1",
+              "provenance": {
+                "source": "operator",
+                "locator": "page 2",
+                "revision": "073a53c7d32f14c3d411b4c844e6fcdb44b143c88c2449e607a7ffb89ff6d8a4"
+              }
+            },
+            {
+              "id": "fact-2",
+              "section": "power",
+              "label": "Distribution lumière",
+              "value": "Distribution électrique à vérifier avec les circuits son et vidéo avant affectation.",
+              "status": "to_verify",
+              "source": "manual",
+              "source_document_id": "doc1",
+              "provenance": {
+                "source": "operator",
+                "locator": "page 3",
+                "revision": "073a53c7d32f14c3d411b4c844e6fcdb44b143c88c2449e607a7ffb89ff6d8a4"
+              }
+            },
+            {
+              "id": "fact-3",
+              "section": "sound",
+              "label": "Régie son",
+              "value": "Régie et patch documentés ; confirmer les positions et la séparation des cheminements.",
+              "status": "confirmed",
+              "source": "manual",
+              "source_document_id": "doc1",
+              "provenance": {
+                "source": "operator",
+                "locator": "page 4",
+                "revision": "073a53c7d32f14c3d411b4c844e6fcdb44b143c88c2449e607a7ffb89ff6d8a4"
+              }
+            },
+            {
+              "id": "fact-4",
+              "section": "video",
+              "label": "Projection",
+              "value": "Résultat de calcul périmé ; refaire valider le recul utile avant réservation.",
+              "status": "stale",
+              "source": "manual",
+              "source_document_id": "doc1",
+              "provenance": {
+                "source": "operator",
+                "locator": "page 5",
+                "revision": "073a53c7d32f14c3d411b4c844e6fcdb44b143c88c2449e607a7ffb89ff6d8a4"
+              }
+            },
+            {
+              "id": "fact-5",
+              "section": "transport",
+              "label": "Logistique équipes",
+              "value": "Responsable transport à désigner ; aucune disponibilité ni réservation attestée.",
+              "status": "missing",
+              "source": "manual",
+              "source_document_id": "doc1",
+              "provenance": {
+                "source": "operator",
+                "locator": "page 6",
+                "revision": "073a53c7d32f14c3d411b4c844e6fcdb44b143c88c2449e607a7ffb89ff6d8a4"
+              }
+            }
+          ]
+        },
+        "spatial": {
+          "state": "available",
+          "source": "preparations.spatial",
+          "unit_system": "metric",
+          "stage_width": 12,
+          "stage_depth": 8,
+          "field_provenance": {
+            "stage_width": {
+              "source": "operator",
+              "status": "confirmed"
+            }
+          },
+          "structures": [
+            {
+              "id": "bridge",
+              "name": "Front bridge",
+              "status": "confirmed",
+              "position": {
+                "x": 0,
+                "y": 1,
+                "z": 4
+              }
+            }
+          ]
+        },
+        "calculations": {
+          "sound": {
+            "state": "available",
+            "source": "project_computations",
+            "id": "calc-sound",
+            "input_revision": "354f3dae5154e6492eb4ec61",
+            "input_version": "clara.effective-input.v1",
+            "created_at": "2026-01-01",
+            "stale": false,
+            "revision_state": "current",
+            "result": {
+              "totals": {
+                "inputs": 17,
+                "outputs": 6
+              },
+              "patch": [
+                {
+                  "universe": 1,
+                  "address": 1,
+                  "equipment_reference_id": "eq1"
+                }
+              ],
+              "warnings": [
+                "Documented, not certified"
+              ]
+            }
+          },
+          "video": {
+            "state": "available",
+            "source": "project_computations",
+            "id": "calc-video",
+            "input_revision": "504b6cee63c4df070e8bf2ee",
+            "input_version": "clara.effective-input.v1",
+            "created_at": "2026-01-01",
+            "stale": false,
+            "revision_state": "current",
+            "result": {
+              "totals": {
+                "inputs": 17,
+                "outputs": 6
+              },
+              "patch": [
+                {
+                  "universe": 1,
+                  "address": 1,
+                  "equipment_reference_id": "eq1"
+                }
+              ],
+              "warnings": [
+                "Documented, not certified"
+              ]
+            }
+          }
+        },
+        "worksheets": {
+          "production": {
+            "state": "available",
+            "source": "preparations.business_workspaces",
+            "domain": "production",
+            "version": 3,
+            "base_revision": "073a53c7d32f14c3d411b4c844e6fcdb44b143c88c2449e607a7ffb89ff6d8a4",
+            "stale": false,
+            "content": {
+              "rows": [
+                {
+                  "id": "production-row",
+                  "label": "Saved production",
+                  "value": "Persisted only",
+                  "status": "to_verify",
+                  "section": "tasks",
+                  "field": "detail",
+                  "notes": "Source doc1, page 1; préparation à vérifier"
+                }
+              ],
+              "routes": [],
+              "notes": "Les équipes doivent vérifier les cheminements communs avant installation. Le montage de structure conditionne les accrochages lumière ; la position de régie conditionne les liaisons son et vidéo. Les horaires, les effectifs et les disponibilités restent à confirmer. Aucun plan ne vaut validation des charges ni certification électrique. Les propositions doivent distinguer les décisions humaines attendues des seules informations enregistrées. "
+            },
+            "provenance": {
+              "production-row": {
+                "source": "operator",
+                "preparation_id": "prep-A"
+              }
+            },
+            "updated_at": "2026-01-01"
+          },
+          "sound": {
+            "state": "available",
+            "source": "preparations.business_workspaces",
+            "domain": "sound",
+            "version": 3,
+            "base_revision": "073a53c7d32f14c3d411b4c844e6fcdb44b143c88c2449e607a7ffb89ff6d8a4",
+            "stale": false,
+            "content": {
+              "rows": [
+                {
+                  "id": "sound-row",
+                  "label": "Saved sound",
+                  "value": "Persisted only",
+                  "status": "to_verify",
+                  "role": "input",
+                  "channel": 1
+                }
+              ],
+              "routes": [],
+              "notes": ""
+            },
+            "provenance": {
+              "sound-row": {
+                "source": "operator",
+                "preparation_id": "prep-A"
+              }
+            },
+            "updated_at": "2026-01-01"
+          },
+          "video": {
+            "state": "available",
+            "source": "preparations.business_workspaces",
+            "domain": "video",
+            "version": 3,
+            "base_revision": "073a53c7d32f14c3d411b4c844e6fcdb44b143c88c2449e607a7ffb89ff6d8a4",
+            "stale": false,
+            "content": {
+              "rows": [
+                {
+                  "id": "video-row",
+                  "label": "Saved video",
+                  "value": "Persisted only",
+                  "status": "to_verify",
+                  "role": "input",
+                  "channel": 1
+                }
+              ],
+              "routes": [],
+              "notes": ""
+            },
+            "provenance": {
+              "video-row": {
+                "source": "operator",
+                "preparation_id": "prep-A"
+              }
+            },
+            "updated_at": "2026-01-01"
+          },
+          "structure": {
+            "state": "available",
+            "source": "preparations.business_workspaces",
+            "domain": "structure",
+            "version": 3,
+            "base_revision": "073a53c7d32f14c3d411b4c844e6fcdb44b143c88c2449e607a7ffb89ff6d8a4",
+            "stale": false,
+            "content": {
+              "rows": [
+                {
+                  "id": "structure-row",
+                  "label": "Charge suspendue",
+                  "value": "Vérifier les charges admissibles et les points de reprise avant accrochage.",
+                  "status": "to_verify",
+                  "section": "constraints",
+                  "notes": "Plan de structure documenté, validation humaine requise ; aucune charge certifiée."
+                }
+              ],
+              "routes": [],
+              "notes": ""
+            },
+            "provenance": {
+              "structure-row": {
+                "source": "operator",
+                "preparation_id": "prep-A"
+              }
+            },
+            "updated_at": "2026-01-01"
+          }
+        },
+        "stage_model": {
+          "state": "available",
+          "source": "stage_models",
+          "scope": "project_not_preparation",
+          "updated_at": "2026-01-01",
+          "stale": null,
+          "revision_state": "not_compared_to_preparation_input",
+          "revision": "de96e4886cc341dbf29f6f8a208ff4d999d12abef71347f6af8e9f879238eae6",
+          "unit": "m",
+          "stage": {
+            "id": "deck",
+            "name": "Stage",
+            "elevation_m": 0.0,
+            "boundary": [
+              {
+                "x_m": -6.0,
+                "y_m": 0.0,
+                "z_m": 0.0
+              },
+              {
+                "x_m": 6.0,
+                "y_m": 0.0,
+                "z_m": 0.0
+              },
+              {
+                "x_m": 6.0,
+                "y_m": 8.0,
+                "z_m": 0.0
+              }
+            ]
+          },
+          "objects": [
+            {
+              "id": "light-1",
+              "name": "Fixture",
+              "kind": "lighting",
+              "position": {
+                "x_m": 2,
+                "y_m": 1,
+                "z_m": 4
+              },
+              "certification": {
+                "placement": "verified",
+                "representation": "unknown"
+              },
+              "equipment_reference_id": "eq1",
+              "gdtf_reference": "persisted-pointer",
+              "source_object_id": "mvr-object"
+            }
+          ],
+          "representations": {
+            "state": "not_loaded",
+            "reason": "no_gdtf_mvr_asset_or_semantic_loading"
+          }
+        },
+        "equipment": {
+          "state": "available",
+          "source": "matchable_references",
+          "referenced_count": 1,
+          "truncated": false,
+          "reader_limit_per_scope": 2000,
+          "rows": [
+            {
+              "id": "eq1",
+              "scope": "core",
+              "manufacturer": "Yamaha",
+              "model": "01V",
+              "specs": {
+                "inputs": 17
+              },
+              "verified": false,
+              "incomplete": false,
+              "manufacturer_evidence_status": "partial",
+              "canonical_id": "equipment:core:eq1"
+            }
+          ],
+          "unavailable_references": [],
+          "canonical_library_semantics": {
+            "state": "not_loaded",
+            "reason": "pointer_is_not_evidence"
+          }
+        },
+        "documents": {
+          "state": "available",
+          "selection": {
+            "state": "available",
+            "limit": 20,
+            "association": "selected_preparation",
+            "preparation_revision": "073a53c7d32f14c3d411b4c844e6fcdb44b143c88c2449e607a7ffb89ff6d8a4",
+            "excerpt_char_budget": 2500
+          },
+          "rows": [
+            {
+              "document_id": "doc1",
+              "source_revision": "0df024eeaa3364dc1dce9d36496c63e5016a7789dfb8dac74b0a3daf595492a4",
+              "source": "document_analysis_batches",
+              "state": "available",
+              "reason": null,
+              "complete": false,
+              "completed_batches": 1,
+              "truncated": false,
+              "evidence_status": "documented_not_operator_confirmed",
+              "analysis": {
+                "schemaVersion": "clara.document-analysis.v1",
+                "entities": [],
+                "facts": [
+                  {
+                    "property": "sound.inputs_total",
+                    "value": 17,
+                    "locator": "page 1",
+                    "confidence": 0.9
+                  }
+                ],
+                "ambiguities": [
+                  "Outputs to verify"
+                ],
+                "conflicts": []
+              }
+            }
+          ],
+          "work_cycle": {
+            "source": "preparations.clara_work_cycle",
+            "complete": false,
+            "status": "not_loaded",
+            "operations": []
+          },
+          "unavailable_source_count": 1
+        },
+        "coverage": {
+          "policy": "representative_saved_sources_not_complete_dossier",
+          "source_counts": {
+            "items": 6,
+            "items_by_section": {
+              "sound": 1,
+              "production": 0,
+              "lighting": 0,
+              "video": 1,
+              "structure": 0,
+              "other": 4
+            },
+            "stage_objects": 1,
+            "equipment": 1,
+            "documents": 1,
+            "worksheets": {
+              "production": 1,
+              "sound": 1,
+              "video": 1,
+              "structure": 1
+            }
+          },
+          "selected_counts": {
+            "items": 6,
+            "stage_objects": 1,
+            "equipment": 1,
+            "documents": 1,
+            "worksheets": {
+              "production": 1,
+              "sound": 1,
+              "video": 1,
+              "structure": 1
+            }
+          }
+        },
+        "omissions": [
+          {
+            "path": "production.rows[10]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "production.rows[11]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "production.rows[12]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "production.rows[13]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "production.rows[14]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "production.rows[15]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "production.rows[16]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "production.rows[17]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "production.rows[18]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "production.rows[19]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "sound.rows[10]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "sound.rows[11]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "sound.rows[12]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "sound.rows[13]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "sound.rows[14]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "sound.rows[15]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "sound.rows[16]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "sound.rows[17]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "sound.rows[18]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "sound.rows[19]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "structure.rows[10]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "structure.rows[11]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "structure.rows[12]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "structure.rows[13]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "structure.rows[14]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "structure.rows[15]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "structure.rows[16]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "structure.rows[17]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "structure.rows[18]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "structure.rows[19]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "video.rows[10]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "video.rows[11]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "video.rows[12]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "video.rows[13]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "video.rows[14]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "video.rows[15]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "video.rows[16]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "video.rows[17]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "video.rows[18]",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "video.rows[19]",
+            "reason": "section_byte_budget"
+          }
+        ],
+        "truncated": true
+      }
+    },
+    "live": {
+      "environment": "production",
+      "adviceOnly": true,
+      "preparationId": "prep-A"
+    }
+  },
+  "documents": [],
+  "liveCapabilities": []
+}

@@ -303,12 +303,13 @@ export class DriveFiles {
         fileId,
 
         fields:
-          "id,name,mimeType,webViewLink",
+          "id,name,mimeType,size,webViewLink",
 
         supportsAllDrives: true,
 
       });
 
+    if(Number(metadata.data.size??0)>20*1024*1024)throw new DocumentReadError("DOCUMENT_TOO_LARGE","Document download exceeds 20 MiB.",413);
     const contentResponse =
       await this.drive.files.get(
         {
@@ -322,7 +323,8 @@ export class DriveFiles {
         },
         {
 
-          responseType: "arraybuffer",
+          responseType: "stream",
+          timeout:15_000,
 
         },
       );
@@ -339,9 +341,7 @@ export class DriveFiles {
 
     return {
 
-      content: Buffer.from(
-        contentResponse.data as ArrayBuffer,
-      ),
+      content: await readDocumentStream(contentResponse.data as Readable,20*1024*1024),
 
       fileId: file.id,
 

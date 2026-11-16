@@ -6,12 +6,14 @@ import { getTranslations } from "next-intl/server";
 
 interface MissionWidgetProps {
   mission: Mission | null;
+  nativeScope?:boolean;
   activeCount?: number;
   blockedCount?: number;
 }
 
 export default async function MissionWidget({
   mission,
+  nativeScope=false,
   activeCount = 0,
   blockedCount = 0,
 }: MissionWidgetProps) {
@@ -21,7 +23,9 @@ export default async function MissionWidget({
   if (!mission) {
     return (
       <GlassPanel title={t("mission")}>
-        <p className="text-sm text-white/55">{t("noMission")}</p>
+        <p className="text-sm text-white/55">{ui("noCurrentFocus")}</p>
+        <p className="mt-3 text-xs text-white/45">{ui("missionScope")}</p>
+        <p className="mt-2 text-xs text-white/45">{ui(nativeScope?"nativeScopedActiveCount":"registryActiveCount", {count: activeCount})}</p>
         <Link href="/missions" className="mt-4 inline-flex text-xs text-cyan-400 transition hover:text-cyan-300">
           {t("openMissions")}
         </Link>
@@ -34,7 +38,7 @@ export default async function MissionWidget({
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <h2 className="truncate text-base font-semibold text-white">{mission.title}</h2>
-          <p className="mt-1 text-sm text-white/55">{mission.nextAction ?? t("noNextAction")}</p>
+          <p className="mt-1 text-sm text-white/55">{ui("reviewNextAction")}</p>
         </div>
         <span className="shrink-0 text-sm font-semibold text-cyan-400">{mission.progress} %</span>
       </div>
@@ -44,7 +48,7 @@ export default async function MissionWidget({
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-white/45">
-        <span>{ui("activeMissionCount",{count:activeCount})}</span>
+        <span>{ui(nativeScope?"nativeScopedActiveCount":"registryActiveCount",{count:activeCount})}</span>
         {blockedCount > 0 && <span>· {ui("blockedMissionCount",{count:blockedCount})}</span>}
         <span>· {t(`missionStatus.${mission.status}`)}</span>
       </div>

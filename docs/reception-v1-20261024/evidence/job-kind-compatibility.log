@@ -1,0 +1,14 @@
+▶ V1 job ledger: legacy 026 regression, Google/chat/document coexistence, reapplication and restore
+  ✔ old constraint refuses Google receipts before any provider handoff (423.906145ms)
+  ✔ repair preserves all existing receipt kinds and rejects unknown types (1398.885117ms)
+  ✔ 026 and 028 reapplication preserve completed receipts byte for byte (1600.634401ms)
+  ✔ actual pg_dump and restore preserve histories, receipts and constraint (3394.346314ms)
+✔ V1 job ledger: legacy 026 regression, Google/chat/document coexistence, reapplication and restore (18155.747048ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 19306.496164

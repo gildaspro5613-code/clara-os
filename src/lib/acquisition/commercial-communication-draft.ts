@@ -1,3 +1,10 @@
+import { createTranslator } from "next-intl";
+import { resolveLocale } from "@/i18n/config";
+import fr from "@/i18n/messages/fr/commercial-draft.json";
+import en from "@/i18n/messages/en/commercial-draft.json";
+import es from "@/i18n/messages/es/commercial-draft.json";
+import de from "@/i18n/messages/de/commercial-draft.json";
+import it from "@/i18n/messages/it/commercial-draft.json";
 import type { AcquisitionRecord } from "./acquisition-store";
 import type { MdProjectIntake } from "@/types";
 
@@ -35,44 +42,47 @@ export function buildCommercialQualificationDraft(
   if (record.lifecycle.state !== "qualifying") return null;
   if (record.qualification.qualification.completeness !== "needs-information") return null;
 
+  // Use only the declared intake locale; never infer it from name/email or UI language.
+  const locale = resolveLocale(intake.source?.locale?.toLowerCase().split(/[-_]/)[0]);
+  const t = createTranslator({ locale, messages: { fr, en, es, de, it }[locale] });
   const missing = new Set(record.qualification.qualification.missing);
   const questions: string[] = [];
 
   if (missing.has("location")) {
-    questions.push("Pouvez-vous me préciser le lieu prévu pour cet événement (ville et, si possible, site ou établissement) ?");
+    questions.push(t("location"));
   }
   if (missing.has("schedule")) {
-    questions.push("Pouvez-vous me confirmer la date ou la période prévue pour l’événement ?");
+    questions.push(t("schedule"));
   }
   if (missing.has("disciplines")) {
-    questions.push("Pouvez-vous me préciser les domaines techniques concernés par votre projet ?");
+    questions.push(t("disciplines"));
   }
   if (missing.has("contactName")) {
-    questions.push("Pouvez-vous me confirmer le nom de la personne à contacter pour la suite de ce dossier ?");
+    questions.push(t("contactName"));
   }
 
   const structuredSchedule = record.qualification.opportunity.schedule?.trim();
   const brief = record.qualification.opportunity.brief;
   const mentionsRelativeSchedule = /\b(dans|d’ici)\s+(?:environ\s+)?(?:\d+|un|une|deux|trois|quatre|cinq|six)\s+(?:mois|semaines?)\b/i.test(brief);
   if (structuredSchedule && mentionsRelativeSchedule) {
-    questions.push(`J’ai également relevé une indication de calendrier à confirmer : la date renseignée est ${structuredSchedule}, tandis que votre message mentionne une échéance relative. Pouvez-vous me confirmer la date à retenir ?`);
+    questions.push(t("scheduleConflict", {schedule: structuredSchedule}));
   }
 
   if (questions.length === 0) return null;
 
   const firstName = intake.contact.name.trim().split(/\s+/)[0] || "";
-  const greeting = firstName ? `Bonjour ${firstName},` : "Bonjour,";
+  const greeting = firstName ? t("greeting", {name: firstName}) : t("anonymousGreeting");
   const body = [
     greeting,
     "",
-    "Merci pour votre demande auprès de Mélodie Digital. J’ai commencé à structurer votre projet afin de pouvoir poursuivre sa qualification.",
+    t("intro"),
     "",
-    "Il me manque simplement quelques précisions :",
+    t("missing"),
     ...questions.map((question) => `• ${question}`),
     "",
-    "Dès réception de ces éléments, je pourrai poursuivre la préparation de votre dossier.",
+    t("closing"),
     "",
-    "Bien cordialement,",
+    t("regards"),
     "Clara",
     "Mélodie Digital",
   ].join("\n");
@@ -90,7 +100,7 @@ export function buildCommercialQualificationDraft(
       name: intake.contact.name,
       email: intake.contact.email,
     },
-    subject: `Votre projet ${record.qualification.opportunity.projectType} — précisions complémentaires`,
+    subject: t("subject", {projectType: record.qualification.opportunity.projectType}),
     body,
     revision: 1,
     updatedAt: new Date().toISOString(),

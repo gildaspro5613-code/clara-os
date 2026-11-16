@@ -1,3 +1,4 @@
+import { assertRecetteExternalExecutionBlocked } from "@/lib/recette/external-execution-guard";
 import { normalizeGitHubError } from "./errors";
 import type { GitHubCommentDraft, GitHubFileContent, GitHubFileDraft, GitHubIssueDraft, GitHubPagination, GitHubPullRequestDraft, GitHubRepositoryRef } from "./types";
 
@@ -26,6 +27,7 @@ export class GitHubClient {
     this.baseUrl = (options.baseUrl ?? "https://api.github.com").replace(/\/$/, "");
   }
   private async request<T>(path: string, init: RequestInit = {}): Promise<T> {
+    assertRecetteExternalExecutionBlocked("github.api");
     const response = await this.fetcher(`${this.baseUrl}${path}`, { ...init, headers: { accept: "application/vnd.github+json", authorization: `${this.options.tokenType ?? "Bearer"} ${this.options.accessToken}`, "x-github-api-version": "2022-11-28", ...(init.body ? { "content-type": "application/json" } : {}), ...init.headers } });
     if (!response.ok) throw await normalizeGitHubError(response, [this.options.accessToken]);
     if (response.status === 204 || response.headers.get("content-length") === "0") return undefined as T;

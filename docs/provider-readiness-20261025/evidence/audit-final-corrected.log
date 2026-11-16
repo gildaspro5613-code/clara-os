@@ -1,0 +1,13 @@
+✔ read capabilities remain available to Essential without approval (4.339394ms)
+✔ write capabilities require Premium and explicit approval (0.236239ms)
+✔ Make preparation and execution use distinct policies (0.138487ms)
+✔ a GPT write call creates an approval instead of executing (3.680918ms)
+✔ Make acknowledgements remain requested in the durable audit until explicit completion evidence (1.402822ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 23345.331749

@@ -1,3 +1,4 @@
+import { nativeOperationFence } from "@/lib/native/authority";
 import { NextResponse } from "next/server";
 import { ConnectionStatus } from "@/lib/connections/connection";
 import { DatabaseConnectionRepository } from "@/lib/connections/connection-repository";
@@ -12,6 +13,8 @@ function isValidMakeWebhook(value: unknown): value is string { if (typeof value 
 function validScenario(scenario: unknown): boolean { if (!scenario || typeof scenario !== "object" || Array.isArray(scenario)) return false; const record = scenario as Record<string, unknown>; if (Object.keys(record).some((key) => !SCENARIO_FIELDS.has(key)) || !isValidMakeWebhook(record.url)) return false; const headers = record.headers; if (headers !== undefined) { if (!headers || typeof headers !== "object" || Array.isArray(headers)) return false; const entries = Object.entries(headers); if (entries.length > 32 || entries.some(([name, value]) => !HEADER_NAME.test(name) || FORBIDDEN_HEADERS.has(name.toLowerCase()) || typeof value !== "string" || value.length > 4096 || /[\r\n]/.test(value))) return false; } const timeoutMs = record.timeoutMs; return timeoutMs === undefined || (typeof timeoutMs === "number" && Number.isFinite(timeoutMs) && timeoutMs >= 1_000 && timeoutMs <= 39_000); }
 /** Validates local Make configuration only and never invokes a Make scenario. */
 export async function POST(request: Request) {
+  const denied = await nativeOperationFence(request);
+  if (denied) return denied;
   if (!request.headers.get("content-type")?.toLowerCase().startsWith("application/json")) return NextResponse.json({ error: "UNSUPPORTED_MEDIA_TYPE" }, { status: 415, headers: PRIVATE_HEADERS });
   let body: VerifyMakeRequest; try { const text = await request.text(); if (new TextEncoder().encode(text).length > MAX_BODY_BYTES) return NextResponse.json({ error: "REQUEST_TOO_LARGE" }, { status: 413, headers: PRIVATE_HEADERS }); const parsed: unknown = JSON.parse(text); if (!parsed || typeof parsed !== "object" || Array.isArray(parsed) || Object.getPrototypeOf(parsed) !== Object.prototype || Object.keys(parsed).length !== 1 || Object.keys(parsed).some((key) => !REQUEST_FIELDS.has(key))) return NextResponse.json({ error: "INVALID_REQUEST" }, { status: 400, headers: PRIVATE_HEADERS }); body = parsed as VerifyMakeRequest; } catch { return NextResponse.json({ error: "INVALID_REQUEST" }, { status: 400, headers: PRIVATE_HEADERS }); }
   if (!validScenarioKey(body.scenarioKey)) return NextResponse.json({ error: "INVALID_SCENARIO_KEY" }, { status: 400, headers: PRIVATE_HEADERS }); const scenarioKey = body.scenarioKey.trim(); const repository = new DatabaseConnectionRepository(); const credentialStore = new CredentialStore();

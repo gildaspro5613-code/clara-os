@@ -1,0 +1,13 @@
+
+> frontend@0.1.0 test
+> craco test --watchAll=false --runInBand --no-cache --moduleNameMapper {"^@/(.*)$":"<rootDir>/src/$1","^@vercel/blob/client$":"<rootDir>/node_modules/@vercel/blob/dist/client.cjs","^react-router-dom$":"<rootDir>/node_modules/react-router-dom/dist/index.js","^react-router$":"<rootDir>/node_modules/react-router/dist/development/index.js","^react-router/dom$":"<rootDir>/node_modules/react-router/dist/development/dom-export.js"} --transformIgnorePatterns=node_modules/(?!three/) --setupFiles <rootDir>/src/testSupport/conversationGlobals.js --runTestsByPath src/components/workspace/ProductionClaraHandoff.test.jsx src/context/ClaraConversationContext.advice.test.jsx src/context/ClaraConversationContext.project.test.jsx
+
+PASS src/components/workspace/ProductionClaraHandoff.test.jsx (9.21 s)
+PASS src/context/ClaraConversationContext.advice.test.jsx
+PASS src/context/ClaraConversationContext.project.test.jsx
+
+Test Suites: 3 passed, 3 total
+Tests:       46 passed, 46 total
+Snapshots:   0 total
+Time:        10.312 s
+Ran all test suites within paths "src/components/workspace/ProductionClaraHandoff.test.jsx", "src/context/ClaraConversationContext.advice.test.jsx", "src/context/ClaraConversationContext.project.test.jsx".

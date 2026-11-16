@@ -1,0 +1,83 @@
+PR #223 — réception fonctionnelle ciblée
+Application inchangée depuis 5c7d4c1a ; garde vocal maintenu
+TypeScript PASS
+Lint ciblé PASS
+Bundle Webpack existant réutilisé : aucune modification applicative
+
+Tests ciblés et contrats
+▶ conversation registry: bilateral proof, native scope, isolation, durable replay, CAS, expiry and revoke
+  ✔ pending does not authorize and requests are durable/idempotent (372.847879ms)
+  ✔ two users/workspaces/projects/session scopes remain isolated (622.256756ms)
+  ✔ proof mismatch is denied before approval, then approval/reload replay only once (795.308522ms)
+  ✔ concurrent approval replay is serialized and creates one decision (672.029056ms)
+  ✔ concurrent approval and revocation admit exactly one expected-revision transition (364.780517ms)
+  ✔ revocation commits before transport, lost ack pins refusal, retry confirms stop (1229.117563ms)
+  ﹣ bilateral OS service / Live HTTP routes / PostgreSQL / Mongo survive fresh processes (0.127241ms) # SKIP
+  ✔ expiration, revoked memberships and source proof changes fail closed (1747.037629ms)
+  ✔ backup and restore to a fresh PostgreSQL database preserve associations and receipts (1221.00615ms)
+✔ conversation registry: bilateral proof, native scope, isolation, durable replay, CAS, expiry and revoke (10240.589117ms)
+✔ native conversation HTTP entrypoints reject missing/invalid cookies before SQL or transport (104.636162ms)
+✔ product HTTP boundary requires distinct capability and exact configured workspace; no read/archive/hardware fallback (11.697835ms)
+✔ historical Tasks uses the authorized mission rather than the old 82 percent fixture (14.776262ms)
+✔ native historical microphone stays disabled and honest in all five languages (22.806231ms)
+✔ the historical action bar navigates existing pages instead of decorative buttons (10.881415ms)
+✔ Mission GlassPanel interface labels are translated in all five languages while stored titles and next actions remain verbatim (20.555761ms)
+▶ Google native workspace: real PostgreSQL, exact confirmations, immutable scopes, single handoff, recovery and existing stores
+  ✔ consent transactions retain actual grants and reject missing or partial scopes (2999.013681ms)
+  ✔ explicit resource binding, two users/clients/projects and historical/primary/root refusals (5982.148296ms)
+  ✔ prepared encrypted file, exact human confirmation and concurrent one-time execution/replay (9507.497982ms)
+  ✔ lost provider acknowledgement, read-only reconciliation, fresh service/reconnect and no automatic resend (4935.235553ms)
+  ✔ conditional calendar update and Drive content/move preserve IDs, metadata, rights and versions (26639.303572ms)
+  ✔ project and Google resource revocation, read-only delegations, expired consent/proposals (8022.905105ms)
+  ✔ read delegation never becomes write authority; second owner retains independent mailbox/project resources (7428.140162ms)
+  ✔ single HTTP handoff never retries errors; explicit precondition and refusal receipt release scope (12626.880265ms)
+  ✔ uncertain no-effect blocks new handoffs and inbound maintenance cannot consume or expire native Google receipts (5555.253931ms)
+  ✔ 020 additive reapplication and pg_dump restoration preserve every operation/attestation/receipt (1208.350333ms)
+✔ Google native workspace: real PostgreSQL, exact confirmations, immutable scopes, single handoff, recovery and existing stores (90443.970459ms)
+✔ Google import validation rejects oversized bodies, ambiguous identities, native document conversion and offset-less times (3.465289ms)
+✔ voice authorization uses existing server-owned workspace and operator permissions, rejects foreign origin before auth (96.127127ms)
+✔ four provider routes deny unauthenticated requests before any provider and localize secret-free failures in five languages (99.353203ms)
+ℹ tests 30
+ℹ suites 0
+ℹ pass 29
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 1
+ℹ todo 0
+ℹ duration_ms 93222.599526
+
+
+Capacités existantes
+✔ Cockpit existing capabilities: authorized Calendar read and refusals, unavailable weather, real local Waze preparation, native voice stays fenced (23757.293881ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 25229.551283
+
+
+Cockpit langues et formats
+✔ 781 composition Cockpit: actual native mission, five languages and responsive navigation without provider activation (30444.14117ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 30970.226728
+
+
+Messagerie native
+✔ IONOS browser: real handlers/services/PostgreSQL, simulated providers, review/approve/send, Journal/Cockpit and fresh authenticated resume (61155.099896ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 63392.785622

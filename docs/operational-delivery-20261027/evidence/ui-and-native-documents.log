@@ -1,0 +1,181 @@
+Native browser fixture initialized; no production connections.
+✔ delivery UI: official logo, business navigation, private advanced controls, filtered diagnosis and mobile (69558.101349ms)
+PASS: two consultations, durable history, no mission mutation, explicit creation, reload, safe Drive diagnostic
+✔ browser: consultation history without mission, exact Drive diagnostic, explicit mission and reload (38175.32437ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 110228.457279
+✔ documentary browser E2E: canonical selection → mission → pinned OAuth → explicit Google selection → project attestation → PDF/Core/Brain → Journal/Cockpit → fresh resume and revocation (212019.830516ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 214723.026923
+ISOLATED_DOCUMENT_DOM CLARA OS
+
+OPÉRER
+
+Cockpit
+Missions
+Conversations
+Contacts
+Messagerie
+
+CONNECTER
+
+Connexions
+Téléphonie
+Automatisations
+Agenda
+
+CONNAÎTRE
+
+Documents
+Mémoire
+Brain
+
+CLARA
+
+Clara
+Clara est prête
+
+Melodie Digital
+
+Version 0.2
+
+Clara
+Clara prépare votre journée…
+FR
+EN
+ES
+DE
+IT
+G
+
+Contexte canonique privé · w / Client c1 / Project p1
+
+Identifiants du contexte sélectionné
+Espace
+Choisir
+w
+Client
+Choisir un client
+Projet
+Choisir un projet
+Créer un nouveau fil
+Identifiant du fil
+Choisir
+Ouvrir ce fil
+Contact / prospect
+Choisir
+PRIVATE_prospect-a
+Sélectionner le contact
+Communication préparée par Clara
+Mission autorisée
+Choisir
+Recovery synthetic mission
+LOT2_DOCUMENTARY_MISSION
+LOT2_DOCUMENTARY_MISSION
+Reprendre cette mission
+Titre de la mission
+Objectif de la mission
+Créer la mission
+Documents de la mission
+Connexion Google autorisée
+Choisir
+ff95f0d2-efcb-492a-bc7d-621276c193bf · Non connecté
+7a7315de-8a76-4bc4-8300-2711727df2c1 · Non connecté
+Sélectionner la connexion
+Connexion et autorisations avancées
+Question sur le document
+
+INTELLIGENCE OPÉRATIONNELLE
+
+Clara
+
+L’intelligence opérationnelle de Clara OS, connectée à son état courant et à sa mission active.
+
+ÉTAT
+
+Démarrage
+
+MISSION ACTUELLE
+
+LOT2_DOCUMENTARY_MISSION
+
+OBJECTIF
+
+Analyze the project document and preserve commercial continuity
+
+PROCHAINE ACTION
+
+Aucune action suivante définie
+
+Données source · langue d’origine conservée
+
+COMMUNICATION PRÉPARÉE PAR CLARA
+
+Révision 1 · aucun envoi automatique
+
+Validation requise
+
+De : Clara — Mélodie Digital <clara@melodie.digital>
+
+À : PRIVATE_prospect-a <prospect-a@example.invalid>
+
+Objet : Votre projet Production — précisions complémentaires
+
+Bonjour PRIVATE_prospect-a,
+
+Merci pour votre demande auprès de Mélodie Digital. J’ai commencé à structurer votre projet afin de pouvoir poursuivre sa qualification.
+
+Il me manque simplement quelques précisions :
+• Pouvez-vous me préciser le lieu prévu pour cet événement (ville et, si possible, site ou établissement) ?
+• Pouvez-vous me confirmer la date ou la période prévue pour l’événement ?
+
+Dès réception de ces éléments, je pourrai poursuivre la préparation de votre dossier.
+
+Bien cordialement,
+Clara
+Mélodie Digital
+Modifier
+Vous pouvez aussi demander à Clara de reformuler ce message, puis confirmer l’envoi dans la conversation.
+
+CLARA
+
+Parler à Clara
+Bonjour. Me voilà. Que faisons-nous aujourd’hui ?
+
+Ce service externe reste indisponible dans le contexte natif tant que ses autorisations ne sont pas certifiées.
+✖ document continuity browser E2E: canonical selection → mission → pinned OAuth → explicit Google selection → project attestation → PDF/Core/Brain → Journal/Cockpit → fresh resume and revocation (24320.687592ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 29245.876835
+
+✖ failing tests:
+
+test at src/tests/native-document-continuity-browser.e2e.mjs:13:1
+✖ document continuity browser E2E: canonical selection → mission → pinned OAuth → explicit Google selection → project attestation → PDF/Core/Brain → Journal/Cockpit → fresh resume and revocation (24320.687592ms)
+  [TypeError: fetch failed] {
+    [cause]: Error [SocketError]: other side closed
+        at TLSSocket.onHttpSocketEnd (node:internal/deps/undici/undici:7833:26)
+        at TLSSocket.emit (node:events:521:24)
+        at endReadableNT (node:internal/streams/readable:1736:12)
+        at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+      code: 'UND_ERR_SOCKET',
+      socket: { localAddress: '127.0.0.1', localPort: 48586, remoteAddress: '127.0.0.1', remotePort: 3060, remoteFamily: 'IPv4', timeout: undefined, bytesWritten: 1125, bytesRead: 0 }
+    }
+  }

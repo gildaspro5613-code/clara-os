@@ -41,7 +41,7 @@ export class MakeExecutableConnector implements ExecutableConnector {
       success: true,
       capability: event.capability,
       data: result.data,
-      message: "Make scenario executed successfully.",
+      message: "Make scenario request acknowledged; verify execution status and provider evidence.",
       completedAt: new Date(),
     };
   }

@@ -66,34 +66,12 @@ export default function MissionDetail({ mission, onBack, onUpdate }: MissionDeta
     const task = tasks.find((candidate) => candidate.id === taskId);
     if (!task) return;
 
-    if (task.completed) {
-      const updatedTasks = tasks.map((candidate) => candidate.id === taskId
-        ? { ...candidate, completed: false }
-        : candidate
-      );
-      setTasks(updatedTasks);
-      const completedCount = updatedTasks.filter((candidate) => candidate.completed).length;
-      const updatedProgress = updatedTasks.length > 0
-        ? Math.round((completedCount / updatedTasks.length) * 100)
-        : 0;
-      const updatedNextTask = updatedTasks.find((candidate) => !candidate.completed);
-      onUpdate({
-        ...mission,
-        tasks: updatedTasks,
-        progress: updatedProgress,
-        status: updatedProgress === 100 ? "completed" : mission.status,
-        nextAction: updatedNextTask?.title,
-        result: updatedProgress === 100 ? mission.result : undefined,
-      });
-      return;
-    }
-
     setExecutingTaskId(taskId);
     try {
-      const response = await fetch("/api/missions/resume", {
+      const response = await fetch("/api/native/runtime", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ missionId: mission.id }),
+        body: JSON.stringify({action:"toggleTask",missionId:mission.id,taskId,completed:!task.completed}),
       });
       const data = await response.json();
       if (!response.ok || !data.mission) return;

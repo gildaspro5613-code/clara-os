@@ -1,3 +1,4 @@
+import { assertRecetteExternalExecutionBlocked } from "@/lib/recette/external-execution-guard";
 import type { OAuthProviderDefinition, OAuthTokenSet } from "@/lib/auth/oauth/types";
 import { microsoftConfig } from "@/lib/config/microsoft";
 
@@ -21,6 +22,7 @@ async function exchangeToken(body: URLSearchParams): Promise<OAuthTokenSet> {
     throw new Error("Microsoft OAuth server configuration is incomplete.");
   }
 
+  assertRecetteExternalExecutionBlocked('microsoft.oauth');
   const response = await fetch(
     `${MICROSOFT_TOKEN_URL}/${encodeURIComponent(microsoftConfig.tenantId)}/oauth2/v2.0/token`,
     {

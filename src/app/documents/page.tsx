@@ -1,11 +1,15 @@
 "use client";
+import { documentDiagnostic } from "@/lib/documents/document-read-error";
+import {readNativeDocument} from "@/lib/documents/native-read-request";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { ArrowLeft, Brain, Download, ExternalLink, FileText, Folder, FolderPlus, Search, Upload } from "lucide-react";
+import { Brain, Download, ExternalLink, FileText, Folder, FolderPlus, Search, Upload } from "lucide-react";
 
+import NativeDocumentsPanel from "@/components/native/NativeDocumentsPanel";
+import {useLocale} from "next-intl";
 import CanonicalArchivesPanel from "@/components/documents/CanonicalArchivesPanel";
+import NativeDocumentDailyPanel from "@/components/documents/NativeDocumentDailyPanel";
 
 import MainLayout from "@/components/layout/MainLayout";
 
@@ -18,6 +22,7 @@ interface DocumentFile {
 }
 
 interface DocumentsResponse {
+  readOnly?:boolean;
   success: boolean;
   files?: DocumentFile[];
   nextPageToken?: string | null;
@@ -30,14 +35,14 @@ interface DocumentsResponse {
 
 export default function DocumentsPage() {
   const ui = useTranslations("ui");
+  const locale=useLocale();
 
-  const router = useRouter();
   const t = useTranslations("documents");
-  const tp = useTranslations("pages");
   const fileInput = useRef<HTMLInputElement>(null);
   const listGeneration = useRef(0);
   const destinationGeneration = useRef(0);
 
+  const [readOnly,setReadOnly]=useState(true);
   const [query, setQuery] = useState("");
   const [folderTrail, setFolderTrail] = useState<{ id: string; name: string }[]>([]);
   const [selected, setSelected] = useState<{ name: string; content: string; recommendation?: string | null } | null>(null);
@@ -71,13 +76,14 @@ export default function DocumentsPage() {
       const response = await fetch(`/api/documents?${params}`, { cache: "no-store" });
       const data = (await response.json()) as DocumentsResponse;
       if (generation !== listGeneration.current) return;
-      if (!response.ok || !data.success) throw new Error(t("loadError"));
+      if (!response.ok || !data.success) throw new Error(`${t("loadError")} [${documentDiagnostic(data)}]`);
+      setReadOnly(data.readOnly===true);
       setFiles(data.files ?? []);
       setActiveSearch(search);
       setActiveFolderId(search ? "" : folderId);
       setNextPageToken(data.nextPageToken ?? null);
-    } catch {
-      if (generation === listGeneration.current) setError(t("loadError"));
+    } catch (error) {
+      if (generation === listGeneration.current) setError(error instanceof Error && error.message.startsWith(t("loadError")) ? error.message : `${t("loadError")} [DOCUMENT_REQUEST_FAILED]`);
     } finally {
       if (generation === listGeneration.current) setLoading(false);
     }
@@ -91,12 +97,13 @@ export default function DocumentsPage() {
     void fetch("/api/documents", { cache: "no-store", signal: controller.signal })
       .then(async response => {
         const data = await response.json() as DocumentsResponse;
-        if (!response.ok || !data.success) throw new Error(ui("unableToViewGoogleDrive"));
+        if (!response.ok || !data.success) throw new Error(`${ui("unableToViewGoogleDrive")} [${documentDiagnostic(data)}]`);
         if (generation !== listing.current) return;
-        setFiles(data.files ?? []);
+        setReadOnly(data.readOnly===true);
+      setFiles(data.files ?? []);
         setNextPageToken(data.nextPageToken ?? null);
-      }).catch(() => {
-        if (generation === listing.current && !controller.signal.aborted) setError(ui("unableToViewGoogleDrive"));
+      }).catch((error: unknown) => {
+        if (generation === listing.current && !controller.signal.aborted) setError(error instanceof Error && error.message.startsWith(ui("unableToViewGoogleDrive")) ? error.message : `${ui("unableToViewGoogleDrive")} [DOCUMENT_REQUEST_FAILED]`);
       }).finally(() => { if (generation === listing.current) setLoading(false); });
     return () => { controller.abort(); listing.current++; destinations.current++; };
   }, [ui]);
@@ -231,14 +238,12 @@ export default function DocumentsPage() {
       setWorking(`read:${file.id}`);
       setStatus(null);
       setError(null);
-      const params = new URLSearchParams({ action: "read", fileId: file.id, fileName: file.name });
-      if (file.mimeType) params.set("mimeType", file.mimeType);
-      const response = await fetch(`/api/documents?${params.toString()}`, { cache: "no-store" });
+      const response = await readNativeDocument(file.id,"",locale);
       const data = (await response.json()) as DocumentsResponse;
       if (generation !== listGeneration.current) return;
       if (!response.ok || !data.success) {
         const known = ["PDF_TOO_LARGE", "PDF_TOO_MANY_PAGES", "PDF_NO_TEXT", "PDF_ENCRYPTED", "PDF_INVALID", "PDF_RESOURCE_LIMIT", "PDF_BUSY", "DOCUMENT_TOO_LONG"];
-        setError(data.code && known.includes(data.code) ? ui(data.code) : ui("unableToReadTheDocument"));
+        setError(data.code && known.includes(data.code) ? ui(data.code) : `${ui("unableToReadTheDocument")} [${documentDiagnostic(data)}]`);
         return;
       }
       setSelected({ name: file.name, content: data.textContent ?? "", recommendation: data.brain?.recommendation });
@@ -252,6 +257,9 @@ export default function DocumentsPage() {
     }
   }
 
+  function exportHref(file: DocumentFile,format:'pdf'|'docx'|'txt'){
+    return '/api/documents?'+new URLSearchParams({action:'export',fileId:file.id,format}).toString();
+  }
   function downloadHref(file: DocumentFile) {
     const params = new URLSearchParams({ action: "download", fileId: file.id, fileName: file.name });
     if (file.mimeType) params.set("mimeType", file.mimeType);
@@ -262,32 +270,30 @@ export default function DocumentsPage() {
     <MainLayout>
       <div className="w-full px-8 py-10 text-white">
         <div className="mx-auto max-w-6xl">
-          <button type="button" onClick={() => router.back()} className="mb-6 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.035] px-3 py-2 text-sm text-white/60 transition hover:border-white/20 hover:bg-white/[0.06] hover:text-white">
-            <ArrowLeft size={15} strokeWidth={1.8} />{tp("back")}
-          </button>
-
           <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-[11px] uppercase tracking-[0.22em] text-cyan-400">{tp("sectionKnow")}</p>
-              <h1 className="mt-2 text-3xl font-semibold tracking-tight">{t("title")}</h1>
+              <h1 className="text-3xl font-semibold tracking-tight">{t("title")}</h1>
               <p className="mt-2 text-sm text-white/45">{t("subtitle")}</p>
             </div>
             <div>
               <input ref={fileInput} type="file" className="hidden" onChange={(event) => void handleUpload(event.target.files?.[0])} />
-              <button type="button" disabled={working !== null} onClick={() => fileInput.current?.click()} className="inline-flex items-center gap-2 rounded-xl border border-cyan-300/20 bg-cyan-300/[0.08] px-4 py-2.5 text-sm text-cyan-50 transition hover:bg-cyan-300/[0.12] disabled:opacity-50">
+              {!readOnly&&<button type="button" disabled={working !== null} onClick={() => fileInput.current?.click()} className="inline-flex items-center gap-2 rounded-xl border border-cyan-300/20 bg-cyan-300/[0.08] px-4 py-2.5 text-sm text-cyan-50 transition hover:bg-cyan-300/[0.12] disabled:opacity-50">
                 <Upload size={15} />{working === "upload" ? ui("uploading") : ui("uploadADocument")}
-              </button>
+              </button>}
             </div>
           </div>
 
+          <NativeDocumentDailyPanel source={selected?{name:selected.name,content:selected.content}:null}
+             onSaved={()=>void loadDocuments(activeSearch,activeFolderId)} />
+          {readOnly&&<p className="mb-5 text-sm text-slate-400">{t("scopeNote")}</p>}
           <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
-            <button type="button" disabled={working !== null} onClick={() => navigateTo(-1)} className="text-cyan-300">{ui("myDrive")}</button>
+            <button type="button" disabled={working !== null} onClick={() => navigateTo(-1)} className="text-cyan-300">{readOnly?ui("nativeDocuments"):ui("myDrive")}</button>
             {folderTrail.map((folder, index) => <span key={folder.id} className="flex items-center gap-2"><span className="text-white/30">/</span><button type="button" disabled={working !== null} onClick={() => navigateTo(index)} className="text-cyan-300">{folder.name}</button></span>)}
-            <button type="button" onClick={() => void createFolder()} disabled={working !== null} className="ml-auto flex items-center gap-2 rounded-lg border border-white/15 px-3 py-2"><FolderPlus size={15}/>{ui("newFolder")}</button>
+            {!readOnly&&<button type="button" onClick={() => void createFolder()} disabled={working !== null} className="ml-auto flex items-center gap-2 rounded-lg border border-white/15 px-3 py-2"><FolderPlus size={15}/>{ui("newFolder")}</button>}
           </div>
           {moveTarget && <section role="dialog" aria-label={ui("chooseTheDestinationFolder")} className="mb-6 rounded-xl border border-cyan-300/25 bg-[#101827] p-5">
             <div className="flex items-center justify-between gap-4"><h2 className="font-semibold">{ui("move")}{" "}{moveTarget.name} »</h2><button type="button" disabled={working !== null} onClick={() => { destinationGeneration.current++; setMoveTarget(null); }}>{ui("cancel")}</button></div>
-            <div className="mt-3 flex flex-wrap gap-2 text-sm"><button type="button" disabled={working !== null} onClick={() => { setDestinationTrail([]); void browseDestination(); }} className="text-cyan-300">{ui("myDrive")}</button>
+            <div className="mt-3 flex flex-wrap gap-2 text-sm"><button type="button" disabled={working !== null} onClick={() => { setDestinationTrail([]); void browseDestination(); }} className="text-cyan-300">{readOnly?ui("nativeDocuments"):ui("myDrive")}</button>
               {destinationTrail.map((folder, index) => <button type="button" disabled={working !== null} key={folder.id} className="text-cyan-300" onClick={() => { const next = destinationTrail.slice(0, index + 1); setDestinationTrail(next); void browseDestination(folder.id); }}>/ {folder.name}</button>)}
             </div>
             {destinationLoading ? <p className="mt-3 text-sm text-white/60">{ui("loadingFolders")}</p> : <div className="mt-3 grid gap-2 sm:grid-cols-2">{destinations.map(folder => <button type="button" disabled={working !== null} key={folder.id} onClick={() => { setDestinationTrail(prev => [...prev, { id: folder.id, name: folder.name }]); void browseDestination(folder.id); }} className="flex items-center gap-2 rounded-lg border border-white/10 p-3 text-left text-sm"><Folder size={16} className="text-cyan-300"/>{folder.name}</button>)}</div>}
@@ -295,12 +301,11 @@ export default function DocumentsPage() {
             <button type="button" disabled={destinationLoading || (destinationTrail.at(-1)?.id ?? "root") === moveTarget.parentId || working !== null} onClick={() => void confirmMove()} className="mt-4 rounded-lg bg-cyan-800 px-4 py-2 text-sm disabled:opacity-40">{ui("confirmMoveToThisFolder")}</button>
           </section>}
           {selected && <section className="mb-6 rounded-xl border border-cyan-300/20 p-5"><div className="flex justify-between gap-4"><h2 className="font-semibold">{selected.name}</h2><button type="button" onClick={() => setSelected(null)}>{ui("close")}</button></div>{selected.recommendation && <p className="mt-3 text-cyan-200">{selected.recommendation}</p>}<pre className="mt-4 max-h-80 overflow-auto whitespace-pre-wrap text-sm text-white/70">{selected.content}</pre></section>}
-          <CanonicalArchivesPanel />
-          {activeSearch && <p className="mb-3 text-sm text-white/60">{ui("googleDriveSearchResults")}{" "}{activeSearch}</p>}
-          <form onSubmit={handleSubmit} className="mb-6 flex max-w-2xl gap-2">
+          {activeSearch && <p className="mb-3 text-sm text-white/60">{t("searchResults",{query:activeSearch})}</p>}
+          <form id="document-search" onSubmit={handleSubmit} className="mb-6 flex max-w-2xl gap-2">
             <div className="relative flex-1">
               <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-white/35" />
-              <input type="text" disabled={working !== null} value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("searchPlaceholder")} className="h-12 w-full rounded-xl border border-white/10 bg-white/[0.035] pl-11 pr-4 text-sm text-white outline-none placeholder:text-white/25 focus:border-cyan-400/30" />
+              <input type="text" disabled={working !== null} value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("searchPlaceholder")} aria-label={t("searchPlaceholder")} className="h-12 w-full rounded-xl border border-white/10 bg-white/[0.035] pl-11 pr-4 text-sm text-white outline-none placeholder:text-white/25 focus:border-cyan-400/30" />
             </div>
             <button type="submit" disabled={working !== null} className="rounded-xl border border-white/10 bg-white/[0.05] px-5 text-sm text-white/75 transition hover:bg-white/[0.08] hover:text-white">{t("search")}</button>
           </form>
@@ -308,7 +313,7 @@ export default function DocumentsPage() {
           {status && <div className="mb-6 rounded-xl border border-cyan-300/15 bg-cyan-300/[0.04] px-4 py-3 text-sm text-cyan-50/80">{status}</div>}
           {loading && <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-8 text-sm text-white/40">{t("loading")}</div>}
           {error && <div className="mb-6 rounded-2xl border border-amber-200/20 bg-amber-200/[0.04] p-5 text-sm text-amber-50/75">{error}</div>}
-          {!loading && !error && files.length === 0 && <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-8 text-sm text-white/40">{t("empty")}</div>}
+          {!loading && !error && files.length === 0 && <div className="rounded-2xl border border-white/10 bg-white/[0.025] px-7 py-10 text-center text-sm text-slate-400">{activeSearch?t("emptySearch"):t("emptyAuthorized")}</div>}
 
           {!loading && files.length > 0 && (
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -319,7 +324,7 @@ export default function DocumentsPage() {
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">{file.mimeType === "application/vnd.google-apps.folder" ? <Folder size={18} className="text-cyan-300" /> : <FileText size={18} strokeWidth={1.7} className="text-white/55" />}</div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-white/85">{file.name}</p>
-                      {file.mimeType && <p className="mt-1 truncate text-xs text-white/30">{file.mimeType}</p>}
+
                     </div>
                   </div>
 
@@ -328,15 +333,22 @@ export default function DocumentsPage() {
                     <button type="button" disabled={working !== null} onClick={() => void handleAnalyze(file)} className="flex items-center justify-between rounded-xl border border-cyan-300/15 bg-cyan-300/[0.04] px-4 py-2.5 text-xs text-cyan-50/75 transition hover:bg-cyan-300/[0.08] disabled:opacity-50">
                       {working === `read:${file.id}` ? ui("reading") : ui("readWithClara")}<Brain size={14} />
                     </button>
-                    <a href={downloadHref(file)} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-xs text-white/60 transition hover:bg-white/[0.06] hover:text-white">{ui("download")}<Download size={14} /></a>
+                    {file.mimeType==='application/vnd.google-apps.document'?
+                      <div className="flex flex-wrap gap-2" data-document-export-formats>
+                        {(['pdf','docx','txt'] as const).map(format=>
+                          <a key={format} href={exportHref(file,format)} className="rounded-xl border border-white/10 px-3 py-2 text-xs text-cyan-100 hover:bg-white/[0.06]">{format==='docx'?'Word':format.toUpperCase()}</a>)}
+                      </div>:
+                      <a href={downloadHref(file)} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-xs text-white/60 transition hover:bg-white/[0.06] hover:text-white">{ui("download")}<Download size={14} /></a>}
                     {file.url && <a href={file.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-xs text-white/60 transition hover:bg-white/[0.06] hover:text-white">{t("open")}<ExternalLink size={14} /></a>}
-                    </>}<button type="button" disabled={working !== null} onClick={() => startMove(file)} className="rounded-xl border border-white/10 px-4 py-2.5 text-left text-xs text-white/60">{ui("moveToAFolder")}</button>
+                    </>}{!readOnly&&<button type="button" disabled={working !== null} onClick={() => startMove(file)} className="rounded-xl border border-white/10 px-4 py-2.5 text-left text-xs text-white/60">{ui("moveToAFolder")}</button>}
                   </div>
                 </article>
               ))}
             </div>
           )}
           {nextPageToken && <button type="button" disabled={loading} onClick={() => void loadMore()} className="mt-6 rounded-xl border border-white/15 px-5 py-3 text-sm text-cyan-100 disabled:opacity-40">{ui("showMoreFilesAndFolders")}</button>}
+          <NativeDocumentsPanel />
+          <details className="native-panel mt-6 rounded-2xl border border-white/10 p-5"><summary>{ui("uiArchiveAdministration")}</summary><CanonicalArchivesPanel /></details>
         </div>
       </div>
     </MainLayout>

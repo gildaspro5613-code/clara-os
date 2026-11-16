@@ -7,11 +7,23 @@
   <title id="title">Clara OS</title>
   <desc id="desc">Symbole double C de Clara OS</desc>
 
-  <path
+  <defs>
+  <linearGradient id="clara-os-outer" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" stop-color="#1672D3" />
+    <stop offset="55%" stop-color="#27B5EF" />
+    <stop offset="100%" stop-color="#66EAFF" />
+  </linearGradient>
+  <linearGradient id="clara-os-inner" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" stop-color="#38A7F2" />
+    <stop offset="100%" stop-color="#83F2FF" />
+  </linearGradient>
+</defs>
+
+<path
     d="M 386 139
        A 175 175 0 1 0 386 373"
     fill="none"
-    stroke="#FFFFFF"
+    stroke="url(#clara-os-outer)"
     stroke-width="58"
     stroke-linecap="butt"
   />
@@ -20,7 +32,7 @@
     d="M 350 184
        A 104 104 0 1 0 350 328"
     fill="none"
-    stroke="#647487"
+    stroke="url(#clara-os-inner)"
     stroke-width="30"
     stroke-linecap="butt"
   />

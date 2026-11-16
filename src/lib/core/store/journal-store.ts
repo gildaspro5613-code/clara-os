@@ -1,3 +1,6 @@
+import {randomUUID} from "node:crypto";
+import {nativeContext,writableNativeContext} from "@/lib/native/scoped-context";
+import {RegistryError} from "@/lib/canonical/registry";
 import { sql } from "./database";
 import type { JournalEntry } from "../journal-entry";
 
@@ -23,11 +26,13 @@ async function ensureJournalTable(): Promise<void> {
 }
 
 export async function loadJournalEntries(): Promise<JournalEntry[]> {
+  const native=nativeContext();if(native)return [...native.journal,...native.entries];
   await ensureJournalTable();
 
   const rows = await sql`
     SELECT entry
     FROM clara_journal_entries
+    WHERE id NOT LIKE 'native:%'
     ORDER BY created_at ASC
   `;
 
@@ -38,6 +43,8 @@ export async function loadJournalEntries(): Promise<JournalEntry[]> {
 }
 
 export async function saveJournalEntry(entry: JournalEntry): Promise<void> {
+  if(nativeContext()){writableNativeContext().entries.push({...entry,id:"native:"+randomUUID()});return;}
+  if(entry.id.startsWith("native:"))throw new RegistryError(403,"NATIVE_SCOPE_REQUIRED");
   await ensureJournalTable();
 
   await sql`
@@ -51,6 +58,7 @@ export async function saveJournalEntry(entry: JournalEntry): Promise<void> {
 }
 
 export async function clearJournalEntries(): Promise<void> {
+  if(nativeContext())throw new RegistryError(403,"NATIVE_HISTORY_PRESERVATION_REQUIRED");
   await ensureJournalTable();
-  await sql`DELETE FROM clara_journal_entries`;
+  await sql`DELETE FROM clara_journal_entries WHERE id NOT LIKE 'native:%'`;
 }

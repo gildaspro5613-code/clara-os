@@ -1,0 +1,45 @@
+{
+  scale: 1,
+  requestChars: 16239,
+  lossless: 12913,
+  selected: 11507,
+  generation: { status: 'completed', recoverable: false },
+  calls: 1,
+  response: 6476
+}
+{
+  scale: 2,
+  requestChars: 21440,
+  lossless: 17654,
+  selected: 11753,
+  generation: { status: 'completed', recoverable: false },
+  calls: 1,
+  response: 6507
+}
+{
+  scale: 4,
+  requestChars: 30972,
+  lossless: 25874,
+  selected: 11980,
+  generation: { status: 'completed', recoverable: false },
+  calls: 1,
+  response: 7053
+}
+{
+  scale: 8,
+  requestChars: 50036,
+  lossless: 29969,
+  selected: 11375,
+  generation: { status: 'completed', recoverable: false },
+  calls: 1,
+  response: 6931
+}
+{
+  scale: 16,
+  requestChars: 88213,
+  lossless: 31426,
+  selected: 11926,
+  generation: { status: 'completed', recoverable: false },
+  calls: 1,
+  response: 6330
+}

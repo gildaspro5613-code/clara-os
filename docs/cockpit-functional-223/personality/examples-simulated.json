@@ -1,0 +1,177 @@
+[
+  {
+    "provider": "SIMULATED — scripted HTTP fixture, not GPT",
+    "locale": "fr",
+    "kind": "greeting",
+    "input": "Bonjour Clara !",
+    "output": "Bonjour Camille ! Comment vas-tu ?"
+  },
+  {
+    "provider": "SIMULATED — scripted HTTP fixture, not GPT",
+    "locale": "fr",
+    "kind": "simple",
+    "input": "Préfère des réponses courtes, s’il te plaît. Est-ce que tu peux m’aider ?",
+    "output": "Oui, on peut regarder ça ensemble."
+  },
+  {
+    "provider": "SIMULATED — scripted HTTP fixture, not GPT",
+    "locale": "fr",
+    "kind": "professional",
+    "input": "Quels points regarder pour préparer une prestation, sans lancer d'action ?",
+    "output": "Je peux t’aider à préparer les étapes utiles, sans engager d’action à ta place."
+  },
+  {
+    "provider": "SIMULATED — scripted HTTP fixture, not GPT",
+    "locale": "fr",
+    "kind": "resume",
+    "input": "Que nous étions-nous dit dans cet échange ?",
+    "output": "On reprend notre échange précédent. Tu préfères qu’on commence par quel point ?"
+  },
+  {
+    "provider": "SIMULATED — GPT and ElevenLabs HTTP fixtures",
+    "locale": "fr",
+    "kind": "voice",
+    "input": "Présente les missions autorisées, sans modification.",
+    "output": "Je t’écoute. On peut faire le point ensemble."
+  },
+  {
+    "provider": "SIMULATED — scripted HTTP fixture, not GPT",
+    "locale": "en",
+    "kind": "greeting",
+    "input": "Bonjour Clara !",
+    "output": "Hi Camille! How are you?"
+  },
+  {
+    "provider": "SIMULATED — scripted HTTP fixture, not GPT",
+    "locale": "en",
+    "kind": "simple",
+    "input": "Préfère des réponses courtes, s’il te plaît. Est-ce que tu peux m’aider ?",
+    "output": "Yes, we can look at that together."
+  },
+  {
+    "provider": "SIMULATED — scripted HTTP fixture, not GPT",
+    "locale": "en",
+    "kind": "professional",
+    "input": "Quels points regarder pour préparer une prestation, sans lancer d'action ?",
+    "output": "I can help you prepare the next steps, without taking action on your behalf."
+  },
+  {
+    "provider": "SIMULATED — scripted HTTP fixture, not GPT",
+    "locale": "en",
+    "kind": "resume",
+    "input": "Que nous étions-nous dit dans cet échange ?",
+    "output": "Let’s pick up our previous conversation. Where would you like to start?"
+  },
+  {
+    "provider": "SIMULATED — GPT and ElevenLabs HTTP fixtures",
+    "locale": "en",
+    "kind": "voice",
+    "input": "Présente les missions autorisées, sans modification.",
+    "output": "I’m listening. We can go through it together."
+  },
+  {
+    "provider": "SIMULATED — scripted HTTP fixture, not GPT",
+    "locale": "es",
+    "kind": "greeting",
+    "input": "Bonjour Clara !",
+    "output": "Hola Camille! ¿Cómo estás?"
+  },
+  {
+    "provider": "SIMULATED — scripted HTTP fixture, not GPT",
+    "locale": "es",
+    "kind": "simple",
+    "input": "Préfère des réponses courtes, s’il te plaît. Est-ce que tu peux m’aider ?",
+    "output": "Sí, podemos verlo juntos."
+  },
+  {
+    "provider": "SIMULATED — scripted HTTP fixture, not GPT",
+    "locale": "es",
+    "kind": "professional",
+    "input": "Quels points regarder pour préparer une prestation, sans lancer d'action ?",
+    "output": "Puedo ayudarte a preparar los pasos útiles, sin actuar en tu nombre."
+  },
+  {
+    "provider": "SIMULATED — scripted HTTP fixture, not GPT",
+    "locale": "es",
+    "kind": "resume",
+    "input": "Que nous étions-nous dit dans cet échange ?",
+    "output": "Retomemos nuestra conversación. ¿Por dónde prefieres empezar?"
+  },
+  {
+    "provider": "SIMULATED — GPT and ElevenLabs HTTP fixtures",
+    "locale": "es",
+    "kind": "voice",
+    "input": "Présente les missions autorisées, sans modification.",
+    "output": "Te escucho. Podemos revisarlo juntos."
+  },
+  {
+    "provider": "SIMULATED — scripted HTTP fixture, not GPT",
+    "locale": "de",
+    "kind": "greeting",
+    "input": "Bonjour Clara !",
+    "output": "Hallo Camille! Wie geht es dir?"
+  },
+  {
+    "provider": "SIMULATED — scripted HTTP fixture, not GPT",
+    "locale": "de",
+    "kind": "simple",
+    "input": "Préfère des réponses courtes, s’il te plaît. Est-ce que tu peux m’aider ?",
+    "output": "Ja, das können wir gemeinsam ansehen."
+  },
+  {
+    "provider": "SIMULATED — scripted HTTP fixture, not GPT",
+    "locale": "de",
+    "kind": "professional",
+    "input": "Quels points regarder pour préparer une prestation, sans lancer d'action ?",
+    "output": "Ich kann dir helfen, die nächsten Schritte vorzubereiten, ohne in deinem Namen zu handeln."
+  },
+  {
+    "provider": "SIMULATED — scripted HTTP fixture, not GPT",
+    "locale": "de",
+    "kind": "resume",
+    "input": "Que nous étions-nous dit dans cet échange ?",
+    "output": "Knüpfen wir an unser Gespräch an. Womit möchtest du anfangen?"
+  },
+  {
+    "provider": "SIMULATED — GPT and ElevenLabs HTTP fixtures",
+    "locale": "de",
+    "kind": "voice",
+    "input": "Présente les missions autorisées, sans modification.",
+    "output": "Ich höre dir zu. Wir können es gemeinsam durchgehen."
+  },
+  {
+    "provider": "SIMULATED — scripted HTTP fixture, not GPT",
+    "locale": "it",
+    "kind": "greeting",
+    "input": "Bonjour Clara !",
+    "output": "Ciao Camille! Come stai?"
+  },
+  {
+    "provider": "SIMULATED — scripted HTTP fixture, not GPT",
+    "locale": "it",
+    "kind": "simple",
+    "input": "Préfère des réponses courtes, s’il te plaît. Est-ce que tu peux m’aider ?",
+    "output": "Sì, possiamo guardarlo insieme."
+  },
+  {
+    "provider": "SIMULATED — scripted HTTP fixture, not GPT",
+    "locale": "it",
+    "kind": "professional",
+    "input": "Quels points regarder pour préparer une prestation, sans lancer d'action ?",
+    "output": "Posso aiutarti a preparare i prossimi passi, senza agire al posto tuo."
+  },
+  {
+    "provider": "SIMULATED — scripted HTTP fixture, not GPT",
+    "locale": "it",
+    "kind": "resume",
+    "input": "Que nous étions-nous dit dans cet échange ?",
+    "output": "Riprendiamo il nostro scambio. Da dove preferisci cominciare?"
+  },
+  {
+    "provider": "SIMULATED — GPT and ElevenLabs HTTP fixtures",
+    "locale": "it",
+    "kind": "voice",
+    "input": "Présente les missions autorisées, sans modification.",
+    "output": "Ti ascolto. Possiamo fare il punto insieme."
+  }
+]

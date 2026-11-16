@@ -1,0 +1,114 @@
+
+> clara-os@0.1.0 build
+> next build
+
+▲ Next.js 16.4.3 (Turbopack)
+✓ Running next.config.ts took 73ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 32.5s
+  Running TypeScript ...
+  Finished TypeScript in 34.4s ...
+  Collecting page data using 4 workers ...
+  Generating static pages using 4 workers (0/29) ...
+  Generating static pages using 4 workers (7/29)
+  Generating static pages using 4 workers (14/29)
+  Generating static pages using 4 workers (21/29)
+✓ Generating static pages using 4 workers (29/29) in 745ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ƒ /
+├ ƒ /_not-found
+├ ƒ /agenda
+├ ƒ /api/auth/google/callback
+├ ƒ /api/auth/google/start
+├ ƒ /api/auth/microsoft/callback
+├ ƒ /api/auth/microsoft/start
+├ ƒ /api/auth/session/logout
+├ ƒ /api/auth/session/status
+├ ƒ /api/calendar
+├ ƒ /api/canonical/registry
+├ ƒ /api/clara/acquisition/commercial-draft
+├ ƒ /api/clara/acquisition/decision
+├ ƒ /api/clara/acquisition/decisions
+├ ƒ /api/clara/acquisition/status/[submissionId]
+├ ƒ /api/clara/actions/navigation
+├ ƒ /api/clara/approvals
+├ ƒ /api/clara/chat
+├ ƒ /api/clara/conversation
+├ ƒ /api/clara/physical-actions/approve
+├ ƒ /api/clara/session
+├ ƒ /api/connections/brevo
+├ ƒ /api/connections/brevo/callback
+├ ƒ /api/connections/brevo/connect
+├ ƒ /api/connections/google
+├ ƒ /api/connections/google/callback
+├ ƒ /api/connections/google/connect
+├ ƒ /api/connections/make/configure
+├ ƒ /api/connections/make/status
+├ ƒ /api/connections/make/verify
+├ ƒ /api/connections/microsoft
+├ ƒ /api/connections/microsoft/callback
+├ ƒ /api/connections/microsoft/cloud-pcs
+├ ƒ /api/connections/microsoft/connect
+├ ƒ /api/contacts
+├ ƒ /api/core/canonical/conversations
+├ ƒ /api/core/canonical/links
+├ ƒ /api/core/canonical/stage
+├ ƒ /api/documents
+├ ƒ /api/documents/live-archives
+├ ƒ /api/elevenlabs/session
+├ ƒ /api/external/capabilities
+├ ƒ /api/external/document-operations/recovery
+├ ƒ /api/external/document-operations/status
+├ ƒ /api/external/event-jobs
+├ ƒ /api/external/event-jobs/status
+├ ƒ /api/external/events
+├ ƒ /api/external/lighting/onboarding/configuration
+├ ƒ /api/external/lighting/onboarding/session
+├ ƒ /api/external/project-intake
+├ ƒ /api/external/sound/onboarding/configuration
+├ ƒ /api/internal/document-operations-purge
+├ ƒ /api/internal/event-jobs-run
+├ ƒ /api/internal/project-intake-worker
+├ ƒ /api/internal/prospect-e2e-trace/[submissionId]
+├ ƒ /api/missions/execute
+├ ƒ /api/missions/resume
+├ ƒ /api/native/conversation-links
+├ ƒ /api/native/documents/authorization
+├ ƒ /api/native/google/work
+├ ƒ /api/native/mail
+├ ƒ /api/native/runtime
+├ ƒ /api/native/stage
+├ ƒ /api/openai/test
+├ ƒ /api/telephony
+├ ƒ /api/voice/speak
+├ ƒ /api/voice/transcribe
+├ ƒ /api/waze
+├ ƒ /api/weather
+├ ƒ /api/webhooks/brevo
+├ ƒ /api/workspace/install
+├ ƒ /automatisations
+├ ƒ /brain
+├ ƒ /clara
+├ ƒ /connexions
+├ ƒ /contacts
+├ ƒ /conversations
+├ ƒ /documents
+├ ƒ /journal
+├ ƒ /messagerie
+├ ƒ /missions
+├ ƒ /stage-approval
+└ ƒ /telephonie
+
+
+ƒ Proxy (Middleware)
+
+ƒ  (Dynamic)  server-rendered on demand
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

@@ -1,5 +1,6 @@
 "use client";
 
+import {todayCalendarUrl} from "@/modules/agenda/calendar-window";
 import { useEffect, useState } from "react";
 import GlassPanel from "@/components/ui/GlassPanel";
 import { useLocale, useTranslations } from "next-intl";
@@ -45,14 +46,14 @@ export default function AgendaPanel() {
 
     async function loadAgenda() {
       try {
-        const response = await fetch("/api/calendar", { cache: "no-store" });
+        const response = await fetch(todayCalendarUrl(), { cache: "no-store" });
         const data: CalendarResponse = await response.json();
 
         if (!response.ok || !data.success) {
           throw new Error(data.message ?? t("agendaUnavailable"));
         }
 
-        if (!cancelled) setEvents(data.events ?? []);
+        if (!cancelled) setEvents(data.events ?? []);setError(false);
       } catch {
         if (!cancelled) setError(true);
       } finally {
@@ -61,8 +62,9 @@ export default function AgendaPanel() {
     }
 
     void loadAgenda();
-    return () => { cancelled = true; };
-  }, []);
+    const changed=()=>{void loadAgenda();};window.addEventListener("clara:google-work-updated",changed);
+    return () => { cancelled = true;window.removeEventListener("clara:google-work-updated",changed); };
+  }, [t]);
 
   return (
     <GlassPanel className="h-auto w-[15rem] px-5 py-4 bg-black/25 border-white/[0.08] shadow-[0_2px_16px_rgba(0,0,0,0.16)]">

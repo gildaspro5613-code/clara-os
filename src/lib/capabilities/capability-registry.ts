@@ -94,6 +94,8 @@ import {
 import { BrevoCommercialCapabilityDefinitions, type BrevoCommercialCapability } from "./brevo-commercial/capability";
 import { CommercialEmailSendCapabilityDefinition, type CommercialEmailCapability } from "./commercial-email/capability";
 import {
+  MakeDriveFindCapabilityDefinition,
+  MakeCalendarReadCapabilityDefinitions,
   MakeScenarioExecuteCapabilityDefinition,
   MakeScenarioPrepareCapabilityDefinition,
   type MakeScenarioCapability,
@@ -151,6 +153,8 @@ export class CapabilityRegistry {
     SendGmailCapabilityDefinition,
     DeleteCalendarEventCapabilityDefinition,
     ...GitHubReadCapabilityDefinitions,
+    MakeDriveFindCapabilityDefinition,
+    ...MakeCalendarReadCapabilityDefinitions,
     MakeScenarioPrepareCapabilityDefinition,
     MakeScenarioExecuteCapabilityDefinition,
     ...BrevoCommercialCapabilityDefinitions,

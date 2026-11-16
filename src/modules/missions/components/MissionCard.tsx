@@ -18,6 +18,7 @@ interface MissionCardProps {
 }
 
 export default function MissionCard({ mission, onSelect }: MissionCardProps) {
+  const ui = useTranslations("ui");
   const t = useTranslations("missionsPage");
   const completedTasks = mission.tasks.filter((task) => task.completed).length;
   const progress = mission.tasks.length > 0
@@ -51,6 +52,7 @@ export default function MissionCard({ mission, onSelect }: MissionCardProps) {
         </span>
       </div>
 
+      <p className="mb-2 text-xs text-white/40">{ui("sourceOriginal")}</p>
       <h3 className="text-xl font-medium leading-tight text-white">{mission.title}</h3>
       <p className="mt-3 text-sm leading-6 text-white/60">{mission.objective}</p>
 

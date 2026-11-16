@@ -9,9 +9,14 @@
  * ============================================
  */
 
+import { isRecetteRuntime } from "@/lib/recette/external-execution-guard";
+import { validateRecetteDatabaseBinding } from "@/lib/recette/database-binding";
 import { neon } from "@neondatabase/serverless";
 
 function getDatabase() {
+  if (isRecetteRuntime() && validateRecetteDatabaseBinding(process.env) !== "OK") {
+    throw new Error("RECETTE_DATABASE_REFUSED");
+  }
   const databaseUrl =
     process.env.DATABASE_URL ??
     process.env.POSTGRES_URL;

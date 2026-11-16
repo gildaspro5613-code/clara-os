@@ -1,7 +1,8 @@
-import type { Readable } from "node:stream";
+import { Readable } from "node:stream";
 import { DocumentReadError } from "./document-read-error";
 
-export async function readDocumentStream(stream: Readable, maxBytes: number): Promise<Buffer> {
+export async function readDocumentStream(input: Readable | ReadableStream<Uint8Array>, maxBytes: number): Promise<Buffer> {
+  const stream = input instanceof Readable ? input : Readable.fromWeb(input as import("node:stream/web").ReadableStream<Uint8Array>);
   const chunks: Buffer[] = [];
   let bytes = 0;
   const timer = setTimeout(() => stream.destroy(new DocumentReadError("DOCUMENT_TIMEOUT", "Le téléchargement du document a dépassé le délai autorisé.", 504)), 15_000);

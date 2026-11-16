@@ -1,0 +1,33 @@
+✖ Google reconnect: real PostgreSQL status gate, unchanged rights, existing connection and exact scopes (4516.286978ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6981.014141
+
+✖ failing tests:
+
+test at src/tests/google-reconnect-postgres.test.ts:2:1470
+✖ Google reconnect: real PostgreSQL status gate, unchanged rights, existing connection and exact scopes (4516.286978ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+
+    {
+  +   code: 'REGISTRY_ACCESS_DENIED',
+  -   code: 'NATIVE_GOOGLE_REAUTH_REQUIRED',
+      success: false
+    }
+
+      at TestContext.<anonymous> (/workspace/clara-os-google-ionos-inspection/src/tests/google-reconnect-postgres.test.ts:32:67)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { success: false, code: 'REGISTRY_ACCESS_DENIED' },
+    expected: { success: false, code: 'NATIVE_GOOGLE_REAUTH_REQUIRED' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

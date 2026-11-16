@@ -1,0 +1,20 @@
+{
+  "marker": "synthetic test marker only",
+  "paths": [
+    "current.sources[0].data.missions[1].title",
+    "current.sources[0].data.missions[1].objective",
+    "current.sources[0].summary",
+    "current.brainDashboard.sources[0].data.missions[1].title",
+    "current.brainDashboard.sources[0].data.missions[1].objective",
+    "current.brainDashboard.sources[0].summary"
+  ],
+  "scopeProof": {
+    "sameOwner": true,
+    "sameWorkspace": true,
+    "sameClient": true,
+    "sameProject": true,
+    "bothActive": true
+  },
+  "currentMissionStillA": true,
+  "distinctSessions": true
+}

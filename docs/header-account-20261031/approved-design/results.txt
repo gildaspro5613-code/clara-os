@@ -1,0 +1,52 @@
+Validation isolée de la présentation approuvée — 31 octobre 2026
+TypeScript : PASS
+Lint ciblé : PASS
+Build optimisé Webpack : PASS (polices locales de test)
+git diff --check : PASS
+
+✔ session digest rejects untrusted and malformed tokens (1.05574ms)
+✔ session digest is deterministic and never stores raw bearer token (0.372662ms)
+✔ Google display metadata is encrypted, bounded and bound to one authenticated session; never an authority (2.666786ms)
+✔ Brief uses verified display identity only, never old session or environment fallback (12.937204ms)
+✔ actual callback attaches display only to a completed Google sign-in, clears it on failure (930.297926ms)
+✔ account display: actual canonical PostgreSQL sessions, member rights, exact Google association, revoked/expired contexts and secret-free failures (6713.8892ms)
+✔ only the historical avatar slot changes; header navigation and locale control are preserved (4.628912ms)
+✔ historical Tasks uses the authorized mission rather than the old 82 percent fixture (17.862743ms)
+✔ native historical microphone stays disabled and honest in all five languages (19.454691ms)
+✔ the historical action bar navigates existing pages instead of decorative buttons (4.283842ms)
+Checked 38 native handler refusals.
+[CLARA] instrumentation ready; business runtime is request-scoped
+✔ native session handler rejects missing, malformed and duplicate cookies before storage or global runtime (103.358926ms)
+✔ default, external and absent explicit selectors cannot resume a global/native fallback (19.426777ms)
+✔ every fenced native HTTP handler refuses anonymous/invalid cookies without entering legacy business logic (248.632027ms)
+✔ unavailable authority never leaks storage details or resumes the legacy runtime (4.396331ms)
+✔ even an explicitly authorized snapshot cannot unlock legacy native mutations (18.460733ms)
+✔ all six native server pages return before invoking any global data loader (137.158779ms)
+✔ reopened chat and native runtime/document handlers still refuse invalid authentication before business code (67.165566ms)
+✔ server instrumentation never imports or starts a global business runtime (26.063233ms)
+✔ Uncertified Google/Brevo/Make connection routes reject invalid OS sessions before storage or provider I/O (103.198603ms)
+✔ a verified native session cannot unlock Google credentials or Make configuration before connector certification (137.240763ms)
+✔ Google-only Recette exception refuses incomplete, Production, foreign binding and unsafe callback configurations (4.330893ms)
+✔ real Google verifier and completion: signed identity only, one-time state, no Recette bootstrap, no business transport (156.508331ms)
+✔ actual start route refuses invalid Recette before transaction or redirect (65.407908ms)
+✔ actual database entry refuses ambiguous Recette before Neon client construction; outside Recette unchanged (8.849848ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 24
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7036.504878
+
+✔ historical header account: 5 locales × 3 viewports, native profile, keyboard/outside close, existing language setting and real logout (59971.403757ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 60503.678655
+
+Aucun fournisseur réel, merge, migration ou déploiement.

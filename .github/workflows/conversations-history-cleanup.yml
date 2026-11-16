@@ -1,0 +1,27 @@
+name: Conversations history cleanup
+on:
+  pull_request:
+    paths:
+      - 'src/app/conversations/page.tsx'
+      - 'src/tests/native-conversations-mail-notices.test.ts'
+      - '.github/workflows/conversations-history-cleanup.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Conversations and historic mail notices
+        run: node --import tsx --test src/tests/native-conversations-mail-notices.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit --pretty false
+      - name: ESLint
+        run: npx eslint src/app/conversations/page.tsx src/tests/native-conversations-mail-notices.test.ts

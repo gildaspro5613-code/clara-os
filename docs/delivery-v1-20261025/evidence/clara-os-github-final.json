@@ -1,0 +1,181 @@
+[
+  {
+    "baseRefName": "consolidation/clara-os-clean-base",
+    "headRefOid": "22ee77e03701c6d581678a5b309a431074d7e7b7",
+    "isDraft": true,
+    "number": 176,
+    "state": "OPEN",
+    "statusCheckRollup": [
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-21T10:38:07Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-os/actions/runs/39585853095/job/119174428258",
+        "name": "validate",
+        "startedAt": "2026-10-21T10:36:47Z",
+        "status": "COMPLETED",
+        "workflowName": "Authenticated workspace validation"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-21T10:37:25Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-os/actions/runs/39585853121/job/119174428495",
+        "name": "i18n",
+        "startedAt": "2026-10-21T10:36:47Z",
+        "status": "COMPLETED",
+        "workflowName": "Clara OS i18n consolidation validation"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-21T10:38:55Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-os/actions/runs/39585853167/job/119174429002",
+        "name": "documents",
+        "startedAt": "2026-10-21T10:36:47Z",
+        "status": "COMPLETED",
+        "workflowName": "Documents Workspace V2 validation"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-21T10:38:01Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-os/actions/runs/39585853113/job/119174428492",
+        "name": "validate",
+        "startedAt": "2026-10-21T10:36:47Z",
+        "status": "COMPLETED",
+        "workflowName": "Microsoft connector validation"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-21T10:48:40Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-os/actions/runs/39585853293/job/119174430964",
+        "name": "native-authority",
+        "startedAt": "2026-10-21T10:36:47Z",
+        "status": "COMPLETED",
+        "workflowName": "Native resource authority validation"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-21T10:38:18Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-os/actions/runs/39585853224/job/119174428972",
+        "name": "validate",
+        "startedAt": "2026-10-21T10:36:47Z",
+        "status": "COMPLETED",
+        "workflowName": "Production P0 validation"
+      }
+    ],
+    "url": "https://github.com/gildaspro5613-code/clara-os/pull/176"
+  },
+  {
+    "baseRefName": "fix/os-operational-reception-175",
+    "headRefOid": "d3dbe8effb9812ad3b07c4287550172ec9a72d49",
+    "isDraft": true,
+    "number": 199,
+    "state": "OPEN",
+    "statusCheckRollup": [],
+    "url": "https://github.com/gildaspro5613-code/clara-os/pull/199"
+  },
+  {
+    "baseRefName": "fix/ionos-draft-ui-reliability-20261021",
+    "headRefOid": "01e3d253ea435d99462e5f80ba68c9c5e0582986",
+    "isDraft": true,
+    "number": 202,
+    "state": "OPEN",
+    "statusCheckRollup": [
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-22T15:16:19Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-os/actions/runs/39802958676/job/119908514774",
+        "name": "validate",
+        "startedAt": "2026-10-22T15:14:41Z",
+        "status": "COMPLETED",
+        "workflowName": "Production P0 validation"
+      }
+    ],
+    "url": "https://github.com/gildaspro5613-code/clara-os/pull/202"
+  },
+  {
+    "baseRefName": "reception/stage-multidomain-authority",
+    "headRefOid": "99b246f80cd4ac7ebbaf64e7c9dcaad950b1ea63",
+    "isDraft": true,
+    "number": 208,
+    "state": "OPEN",
+    "statusCheckRollup": [
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-24T15:59:10Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-os/actions/runs/40109367979/job/120917681664",
+        "name": "targeted",
+        "startedAt": "2026-10-24T15:58:09Z",
+        "status": "COMPLETED",
+        "workflowName": "Stage approval UI isolated QA"
+      }
+    ],
+    "url": "https://github.com/gildaspro5613-code/clara-os/pull/208"
+  },
+  {
+    "baseRefName": "chore/recette-effective-binding-attestation",
+    "headRefOid": "1d2a53eeb91f1b786bd53a216cd4ec8794f7d20c",
+    "isDraft": true,
+    "number": 198,
+    "state": "OPEN",
+    "statusCheckRollup": [
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-20T16:53:34Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-os/actions/runs/39461219110/job/118760872319",
+        "name": "validate",
+        "startedAt": "2026-10-20T16:52:21Z",
+        "status": "COMPLETED",
+        "workflowName": "Authenticated workspace validation"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-20T16:53:47Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-os/actions/runs/39461219660/job/118760874739",
+        "name": "offline-security",
+        "startedAt": "2026-10-20T16:52:21Z",
+        "status": "COMPLETED",
+        "workflowName": "Clara OS Recette - offline security regression"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-20T16:53:32Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-os/actions/runs/39461219273/job/118760873060",
+        "name": "validate",
+        "startedAt": "2026-10-20T16:52:21Z",
+        "status": "COMPLETED",
+        "workflowName": "Microsoft connector validation"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-20T17:01:45Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-os/actions/runs/39461219942/job/118760875706",
+        "name": "native-authority",
+        "startedAt": "2026-10-20T16:52:22Z",
+        "status": "COMPLETED",
+        "workflowName": "Native resource authority validation"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-20T16:53:59Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-os/actions/runs/39461219534/job/118760888921",
+        "name": "validate",
+        "startedAt": "2026-10-20T16:52:25Z",
+        "status": "COMPLETED",
+        "workflowName": "Production P0 validation"
+      }
+    ],
+    "url": "https://github.com/gildaspro5613-code/clara-os/pull/198"
+  }
+]

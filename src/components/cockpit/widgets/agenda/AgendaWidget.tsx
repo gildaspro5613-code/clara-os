@@ -1,6 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import {BUSINESS_TIME_ZONE,formatBusinessDate,todayCalendarUrl} from "@/modules/agenda/calendar-window";
+import {useBusinessDay} from "@/modules/agenda/useBusinessDay";
+import {calendarReadErrorKey} from "@/modules/agenda/calendar-read-state";
 import { useEffect, useState } from "react";
 import { CalendarDays, ChevronRight, Clock } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -23,6 +26,7 @@ interface CalendarResponse {
   success: boolean;
   events: CalendarEvent[];
   message?: string;
+  code?:string;
 }
 
 function formatTime(event: CalendarEvent, locale: string, allDay: string) {
@@ -35,6 +39,7 @@ function formatTime(event: CalendarEvent, locale: string, allDay: string) {
   }
 
   return new Intl.DateTimeFormat(locale, {
+    timeZone: BUSINESS_TIME_ZONE,
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(event.start.dateTime));
@@ -43,45 +48,52 @@ function formatTime(event: CalendarEvent, locale: string, allDay: string) {
 export default function AgendaWidget() {
   const t = useTranslations("cockpitUi");
   const locale = useLocale();
+  const day=useBusinessDay();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string|null>(null);
 
   useEffect(() => {
-    let cancelled = false;
+    if(!day)return;
+    let cancelled = false;let sequence=0;let controller:AbortController|undefined;
 
     async function loadAgenda() {
+      const current=++sequence;controller?.abort();controller=new AbortController();setLoading(true);
       try {
-        const response = await fetch("/api/calendar", {
+        const response = await fetch(todayCalendarUrl(), {
           cache: "no-store",
+          signal:controller.signal,
         });
 
         const data: CalendarResponse = await response.json();
 
         if (!response.ok || !data.success) {
-          throw new Error(data.message ?? t("agendaUnavailable"));
+          const key=calendarReadErrorKey(response.status,data.code);
+          if(!cancelled&&current===sequence){setEvents([]);setError(t(key));}return;
         }
 
-        if (!cancelled) {
-          setEvents(data.events ?? []);
+        if (!cancelled&&current===sequence) {
+          if(!Array.isArray(data.events))throw Error("Invalid calendar response");
+          setEvents(data.events);setError(null);
         }
       } catch {
-        if (!cancelled) {
-          setError(true);
+        if (!cancelled&&current===sequence) {
+          setEvents([]);setError(t("agendaTemporarilyUnavailable"));
         }
       } finally {
-        if (!cancelled) {
+        if (!cancelled&&current===sequence) {
           setLoading(false);
         }
       }
     }
 
-    loadAgenda();
+    void loadAgenda();
+    const changed=()=>{void loadAgenda();};window.addEventListener("clara:google-work-updated",changed);
 
     return () => {
-      cancelled = true;
+      cancelled = true;controller?.abort();window.removeEventListener("clara:google-work-updated",changed);
     };
-  }, []);
+  }, [t,day]);
 
   return (
     <article
@@ -103,8 +115,8 @@ export default function AgendaWidget() {
         className="absolute inset-y-0 left-0 w-[2px] bg-cyan-400/70"
       />
 
-      <div className="mb-5 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="mb-5 flex items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-3">
           <CalendarDays
             size={20}
             strokeWidth={1.7}
@@ -117,13 +129,13 @@ export default function AgendaWidget() {
             </p>
 
             <p className="mt-1 text-sm text-white/75">
-              {t("today")}
+              <time data-business-date dateTime={day??undefined}>{day?formatBusinessDate(day,locale):"—"}</time>
             </p>
           </div>
         </div>
 
-        <span className="text-xs text-white/35">
-          {t("eventCount", {count: events.length})}
+        <span className="shrink-0 text-xs text-white/35">
+          {loading||error?"—":t("eventCount", {count: events.length})}
         </span>
       </div>
 
@@ -135,7 +147,7 @@ export default function AgendaWidget() {
 
       {!loading && error && (
         <div className="py-6 text-sm text-white/45">
-          {t("agendaTemporarilyUnavailable")}
+          {error}
         </div>
       )}
 

@@ -1,0 +1,78 @@
+{
+  "base": "fff3fb2384b88c9830e5f22a29bed1110130b791",
+  "sourceComparisons": [
+    {
+      "path": "src/lib/native/authority.ts",
+      "sha256": "f47bdab4af4f1afd25803be52dbdef14b0ee594a13b7b6d8dcfa7d91baeaa46f",
+      "unchangedSince": "fff3fb2384b88c9830e5f22a29bed1110130b791"
+    },
+    {
+      "path": "src/lib/native/scoped-context.ts",
+      "sha256": "482865234ecef36cfd80b557d6b76adf8a453a6c0c0fdab6a9f8a1ad15733db6",
+      "unchangedSince": "fff3fb2384b88c9830e5f22a29bed1110130b791"
+    },
+    {
+      "path": "src/lib/native/chat.ts",
+      "sha256": "31d57463acd35ea7cf10b48b54b85ad68e4e0091b33c87c91fd0265d067464ff",
+      "unchangedSince": "fff3fb2384b88c9830e5f22a29bed1110130b791"
+    },
+    {
+      "path": "src/lib/native/mission-contact.ts",
+      "sha256": "40dbe7fcd52d66613e130fdc44d38f92fb7f626a1152b65e8b9dcc163897ff7f",
+      "unchangedSince": "fff3fb2384b88c9830e5f22a29bed1110130b791"
+    },
+    {
+      "path": "src/lib/native/documents.ts",
+      "sha256": "26845473ae547afe202be246abc3f14c947ed79e79d3c1b784a41f4b699f0539",
+      "unchangedSince": "fff3fb2384b88c9830e5f22a29bed1110130b791"
+    },
+    {
+      "path": "src/lib/native/mail.ts",
+      "sha256": "195e6ed7e00ab027f134867773fe0c847c286774f2724a8e884e838e6dbbc0b5",
+      "unchangedSince": "fff3fb2384b88c9830e5f22a29bed1110130b791"
+    },
+    {
+      "path": "src/lib/native/mail-monitor.ts",
+      "sha256": "ad9c6a794e2c8ab2e698941aa955a04403e401658f2bebf2c256c099e1704f1d",
+      "unchangedSince": "fff3fb2384b88c9830e5f22a29bed1110130b791"
+    },
+    {
+      "path": "src/lib/connectors/ionos/transport.ts",
+      "sha256": "a812d6b08cae3d26fbfea6d3abbdbbca522a3d1e02273b428c14f4cc064fd394",
+      "unchangedSince": "fff3fb2384b88c9830e5f22a29bed1110130b791"
+    },
+    {
+      "path": "src/lib/native/google-work.ts",
+      "sha256": "2e478f098b51cb546b335b129b6518dc54bfa2e2bd094354ef42c7b45b2bd316",
+      "unchangedSince": "fff3fb2384b88c9830e5f22a29bed1110130b791"
+    },
+    {
+      "path": "src/app/api/clara/chat/route.ts",
+      "sha256": "987bdbeedc5ec57884fbb8194e48f0254c459815e99ff5363dd32d8913f16f47",
+      "unchangedSince": "fff3fb2384b88c9830e5f22a29bed1110130b791"
+    },
+    {
+      "path": "src/modules/missions/mission-store.ts",
+      "sha256": "09ad535338e081a72a1b48901a1042f25bbceffb57c23e0329455f263201a07b",
+      "unchangedSince": "fff3fb2384b88c9830e5f22a29bed1110130b791"
+    },
+    {
+      "path": "db/migrations/025_native_mission_contact_association.sql",
+      "sha256": "c2311a8136f8dd0b05770fb1325f950b5286d79fff6f4e7be52f795b2a4b43c7",
+      "unchangedSince": "fff3fb2384b88c9830e5f22a29bed1110130b791"
+    },
+    {
+      "path": "db/migrations/026_native_document_continuity.sql",
+      "sha256": "07ee79882ad3a1e1bc2eeeb3dfead9409b703b54e2ed18a14f7651f22baf9f11",
+      "unchangedSince": "fff3fb2384b88c9830e5f22a29bed1110130b791"
+    },
+    {
+      "path": "db/migrations/028_native_job_kind_compatibility.sql",
+      "sha256": "ab3e6004074348500d5f2fd1d511f7afcea28a9c374f6f1d4d2029fc241642b9",
+      "unchangedSince": "fff3fb2384b88c9830e5f22a29bed1110130b791"
+    }
+  ],
+  "historical125": "Not rerun wholesale and not added to new test count",
+  "realProviderCalls": 0,
+  "newPublications": 0
+}

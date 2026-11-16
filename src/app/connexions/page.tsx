@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl";
 import MainLayout from "@/components/layout/MainLayout";
+import GoogleAgendaAdministration from "@/modules/agenda/GoogleAgendaAdministration";
 import ConnectionsHub from "@/components/connections/ConnectionsHub";
 
 export default function ConnexionsPage() {
@@ -14,7 +15,7 @@ export default function ConnexionsPage() {
             <h1 className="mt-3 text-4xl font-medium tracking-tight">{ui("connections")}</h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-white/50">{ui("accountsAndServicesLinkedToClaraOSWithTheir")}</p>
           </header>
-          <ConnectionsHub />
+          <GoogleAgendaAdministration><ConnectionsHub /></GoogleAgendaAdministration>
         </div>
       </main>
     </MainLayout>

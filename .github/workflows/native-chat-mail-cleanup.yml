@@ -1,0 +1,31 @@
+name: Native chat mail cleanup
+on:
+  pull_request:
+    paths:
+      - 'src/lib/native/mail.ts'
+      - 'src/lib/native/mail/chat-notice-filter.ts'
+      - 'src/components/cockpit/widgets/clara/ClaraChatWidget.tsx'
+      - 'src/components/native/NativeEarlierMessages.tsx'
+      - 'src/app/globals.css'
+      - 'src/tests/native-chat-mail-visual-cleanup.test.ts'
+      - '.github/workflows/native-chat-mail-cleanup.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Focused chat and mail workflow tests
+        run: node --import tsx --test src/tests/native-chat-mail-visual-cleanup.test.ts
+      - name: Check changed files
+        run: npx eslint src/lib/native/mail.ts src/lib/native/mail/chat-notice-filter.ts src/components/cockpit/widgets/clara/ClaraChatWidget.tsx src/components/native/NativeEarlierMessages.tsx src/tests/native-chat-mail-visual-cleanup.test.ts
+      - name: TypeScript
+        run: npx tsc --noEmit --pretty false

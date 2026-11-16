@@ -1,10 +1,19 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import {isLegacyMailDraftChatNotice} from "@/lib/native/mail/chat-notice-filter";
+import NativeEarlierMessages from '@/components/native/NativeEarlierMessages';
+
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Check, Send, X } from "lucide-react";
+import { Check, RefreshCw, Send, X } from "lucide-react";
 import type { ClaraConversationMessage } from "@/lib/core/session";
+
+interface NativeGoogleChatProposal {
+  connectionId:string;operationId:string;reviewHash:string;status:string;calendarName:string;
+  proposal:{kind:string;name:string;resourceId:string;start:string;end:string;description:string;missionId:string};
+}
 
 interface PendingApproval {
   id: string;
@@ -24,12 +33,16 @@ interface PhysicalActionProposalView {
 }
 
 interface ClaraChatWidgetProps {
+  nativeSessionId?:string;
+  nativeThreadReadOnly?:boolean;
+  compact?: boolean;
   autoFocus?: boolean;
   initialMessages?: ClaraConversationMessage[];
   userFirstName?: string | null;
 }
 
 interface ConversationUpdatedDetail {
+  sessionId?:string;
   conversation?: ClaraConversationMessage[];
 }
 
@@ -46,6 +59,9 @@ function personalizedGreeting(
 }
 
 export default function ClaraChatWidget({
+  nativeSessionId,
+  nativeThreadReadOnly=false,
+  compact = false,
   autoFocus = false,
   initialMessages = [],
   userFirstName,
@@ -69,15 +85,24 @@ export default function ClaraChatWidget({
         ],
   );
 
+  const [pending,setPending]=useState<{operationId:string;message:string;sessionId?:string}|null>(null);
+  const recovery=useRef({operationId:'',attempts:0});
+  const [chatError,setChatError]=useState('');
+  const pendingKey=nativeSessionId?'clara.pending-chat:'+nativeSessionId:null;
+  useEffect(()=>{if(!pendingKey)return;try{const saved=sessionStorage.getItem(pendingKey);if(saved){const value=JSON.parse(saved);if(typeof value.operationId==='string'&&typeof value.message==='string'&&value.sessionId===nativeSessionId)setPending(value);}}catch{/* unavailable browser storage does not authorize execution */}},[pendingKey,nativeSessionId]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [approvals, setApprovals] = useState<PendingApproval[]>([]);
   const [physicalActions, setPhysicalActions] = useState<PhysicalActionProposalView[]>([]);
+  const [googleProposal,setGoogleProposal]=useState<NativeGoogleChatProposal|null>(null);
+  const [googleConfirm,setGoogleConfirm]=useState(false);
+  const [googleOutcome,setGoogleOutcome]=useState<string|null>(null);
   const router = useRouter();
 
   useEffect(() => {
     const handleConversationUpdated = (event: Event) => {
       const detail = (event as CustomEvent<ConversationUpdatedDetail>).detail;
+      if (nativeSessionId && detail?.sessionId!==nativeSessionId) return;
       if (Array.isArray(detail?.conversation)) {
         setMessages(detail.conversation);
       }
@@ -94,14 +119,14 @@ export default function ClaraChatWidget({
         handleConversationUpdated,
       );
     };
-  }, []);
+  }, [nativeSessionId]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const message = input.trim();
 
-    if (!message || loading) {
+    if (!message || loading || pending || nativeThreadReadOnly) {
       return;
     }
 
@@ -117,63 +142,78 @@ export default function ClaraChatWidget({
       },
     ]);
 
+    const operation={operationId:crypto.randomUUID(),message,...(nativeSessionId?{sessionId:nativeSessionId}:{})};
+    setPending(operation);if(pendingKey)try{sessionStorage.setItem(pendingKey,JSON.stringify(operation));}catch{/* memory-only pending identity */}
+    await submitOperation(operation);
+  }
+  const submitOperation=useCallback(async(operation:{operationId:string;message:string;sessionId?:string})=>{
+    setLoading(true);setChatError('');
+    try{
+      const response=await fetch('/api/clara/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(operation)});
+      const data=await response.json();
+      if(response.status===202){
+        const original=data.pendingRequest??operation;setPending(original);if(pendingKey)try{sessionStorage.setItem(pendingKey,JSON.stringify(original));}catch{/* keep the in-memory reservation */}setChatError(ui('nativeChatPending'));return;
+      }
+      const finalized=!nativeSessionId||response.headers.get('X-Clara-Operation-Completed')==='1'||response.headers.get('X-Clara-Operation-Replayed')==='1';
+      if(!finalized){setChatError(ui('nativeChatPending'));return;}
+      if(nativeSessionId){
+        const history=await fetch('/api/clara/conversation?'+new URLSearchParams({thread:nativeSessionId,limit:'100'}));const current=await history.json();
+        if(!history.ok||!current.success)throw Error(ui('nativeHistoryUnavailable'));setMessages(current.messages);
+      }else if(Array.isArray(data.conversation))setMessages(data.conversation);
+      if(pendingKey)try{sessionStorage.removeItem(pendingKey);}catch{/* acknowledged receipt remains server-owned */}setPending(null);
+      if(!response.ok||!data.success){setChatError(['NATIVE_THREAD_MISSION_BOUND','NATIVE_NEW_SESSION_REQUIRED'].includes(data.code)?ui('nativeThreadMissionBound'):data.code==='NATIVE_CONSULTATION_MIGRATION_REQUIRED'?`${ui('nativeChatFailed')} [NATIVE_CONSULTATION_MIGRATION_REQUIRED]`:ui('nativeChatFinishedWithError'));router.refresh();return;}
+      setApprovals(current=>[...current,...(data.approvals??[])]);setPhysicalActions(data.physicalActions??[]);
+      setGoogleProposal(data.nativeGoogleProposal??null);setGoogleConfirm(false);setGoogleOutcome(null);router.refresh();
+    }catch{setChatError(ui('nativeChatPending'));}
+    finally{setLoading(false);}
+  },[nativeSessionId,pendingKey,router,ui]);
+
+  useEffect(()=>{
+    if(!pending||loading||nativeThreadReadOnly||!nativeSessionId||pending.sessionId!==nativeSessionId)return;
+    if(recovery.current.operationId!==pending.operationId)recovery.current={operationId:pending.operationId,attempts:0};
+    if(recovery.current.attempts>=8)return;
+    const delay=Math.min(1000*2**recovery.current.attempts,10000);
+    const timer=setTimeout(()=>{recovery.current.attempts++;void submitOperation(pending);},delay);
+    return()=>clearTimeout(timer);
+  },[pending,loading,nativeThreadReadOnly,nativeSessionId,submitOperation]);
+
+  async function cancelPending(){
+    if(!pending||!nativeSessionId||!window.confirm(ui('nativeCancelChatConfirm')))return;
     setLoading(true);
+    try{
+      const response=await fetch('/api/clara/chat',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({operationId:pending.operationId,sessionId:nativeSessionId,confirm:true})});const body=await response.json();
+      if(!response.ok||!body.success)throw Error();
+      const history=await fetch('/api/clara/conversation?'+new URLSearchParams({thread:nativeSessionId,limit:'100'}));const current=await history.json();if(!history.ok||!current.success)throw Error();setMessages(current.messages);
+      if(pendingKey)try{sessionStorage.removeItem(pendingKey);}catch{/* durable cancellation is server-owned */}
+      setPending(null);setChatError(body.cancelled?ui('nativeChatCancelled'):'');router.refresh();
+    }catch{setChatError(ui('nativeChatPending'));}finally{setLoading(false);}
+  }
 
-    try {
-      const response = await fetch("/api/clara/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ message }),
+  async function decideGoogleProposal(action:'execute'|'cancel'){
+    if(!googleProposal||loading||(action==='execute'&&!googleConfirm))return;
+    setLoading(true);setChatError('');
+    try{
+      const response=await fetch('/api/native/google/work',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({action,connectionId:googleProposal.connectionId,operationId:googleProposal.operationId,
+          ...(action==='execute'?{reviewHash:googleProposal.reviewHash,confirm:true}:{})}),
       });
-
-      const data = (await response.json()) as {
-        success?: boolean;
-        message?: string;
-        approvals?: PendingApproval[];
-        conversation?: ClaraConversationMessage[];
-        physicalActions?: PhysicalActionProposalView[];
-      };
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.message ?? t("unavailable"));
+      const data=await response.json();
+      if(!response.ok||data.success!==true)throw Error(String(data.code??'GOOGLE_WORK_UNAVAILABLE'));
+      if(action==='cancel'){
+        setGoogleProposal(null);setGoogleConfirm(false);setGoogleOutcome(null);
+      }else if(data.status==='completed'&&data.result?.id){
+        setGoogleProposal(null);setGoogleConfirm(false);setGoogleOutcome(null);
+        setMessages(current=>[...current,{id:crypto.randomUUID(),role:'clara',content:ui('googleState_completed')+' · '+data.result.id,createdAt:new Date().toISOString()}]);
+        window.dispatchEvent(new Event('clara:google-work-updated'));
+      }else{
+        // An uncertain delivery must never be retried as a second creation.
+        setGoogleOutcome(data.status??'uncertain');setGoogleConfirm(false);
       }
-
-      if (Array.isArray(data.conversation)) {
-        setMessages(data.conversation);
-      } else {
-        setMessages((current) => [
-          ...current,
-          {
-            id: crypto.randomUUID(),
-            role: "clara",
-            content: data.message ?? "",
-            createdAt: new Date().toISOString(),
-          },
-        ]);
-      }
-
-      setApprovals((current) => [...current, ...(data.approvals ?? [])]);
-      setPhysicalActions(data.physicalActions ?? []);
-
       router.refresh();
-    } catch (error) {
-      setMessages((current) => [
-        ...current,
-        {
-          id: crypto.randomUUID(),
-          role: "clara",
-          content:
-            error instanceof Error
-              ? error.message
-              : t("unavailable"),
-          createdAt: new Date().toISOString(),
-        },
-      ]);
-    } finally {
-      setLoading(false);
-    }
+    }catch{
+      setGoogleConfirm(false);setGoogleOutcome('uncertain');setChatError(ui('googleExistingUncertain'));
+    }finally{setLoading(false);}
   }
 
   async function decideApproval(
@@ -247,17 +287,18 @@ export default function ClaraChatWidget({
         </h2>
       </div>
 
-      <div className="max-h-[360px] space-y-3 overflow-y-auto pr-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {messages.map((message) => (
+      <div role="log" aria-label={t("title")} tabIndex={0} className="clara-workspace-scroll max-h-[60dvh] min-h-40 space-y-4 overflow-y-auto pr-2">
+      <NativeEarlierMessages sessionId={nativeSessionId} firstMessageId={initialMessages[0]?.id} windowSize={initialMessages.length}/>
+        {messages.filter(message=>!isLegacyMailDraftChatNotice(message)).map((message) => (
           <div
             key={message.id}
             className={
               message.role === "user"
-                ? "ml-auto max-w-[80%] rounded-2xl bg-cyan-500/15 px-4 py-3 text-sm text-white"
-                : "max-w-[80%] rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm leading-relaxed text-white/80"
+                ? "ml-auto whitespace-pre-wrap [overflow-wrap:anywhere] max-w-[94%] sm:max-w-[85%] rounded-2xl bg-cyan-500/15 px-4 py-3 text-sm text-white"
+                : "whitespace-pre-wrap [overflow-wrap:anywhere] max-w-[94%] sm:max-w-[85%] rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm leading-7 text-white/80"
             }
           >
-            {message.content}
+            {compact && message.id !== "clara-greeting" ? <Link href="/conversations" className="text-cyan-200">{ui("openConversationMessage")} →</Link> : message.content}
           </div>
         ))}
 
@@ -267,6 +308,22 @@ export default function ClaraChatWidget({
           </div>
         )}
       </div>
+
+      {googleProposal&&(
+        <section data-native-google-chat-proposal className="mt-4 rounded-2xl border border-cyan-300/20 bg-cyan-300/[0.05] p-4" aria-label={ui('googleProposal')}>
+          <p className="text-xs text-cyan-200">{ui('googleProposal')} · {googleProposal.status}</p>
+          <p className="mt-2 font-medium text-white">{googleProposal.proposal.name}</p>
+          <p className="mt-1 text-sm text-white/75">{googleProposal.calendarName}</p>
+          <p className="mt-1 text-sm text-white/75">{new Intl.DateTimeFormat(undefined,{timeZone:'Europe/Paris',dateStyle:'full',timeStyle:'short'}).format(new Date(googleProposal.proposal.start))} — {new Intl.DateTimeFormat(undefined,{timeZone:'Europe/Paris',timeStyle:'short'}).format(new Date(googleProposal.proposal.end))}</p>
+          {googleProposal.proposal.description&&<p className="mt-2 text-sm text-white/65">{googleProposal.proposal.description}</p>}
+          <p className="mt-1 text-xs text-white/45">{googleProposal.operationId}</p>
+          {googleOutcome?<p role="status" className="mt-2 text-amber-100">{ui('googleExistingUncertain')}</p>:<div className="mt-3 flex flex-wrap items-center gap-3">
+            <label className="flex items-center gap-2 text-sm text-white/80"><input type="checkbox" checked={googleConfirm} disabled={loading} onChange={e=>setGoogleConfirm(e.target.checked)} />{ui('googleExactConfirmation')}</label>
+            <button type="button" disabled={loading||!googleConfirm} onClick={()=>void decideGoogleProposal('execute')} className="rounded-lg border border-cyan-300/30 px-3 py-2 text-sm text-cyan-100 disabled:opacity-40">{ui('googleExecute')}</button>
+            <button type="button" disabled={loading} onClick={()=>void decideGoogleProposal('cancel')} className="rounded-lg border border-white/20 px-3 py-2 text-sm text-white/70 disabled:opacity-40">{ui('cancel')}</button>
+          </div>}
+        </section>
+      )}
 
       {physicalActions.length > 0 && (
         <div className="mt-4 space-y-3" aria-live="polite">
@@ -360,22 +417,41 @@ export default function ClaraChatWidget({
         </div>
       )}
 
+      {nativeThreadReadOnly&&<p role="alert">{ui('nativeThreadReviewRequired')}</p>}
+      {chatError&&<p role="alert">{chatError}</p>}
+      {pending&&!nativeThreadReadOnly&&(
+        <div data-native-chat-recovery className="mt-3 flex items-center justify-end gap-2">
+          <button type="button" disabled={loading} onClick={()=>void submitOperation(pending)}
+            aria-label={ui('nativeCheckChat')} title={ui('nativeCheckChat')}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-cyan-300/20 bg-cyan-300/[0.06] text-cyan-200/80 transition hover:bg-cyan-300/[0.12] focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300 disabled:opacity-35">
+            <RefreshCw size={15} aria-hidden="true"/>
+          </button>
+          <button type="button" disabled={loading} onClick={()=>void cancelPending()}
+            aria-label={ui('nativeCancelChat')} title={ui('nativeCancelChat')}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/[0.025] text-slate-400 transition hover:bg-white/[0.07] focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300 disabled:opacity-35">
+            <X size={15} aria-hidden="true"/>
+          </button>
+        </div>
+      )}
       <form
         onSubmit={handleSubmit}
         className="mt-4 flex items-center gap-2"
       >
-        <input
+        <textarea
+          rows={2}
+          onKeyDown={event=>{if(event.key==="Enter"&&!event.shiftKey&&!event.nativeEvent.isComposing){event.preventDefault();event.currentTarget.form?.requestSubmit();}}}
+          aria-label={t("placeholder")}
           value={input}
           onChange={(event) => setInput(event.target.value)}
-          disabled={loading}
+          disabled={loading||!!pending||nativeThreadReadOnly}
           autoFocus={autoFocus}
           placeholder={t("placeholder")}
-          className="h-11 flex-1 rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-cyan-400/40"
+          className="clara-workspace-scroll clara-chat-input min-h-12 min-w-0 flex-1 resize-y rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-cyan-400/40"
         />
 
         <button
           type="submit"
-          disabled={loading || !input.trim()}
+          disabled={loading || !!pending || nativeThreadReadOnly || !input.trim()}
           aria-label={t("send")}
           className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/60 transition hover:border-white/20 hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
         >

@@ -52,6 +52,7 @@ function normalizeConfiguration(
 type MagicQConfigurationRow = {
   host: string;
   port: number;
+  integrity_valid: boolean;
   fixture_channels: Record<string, number> | string;
 };
 
@@ -95,7 +96,7 @@ implements MagicQConnectionConfigurationRepository {
   ): Promise<MagicQConnectionConfiguration | null> {
     await this.initialize();
     const rows = await sql`
-      SELECT host, port, fixture_channels
+      SELECT host, port, fixture_channels, content_sha256=clara_magicq_config_hash(host,port,fixture_channels,revision) AS integrity_valid
       FROM clara_magicq_connection_configuration
       WHERE connection_id = ${connectionId}
       LIMIT 1
@@ -103,6 +104,7 @@ implements MagicQConnectionConfigurationRepository {
 
     const row = rows[0];
     if (!row) return null;
+    if (!row.integrity_valid) throw new MagicQConfigurationError(409,"MAGICQ_CONFIGURATION_INTEGRITY");
 
     return normalizeConfiguration({
       host: row.host,
@@ -111,28 +113,12 @@ implements MagicQConnectionConfigurationRepository {
     });
   }
 
-  async save(
-    connectionId: string,
-    configuration: MagicQConnectionConfiguration,
-  ): Promise<void> {
-    const normalized = normalizeConfiguration(configuration);
-    await this.initialize();
-    await sql`
-      INSERT INTO clara_magicq_connection_configuration
-        (connection_id, host, port, fixture_channels, updated_at)
-      VALUES (
-        ${connectionId},
-        ${normalized.host},
-        ${normalized.port},
-        ${JSON.stringify(normalized.fixtureChannels)},
-        NOW()
-      )
-      ON CONFLICT (connection_id) DO UPDATE SET
-        host = EXCLUDED.host,
-        port = EXCLUDED.port,
-        fixture_channels = EXCLUDED.fixture_channels,
-        updated_at = NOW()
-    `;
+  async configured(workspaceId: string, action: "READ" | "SAVE", input: Record<string, unknown> = {}): Promise<MagicQSavedConfiguration | null> {
+    const rows = await sql`SELECT clara_magicq_configuration(${workspaceId},${action},${JSON.stringify(input)}::jsonb) AS result` as {result: {error?: string; status?: number; configuration?: MagicQSavedConfiguration | null}}[];
+    const result=rows[0]?.result;
+    if (!result) throw new MagicQConfigurationError(502,"MAGICQ_INVALID_RESULT");
+    if(result.error) throw new MagicQConfigurationError(result.status || 409,result.error);
+    return result.configuration ?? null;
   }
 
   async delete(connectionId: string): Promise<void> {
@@ -145,3 +131,11 @@ implements MagicQConnectionConfigurationRepository {
 }
 
 export const validateMagicQConnectionConfiguration = normalizeConfiguration;
+
+export type MagicQSavedConfiguration = MagicQConnectionConfiguration & {
+ connectionId: string; provider: "chamsys.magicq"; revision: number; contentSha256: string;
+ port: number; status: "ACTIVE"; writeCapabilitiesEnabled: false; physicalCertificationGranted: false;
+};
+export class MagicQConfigurationError extends Error {
+ constructor(public readonly status: number, public readonly code: string) {super(code);}
+}

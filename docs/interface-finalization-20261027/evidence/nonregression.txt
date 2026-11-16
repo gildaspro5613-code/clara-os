@@ -1,0 +1,30 @@
+✔ commercial draft modification persists in and reloads from the acquisition record (4.505073ms)
+✔ Clara revises the same durable draft from a conversational instruction (1.421904ms)
+✔ conversation rewrite persists revision 2 in the acquisition record and survives reload (2.43467ms)
+✔ exact E2E replacement phrase is classified as a durable commercial revision (0.788515ms)
+✔ commercial substitution wording is also classified as a revision (0.262195ms)
+✔ commercial confirmation creates an approval and remains fail-closed without Gmail or Brevo (2.635123ms)
+✔ P0 projection preserves the contextual owner session (0.624555ms)
+✔ CredentialStore encrypts credentials and retrieves them by connectionId (2.624121ms)
+✔ Connection and its public representation never expose credentials (0.253491ms)
+✔ OAuth state is signed, expires, and is bound to the CSRF cookie nonce (1.255433ms)
+✔ credential updates preserve an existing refresh token (0.213592ms)
+✔ GoogleAuth persists refreshed credentials without losing refresh_token (68.126273ms)
+✔ invalid_grant marks the connection for reconnect and raises a stable error (7.978122ms)
+✔ cockpit email projection preserves metadata and source without bodies, snippets, duplicates or unsafe IDs (12.232702ms)
+✔ five-language populated cockpit never renders full conversation/email bodies and retains actionable source links (156.92374ms)
+✔ all active registry missions remain visible and a blocked focus is never labeled active (91.305539ms)
+✔ all native Clara states and conversations title resolve in five locales (4.208058ms)
+✔ new commercial drafts follow declared source locale without changing approval, identity or intake data (102.605047ms)
+✔ server Missions page preserves blocked status without execution metadata and uses the durable thread focus (2284.943936ms)
+✔ cockpit with no selected mission distinguishes the current thread from five active registry missions (132.73552ms)
+✔ voice authorization uses existing server-owned workspace and operator permissions, rejects foreign origin before auth (181.090753ms)
+✔ four provider routes deny unauthenticated requests before any provider and localize secret-free failures in five languages (227.092594ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7780.511594

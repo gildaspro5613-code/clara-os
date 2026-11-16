@@ -1,0 +1,151 @@
+[
+  {
+    "baseRefName": "reception/lot2-light-stage-documents",
+    "headRefOid": "c027db8a4f2dbb8496a5a8f1e939c6f300e74b76",
+    "isDraft": true,
+    "number": 316,
+    "state": "OPEN",
+    "statusCheckRollup": [
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-21T13:56:57Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-live/actions/runs/39612413048/job/119264428450",
+        "name": "backend-library-tests",
+        "startedAt": "2026-10-21T13:56:35Z",
+        "status": "COMPLETED",
+        "workflowName": "Library QA"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-21T14:01:44Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-live/actions/runs/39612413159/job/119264428797",
+        "name": "four-professional-workspaces",
+        "startedAt": "2026-10-21T13:56:35Z",
+        "status": "COMPLETED",
+        "workflowName": "Professional workspaces isolated QA"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-21T13:57:04Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-live/actions/runs/39612413093/job/119264428483",
+        "name": "compile-and-import",
+        "startedAt": "2026-10-21T13:56:35Z",
+        "status": "COMPLETED",
+        "workflowName": "Python Import QA"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-21T14:03:34Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-live/actions/runs/39612413069/job/119264428832",
+        "name": "stage-interop-isolated",
+        "startedAt": "2026-10-21T13:56:35Z",
+        "status": "COMPLETED",
+        "workflowName": "Stage Model lot 2 isolated QA"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-21T13:58:37Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-live/actions/runs/39612413048/job/119264427531",
+        "name": "frontend-library-tests",
+        "startedAt": "2026-10-21T13:56:35Z",
+        "status": "COMPLETED",
+        "workflowName": "Library QA"
+      }
+    ],
+    "url": "https://github.com/gildaspro5613-code/clara-live/pull/316"
+  },
+  {
+    "baseRefName": "fix/voice-delegation-index-authority",
+    "headRefOid": "68d02cad772625428c458cf3ed23572513328c50",
+    "isDraft": true,
+    "number": 318,
+    "state": "OPEN",
+    "statusCheckRollup": [
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-21T15:24:52Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-live/actions/runs/39625383060/job/119309117512",
+        "name": "backend-library-tests",
+        "startedAt": "2026-10-21T15:24:34Z",
+        "status": "COMPLETED",
+        "workflowName": "Library QA"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-21T15:28:33Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-live/actions/runs/39625383160/job/119309117913",
+        "name": "isolated-validation",
+        "startedAt": "2026-10-21T15:24:33Z",
+        "status": "COMPLETED",
+        "workflowName": "Live Business Workspaces QA"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-21T15:29:30Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-live/actions/runs/39625383247/job/119309117536",
+        "name": "isolated-advice",
+        "startedAt": "2026-10-21T15:24:34Z",
+        "status": "COMPLETED",
+        "workflowName": "Production advice durable conversation QA"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-21T15:29:28Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-live/actions/runs/39625383251/job/119309118230",
+        "name": "four-professional-workspaces",
+        "startedAt": "2026-10-21T15:24:34Z",
+        "status": "COMPLETED",
+        "workflowName": "Professional workspaces isolated QA"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-21T15:25:48Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-live/actions/runs/39625383021/job/119309116438",
+        "name": "compile-and-import",
+        "startedAt": "2026-10-21T15:24:34Z",
+        "status": "COMPLETED",
+        "workflowName": "Python Import QA"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-21T15:30:40Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-live/actions/runs/39625382950/job/119309117052",
+        "name": "stage-interop-isolated",
+        "startedAt": "2026-10-21T15:24:34Z",
+        "status": "COMPLETED",
+        "workflowName": "Stage Model lot 2 isolated QA"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-21T15:26:47Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/gildaspro5613-code/clara-live/actions/runs/39625383060/job/119309117215",
+        "name": "frontend-library-tests",
+        "startedAt": "2026-10-21T15:24:33Z",
+        "status": "COMPLETED",
+        "workflowName": "Library QA"
+      }
+    ],
+    "url": "https://github.com/gildaspro5613-code/clara-live/pull/318"
+  },
+  {
+    "baseRefName": "fix/magicq-config-recovery",
+    "headRefOid": "b17cf916ae9bf946281165f6a4021a961718ce46",
+    "isDraft": true,
+    "number": 334,
+    "state": "OPEN",
+    "statusCheckRollup": [],
+    "url": "https://github.com/gildaspro5613-code/clara-live/pull/334"
+  }
+]

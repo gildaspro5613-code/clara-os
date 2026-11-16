@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import {
   CalendarDays,
@@ -67,9 +68,10 @@ export default function CockpitActionBar() {
           const Icon = action.icon;
 
           return (
-            <button
+            <Link
               key={action.id}
-              type="button"
+              prefetch={false}
+              href={action.id === "mission" ? "/clara?intent=new-mission" : action.id === "automations" ? "/automatisations" : "/"+action.id}
               className="group flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm text-white/75 transition hover:border-white/20 hover:bg-white/[0.08] hover:text-white"
             >
               <Icon
@@ -79,7 +81,7 @@ export default function CockpitActionBar() {
               />
 
               <span>{action.id === "mission" ? ui("newMission") : nav(action.id === "automations" ? "automatisations" : action.id)}</span>
-            </button>
+            </Link>
           );
         })}
       </div>

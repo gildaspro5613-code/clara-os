@@ -1,0 +1,257 @@
+import { nativeOperationFence } from "@/lib/native/authority";
+/**
+ * ============================================
+ * CLARA OS
+ * Documents API
+ * --------------------------------------------
+ * Exposes the existing Google Drive document
+ * capabilities to the Documents workspace.
+ * ============================================
+ */
+
+import { NextResponse } from "next/server";
+
+import { GoogleDriveEngine } from "@/lib/connectors/internal/google/drive/google-drive-engine";
+import { DriveClient } from "@/lib/connectors/internal/google/drive/drive-client";
+import { googleReauthResponse } from "@/lib/connectors/google/auth/google-api-error-response";
+import { dispatchEvent } from "@/lib/core/event-bus";
+import { Clara } from "@/lib/core/clara";
+import { getRuntime } from "@/lib/core/runtime";
+import { resolveOperationalContext } from "@/lib/core/operational-context";
+import { DEFAULT_SESSION_KEY } from "@/lib/core/store/session-store";
+import { EventType } from "@/types";
+import { Journal } from "@/lib/core/journal";
+import { writeActionEntry } from "@/lib/core/journal-writer";
+import { createDriveFolder, moveDriveResource } from "@/lib/documents/drive-workspace";
+import { DocumentReadError } from "@/lib/documents/document-read-error";
+import { readDocumentRequest } from "@/lib/documents/bounded-request";
+
+export const runtime = "nodejs";
+
+const MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
+const MAX_READ_CHARACTERS = 200_000;
+
+function failure(error: unknown, fallback: string) {
+  if (error instanceof SyntaxError) return NextResponse.json({ success: false, message: "Requête JSON invalide." }, { status: 400 });
+  if (error instanceof DocumentReadError) {
+    return NextResponse.json({ success: false, code: error.code, message: error.message }, { status: error.status });
+  }
+  const reauth = googleReauthResponse(error);
+  if (reauth) return reauth;
+  return NextResponse.json(
+    {
+      success: false,
+      message: error instanceof Error ? error.message : fallback,
+    },
+    { status: 500 },
+  );
+}
+
+export async function GET(request: Request) {
+  const nativeDenied=await nativeOperationFence(request);
+  if(nativeDenied)return nativeDenied;
+
+  try {
+    const { searchParams } = new URL(request.url);
+    const query = searchParams.get("query")?.trim() ?? "";
+    const action = searchParams.get("action")?.trim() ?? "list";
+    const fileId = searchParams.get("fileId")?.trim() ?? "";
+    const fileName = searchParams.get("fileName")?.trim() ?? "";
+    const folderId = searchParams.get("folderId")?.trim() ?? "";
+    const pageToken = searchParams.get("pageToken")?.trim() || undefined;
+    const mimeType = searchParams.get("mimeType")?.trim() || undefined;
+
+    const engine = new GoogleDriveEngine();
+
+    if (action === "read") {
+      if (!fileId) {
+        return NextResponse.json({ success: false, message: "fileId requis." }, { status: 400 });
+      }
+
+      const result = await engine.readContent({ fileId, fileName, mimeType });
+      if (!result.textContent?.trim()) {
+        return NextResponse.json({
+          success: false,
+          extractable: false,
+          message: (result.mimeType ?? mimeType) === "application/pdf"
+            ? "Ce PDF ne contient aucun texte extractible. Aucun OCR n’est effectué ; le PDF original reste disponible."
+            : "Ce format ne fournit pas encore de texte extractible à Clara OS.",
+        }, { status: 422 });
+      }
+
+      if (result.textContent.length > MAX_READ_CHARACTERS) {
+        return NextResponse.json({
+          success: false,
+          extractable: true,
+          message: "Document trop long pour une lecture unique par Clara (200 000 caractères maximum).",
+        }, { status: 413 });
+      }
+
+      const operational = await resolveOperationalContext();
+      const runtime = operational.sessionKey === DEFAULT_SESSION_KEY
+        ? getRuntime()
+        : new Clara(operational.sessionKey, operational.acquisition?.workspaceId);
+      const session = await dispatchEvent(runtime, {
+        id: crypto.randomUUID(),
+        type: EventType.DOCUMENT_RECEIVED,
+        source: "CLARA_DOCUMENTS",
+        timestamp: new Date(),
+        payload: {
+          fileId,
+          fileName,
+          mimeType: result.mimeType ?? mimeType,
+          textContent: result.textContent,
+        },
+        context: operational.acquisition
+          ? {
+              workspaceId: operational.acquisition.workspaceId,
+              sessionId: operational.sessionKey,
+              metadata: {
+                acquisitionSubmissionId: operational.acquisition.submissionId,
+              },
+            }
+          : undefined,
+      });
+      await new Journal().addEntry(writeActionEntry(
+        `Document lu avec Clara · ${fileName || fileId}`,
+        `Google Drive ${fileId} a produit un événement DOCUMENT_RECEIVED réel.`,
+      ));
+
+      return NextResponse.json({
+        success: true,
+        extractable: true,
+        fileId,
+        fileName,
+        mimeType: result.mimeType ?? mimeType,
+        textContent: result.textContent,
+        brain: {
+          recommendation: session.recommendation?.summary ?? null,
+          missionId: session.mission?.id ?? null,
+        },
+      });
+    }
+
+    if (action === "download") {
+      if (!fileId) {
+        return NextResponse.json({ success: false, message: "fileId requis." }, { status: 400 });
+      }
+
+      const result = await engine.download({ fileId, fileName, mimeType });
+      if (!(result.content instanceof Uint8Array)) {
+        throw new Error("Le contenu téléchargé est indisponible.");
+      }
+
+      const body = new Blob([new Uint8Array(result.content)]);
+      return new Response(body, {
+        headers: {
+          "Content-Type": result.mimeType || "application/octet-stream",
+          "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(result.fileName || fileName || "document")}`,
+          "Cache-Control": "private, no-store",
+        },
+      });
+    }
+
+    const escapeDrive = (value: string) => value.replaceAll("\\", "\\\\").replaceAll("'", "\\'");
+    const driveQuery = [
+      "trashed = false",
+      query ? `name contains '${escapeDrive(query)}'` : folderId ? `'${escapeDrive(folderId)}' in parents` : "'root' in parents",
+    ].join(" and ");
+
+    const result = await engine.list({ pageSize: 100, query: driveQuery, pageToken });
+
+    return NextResponse.json({
+      success: true,
+      query,
+      nextPageToken: result.nextPageToken ?? null,
+      files: result.files.map((file) => ({
+        id: file.fileId,
+        name: file.fileName,
+        mimeType: file.mimeType,
+        url: file.url,
+        parentId: file.parents?.[0] ?? null,
+      })),
+    });
+  } catch (error) {
+    return failure(error, "Impossible de consulter Google Drive.");
+  }
+}
+
+export async function POST(request: Request) {
+  const nativeDenied=await nativeOperationFence(request);
+  if(nativeDenied)return nativeDenied;
+
+  try {
+    const contentType = request.headers.get("content-type") ?? "";
+    if (contentType.includes("application/json")) {
+      const input: unknown = JSON.parse(new TextDecoder().decode(await readDocumentRequest(request, 64 * 1024)));
+      if (!input || typeof input !== "object" || Array.isArray(input)) throw new DocumentReadError("INVALID_REQUEST", "Requête documentaire invalide.", 400);
+      const body = input as { action?: string; fileId?: string; destinationId?: string; name?: string; parentId?: string };
+      if (!["move", "createFolder"].includes(body.action ?? "") ||
+          [body.fileId, body.destinationId, body.name, body.parentId].some(value => value !== undefined && (typeof value !== "string" || value.length > 512))) {
+        throw new DocumentReadError("INVALID_REQUEST", "Requête documentaire invalide.", 400);
+      }
+      const drive = await new DriveClient().create();
+      if (body.action === "createFolder") {
+        const folder = await createDriveFolder(drive, body.name, body.parentId || "root");
+        return NextResponse.json({ success: true, folder });
+      }
+      if (body.action === "move") {
+        const source = await moveDriveResource(drive, body.fileId ?? "", body.destinationId ?? "");
+        await new Journal().addEntry(writeActionEntry(
+          `Document déplacé · ${source.name ?? body.fileId}`,
+          `Google Drive : déplacement confirmé vers ${body.destinationId}.`,
+        ));
+        return NextResponse.json({ success: true });
+      }
+      return NextResponse.json({ success: false, message: "Action inconnue." }, { status: 400 });
+    }
+    if (!contentType.includes("multipart/form-data")) throw new DocumentReadError("INVALID_UPLOAD", "Un téléversement multipart est requis.", 400);
+    const body = await readDocumentRequest(request, MAX_UPLOAD_BYTES + 64 * 1024);
+    let formData: FormData;
+    try { formData = await new Response(body, { headers: { "Content-Type": contentType } }).formData(); }
+    catch { throw new DocumentReadError("INVALID_UPLOAD", "Le téléversement est invalide.", 400); }
+    const upload = formData.get("file");
+
+    if (!(upload instanceof File)) {
+      return NextResponse.json({ success: false, message: "Fichier requis." }, { status: 400 });
+    }
+    if (upload.size > MAX_UPLOAD_BYTES) {
+      return NextResponse.json({ success: false, message: "Fichier trop volumineux (20 Mo maximum)." }, { status: 413 });
+    }
+
+    const folderValue = formData.get("folderId");
+    const uploadFolderId = typeof folderValue === "string" ? folderValue.trim() : "";
+    if (uploadFolderId.length > 512) throw new DocumentReadError("INVALID_FOLDER", "Dossier de destination invalide.", 400);
+    if (uploadFolderId) {
+      const drive = await new DriveClient().create();
+      const parent = await drive.files.get({ fileId: uploadFolderId, fields: "id,mimeType", supportsAllDrives: true });
+      if (parent.data.mimeType !== "application/vnd.google-apps.folder") {
+        return NextResponse.json({ success: false, message: "Dossier de destination invalide." }, { status: 400 });
+      }
+    }
+    const content = Buffer.from(await upload.arrayBuffer());
+    const engine = new GoogleDriveEngine();
+    const result = await engine.upload({
+      fileName: upload.name,
+      mimeType: upload.type || "application/octet-stream",
+      content,
+      folderId: uploadFolderId || undefined,
+    });
+    await new Journal().addEntry(writeActionEntry(
+      `Document importé · ${upload.name}`,
+      `Google Drive ${result.fileId}`,
+    ));
+
+    return NextResponse.json({
+      success: true,
+      file: {
+        id: result.fileId,
+        name: result.fileName,
+        mimeType: upload.type || result.mimeType,
+        url: result.url,
+      },
+    }, { status: 201 });
+  } catch (error) {
+    return failure(error, "Impossible d’importer le document dans Google Drive.");
+  }
+}

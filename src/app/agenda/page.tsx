@@ -1,3 +1,4 @@
+import "@/modules/agenda/calendar-presentation.css";
 import MainLayout from "@/components/layout/MainLayout";
 import AgendaStage from "@/modules/agenda/AgendaStage";
 

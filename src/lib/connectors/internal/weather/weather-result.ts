@@ -1,5 +1,6 @@
 export interface WeatherResult {
   success: boolean;
+  code?:string;
   location: string;
   country?: string;
   temperatureC?: number;

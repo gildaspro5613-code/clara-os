@@ -22,17 +22,18 @@ export function sessionTokenDigest(token: string): string | null {
   return createHash("sha256").update(token, "utf8").digest("hex");
 }
 
-export async function resolveAuthenticatedWorkspace(
-  token: string | undefined,
-  workspaceId: string,
-  permission: WorkspacePermission,
-): Promise<{ userId: string; workspaceId: string } | null> {
+export function createAuthenticatedWorkspaceResolver(query: typeof sql = sql) {
+  return async function resolveAuthenticatedWorkspace(
+    token: string | undefined,
+    workspaceId: string,
+    permission: WorkspacePermission,
+  ): Promise<{ userId: string; workspaceId: string } | null> {
   const digest = token ? sessionTokenDigest(token) : null;
   if (!digest || !workspaceId.trim() || workspaceId === "default") return null;
 
   // Session and membership tables are provisioned by the future sign-in
   // implementation. No fallback to global workspace or env identity.
-  const sessions = await sql`
+  const sessions = await query`
     SELECT user_id FROM clara_auth_sessions
     WHERE token_hash = ${digest}
       AND revoked_at IS NULL
@@ -42,7 +43,7 @@ export async function resolveAuthenticatedWorkspace(
   const session = sessions[0];
   if (!session) return null;
 
-  const memberships = await sql`
+  const memberships = await query`
     SELECT workspace_id, role FROM clara_workspace_memberships
     WHERE user_id = ${session.user_id}
       AND workspace_id = ${workspaceId}
@@ -59,4 +60,7 @@ export async function resolveAuthenticatedWorkspace(
   } catch {
     return null;
   }
+  };
 }
+
+export const resolveAuthenticatedWorkspace = createAuthenticatedWorkspaceResolver();

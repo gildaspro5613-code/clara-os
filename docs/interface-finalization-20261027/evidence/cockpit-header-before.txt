@@ -1,0 +1,23 @@
+Native browser fixture initialized; no production connections.
+✖ cockpit: unavailable header controls and native Hero services cannot initiate fictitious actions (33221.926304ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 34325.226724
+
+✖ failing tests:
+
+test at src/tests/cockpit-availability-browser.e2e.mjs:9:1
+✖ cockpit: unavailable header controls and native Hero services cannot initiate fictitious actions (33221.926304ms)
+  locator.isDisabled: Timeout 30000ms exceeded.
+  Call log:
+  [2m  - waiting for getByRole('textbox', { name: 'Rechercher', exact: true })[22m
+
+      at TestContext.<anonymous> (/workspace/clara-os-interface/src/tests/cockpit-availability-browser.e2e.mjs:20:76) {
+    name: 'TimeoutError',
+    log: [ "  - waiting for getByRole('textbox', { name: 'Rechercher', exact: true })" ]
+  }

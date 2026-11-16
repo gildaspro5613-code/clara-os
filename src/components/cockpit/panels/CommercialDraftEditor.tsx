@@ -26,7 +26,7 @@ export default function CommercialDraftEditor({
       const response = await fetch("/api/clara/acquisition/commercial-draft", {
         method: "PATCH",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ submissionId: draft.submissionId, subject, body }),
+        body: JSON.stringify({ submissionId: draft.submissionId, revision:draft.revision, subject, body }),
       });
       const data = await response.json() as {
         success?: boolean;

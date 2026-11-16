@@ -6,7 +6,8 @@ import { authenticateExternalProduct, ExternalProductConfigurationError } from "
 import { DocumentRetryAuthorizationError, documentOperations, operationScopeKey, operationFingerprint } from "@/lib/external-capabilities/document-operations";
 
 export function routeHarness(failDispatch = false, store = documentOperations, failSession = false,
-  generate?: () => Promise<{ success: boolean; content: string; responseStatus?: "completed" | "incomplete" | "failed" | "other"; incompleteReason?: "max_output_tokens" | "content_filter" | "other"; failureCategory?: "provider_timeout" | "provider_auth" | "provider_rate_limit"; providerHttpStatus?: number; outputTokens?: number }>, compose?: () => Promise<string | import("@/lib/brain/response-composer").ComposedClaraResponse>) {
+  generate?: () => Promise<{ success: boolean; content: string; responseStatus?: "completed" | "incomplete" | "failed" | "other"; incompleteReason?: "max_output_tokens" | "content_filter" | "other"; failureCategory?: "provider_timeout" | "provider_auth" | "provider_rate_limit"; providerHttpStatus?: number; outputTokens?: number }>, compose?: (...args:Parameters<typeof import("@/lib/brain/response-composer").composeClaraResponseWithProposal>) => Promise<string | import("@/lib/brain/response-composer").ComposedClaraResponse>,
+  sourceFactory?: (event:Record<string,unknown>)=>Promise<unknown[]>) {
   const metrics = { documentAnalyses: 0 };
   const products = new Map([
     ["clara-live", { productId: "clara-live", workspaceId: "os-workspace", token: "test-credential", capabilities: [] }],
@@ -24,10 +25,10 @@ export function routeHarness(failDispatch = false, store = documentOperations, f
     "@/lib/core/clara": { Clara: class { constructor(_key: string, workspace: string) { workspaces.push(workspace); } } },
     "@/lib/core/event-bus": { dispatchEvent: async (_clara: unknown, event: Record<string, unknown>) => {
       if (failDispatch) throw new Error("confidential-downstream-error");
-      received.push(event); return { conversation: [], sources: [], state: "WORKING" };
+      received.push(event); return { conversation: [], sources: sourceFactory ? await sourceFactory(event) : [], state: "WORKING" };
     } },
-    "@/lib/brain/response-composer": { composeClaraResponseWithProposal: async () => {
-      const composed=compose ? await compose() : "Contract accepted.";
+    "@/lib/brain/response-composer": { composeClaraResponseWithProposal: async (...args:Parameters<typeof import("@/lib/brain/response-composer").composeClaraResponseWithProposal>) => {
+      const composed=compose ? await compose(...args) : "Contract accepted.";
       return typeof composed === "string" ? {content:composed,generation:{status:"completed",recoverable:false}} : composed;
     } },
     "@/lib/core/store/session-store": { saveSession: async () => { if (failSession) throw new Error("private-storage-error"); } },

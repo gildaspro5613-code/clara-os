@@ -1,11 +1,13 @@
+import { assertRecetteExternalExecutionBlocked } from "@/lib/recette/external-execution-guard";
 import { loadExternalProducts } from "@/lib/external-capabilities/config";
 import { RegistryError, type LinkCandidate, type LiveLinkProof } from "./registry";
 
 /** Keep the existing product configuration/credential; never redirect it. */
-export function createLiveCanonicalTransport(fetcher: typeof fetch = fetch) {
+export function createLiveCanonicalTransport(fetcher: typeof fetch = fetch, capability = "canonical-links:v1") {
   return async function call(path: string, payload: unknown): Promise<unknown> {
+    assertRecetteExternalExecutionBlocked("canonical.live");
     const product = loadExternalProducts().get("clara-live");
-    if (!product?.callbackBaseUrl || !product.capabilities.includes("canonical-links:v1"))
+    if (!product?.callbackBaseUrl || !product.capabilities.includes(capability))
       throw new RegistryError(503, "LIVE_CANONICAL_BRIDGE_UNAVAILABLE");
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 5_000);
@@ -48,3 +50,6 @@ export function createLiveCanonicalBridge(fetcher: typeof fetch = fetch) {
 }
 export const verifyLiveCanonicalProof = createLiveCanonicalBridge();
 export const callLiveCanonical = createLiveCanonicalTransport();
+
+/** Conversation associations have their own explicit capability, never archive tickets. */
+export const callLiveConversation = createLiveCanonicalTransport(fetch, "conversation:link");

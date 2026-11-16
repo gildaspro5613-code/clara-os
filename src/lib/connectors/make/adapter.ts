@@ -1,5 +1,6 @@
 import type { ConnectionResolver } from "@/lib/connections/connection-resolver";
 import { MakeWebhookClient, type MakeFetch } from "./client";
+import { MakeOnDemandClient } from "./on-demand-client";
 import { MAKE_CAPABILITIES } from "./definition";
 import type {
   MakeScenarioInvocation,
@@ -65,8 +66,9 @@ export class MakeConnectorAdapter {
       throw new Error(`Make scenario is not configured: ${invocation.scenarioKey}`);
     }
 
-    const client = new MakeWebhookClient(this.fetcher);
-    const data = await client.execute(configuration, invocation);
+    const data = configuration.transport === "api"
+      ? await new MakeOnDemandClient(this.fetcher).execute(configuration, credentials.api ?? {token:"",zone:""}, invocation)
+      : await new MakeWebhookClient(this.fetcher).execute(configuration, invocation);
     return { provider: "make", capability: request.capability, data };
   }
 }

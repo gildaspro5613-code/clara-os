@@ -1,0 +1,31 @@
+Base : 76818bbba9bd3ef299306696ed4eb560d74c2363
+
+PASS — 29 tests Google/sécurité, 0 ignoré :
+CANONICAL_TEST_CONTAINER=clara-canonical-test-postgres node --import tsx --test src/tests/native-google-work-postgres.test.ts src/tests/native-google-oauth.test.ts src/tests/google-native-hub.test.ts src/tests/native-authority.test.ts
+Le fichier de tests Google PostgreSQL existant importe la nouvelle recette de reconnexion.
+
+PASS — après la dernière correction du garde Calendar, 12 tests ciblés revalidés (inclus dans les 29, non additionnés) :
+CANONICAL_TEST_CONTAINER=clara-canonical-test-postgres node --import tsx --test src/tests/google-reconnect-postgres.test.ts src/tests/native-authority.test.ts src/tests/native-google-oauth.test.ts
+
+PASS — 2 recettes navigateur HTTPS ciblées, PostgreSQL réel local :
+node --import tsx --test src/tests/google-reconnect-browser.e2e.mjs
+node --import tsx --test --test-name-pattern='delivery UI' src/tests/operational-delivery-browser.e2e.mjs
+Environnement : DOCUMENTS_E2E_ORIGIN=https://127.0.0.1:3060 ; DOCUMENTS_E2E_CHROMIUM=/usr/bin/chromium ; NODE_EXTRA_CA_CERTS local ; NATIVE_TEST_DATABASE=native_browser_<32 caractères hexadécimaux> de fixture jetable. Les campagnes complètes d'interface et de header ne sont pas relancées.
+
+Preuves :
+- Avant : connexion RECONNECT_REQUIRED, propriétaire/identité/droits valides => 403 REGISTRY_ACCESS_DENIED.
+- Après : même refus 403, code NATIVE_GOOGLE_REAUTH_REQUIRED explicite ; aucun scope/credential modifié avant consentement.
+- Préparation du consentement sur la même connexion, scopes exactement conservés ; aucune création de connexion inconnue, aucun scope fourni par le client accepté.
+- Refus pour membre non habilité à consentir, utilisateur étranger, mauvais projet, droits retirés et autorité révoquée.
+- Connexion ACTIVE => sélection persistée ; lecture Calendar autorisée d'un événement SIMULÉ ; scope Calendar absent => 403 GOOGLE_CONSENT_REQUIRED, sans tableau d'événements vide présenté comme succès.
+- Browser : cinq langues, captures ciblées ; demande de consentement Google interceptée avant réseau, aucune approbation réelle ; propriétaire seul reçoit l'action de reconnexion.
+- Refus privés/SQL inconnus restent génériques, aucun chargeur global tenté.
+
+PASS — npx tsc --noEmit --pretty false
+PASS — lint ciblé, zéro erreur/avertissement sur les fichiers modifiés.
+PASS — build optimisé Webpack. Les fichiers Geist locaux préexistants de Next sont utilisés par la fixture de polices ; aucun téléchargement Google Fonts requis.
+PASS — les deux templates SQL en lecture seule sont parsés/exécutés uniquement sur la base locale jetable, aucun résultat assimilé à Production.
+PASS — git diff --check.
+
+NON ATTESTÉ — contexte exact du refus Production, métadonnées et références privées IONOS distantes, présence réelle des scopes Drive/Calendar et réception fournisseur authentifiée.
+Aucun test IONOS réseau, IMAP, SMTP ou monitoring. Code IONOS, OAuth d'identité, Brain, vocal, Header et modèles SQL inchangés. Aucune écriture distante, migration, révocation ou déploiement.

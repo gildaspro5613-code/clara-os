@@ -1,0 +1,785 @@
+{
+  "provider": "Google authentication not exercised against real Google; existing routes unchanged",
+  "matrix": [
+    {
+      "page": "/",
+      "format": "desktop",
+      "locale": "fr",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/clara",
+      "format": "desktop",
+      "locale": "fr",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/missions",
+      "format": "desktop",
+      "locale": "fr",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/conversations",
+      "format": "desktop",
+      "locale": "fr",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/contacts",
+      "format": "desktop",
+      "locale": "fr",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/documents",
+      "format": "desktop",
+      "locale": "fr",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/messagerie",
+      "format": "desktop",
+      "locale": "fr",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/agenda",
+      "format": "desktop",
+      "locale": "fr",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/journal",
+      "format": "desktop",
+      "locale": "fr",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/brain",
+      "format": "desktop",
+      "locale": "fr",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/automatisations",
+      "format": "desktop",
+      "locale": "fr",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/connexions",
+      "format": "desktop",
+      "locale": "fr",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/telephonie",
+      "format": "desktop",
+      "locale": "fr",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/",
+      "format": "desktop",
+      "locale": "en",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/clara",
+      "format": "desktop",
+      "locale": "en",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/missions",
+      "format": "desktop",
+      "locale": "en",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/conversations",
+      "format": "desktop",
+      "locale": "en",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/contacts",
+      "format": "desktop",
+      "locale": "en",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/documents",
+      "format": "desktop",
+      "locale": "en",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/messagerie",
+      "format": "desktop",
+      "locale": "en",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/agenda",
+      "format": "desktop",
+      "locale": "en",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/journal",
+      "format": "desktop",
+      "locale": "en",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/brain",
+      "format": "desktop",
+      "locale": "en",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/automatisations",
+      "format": "desktop",
+      "locale": "en",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/connexions",
+      "format": "desktop",
+      "locale": "en",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/telephonie",
+      "format": "desktop",
+      "locale": "en",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/",
+      "format": "desktop",
+      "locale": "es",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/clara",
+      "format": "desktop",
+      "locale": "es",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/missions",
+      "format": "desktop",
+      "locale": "es",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/conversations",
+      "format": "desktop",
+      "locale": "es",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/contacts",
+      "format": "desktop",
+      "locale": "es",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/documents",
+      "format": "desktop",
+      "locale": "es",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/messagerie",
+      "format": "desktop",
+      "locale": "es",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/agenda",
+      "format": "desktop",
+      "locale": "es",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/journal",
+      "format": "desktop",
+      "locale": "es",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/brain",
+      "format": "desktop",
+      "locale": "es",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/automatisations",
+      "format": "desktop",
+      "locale": "es",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/connexions",
+      "format": "desktop",
+      "locale": "es",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/telephonie",
+      "format": "desktop",
+      "locale": "es",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/",
+      "format": "desktop",
+      "locale": "de",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/clara",
+      "format": "desktop",
+      "locale": "de",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/missions",
+      "format": "desktop",
+      "locale": "de",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/conversations",
+      "format": "desktop",
+      "locale": "de",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/contacts",
+      "format": "desktop",
+      "locale": "de",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/documents",
+      "format": "desktop",
+      "locale": "de",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/messagerie",
+      "format": "desktop",
+      "locale": "de",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/agenda",
+      "format": "desktop",
+      "locale": "de",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/journal",
+      "format": "desktop",
+      "locale": "de",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/brain",
+      "format": "desktop",
+      "locale": "de",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/automatisations",
+      "format": "desktop",
+      "locale": "de",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/connexions",
+      "format": "desktop",
+      "locale": "de",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/telephonie",
+      "format": "desktop",
+      "locale": "de",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/",
+      "format": "desktop",
+      "locale": "it",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/clara",
+      "format": "desktop",
+      "locale": "it",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/missions",
+      "format": "desktop",
+      "locale": "it",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/conversations",
+      "format": "desktop",
+      "locale": "it",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/contacts",
+      "format": "desktop",
+      "locale": "it",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/documents",
+      "format": "desktop",
+      "locale": "it",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/messagerie",
+      "format": "desktop",
+      "locale": "it",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/agenda",
+      "format": "desktop",
+      "locale": "it",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/journal",
+      "format": "desktop",
+      "locale": "it",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/brain",
+      "format": "desktop",
+      "locale": "it",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/automatisations",
+      "format": "desktop",
+      "locale": "it",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/connexions",
+      "format": "desktop",
+      "locale": "it",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/telephonie",
+      "format": "desktop",
+      "locale": "it",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/",
+      "format": "mobile",
+      "locale": "fr",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/clara",
+      "format": "mobile",
+      "locale": "fr",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/missions",
+      "format": "mobile",
+      "locale": "fr",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/conversations",
+      "format": "mobile",
+      "locale": "fr",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/contacts",
+      "format": "mobile",
+      "locale": "fr",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/documents",
+      "format": "mobile",
+      "locale": "fr",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/messagerie",
+      "format": "mobile",
+      "locale": "fr",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/agenda",
+      "format": "mobile",
+      "locale": "fr",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/journal",
+      "format": "mobile",
+      "locale": "fr",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/brain",
+      "format": "mobile",
+      "locale": "fr",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/automatisations",
+      "format": "mobile",
+      "locale": "fr",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/connexions",
+      "format": "mobile",
+      "locale": "fr",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/telephonie",
+      "format": "mobile",
+      "locale": "fr",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/",
+      "format": "mobile",
+      "locale": "en",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/clara",
+      "format": "mobile",
+      "locale": "en",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/missions",
+      "format": "mobile",
+      "locale": "en",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/conversations",
+      "format": "mobile",
+      "locale": "en",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/contacts",
+      "format": "mobile",
+      "locale": "en",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/documents",
+      "format": "mobile",
+      "locale": "en",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/messagerie",
+      "format": "mobile",
+      "locale": "en",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/agenda",
+      "format": "mobile",
+      "locale": "en",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/journal",
+      "format": "mobile",
+      "locale": "en",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/brain",
+      "format": "mobile",
+      "locale": "en",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/automatisations",
+      "format": "mobile",
+      "locale": "en",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/connexions",
+      "format": "mobile",
+      "locale": "en",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/telephonie",
+      "format": "mobile",
+      "locale": "en",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/",
+      "format": "mobile",
+      "locale": "es",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/clara",
+      "format": "mobile",
+      "locale": "es",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/missions",
+      "format": "mobile",
+      "locale": "es",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/conversations",
+      "format": "mobile",
+      "locale": "es",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/contacts",
+      "format": "mobile",
+      "locale": "es",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/documents",
+      "format": "mobile",
+      "locale": "es",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/messagerie",
+      "format": "mobile",
+      "locale": "es",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/agenda",
+      "format": "mobile",
+      "locale": "es",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/journal",
+      "format": "mobile",
+      "locale": "es",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/brain",
+      "format": "mobile",
+      "locale": "es",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/automatisations",
+      "format": "mobile",
+      "locale": "es",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/connexions",
+      "format": "mobile",
+      "locale": "es",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/telephonie",
+      "format": "mobile",
+      "locale": "es",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/",
+      "format": "mobile",
+      "locale": "de",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/clara",
+      "format": "mobile",
+      "locale": "de",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/missions",
+      "format": "mobile",
+      "locale": "de",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/conversations",
+      "format": "mobile",
+      "locale": "de",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/contacts",
+      "format": "mobile",
+      "locale": "de",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/documents",
+      "format": "mobile",
+      "locale": "de",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/messagerie",
+      "format": "mobile",
+      "locale": "de",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/agenda",
+      "format": "mobile",
+      "locale": "de",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/journal",
+      "format": "mobile",
+      "locale": "de",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/brain",
+      "format": "mobile",
+      "locale": "de",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/automatisations",
+      "format": "mobile",
+      "locale": "de",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/connexions",
+      "format": "mobile",
+      "locale": "de",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/telephonie",
+      "format": "mobile",
+      "locale": "de",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/",
+      "format": "mobile",
+      "locale": "it",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/clara",
+      "format": "mobile",
+      "locale": "it",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/missions",
+      "format": "mobile",
+      "locale": "it",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/conversations",
+      "format": "mobile",
+      "locale": "it",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/contacts",
+      "format": "mobile",
+      "locale": "it",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/documents",
+      "format": "mobile",
+      "locale": "it",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/messagerie",
+      "format": "mobile",
+      "locale": "it",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/agenda",
+      "format": "mobile",
+      "locale": "it",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/journal",
+      "format": "mobile",
+      "locale": "it",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/brain",
+      "format": "mobile",
+      "locale": "it",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/automatisations",
+      "format": "mobile",
+      "locale": "it",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/connexions",
+      "format": "mobile",
+      "locale": "it",
+      "result": "PASS isolated native PostgreSQL"
+    },
+    {
+      "page": "/telephonie",
+      "format": "mobile",
+      "locale": "it",
+      "result": "PASS isolated native PostgreSQL"
+    }
+  ]
+}

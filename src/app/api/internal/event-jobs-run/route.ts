@@ -1,3 +1,4 @@
+import {runIonosMonitorTick} from '@/lib/native/mail-monitor';
 import { timingSafeEqual } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { eventJobs } from '@/lib/external-capabilities/event-jobs';
@@ -15,6 +16,9 @@ export async function GET(request: Request) {
     await reconcilePendingDocuments();
     await eventJobs.maintain();
     const executed = await runEventJob();
-    return NextResponse.json({ success: true, executed });
+    let mailMonitor;
+    try { mailMonitor=await runIonosMonitorTick(); }
+    catch { mailMonitor={status:'unavailable'}; }
+    return NextResponse.json({ success: true, executed, mailMonitor });
   } catch { return NextResponse.json({ success: false, code: 'EVENT_JOB_WORKER_UNAVAILABLE' }, { status: 503 }); }
 }

@@ -1,0 +1,44 @@
+{
+  "localWorktreeFound": false,
+  "localCommitFound": false,
+  "remoteNamedBranchFound": false,
+  "archives": [
+    {
+      "archive": "clara-os-lot5a-preproduction.zip",
+      "entries": 5,
+      "matchingSourcePaths": []
+    },
+    {
+      "archive": "clara-os-v1-reception-20261024.zip",
+      "entries": 49,
+      "matchingSourcePaths": []
+    },
+    {
+      "archive": "clara-os-reception-finale-176.zip",
+      "entries": 102,
+      "matchingSourcePaths": []
+    },
+    {
+      "archive": "clara-os-agenda-drive-176.zip",
+      "entries": 36,
+      "matchingSourcePaths": []
+    },
+    {
+      "archive": "clara-os-lot5-production.zip",
+      "entries": 28,
+      "matchingSourcePaths": []
+    },
+    {
+      "archive": "clara-canonical-stage-reception-20261022.zip",
+      "entries": 37,
+      "matchingSourcePaths": []
+    },
+    {
+      "archive": "clara-os-fermeture-fonctionnelle-176.zip",
+      "entries": 52,
+      "matchingSourcePaths": []
+    }
+  ],
+  "scope": "Archive path inventory only; no secret or unrelated file content read",
+  "historical117Counted": false
+}

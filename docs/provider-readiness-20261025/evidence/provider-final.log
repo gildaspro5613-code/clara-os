@@ -1,0 +1,68 @@
+✔ Brevo definition declares the V2 native commercial capability surface and operation types (15.708933ms)
+✔ client constructs an authenticated contact lookup without reading environment (1742.888384ms)
+✔ contact upsert updates an existing contact and returns its provider id (5.581677ms)
+✔ contact upsert creates a missing contact (64.564428ms)
+✔ template lookup supports a provider template id (6.850491ms)
+✔ transactional template email preserves params and parses messageId (29.168336ms)
+✔ campaign read, preparation, and update use focused campaign operations (19.678421ms)
+✔ 401, 403, and rate limits are normalized without leaking credentials (28.135373ms)
+✔ webhook parser maps supported delivery events to credential-free domain events (3.880638ms)
+✔ lists can be read, created, and populated natively (15.518625ms)
+✔ templates can be filtered and created natively (1.314116ms)
+✔ campaign execution is explicit and uses sendNow (0.596309ms)
+✔ statistics support aggregate and campaign report modes (22.35068ms)
+Checked 3680 translated messages.
+Checked 737 static translation calls.
+✔ all five locale dictionaries share identical keys (62.997543ms)
+✔ Clara response language covers every supported locale (0.470209ms)
+✔ every dictionary message is nonempty valid ICU with matching parameters and renders in five languages (1939.750882ms)
+✔ all static translation calls in pages, components, modules and API resolve to real catalog keys (885.808166ms)
+✔ new Clara responses use selected locale, preserve original quotations and leave Brain/session data untouched (2.825197ms)
+✔ telephony API localizes errors, preserves public identifiers and never echoes provider exceptions or secrets (200.951119ms)
+✔ native chat localizes empty requests and network failures in all five selected locales (79.424493ms)
+✔ IONOS network is off by default, no self-activation or guessed configuration (1.903095ms)
+✔ MIME decoding: plain text only, HTML never rendered or executed; oversized source rejected (24.998654ms)
+✔ MIME dangerous and excessive attachments are quarantined, no unsafe bytes exposed (25.734824ms)
+✔ actual IMAP adapter uses read-only locking, bounded partial fetch and UIDVALIDITY incremental resume (18.959823ms)
+✔ actual SMTP adapter freezes identity and bytes, enforces verified TLS, no URL/file access, no retry (0.980045ms)
+✔ SMTP EAUTH: failed, single attempt only (0.420734ms)
+✔ SMTP ECONNECTION: failed, single attempt only (0.274863ms)
+✔ SMTP ETIMEDOUT: uncertain, single attempt only (0.275052ms)
+✔ SMTP ESOCKET: uncertain, single attempt only (0.156918ms)
+✔ Make definition exposes only prepare and execute V1 capabilities (10.254258ms)
+✔ prepare does not resolve credentials or perform network I/O (0.427413ms)
+✔ execute resolves the webhook from the credential store rather than user input (245.354803ms)
+✔ unknown scenario keys fail before any webhook call (1.3712ms)
+✔ webhook client rejects non-HTTPS destinations (1.158537ms)
+✔ HTTP 200 with an explicit provider failure never produces a completed Make receipt (2.635323ms)
+✔ Make transport timeouts perform one handoff and are never a success receipt (0.931567ms)
+✔ a pending Make acknowledgement is not announced as successful execution (2.445017ms)
+✔ unqualified HTTP acknowledgements never certify a completed Make execution (6.323835ms)
+✔ contradictory provider statuses fail closed and ambiguous POST failures never authorize retry (2.20989ms)
+Checked 38 native handler refusals.
+[CLARA] instrumentation ready; business runtime is request-scoped
+✔ native session handler rejects missing, malformed and duplicate cookies before storage or global runtime (1168.415395ms)
+✔ default, external and absent explicit selectors cannot resume a global/native fallback (4.975968ms)
+✔ every fenced native HTTP handler refuses anonymous/invalid cookies without entering legacy business logic (1754.926895ms)
+✔ unavailable authority never leaks storage details or resumes the legacy runtime (28.251731ms)
+✔ even an explicitly authorized snapshot cannot unlock legacy native mutations (128.224788ms)
+✔ all six native server pages return before invoking any global data loader (533.08789ms)
+✔ reopened chat and native runtime/document handlers still refuse invalid authentication before business code (279.072719ms)
+✔ server instrumentation never imports or starts a global business runtime (15.258986ms)
+✔ Uncertified Google/Brevo/Make connection routes reject invalid OS sessions before storage or provider I/O (531.362852ms)
+✔ a verified native session cannot unlock Google credentials or Make configuration before connector certification (525.44679ms)
+✔ monitor disabled by default and fails closed in Recette without touching database/transport (1.748342ms)
+✔ read adapter has no send method and cannot construct SMTP; incomplete IMAP batch never advances cursor (27.54683ms)
+✔ existing scheduler rejects missing/incorrect cron authentication before service work (2148.722105ms)
+✔ outbound HTTP 200 without a durable provider identifier cannot be reported as a started call (148.076136ms)
+✔ existing ElevenLabs/Twilio request and attested identifier are preserved, without automatic retry (8.488354ms)
+✔ voice authorization uses existing server-owned workspace and operator permissions, rejects foreign origin before auth (598.927933ms)
+✔ four provider routes deny unauthenticated requests before any provider and localize secret-free failures in five languages (321.403759ms)
+ℹ tests 56
+ℹ suites 0
+ℹ pass 56
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 16828.728861

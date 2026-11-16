@@ -1,0 +1,23 @@
+raccordement,statut,preuve,limite
+Initialisation sans Stage ni surface Light,PASS,test_bilateral_actual_os_postgres_and_live_mongo_http; bilateral-result.json,"Déclaration opérateur explicite, parent null"
+"GDTF Library, mode, patch et preuve SHA",PASS,test_canonical_stage_mutation.py; final XML,"Archive synthétique uniquement, parseur réel"
+Deuxième révision,PASS,bilateral-result.json initial/second,"Même modelId, parent exact, nouvelle revision"
+Deux écritures réellement simultanées,PASS,bilateral-result.json realOsConcurrentCasMatched,"CAS Mongo réel matched [0,1], HTTP 200/409"
+Deux acteurs concurrents,PASS,two-actor-isolation.json,"Propriétaire accepté, acteur étranger refusé ; pas de partage inventé"
+Révocation après claim avant persistance,PASS,bilateral-result.json revocationBeforePersistenceBlocked,"Fence Mongo commune avec commit, late writer refusé"
+Acquittement perdu claim et settlement,PASS,bilateral-result.json lostClaimAndSettlementAcknowledgements,503 injectés intentionnellement ; reçu unique à la reprise explicite
+"Idempotence, intention différente, nonce et expiration",PASS,stage-final.xml; os-final.log,Rejeu identique reçu exact ; intention/nonce/expiry incompatibles refusés
+"Workspace, projet, préparation et run périmé",PASS,stage-final.xml; os-final.log,"Vérifications côté serveur, aucun fallback read/archive"
+Conservation Sound/Video/Production et objets non ciblés,PASS,test_bilateral_actual_os_postgres_and_live_mongo_http,Comparaison BSON exacte des sous-arbres non Light
+Historique A vers B vers A,PASS,test_initial_revision_cas_cancel_replay_and_restart,Révision décisionnelle distincte du digest de contenu
+Redémarrage Mongo et processus OS,PASS,bilateral-result.json,"Conteneur Mongo réellement redémarré, processus Node remplacé"
+Nouveau navigateur et refresh,PASS,cold-browser-reopened.png; bilateral-result.json,GET réel de révision contrôlé avant/après refresh
+Rendu 2D et 3D,PASS,canonical-2d-3d.png; stage-final.xml,"Chromium/WebGL réel, position et matrice rotation contrôlées"
+"PDF technique, archivage et réouverture",PASS,canonical-stage-dossier.pdf; reopened-canonical-stage-dossier.pdf,Octets identiques et SHA-256 dans bilateral-result.json
+Rôle PostgreSQL réellement limité,PASS,canonical-stage-postgres.test.ts; os-final.log,"SET ROLE distinct propriétaire, sans DDL/admin ; migration réappliquée"
+Régressions backend Live,PASS,six XML de campagnes,337 cas historiques rejoués : 336 PASS + 1 SKIP fabricant
+Régressions frontend et build,PASS,frontend-tests.log; frontend-build.log,"91 tests, build local, aucun déploiement"
+Contrats OS/voix et autorités,PASS,os-contracts.log; os-final.log,23 tests ciblés ; chemins conversation/link/stage bornés
+Archive fabricant authentique,NON TESTÉ,SKIP historique,"Recette séparée, aucun substitut synthétique annoncé authentique"
+"Neon distant, Production et fournisseurs",NON TESTÉ,Restrictions de mission,SQL local via adaptateur HTTP de test ; aucune attestation Neon réel
+Éditeur graphique de déclaration spatiale,HORS PÉRIMÈTRE,Contrat endpoints opérateur,Visualiseur existant lecture seule ; écriture reçue par API authentifiée

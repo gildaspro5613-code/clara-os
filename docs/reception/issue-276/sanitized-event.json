@@ -1,0 +1,572 @@
+{
+  "schemaVersion": "clara.unified-core.event.v1",
+  "eventType": "USER_MESSAGE",
+  "scope": {
+    "productId": "clara-live",
+    "workspaceId": "A",
+    "userId": "u",
+    "sessionId": "incident-276-sanitized"
+  },
+  "message": "Prépare la feuille de route et identifie les conflits de la même équipe, les dépendances et les points à confirmer. Références et réserves explicites ; aucune sauvegarde ni action physique. 4cf6d80243b288cd48076fccfa120a8f991f483798ba0d871169cfec9ba603406ddc164a1c28db19cbbd4f7214a80364f3cb3524502c1cc2bf710ea9f54b8c7fa28ac2a295d3390688ec49275c941accf83f7dd18cfd26c17299eb51d8df49fb2556a5476c2526a48469b2fd8ede741a08f3f5f2e547bf774b958e624ef1b89b39245f2a7afcae21826e89bb8969b90e557d4f81c8dd9a2a08e21ce3735bb0231923f3f02b312caf2b949722f7e3125ed475abcb6c29301f7e5ff4fd38f214385872f1bc4841a2e7b13792d6cf25cddd3045040311f9fecc16c49758258a8543c0db5f73e748daca805b55589c65fe2fdb9b79cb43e3524a2333e547ab71f1b7ca36474fe45d1f09213873cf8bce1e83b632981a102115c2097d978505dc3ba7922a90a11945ccc95a0a2a1ef87b0876500d667675337d7ca21770fff7506f3a22ae7a5880fc2f8a53dc1e904b0cf366f45dea8de4522c18a1875c6ab5ba077f06e8b224e181132a8b875ca6246f10880c807a957417b762bff2753a4a4867554908877996f7cd32b48e61c5a6301e98790fa3e5e8aa0d410f38603af1c0456ac3f88bb488a92257343617dda0d0512eaef2d670023fe8bcea3a0e49905e29a21d0f3bf1edb9b770ae78d6a89b04217db37d19e5d2553295b9854659399619d386c6c62b5c69ef002dd37b8aa7fe66f7212a2e631b7621d7ba414bd186aea073907594e4fb5ff5e137cc152bc958c8966ed4c5deac0dd6034a16b58794db010811b69095dc2e09c10877ccdcd241c5dbcdf809ce032d27c51af7c7d3bb0a2c17abaf41f528becb20c9821b12c988d29a40050bf49510d32c7c6ba3c4f4f35adec8307d8b7f4",
+  "project": {
+    "id": "A",
+    "name": null,
+    "client": null,
+    "type": null,
+    "date": null,
+    "environments": null,
+    "description": null
+  },
+  "context": {
+    "surface": "clara-live",
+    "language": "fr",
+    "effectiveTier": "pro",
+    "projectContext": {
+      "project": {
+        "id": "A",
+        "name": null,
+        "client": null,
+        "type": null,
+        "date": null,
+        "environments": null,
+        "description": null
+      },
+      "documents": [
+        {
+          "id": "doc1",
+          "filename": "synthetic.pdf",
+          "mime": "application/pdf",
+          "size": null,
+          "created_at": "2026-01-01",
+          "text": "Données synthétiques : accès à 09:00 ; montage 09:00-12:00 ; réglages 11:00-13:00 ; même équipe plateau. Réserve : chevauchement à arbitrer. d30a7d71a3d1c1b76a67d8e5a45fc654d927976835245de4350c99c5bf2bc698e605812c6aea3986b378d2cfeb120c126ab8b7b3da8d3be3ce88929424568b94b65914ac878201dfa3732f595ad2b090b106b58cc3fa980b1c408a53ca14c8a70b44a7ffaf0d3b7fd403bea1aae4d5031d65254514f0e2d524e675c0e3dec392b13dac6f692006230d7d3fd3fc1b64c6c4f89b2315eb6ac9ee8524593c30f68c3397125a9329b81bf52d1c467ca86100fcb7d25ae278ac41a17afc2f4b6563609903150227debc267245ef7321d887fb26142ce0abeb939125ef3b4794fb2ba0bcdf2b032bebb744b5d2d29de95fe6f12f0075f4f9caed806f0b78e162625239168d29f9ca0e313b1d308fac0738ceef518b27854f2335c613d99c3f892c67a17f033a7b04d43e45ee2206f81f67cdd71200a258fc491ef33b6e19f693785dd4feb0bb8acb8c5cd26b5dfbf3397be3324a98871e335ffdcb6a225622157c0000223761a8abe64b27dc7d97c2849c8ecfb1329b68f2f23149300c5ced67e0ee73adc0bd7028269e4933b1c47f556c6b9ad38b5dbe0c80ca1ef69c8687ff9b2a477258968ea5abe1c67de05262f75681606e2bbedd7e15829c05cfc821d06e7851dad087c268b05f5883d85743c4d0be7914a35ac41d046c748f93e9566b97f2bdce5fd24a8bce6fb0505fbd42d6e3117e6334b6df37217f1608ac0d6329e49494ed1e080fc11d7c4ef77bc42d8704a4ab95fa0279db81b2f2ff4b045dfac92eb7b454befe053b4a9d0687f4fc84baa336c17a5b3a35aa11b2c45f7d9023de4453e4054780aea574e9ccb2c0793b710b2beab9320527ac6a4c41c1572ae6ad6b12e8a080dc18cb709db23249995063bd76d1ee86635120f8e1a6ec9634e623d2eb7a3cc939a52f5211eb7a9b652320774ad5b0e5db891ed9e687c2fd51079b682014818e3a088a51f1ad3f6a9bfd92a2b028942b65e8f877fe958cd4de3c085a3bd0344f7c258587c4c5289027d1e28677b2801e0c8c8e577ebf39e8d8682db41df6aa746a09830da3f6877b5c8e722c9017f1bc71656de197b3264495bd649c5b853412bbc46291e66269ecf81a44098628cdf5a318f9057cee40612adf248fc455d3bd90895c001c824451c99cba03e90feb3b5ce538eec4f63d0bf86e9a541c5f151f2801c819a36c5def4bccbc671c282508e1e42c3d541270c218ebb59a476943a2714a0f85c8463cfb41ffd7a63474d7103796306390f39879821daf9d8023c180f7fa3f3df20b8c6762f730c7699d69ce4e90bd223951e8fa00a3943c33a85b869862cd404e8d0f852b103ffaf869e01007bb53d8c5f14ddcdef233beb3eae907c0dde2fd8120c30724cfd60de30029a67437528e1650855541e3bc6dc16c75cd2cfd459ceff64dc8b70794cf54a17c2af4e7f2cacdb8ad36695ddafd9902f94a85b7bda8bcdba1dcc281be5fe5b496cd15eed43e91b08c9a0e127f1e46c3cedbf8b6a32a840df57f13c5c29f45cace9e2d026228dea37abe79f202d0163c40ffd16f6bb7df646f2bda0b7dbbebac848e3990120d054db77ad0e3ec7b14aad670a31a9b849ef060028f5e2abcbfe3c0723917f8c43082e17b183f36a8284519a4698f3dac9c06ff8d101eb7e9a49bf17e273ac04495fb46778",
+          "text_truncated": true,
+          "project_id": "A",
+          "extracted_at": null,
+          "source_revision": "457eac0adae7a1b5e1a5a3f4630c9e0b6d17fae00f4ef2a4d674de931e299ef8",
+          "revision_state": "available",
+          "provenance_note": "bf0865b17c793f1417efad8e104ffca41d1c203557149843c54ad5cc9cb8dd5a2c6789b4329b0161b63586ad8ce457c6b81f1dab52c65bab8374a3008b53f33d299219b728a276fefae7f55e13e109cf3fd12e652cca24b6a8486"
+        }
+      ],
+      "preparations": [
+        {
+          "id": "prep-A",
+          "project_id": "A"
+        }
+      ],
+      "computations": {},
+      "document_selection": {
+        "state": "available",
+        "limit": 20,
+        "association": "selected_preparation",
+        "preparation_revision": "073a53c7d32f14c3d411b4c844e6fcdb44b143c88c2449e607a7ffb89ff6d8a4",
+        "excerpt_char_budget": 2500
+      }
+    },
+    "activePreparation": {
+      "id": "prep-A",
+      "project_id": "A",
+      "businessContext": {
+        "project_id": "A",
+        "preparation_id": "prep-A",
+        "revision": "073a53c7d32f14c3d411b4c844e6fcdb44b143c88c2449e607a7ffb89ff6d8a4",
+        "consistency": "individual_source_reads",
+        "policy": "saved_data_only_no_execution",
+        "limits": {
+          "bytes": 18000,
+          "rows_per_list": 60,
+          "documents": 20
+        },
+        "items": {
+          "state": "available",
+          "source": "effective_items",
+          "excluded_source_count": 2,
+          "rows": [
+            {
+              "id": "access",
+              "section": "production",
+              "label": "Accès plateau",
+              "value": "Accès confirmé à 09:00 ; montage à partir de 09:0017afc98361caa0f467c6b2e3f4bc961d5f3926eb240742f92b7556489ff8e4b1ad7ff549ac34f29bcb6837b368f058aa691cda701aea309eda334abe5c0f277108d2d78c56a31078cfe37975bb2350d87ff6ef8d",
+              "status": "confirmed",
+              "source_document_id": "doc1"
+            },
+            {
+              "id": "load",
+              "section": "production",
+              "label": "Montage",
+              "value": "2026-11-20 de 09:00 à 12:00 ; équipe plateau624f3a7cf0ab8afa45d837ca6f23f949cd66cc5fe6e96aed95de1f499d39400afef3e43b66b0e593615167181fe530acd83a32b1c029db5acce48c8f8b12f5d0d9b715acb0ab672395109110555147d31b7f33af",
+              "status": "to_verify",
+              "source_document_id": "doc1"
+            },
+            {
+              "id": "focus",
+              "section": "lighting",
+              "label": "Réglages lumière",
+              "value": "2026-11-20 de 11:00 à 13:00 ; même équipe plateaub850c2fb04e68e11f6478f94493b285a996bcc26f6c688112348cb21dc5e4e7e805a7118b8324657c2aa4a16e9d15a1680130cd8e026a263126133603ce9f585fe1c77724a43165681daa6b85dd82612c13275c9",
+              "status": "to_verify",
+              "source_document_id": "doc1"
+            }
+          ]
+        },
+        "spatial": {
+          "state": "available",
+          "source": "preparations.spatial",
+          "unit_system": "metric",
+          "stage_width": 12,
+          "stage_depth": 8,
+          "field_provenance": {
+            "stage_width": {
+              "source": "operator",
+              "status": "confirmed"
+            }
+          },
+          "structures": [
+            {
+              "id": "bridge",
+              "name": "Front bridge",
+              "status": "confirmed",
+              "position": {
+                "x": 0,
+                "y": 1,
+                "z": 4
+              }
+            }
+          ]
+        },
+        "calculations": {},
+        "worksheets": {
+          "production": {
+            "state": "available",
+            "source": "preparations.business_workspaces",
+            "domain": "production",
+            "version": 3,
+            "base_revision": "073a53c7d32f14c3d411b4c844e6fcdb44b143c88c2449e607a7ffb89ff6d8a4",
+            "stale": false,
+            "content": {
+              "rows": [
+                {
+                  "id": "load",
+                  "section": "timeline",
+                  "label": "Montage documenté",
+                  "date": "2026-11-20",
+                  "time": "09:00",
+                  "end_time": "12:00",
+                  "team": "plateau",
+                  "responsible": "Régie",
+                  "status": "to_verify",
+                  "notes": "77c17bdb5b01aecca148750eaf15911e16137704e162cfd82218a761000987076c05fdd45aa06c92d"
+                },
+                {
+                  "id": "focus",
+                  "section": "tasks",
+                  "label": "Réglages lumière",
+                  "date": "2026-11-20",
+                  "time": "11:00",
+                  "end_time": "13:00",
+                  "team": "plateau",
+                  "responsible": "Régie",
+                  "depends_on": [
+                    "load"
+                  ],
+                  "status": "to_verify",
+                  "notes": "6d6cdb5b7bcf3c9a30939371807807f668c51db8c000e9609e56bb907900f259b4e5c7b24ff4dc665"
+                }
+              ],
+              "routes": [],
+              "notes": "Les équipes doivent vérifier les cheminements communs avant installation. Le montage de structure conditionne les accrochages lumière ; la position de régie conditionne les liaisons son et vidéo. Les horaires, les effectifs et les disponibilités restent à confirmer. Aucun plan ne vaut validation des charges ni certification électrique. Les propositions doivent distinguer les décisions humaines attendues des seules informations enregistrées. "
+            },
+            "provenance": {
+              "load": {
+                "source": "operator",
+                "preparation_id": "prep-A",
+                "source_document_ids": [
+                  "doc1"
+                ]
+              },
+              "focus": {
+                "source": "operator",
+                "preparation_id": "prep-A",
+                "source_document_ids": [
+                  "doc1"
+                ]
+              }
+            },
+            "updated_at": "2026-01-01"
+          },
+          "sound": {
+            "state": "available",
+            "source": "preparations.business_workspaces",
+            "domain": "sound",
+            "version": 3,
+            "base_revision": "073a53c7d32f14c3d411b4c844e6fcdb44b143c88c2449e607a7ffb89ff6d8a4",
+            "stale": false,
+            "content": {
+              "rows": [
+                {
+                  "id": "sound-row",
+                  "label": "Saved sound",
+                  "value": "Persisted only",
+                  "status": "to_verify",
+                  "role": "input",
+                  "channel": 1,
+                  "notes": "8f9ca3362e8a6ef834b587894d578a767e17bd2fb288e274b8b4b4beae419b8de388ccb404f56736"
+                }
+              ],
+              "routes": [],
+              "notes": ""
+            },
+            "provenance": {
+              "sound-row": {
+                "source": "operator",
+                "preparation_id": "prep-A"
+              }
+            },
+            "updated_at": "2026-01-01"
+          },
+          "video": {
+            "state": "available",
+            "source": "preparations.business_workspaces",
+            "domain": "video",
+            "version": 3,
+            "base_revision": "073a53c7d32f14c3d411b4c844e6fcdb44b143c88c2449e607a7ffb89ff6d8a4",
+            "stale": false,
+            "content": {
+              "rows": [
+                {
+                  "id": "video-row",
+                  "label": "Saved video",
+                  "value": "Persisted only",
+                  "status": "to_verify",
+                  "role": "input",
+                  "channel": 1,
+                  "notes": "e73f1169896dcc75fac326375cc2c1d35d5e0d6c8ef50a86e2ddcfff0ea3b644a517f545e7a9ea47"
+                }
+              ],
+              "routes": [],
+              "notes": ""
+            },
+            "provenance": {
+              "video-row": {
+                "source": "operator",
+                "preparation_id": "prep-A"
+              }
+            },
+            "updated_at": "2026-01-01"
+          },
+          "structure": {
+            "state": "available",
+            "source": "preparations.business_workspaces",
+            "domain": "structure",
+            "version": 3,
+            "base_revision": "073a53c7d32f14c3d411b4c844e6fcdb44b143c88c2449e607a7ffb89ff6d8a4",
+            "stale": false,
+            "content": {
+              "rows": [
+                {
+                  "id": "structure-row",
+                  "label": "Charge suspendue",
+                  "value": "Vérifier les charges admissibles et les points de reprise avant accrochage.",
+                  "status": "to_verify",
+                  "section": "constraints",
+                  "notes": "Plan de structure documenté, validation humaine requise ; aucune charge certifiée.5e9a8b71e2249f2fe89a1d03d5a16900ff6d3d9d8c1610c1a2b2e1e6823e9fe0da7f9aedf82e7c79"
+                }
+              ],
+              "routes": [],
+              "notes": ""
+            },
+            "provenance": {
+              "structure-row": {
+                "source": "operator",
+                "preparation_id": "prep-A"
+              }
+            },
+            "updated_at": "2026-01-01"
+          }
+        },
+        "stage_model": {
+          "state": "not_loaded",
+          "reason": "source_not_saved",
+          "objects": []
+        },
+        "equipment": {
+          "state": "available",
+          "source": "matchable_references",
+          "referenced_count": 1,
+          "truncated": false,
+          "reader_limit_per_scope": 2000,
+          "rows": [
+            {
+              "id": "eq1",
+              "scope": "core",
+              "manufacturer": "Yamaha",
+              "model": "01V508c4d25adc569edee4406815e80f9fa8efa21189d235335efb5151d67b2c58c75b72f6c3f37fddd69ce841218e9027b3fb51c276cb4e1534111ff8d96b9fb18fcec650b6060aa25b9abbf17454f2c42f9b3467b",
+              "specs": {
+                "inputs": 17
+              },
+              "verified": false,
+              "incomplete": false,
+              "manufacturer_evidence_status": "partial",
+              "canonical_id": "equipment:core:eq1"
+            }
+          ],
+          "unavailable_references": [],
+          "canonical_library_semantics": {
+            "state": "not_loaded",
+            "reason": "pointer_is_not_evidence"
+          }
+        },
+        "documents": {
+          "state": "available",
+          "selection": {
+            "state": "available",
+            "limit": 20,
+            "association": "selected_preparation",
+            "preparation_revision": "073a53c7d32f14c3d411b4c844e6fcdb44b143c88c2449e607a7ffb89ff6d8a4",
+            "excerpt_char_budget": 2500
+          },
+          "rows": [
+            {
+              "document_id": "doc1",
+              "source_revision": "0df024eeaa3364dc1dce9d36496c63e5016a7789dfb8dac74b0a3daf595492a4",
+              "source": "document_analysis_batches",
+              "state": "available",
+              "reason": null,
+              "complete": false,
+              "completed_batches": 1,
+              "truncated": false,
+              "evidence_status": "documented_not_operator_confirmed",
+              "analysis": {
+                "schemaVersion": "clara.document-analysis.v1",
+                "entities": [],
+                "facts": [
+                  {
+                    "property": "sound.inputs_total",
+                    "value": 17,
+                    "locator": "page 1",
+                    "confidence": 0.9
+                  }
+                ],
+                "ambiguities": [
+                  "Outputs to verify"
+                ],
+                "conflicts": [],
+                "summary": "b5d7f7e10cbbc7abab8cf19212bea1f9ce4967cb3071746b862aa04d427d9c1da2603e001129fb534d4c302e33cc71647be7a1982b1061984acee40b1fb419fcfe106de93bb2d1198e8d07ff1ed821ed3a6bf90"
+              }
+            }
+          ],
+          "work_cycle": {
+            "source": "preparations.clara_work_cycle",
+            "complete": false,
+            "status": "not_loaded",
+            "operations": []
+          },
+          "unavailable_source_count": 1
+        },
+        "coverage": {
+          "policy": "representative_saved_sources_not_complete_dossier",
+          "source_counts": {
+            "items": 6,
+            "items_by_section": {
+              "sound": 1,
+              "production": 0,
+              "lighting": 0,
+              "video": 1,
+              "structure": 0,
+              "other": 4
+            },
+            "stage_objects": 1,
+            "equipment": 1,
+            "documents": 1,
+            "worksheets": {
+              "production": 1,
+              "sound": 1,
+              "video": 1,
+              "structure": 1
+            }
+          },
+          "selected_counts": {
+            "items": 6,
+            "stage_objects": 1,
+            "equipment": 1,
+            "documents": 1,
+            "worksheets": {
+              "production": 1,
+              "sound": 1,
+              "video": 1,
+              "structure": 1
+            }
+          }
+        },
+        "omissions": [
+          {
+            "path": "worksheets.video.routes[0].8282",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[1].2edf",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[2].4581",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[3].5da3",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[4].e7d4",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[5].4472",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[6].012d",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[7].1cdd",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[8].b4db",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[9].ead4",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[10].c560",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[11].fc67",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[12].fd95",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[13].e3ce",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[14].c800",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[15].0b25",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[16].eded",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[17].f4ac",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[18].7e69",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[19].87a2",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[20].e039",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[21].7473",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[22].c1e8",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[23].4fe8",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[24].544e",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[25].b742",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[26].de64",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[27].85ca",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[28].2953",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[29].a5cf",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[30].7a00",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[31].7d18",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[32].db28",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[33].e77e",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[34].f28e",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[35].2c9b",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[36].bfc2",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[37].e6e1",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[38].bd95",
+            "reason": "section_byte_budget"
+          },
+          {
+            "path": "worksheets.video.routes[39].61607cd03c228d2749f8f0d5911235716964f1ed1967a0002ccb9be61569f9106a138b3077246375c91e4f5f4b79b8ac2ceea5bf6a36fe989d10beb20afafe3702c39e215f3186a92d8b2e83dfedf6909d486b1f22142d7ddaa91f597ba813df466bd2bc2b243906fb96560293d24912eee645fe9e5b169d3c88d1b48709cd88d8bd00f6bbdf4ac3a2415bd43e479698373cc12224680a5c6387f7c407a50e5c41c1abf2efe59fc24892eb8577b835734224ce724a9779fb7c838e955e551bb1adfc3ca03342d2e2bc7005ece485d75ef66c282345a76db1d4907ae64c9830d21ae63d51cfd0f44cdb5fbbf9affcbaecaf4a5516bc8f7d1af6d2781560284b2e6286a9be73ce9e8482c6437265dadd68096541ddd64ff3ceab22cc3467b62061d828220d547ac175729a7f35d48ae10b9dfa8be3f6bd546bd7d55eab0f9b3bd8",
+            "reason": "section_byte_budget"
+          }
+        ],
+        "truncated": true
+      }
+    },
+    "live": {
+      "environment": "production",
+      "adviceOnly": true,
+      "preparationId": "prep-A"
+    }
+  },
+  "documents": [],
+  "liveCapabilities": []
+}

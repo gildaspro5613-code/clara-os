@@ -1,0 +1,40 @@
+✔ native ACTIVE is registered/selected, never a provider certification or an automatic selection (2.369314ms)
+✔ selected reconnect/pending cannot fall back to another active account (0.151493ms)
+✔ missing selection, missing authority, reconnect and pending are distinct (0.193476ms)
+✔ HTTP refusal dominates an apparently ACTIVE payload and public authority errors are preserved (0.171583ms)
+✔ malformed, duplicate, unknown-status and historical connected flags cannot imply a native connection (0.160947ms)
+Checked 38 native handler refusals.
+[CLARA] instrumentation ready; business runtime is request-scoped
+✔ native session handler rejects missing, malformed and duplicate cookies before storage or global runtime (76.047513ms)
+✔ default, external and absent explicit selectors cannot resume a global/native fallback (1.749109ms)
+✔ every fenced native HTTP handler refuses anonymous/invalid cookies without entering legacy business logic (198.864135ms)
+✔ unavailable authority never leaks storage details or resumes the legacy runtime (5.135423ms)
+✔ even an explicitly authorized snapshot cannot unlock legacy native mutations (17.948308ms)
+✔ all six native server pages return before invoking any global data loader (70.824251ms)
+✔ reopened chat and native runtime/document handlers still refuse invalid authentication before business code (48.304342ms)
+✔ server instrumentation never imports or starts a global business runtime (2.376074ms)
+✔ Uncertified Google/Brevo/Make connection routes reject invalid OS sessions before storage or provider I/O (97.059618ms)
+✔ a verified native session cannot unlock Google credentials or Make configuration before connector certification (71.955539ms)
+✔ Google connector reuses canonical RS256 issuer/subject validation; nonce, audience, expiry, forged keys and account substitution are rejected before credential mutation (105.716194ms)
+✔ Google reconnect: real PostgreSQL status gate, unchanged rights, existing connection and exact scopes (6482.85298ms)
+▶ Google native workspace: real PostgreSQL, exact confirmations, immutable scopes, single handoff, recovery and existing stores
+  ✔ consent transactions retain actual grants and reject missing or partial scopes (2941.316325ms)
+  ✔ explicit resource binding, two users/clients/projects and historical/primary/root refusals (6230.238503ms)
+  ✔ prepared encrypted file, exact human confirmation and concurrent one-time execution/replay (10198.3938ms)
+  ✔ lost provider acknowledgement, read-only reconciliation, fresh service/reconnect and no automatic resend (6662.057179ms)
+  ✔ conditional calendar update and Drive content/move preserve IDs, metadata, rights and versions (28524.715394ms)
+  ✔ project and Google resource revocation, read-only delegations, expired consent/proposals (7968.4875ms)
+  ✔ read delegation never becomes write authority; second owner retains independent mailbox/project resources (7109.381185ms)
+  ✔ single HTTP handoff never retries errors; explicit precondition and refusal receipt release scope (12877.859247ms)
+  ✔ uncertain no-effect blocks new handoffs and inbound maintenance cannot consume or expire native Google receipts (5582.345697ms)
+  ✔ 020 additive reapplication and pg_dump restoration preserve every operation/attestation/receipt (1839.468345ms)
+✔ Google native workspace: real PostgreSQL, exact confirmations, immutable scopes, single handoff, recovery and existing stores (94829.777848ms)
+✔ Google import validation rejects oversized bodies, ambiguous identities, native document conversion and offset-less times (3.025952ms)
+ℹ tests 29
+ℹ suites 0
+ℹ pass 29
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 103346.563335

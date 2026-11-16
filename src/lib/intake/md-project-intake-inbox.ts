@@ -1,3 +1,5 @@
+import {nativeContext} from "@/lib/native/scoped-context";
+import {RegistryError} from "@/lib/canonical/registry";
 import { sql } from "@/lib/core/store/database";
 import type { MdProjectIntake } from "@/types";
 
@@ -80,6 +82,7 @@ export async function loadProjectIntake(
   workspaceId: string,
   submissionId: string,
 ): Promise<ProjectIntakeInboxItem | null> {
+  const ctx=nativeContext();if(ctx){if(ctx.scope.workspaceId!==workspaceId)throw new RegistryError(403,'NATIVE_ACQUISITION_DENIED');const intake=ctx.intakes.get(submissionId);return intake?{workspaceId,submissionId,intake,...ctx.intakeMetadata.get(submissionId)!}:null;}
   await ensureSchema();
   const rows = await sql`
     SELECT workspace_id, submission_id, product_id, session_key, event_id, intake

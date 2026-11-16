@@ -1,0 +1,68 @@
+{
+  "checkedAt": "2026-10-14T16:35:03.164430+00:00",
+  "startingCommit": "1b7b718f80eafc4195b12fd1bd677ec64b6f89c1",
+  "productionDecision": "NO-GO",
+  "providerRequests": 0,
+  "productionMigrations": 0,
+  "liveCommitUnchanged": "48a2f94910d4a6111250e15046e0f471ddd6ac9b",
+  "isolatedTests": {
+    "passed": 56,
+    "failed": 0,
+    "skipped": 0,
+    "log": "/tmp/reception-175-preproduction-tests-final.log"
+  },
+  "sqlProbe": {
+    "status": "PASS",
+    "migrationReapplyPreservesUnboundHistory": true,
+    "selectOnlyRoleInsufficientForRowLocks": true,
+    "lockGrantsReachCanonicalDenial": true,
+    "isolatedDumpRestorePreservesHistory": true,
+    "productionTested": false,
+    "grantProfilePositiveAuthenticatedRuntimeTested": false
+  },
+  "beforeCorrectionHandlerProbe": [
+    {
+      "file": "src/app/api/connections/google/route.ts",
+      "anonymousStorageReads": 1,
+      "anonymousConnectionWrites": 0,
+      "anonymousCredentialWrites": 0,
+      "providerRequests": 0
+    },
+    {
+      "file": "src/app/api/connections/google/connect/route.ts",
+      "anonymousStorageReads": 1,
+      "anonymousConnectionWrites": 1,
+      "anonymousCredentialWrites": 0,
+      "providerRequests": 0
+    },
+    {
+      "file": "src/app/api/connections/make/configure/route.ts",
+      "anonymousStorageReads": 1,
+      "anonymousConnectionWrites": 1,
+      "anonymousCredentialWrites": 1,
+      "providerRequests": 0
+    }
+  ],
+  "migrations": {
+    "012_native_resource_authority.sql": "2d2865da1663dfae72a3aea3688ee437aedf08ff91c8fc2df786c058e3257f0f",
+    "013_native_scoped_runtime.sql": "2a73f67c056575249d1eb43da315583d29fb2a4311a84953f7d73ef5b715fead"
+  },
+  "vercel": {
+    "productionMetadata": "unverified",
+    "startingCommitGitHubStatus": "Canceled by Ignored Build Step",
+    "startingCommitGitHubDeployments": 0,
+    "vendorActivityNotAudited": true
+  },
+  "newConnectorFence": {
+    "routes": 9,
+    "invalidCookieRefusals": 27,
+    "verifiedSnapshotRefusals": 9,
+    "responseStatuses": [
+      401,
+      503
+    ],
+    "adapterCalls": 0
+  },
+  "typeScript": "PASS",
+  "targetedEslint": "PASS"
+}

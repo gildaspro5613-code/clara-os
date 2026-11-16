@@ -1,0 +1,92 @@
+[
+  {
+    "id": "J1-01",
+    "gravite": "P1",
+    "symptome": "Opérations IONOS en attente absentes du Cockpit",
+    "cause": "Démontré : overview ne renvoyait que messages/triage",
+    "impact_j1": "Approbations difficiles à retrouver",
+    "correctif_minimal": "Projeter le registre canonique existant, sans contenu/jeton ni envoi",
+    "non_regression": "native-mail-postgres : scopes, négatifs, snapshots et absence de transport ; navigateur",
+    "statut": "CORRIGÉ — PostgreSQL et navigateur PASS"
+  },
+  {
+    "id": "J1-02",
+    "gravite": "P1",
+    "symptome": "Résumé du jour comptait uniquement le fil et la mission active",
+    "cause": "Démontré dans SummaryPanel avant correction",
+    "impact_j1": "Fausse impression de synthèse exhaustive",
+    "correctif_minimal": "Renommer dans les cinq langues et expliciter portée et limite des tâches/approbations",
+    "non_regression": "TypeScript/lint/build ; navigateur",
+    "statut": "CORRIGÉ — PostgreSQL et navigateur PASS"
+  },
+  {
+    "id": "J1-03",
+    "gravite": "P1",
+    "symptome": "IONOS V1 b02b1dd indisponible",
+    "cause": "Branche/objet/check-out absents ; sept archives inspectées sans source identifiée",
+    "impact_j1": "Ne pas compter les 117 tests ni promettre autonomie/antifraude reçue",
+    "correctif_minimal": "Récupérer un bundle/source avec provenance ; maintenir brouillon + approbation et réseau réel hors périmètre",
+    "non_regression": "ionos-source-search.json ; contrats et PostgreSQL existants",
+    "statut": "REPORTÉ hors périmètre activé J1 isolé"
+  },
+  {
+    "id": "J1-04",
+    "gravite": "P0 si activé",
+    "symptome": "Make métier : mapping, références durables et idempotence non attestés",
+    "cause": "Absence de preuve complète ; pas un échec fournisseur observé",
+    "impact_j1": "Risque de doublon, faux résultat ou contournement courrier si activé",
+    "correctif_minimal": "Maintenir les routes natives verrouillées ; ne pas accorder un autre accès produit pour contourner",
+    "non_regression": "native-authority + navigateur ; make-connector",
+    "statut": "REPORTÉ, exécution native refusée"
+  },
+  {
+    "id": "J1-05",
+    "gravite": "P1",
+    "symptome": "Brief global cinq priorités et synthèse globale de fin de journée non reçus",
+    "cause": "Projection actuellement limitée ; pas de nouveau moteur ajouté",
+    "impact_j1": "Revue manuelle des surfaces nécessaire",
+    "correctif_minimal": "Guide guidé Messagerie/approbations → Missions → Agenda → Journal",
+    "non_regression": "Recette navigateur ; code de présentation",
+    "statut": "CONTOURNEMENT J1 guidé, pas de promesse d’autonomie globale"
+  },
+  {
+    "id": "J1-06",
+    "gravite": "P1",
+    "symptome": "Voix contextualisée OS/Live non reçue bout en bout",
+    "cause": "Essais fournisseur déclarés, pas preuve couplée identité/contexte/historique",
+    "impact_j1": "Utiliser le chat écrit J1",
+    "correctif_minimal": "Reporter le couplage ; conserver les connecteurs existants",
+    "non_regression": "Contrats voix historiques, fence natif",
+    "statut": "REPORTÉ, aucun appel réel"
+  },
+  {
+    "id": "SEC-01",
+    "gravite": "P0 avant flux réels concernés",
+    "symptome": "7 alertes npm résiduelles : 4 hautes/3 modérées",
+    "cause": "Audit conservé ; chemins SDK et transport identifiés",
+    "impact_j1": "Pas de GO Production ; impact réel de chaque avis à traiter avant activation",
+    "correctif_minimal": "Recette synthétique isolée seulement ; ne pas assimiler cela à une correction des dépendances",
+    "non_regression": "dependency-risk.md ; audit précédent inchangé",
+    "statut": "OUVERT pour activation réelle, non masqué"
+  },
+  {
+    "id": "ENV-01",
+    "gravite": "P0 avant mise en service",
+    "symptome": "Bindings, rôle limité, sauvegarde externe/restauration distante non attestés ici",
+    "cause": "Aucun accès distant autorisé ; branche Neon ≠ export restauré",
+    "impact_j1": "Interdit mise en service réelle",
+    "correctif_minimal": "Autorisation administrative distincte et contrôle de cible/role/export-restauration",
+    "non_regression": "Migrations/pg_dump/restore locaux ; dossier précédent",
+    "statut": "OUVERT hors recette locale"
+  },
+  {
+    "id": "HIST-01",
+    "gravite": "P1 réserve",
+    "symptome": "HTTP 503 historiques, lint global et Vitest historiques",
+    "cause": "Proxy de test qualifié précédemment, sans attribution de tous les anciens 503",
+    "impact_j1": "Pas de certification globale/Production",
+    "correctif_minimal": "Conserver traces et distinguer transport du harnais, application et fournisseur",
+    "non_regression": "Preuves historiques ; contrôles ciblés nouveaux",
+    "statut": "RÉSERVE MAINTENUE"
+  }
+]

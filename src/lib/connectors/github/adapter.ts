@@ -33,8 +33,8 @@ export interface GitHubCapabilityResult { provider: "github"; capability: GitHub
 export class GitHubConnectorAdapter {
   constructor(private readonly resolver: ConnectionResolver, private readonly fetcher?: GitHubFetch, private readonly baseUrl?: string) {}
 
-  async execute(connectionId: string, request: GitHubCapabilityInput): Promise<GitHubCapabilityResult> {
-    const { credentials } = await this.resolver.resolve<GitHubCredentials>(connectionId, "github");
+  async execute(connectionId: string, request: GitHubCapabilityInput, workspaceId?: string): Promise<GitHubCapabilityResult> {
+    const { credentials } = await this.resolver.resolve<GitHubCredentials>(connectionId, "github", workspaceId);
     const client = new GitHubClient({ accessToken: credentials.accessToken, tokenType: credentials.tokenType, fetch: this.fetcher, baseUrl: this.baseUrl });
     let data: unknown;
     switch (request.capability) {

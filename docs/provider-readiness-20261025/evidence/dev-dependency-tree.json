@@ -1,0 +1,37 @@
+{
+  "version": "0.1.0",
+  "name": "clara-os",
+  "dependencies": {
+    "eslint": {
+      "version": "9.39.5",
+      "resolved": "https://registry.npmjs.org/eslint/-/eslint-9.39.5.tgz",
+      "overridden": false,
+      "dependencies": {
+        "@eslint/eslintrc": {
+          "version": "3.3.6",
+          "resolved": "https://registry.npmjs.org/@eslint/eslintrc/-/eslintrc-3.3.6.tgz",
+          "overridden": false,
+          "dependencies": {
+            "js-yaml": {
+              "version": "4.3.0",
+              "resolved": "https://registry.npmjs.org/js-yaml/-/js-yaml-4.3.0.tgz",
+              "overridden": false
+            }
+          }
+        }
+      }
+    },
+    "vitest": {
+      "version": "4.1.0",
+      "resolved": "https://registry.npmjs.org/vitest/-/vitest-4.1.0.tgz",
+      "overridden": false,
+      "dependencies": {
+        "@vitest/mocker": {
+          "version": "4.1.0",
+          "resolved": "https://registry.npmjs.org/@vitest/mocker/-/mocker-4.1.0.tgz",
+          "overridden": false
+        }
+      }
+    }
+  }
+}

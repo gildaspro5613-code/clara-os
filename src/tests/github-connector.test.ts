@@ -66,6 +66,16 @@ test("repository list is authenticated, paginated, and capped at 100 items", asy
   assert.equal(new Headers(transport.calls[0]?.init?.headers).get("authorization"), "Bearer github-secret-token");
 });
 
+test("workspace-scoped GitHub READ permits own workspace and rejects cross-workspace before provider",async()=>{
+ const transport=http([json({name:"clara-os"})]);
+ const adapter=new GitHubConnectorAdapter(await resolverFor(),transport.fetch,"https://github.test");
+ await assert.rejects(()=>adapter.execute("connection-1",{capability:GITHUB_CAPABILITIES.REPOSITORY_READ,input:{owner:"test",repo:"repo"}},"workspace-other"),(e:unknown)=>e instanceof ConnectionResolutionError&&e.code==="CONNECTION_WORKSPACE_MISMATCH");
+ assert.equal(transport.calls.length,0);
+ const result=await adapter.execute("connection-1",{capability:GITHUB_CAPABILITIES.REPOSITORY_READ,input:{owner:"test",repo:"repo"}},"workspace-1");
+ assert.deepEqual(result.data,{name:"clara-os"});
+ assert.equal(transport.calls.length,1);
+});
+
 test("file read decodes wrapped base64 as UTF-8", async () => {
   const source = "Clara dit bonjour 👋\n";
   const encoded = Buffer.from(source).toString("base64");

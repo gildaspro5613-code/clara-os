@@ -1,0 +1,58 @@
+[
+  {
+    "phase": "structured",
+    "sourceA": true,
+    "sourceB": false,
+    "untrustedGuard": true,
+    "tools": false
+  },
+  {
+    "phase": "brain",
+    "sourceA": true,
+    "sourceB": false,
+    "untrustedGuard": true,
+    "tools": false
+  },
+  {
+    "phase": "composer",
+    "sourceA": true,
+    "sourceB": false,
+    "untrustedGuard": true,
+    "tools": false
+  },
+  {
+    "phase": "structured",
+    "sourceA": true,
+    "sourceB": true,
+    "untrustedGuard": true,
+    "tools": false
+  },
+  {
+    "phase": "brain",
+    "sourceA": true,
+    "sourceB": true,
+    "untrustedGuard": true,
+    "tools": false
+  },
+  {
+    "phase": "composer",
+    "sourceA": true,
+    "sourceB": true,
+    "untrustedGuard": true,
+    "tools": false
+  },
+  {
+    "phase": "brain",
+    "sourceA": true,
+    "sourceB": true,
+    "untrustedGuard": true,
+    "tools": false
+  },
+  {
+    "phase": "composer",
+    "sourceA": true,
+    "sourceB": true,
+    "untrustedGuard": true,
+    "tools": false
+  }
+]

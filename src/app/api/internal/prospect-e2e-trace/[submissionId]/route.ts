@@ -1,3 +1,4 @@
+import { nativeOperationFence } from "@/lib/native/authority";
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 
@@ -26,6 +27,9 @@ export async function GET(
   request: Request,
   context: { params: Promise<{ submissionId: string }> },
 ) {
+  const nativeDenied=await nativeOperationFence(request);
+  if(nativeDenied)return nativeDenied;
+
   if (!authorized(request)) {
     return NextResponse.json(
       { success: false, status: "unauthorized" },

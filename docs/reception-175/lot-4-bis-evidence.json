@@ -1,0 +1,327 @@
+{
+  "baseline": "b30d20a212f6e44eb585d17db5771fa066f8874b",
+  "testedSourceCommit": "e89b7f3f7e64bdbceaba0dcac94690ec1449fd33",
+  "branch": "fix/os-operational-reception-175",
+  "pr": 176,
+  "draft": true,
+  "decision": "GO pour une nouvelle réception autonome isolée; NO-GO Production",
+  "before": {
+    "missionAndReplay": [
+      {
+        "case": "mission-switch-same-thread",
+        "activeMission": true,
+        "previousMissionTurnStillPresent": true,
+        "previousMissionDashboardStillPresent": true
+      },
+      {
+        "case": "composer-mission-isolation",
+        "observed": [
+          {
+            "missionA": false,
+            "missionB": false,
+            "historyA": true,
+            "historyB": true
+          }
+        ]
+      },
+      {
+        "case": "mission-open-in-new-thread",
+        "sameMission": true,
+        "conversationLength": 0
+      },
+      {
+        "case": "lost-ack-repeat-identical-post",
+        "userTurnsAfterFirst": 1,
+        "userTurnsAfterRetry": 2,
+        "uniqueMessageIds": true
+      },
+      {
+        "case": "read-resume-does-not-duplicate",
+        "pass": true
+      },
+      {
+        "case": "provider-outage",
+        "status": 502,
+        "success": false,
+        "generation": {
+          "status": "failed",
+          "failureCategory": "provider_server",
+          "recoverable": false
+        },
+        "persistedUserTurn": true,
+        "persistedFailure": true,
+        "notice": "La réponse de Clara est indisponible."
+      },
+      {
+        "case": "provider-recovery",
+        "status": 200,
+        "historyRetained": true
+      },
+      {
+        "case": "live-independence",
+        "blockedExternalAttempts": 0,
+        "liveAttempts": 0,
+        "realProviderCalls": 0
+      },
+      {
+        "case": "UI-mission-B-shows-A-conversation",
+        "missionB": false,
+        "historyA": true,
+        "historyB": true
+      },
+      {
+        "case": "UI-persisted-provider-failure-and-recovery",
+        "failureTurn": true,
+        "recoveryTurn": true
+      }
+    ],
+    "retention": {
+      "seedMethod": "Actual withNativeScope commit, authorized synthetic user/session; no guard bypass",
+      "beforeCount": 100,
+      "afterCount": 100,
+      "firstEntryRetained": false,
+      "oldFirstId": "lot4-history-0",
+      "newFirstId": "lot4-history-2"
+    }
+  },
+  "after": {
+    "L4-01": "Actual native API/SQL rejects mission/client reassignment; historical uncertified context is readable only and cannot enter cognition",
+    "L4-02": "Same operation and normalized content: one cycle, one turn, unchanged Journal on replay; changed content/context: 409; fresh independent process and fresh canonical authentication recover cached receipt",
+    "L4-03": "PostgreSQL recipe retains 102 messages; browser recipe retains 106, latest window is 100 and earliest messages load from authorized bounded pages"
+  },
+  "tests": {
+    "existingNativeAndPostgresPlusConversationSelection": {
+      "pass": 37,
+      "fail": 0,
+      "skip": 0,
+      "note": "Includes 25 existing tests and 12 conversation tests before adding the additional inbound-worker regression. Overlaps the separate final conversation suite; do not sum as distinct tests."
+    },
+    "finalConversationPostgresSuite": {
+      "pass": 13,
+      "fail": 0,
+      "skip": 0,
+      "command": "CANONICAL_TEST_CONTAINER=clara-canonical-test-postgres node --import tsx --test src/tests/native-conversation-postgres.test.ts"
+    },
+    "contracts": {
+      "pass": 60,
+      "fail": 0,
+      "skip": 0,
+      "command": "node --import tsx --test src/tests/native-authority.test.ts src/tests/operational-reception.test.tsx src/tests/i18n-consolidation.test.ts src/tests/commercial-operational-continuity.test.ts src/tests/live-callback-transport.test.ts src/tests/clara-live-product-auth.test.ts src/tests/external-event-message-contract.test.ts"
+    },
+    "browser": {
+      "pass": 5,
+      "fail": 0,
+      "skip": 0,
+      "command": "node --import tsx --test --test-concurrency=1 src/tests/native-runtime-browser.e2e.mjs src/tests/native-commercial-browser.e2e.mjs src/tests/native-documents-browser.e2e.mjs src/tests/native-mail-browser.e2e.mjs src/tests/native-conversation-browser.e2e.mjs",
+      "scope": "Optimized real Next app, handlers/services and disposable PostgreSQL; providers simulated, external destinations blocked"
+    },
+    "typeScript": {
+      "exitCode": 0,
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "targetedLint": {
+      "exitCode": 0
+    },
+    "optimizedBuild": {
+      "exitCode": 0,
+      "command": "NEXT_TELEMETRY_DISABLED=1 NEXT_FONT_GOOGLE_MOCKED_RESPONSES=/tmp/lot1-font-responses.cjs npm run build -- --webpack"
+    },
+    "globalLint": {
+      "errors": 10,
+      "warnings": 13,
+      "preexisting": true
+    },
+    "legacyVitest": {
+      "passed": 20,
+      "failed": 2,
+      "collectionFailures": 1,
+      "preexisting": true
+    }
+  },
+  "qualifications": [
+    "Initial TLS browser run failed because the existing one-day local test certificate expired. A new synthetic certificate was issued and the five tests reran successfully with CA/SPKI verification retained. No Production certificate/configuration changed.",
+    "Initial old authority fixture lacked thread certification and is now explicitly certified for its positive owner check; a separate historical snapshot verifies STOPPED/read-only projection without rewriting persisted WORKING state.",
+    "Initial added fixtures used the wrong canonical principal and tried updating an immutable attestation; fixtures corrected without removing the guard. SQL alias ambiguity corrected before final tests.",
+    "Existing i18n/authority wrapper harnesses now wire the new boundary; actual API/SQL recipes independently exercise authorization."
+  ],
+  "baselineDiagnostics": [
+    {
+      "file": "src/app/api/external/project-intake/route.test.ts",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/app/api/weather/route.ts",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/components/automatisations/MakeConnectionStatus.tsx",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/components/clara/ClaraRecommendation.tsx",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/components/cockpit/panels/AgendaPanel.tsx",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/components/cockpit/panels/TodayPanel.tsx",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/components/cockpit/widgets/agenda/AgendaWidget.tsx",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/components/cockpit/widgets/weather/WeatherWidget.tsx",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/components/contacts/ContactsDirectory.tsx",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/components/layout/Sidebar.tsx",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/lib/acquisition/acquisition-store.test.ts",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/lib/acquisition/decision-brief.test.ts",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/lib/capabilities/magicq-lighting/executor.ts",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/lib/capabilities/workspace-install/workflow.ts",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/lib/connectors/internal/google/gmail/google-gmail-engine.ts",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/lib/connectors/internal/google/sheets/google-sheets-engine.ts",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/lib/core/store/database.ts",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/modules/agenda/AgendaStage.tsx",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/tests/integration/lighting-console-connections-v1.test.ts",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/tests/integration/lighting-self-service-onboarding-v1.test.ts",
+      "identicalToBaseline": true
+    },
+    {
+      "file": "src/tests/integration/magicq-hardware-test-readiness.test.ts",
+      "identicalToBaseline": true
+    }
+  ],
+  "migration": {
+    "file": "db/migrations/017_native_conversation_continuity.sql",
+    "additive": true,
+    "appliedOnlyToDisposableDatabases": true,
+    "backupRestoreReapplication": "PASS",
+    "oldMigrationsUnchanged": true,
+    "productionApplied": false
+  },
+  "limitations": [
+    "Uncertified pre-existing thread history is preserved read-only, never automatically rebound.",
+    "Already truncated pre-fix messages cannot be reconstructed without separately reviewed backup evidence.",
+    "Provider processing may continue after explicit local cancellation; cancellation fences OS persistence, not remote costs or physical rollback.",
+    "No real provider, Production permissions or unlimited-volume performance certification.",
+    "No automatic retention purge introduced; any future deletion policy must preserve replay protection."
+  ],
+  "modifiedFiles": [
+    ".github/workflows/native-authority-validation.yml",
+    "db/migrations/017_native_conversation_continuity.sql",
+    "src/app/api/clara/chat/route.ts",
+    "src/app/api/clara/conversation/route.ts",
+    "src/app/api/clara/session/route.ts",
+    "src/app/api/native/runtime/route.ts",
+    "src/app/clara/page.tsx",
+    "src/app/conversations/page.tsx",
+    "src/components/cockpit/widgets/CockpitWidgets.tsx",
+    "src/components/cockpit/widgets/clara/ClaraChatWidget.tsx",
+    "src/components/native/NativeEarlierMessages.tsx",
+    "src/components/native/NativeScopeSelector.tsx",
+    "src/i18n/messages/de/consolidated-ui.json",
+    "src/i18n/messages/en/consolidated-ui.json",
+    "src/i18n/messages/es/consolidated-ui.json",
+    "src/i18n/messages/fr/consolidated-ui.json",
+    "src/i18n/messages/it/consolidated-ui.json",
+    "src/lib/core/session.ts",
+    "src/lib/external-capabilities/event-jobs.ts",
+    "src/lib/native/authority.ts",
+    "src/lib/native/chat.ts",
+    "src/lib/native/scoped-context.ts",
+    "src/tests/helpers/native-conversation-replay.mts",
+    "src/tests/helpers/native-runtime-browser-fixture.mts",
+    "src/tests/i18n-consolidation.test.ts",
+    "src/tests/native-authority-postgres.test.ts",
+    "src/tests/native-authority.test.ts",
+    "src/tests/native-commercial-browser.e2e.mjs",
+    "src/tests/native-commercial-postgres.test.ts",
+    "src/tests/native-conversation-browser.e2e.mjs",
+    "src/tests/native-conversation-postgres.test.ts",
+    "src/tests/native-runtime-browser.e2e.mjs",
+    "src/tests/native-runtime-postgres.test.ts",
+    "docs/reception-175/lot-4-bis-autonomous-reception.md",
+    "docs/reception-175/lot-4-bis-evidence.json",
+    "docs/reception-175/README.md"
+  ],
+  "logs": [
+    {
+      "path": "/tmp/lot4bis-conversation-complete.log",
+      "sha256": "41c6f3bc5fed42c646b8f1d1cd92563f66bb3ec22bbf5f4a69ea011f9ef63e79"
+    },
+    {
+      "path": "/tmp/lot4bis-native-certified.log",
+      "sha256": "1b4cc2edf92b1988947d034e72848a168199e3fa2021afaabddbc67a9900d30c"
+    },
+    {
+      "path": "/tmp/lot4bis-contracts-certified.log",
+      "sha256": "10e2be8f6e775e2860d7c224f23b5fbfda099cb47851fbf000b786e22075a56b"
+    },
+    {
+      "path": "/tmp/lot4bis-browser-certified.log",
+      "sha256": "02fbf80526f752392c8b645869fac220caf3f136c9c2e5a1fcca01a6e037b4ad"
+    },
+    {
+      "path": "/tmp/lot4bis-build-received.log",
+      "sha256": "463f0c4719a13d8a6fccfc22dd6f30b14844d7cec35a19b059dc8e847fb29604"
+    },
+    {
+      "path": "/tmp/lot4bis-types-certified.log",
+      "sha256": "76162e465989f3f070a9de8db711fbf358e53b74d09ce1bbdb57c727e4c4a16d"
+    },
+    {
+      "path": "/tmp/lot4bis-lint-certified.log",
+      "sha256": "76162e465989f3f070a9de8db711fbf358e53b74d09ce1bbdb57c727e4c4a16d"
+    },
+    {
+      "path": "/tmp/lot4bis-lint-global.log",
+      "sha256": "964e4b33eec3ffcb7752810a2203488c43be028ef4fae3d9f3aea321e0a9c320"
+    },
+    {
+      "path": "/tmp/lot4bis-vitest.log",
+      "sha256": "8eac53ca207a4faaef0dc445fad3828e00df8694e7d86d93cea3fe1373f8755a"
+    }
+  ],
+  "ci": "Final HEAD checks and links are recorded in PR #176 and final delivery; current source tests are extended in the existing native workflow, no additional workflow.",
+  "liveAnd303Changed": false,
+  "mergeOrDeployment": false
+}

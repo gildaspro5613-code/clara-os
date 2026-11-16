@@ -1,0 +1,29 @@
+Base 41fc59816cbe5d533ae91ac074865f587b9d00d3
+
+AVANT — recette opérationnelle exacte : PASS de l'assertion reproduisant le défaut.
+8 messages persistés ; serveur terminé ; saisie verrouillée après rechargement.
+
+APRÈS — operational-recovery-252-browser.e2e.mjs : 1 PASS / 0 FAIL (19,0 s).
+Trois tours ; contexte antérieur au rédacteur ; réponse perdue ; refresh ; 202 protégé puis terminé ; 502 finalisé ; abandon confirmé ; commit tardif refusé ; isolation projet.
+native-conversation-browser.e2e.mjs : 1 PASS / 0 FAIL (13,4 s).
+native-commercial-browser.e2e.mjs : 1 PASS / 0 FAIL (16,1 s).
+
+PostgreSQL — 21 PASS / 0 FAIL / 0 SKIP (56,8 s).
+- native-conversation-postgres.test.ts
+- operational-recovery-mission-finalization-postgres.test.ts
+- operational-recovery-mission-consultation-postgres.test.ts
+- native-commercial-postgres.test.ts
+
+Studio Vitest — 21 PASS / 0 FAIL, 5 fichiers (0,4 s).
+- api/external/project-intake/route.test.ts
+- acquisition/{qualification,decision-brief,operator-decision,lifecycle}.test.ts
+Deux échecs préexistants reproduits sur base inchangée ; corrections du harnais et de l'assertion uniquement.
+
+TypeScript : PASS.
+ESLint ciblé : PASS.
+Clé de message terminal présente FR/EN/ES/DE/IT : PASS.
+Build Next.js optimisé Webpack : PASS (29 pages statiques).
+
+PostgreSQL 17 jetable local ; routes Next réelles ; Chromium HTTPS local.
+OpenAI et autres fournisseurs simulés ; aucune certification fournisseur Production.
+Polices de build fournies par fixture locale, sans nouvelle dépendance.

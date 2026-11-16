@@ -1,3 +1,4 @@
+import { assertRecetteExternalExecutionBlocked } from "@/lib/recette/external-execution-guard";
 import type { OAuthProviderDefinition, OAuthTokenSet } from "@/lib/auth/oauth/types";
 
 type Fetch = typeof fetch;
@@ -33,6 +34,7 @@ export function createBrevoOAuthProvider(
   const authorizationEndpoint = config.authorizationEndpoint ?? "https://oauth.brevo.com/realms/partner/oauth/authorize";
   const tokenEndpoint = config.tokenEndpoint ?? "https://oauth.brevo.com/realms/partner/oauth/token";
   async function token(parameters: Record<string, string>): Promise<OAuthTokenSet> {
+    assertRecetteExternalExecutionBlocked("brevo.oauth");
     const response = await http(tokenEndpoint, {
       method: "POST",
       headers: { "content-type": "application/x-www-form-urlencoded", accept: "application/json" },

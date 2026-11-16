@@ -1,0 +1,92 @@
+page,locale,device,status,proof
+/,fr,desktop,PASS,"server render, translated shared controls, source data preserved"
+/clara,fr,desktop,PASS,"server render, translated shared controls, source data preserved"
+/missions,fr,desktop,PASS,"server render, translated shared controls, source data preserved"
+/conversations,fr,desktop,PASS,"server render, translated shared controls, source data preserved"
+/contacts,fr,desktop,PASS,"server render, translated shared controls, source data preserved"
+/documents,fr,desktop,PASS,"server render, translated shared controls, source data preserved"
+/messagerie,fr,desktop,PASS,"server render, translated shared controls, source data preserved"
+/agenda,fr,desktop,PASS,"server render, translated shared controls, source data preserved"
+/brain,fr,desktop,PASS,"server render, translated shared controls, source data preserved"
+/journal,fr,desktop,PASS,"server render, translated shared controls, source data preserved"
+/automatisations,fr,desktop,PASS,"server render, translated shared controls, source data preserved"
+/connexions,fr,desktop,PASS,"server render, translated shared controls, source data preserved"
+/telephonie,fr,desktop,PASS,"server render, translated shared controls, source data preserved"
+/,fr,tablet,PASS,real Next page/native PostgreSQL context; provider availability not certified
+/clara,fr,tablet,PASS,real Next page/native PostgreSQL context; provider availability not certified
+/missions,fr,tablet,PASS,real Next page/native PostgreSQL context; provider availability not certified
+/conversations,fr,tablet,PASS,real Next page/native PostgreSQL context; provider availability not certified
+/contacts,fr,tablet,PASS,real Next page/native PostgreSQL context; provider availability not certified
+/documents,fr,tablet,PASS,real Next page/native PostgreSQL context; provider availability not certified
+/messagerie,fr,tablet,PASS,real Next page/native PostgreSQL context; provider availability not certified
+/agenda,fr,tablet,PASS,real Next page/native PostgreSQL context; provider availability not certified
+/brain,fr,tablet,PASS,real Next page/native PostgreSQL context; provider availability not certified
+/journal,fr,tablet,PASS,real Next page/native PostgreSQL context; provider availability not certified
+/automatisations,fr,tablet,PASS,real Next page/native PostgreSQL context; provider availability not certified
+/connexions,fr,tablet,PASS,real Next page/native PostgreSQL context; provider availability not certified
+/telephonie,fr,tablet,PASS,real Next page/native PostgreSQL context; provider availability not certified
+/,fr,mobile,PASS,real Next page/native PostgreSQL context; provider availability not certified
+/clara,fr,mobile,PASS,real Next page/native PostgreSQL context; provider availability not certified
+/missions,fr,mobile,PASS,real Next page/native PostgreSQL context; provider availability not certified
+/conversations,fr,mobile,PASS,real Next page/native PostgreSQL context; provider availability not certified
+/contacts,fr,mobile,PASS,real Next page/native PostgreSQL context; provider availability not certified
+/documents,fr,mobile,PASS,real Next page/native PostgreSQL context; provider availability not certified
+/messagerie,fr,mobile,PASS,real Next page/native PostgreSQL context; provider availability not certified
+/agenda,fr,mobile,PASS,real Next page/native PostgreSQL context; provider availability not certified
+/brain,fr,mobile,PASS,real Next page/native PostgreSQL context; provider availability not certified
+/journal,fr,mobile,PASS,real Next page/native PostgreSQL context; provider availability not certified
+/automatisations,fr,mobile,PASS,real Next page/native PostgreSQL context; provider availability not certified
+/connexions,fr,mobile,PASS,real Next page/native PostgreSQL context; provider availability not certified
+/telephonie,fr,mobile,PASS,real Next page/native PostgreSQL context; provider availability not certified
+/,en,desktop,PASS,"server render, translated shared controls, source data preserved"
+/clara,en,desktop,PASS,"server render, translated shared controls, source data preserved"
+/missions,en,desktop,PASS,"server render, translated shared controls, source data preserved"
+/conversations,en,desktop,PASS,"server render, translated shared controls, source data preserved"
+/contacts,en,desktop,PASS,"server render, translated shared controls, source data preserved"
+/documents,en,desktop,PASS,"server render, translated shared controls, source data preserved"
+/messagerie,en,desktop,PASS,"server render, translated shared controls, source data preserved"
+/agenda,en,desktop,PASS,"server render, translated shared controls, source data preserved"
+/brain,en,desktop,PASS,"server render, translated shared controls, source data preserved"
+/journal,en,desktop,PASS,"server render, translated shared controls, source data preserved"
+/automatisations,en,desktop,PASS,"server render, translated shared controls, source data preserved"
+/connexions,en,desktop,PASS,"server render, translated shared controls, source data preserved"
+/telephonie,en,desktop,PASS,"server render, translated shared controls, source data preserved"
+/,es,desktop,PASS,"server render, translated shared controls, source data preserved"
+/clara,es,desktop,PASS,"server render, translated shared controls, source data preserved"
+/missions,es,desktop,PASS,"server render, translated shared controls, source data preserved"
+/conversations,es,desktop,PASS,"server render, translated shared controls, source data preserved"
+/contacts,es,desktop,PASS,"server render, translated shared controls, source data preserved"
+/documents,es,desktop,PASS,"server render, translated shared controls, source data preserved"
+/messagerie,es,desktop,PASS,"server render, translated shared controls, source data preserved"
+/agenda,es,desktop,PASS,"server render, translated shared controls, source data preserved"
+/brain,es,desktop,PASS,"server render, translated shared controls, source data preserved"
+/journal,es,desktop,PASS,"server render, translated shared controls, source data preserved"
+/automatisations,es,desktop,PASS,"server render, translated shared controls, source data preserved"
+/connexions,es,desktop,PASS,"server render, translated shared controls, source data preserved"
+/telephonie,es,desktop,PASS,"server render, translated shared controls, source data preserved"
+/,de,desktop,PASS,"server render, translated shared controls, source data preserved"
+/clara,de,desktop,PASS,"server render, translated shared controls, source data preserved"
+/missions,de,desktop,PASS,"server render, translated shared controls, source data preserved"
+/conversations,de,desktop,PASS,"server render, translated shared controls, source data preserved"
+/contacts,de,desktop,PASS,"server render, translated shared controls, source data preserved"
+/documents,de,desktop,PASS,"server render, translated shared controls, source data preserved"
+/messagerie,de,desktop,PASS,"server render, translated shared controls, source data preserved"
+/agenda,de,desktop,PASS,"server render, translated shared controls, source data preserved"
+/brain,de,desktop,PASS,"server render, translated shared controls, source data preserved"
+/journal,de,desktop,PASS,"server render, translated shared controls, source data preserved"
+/automatisations,de,desktop,PASS,"server render, translated shared controls, source data preserved"
+/connexions,de,desktop,PASS,"server render, translated shared controls, source data preserved"
+/telephonie,de,desktop,PASS,"server render, translated shared controls, source data preserved"
+/,it,desktop,PASS,"server render, translated shared controls, source data preserved"
+/clara,it,desktop,PASS,"server render, translated shared controls, source data preserved"
+/missions,it,desktop,PASS,"server render, translated shared controls, source data preserved"
+/conversations,it,desktop,PASS,"server render, translated shared controls, source data preserved"
+/contacts,it,desktop,PASS,"server render, translated shared controls, source data preserved"
+/documents,it,desktop,PASS,"server render, translated shared controls, source data preserved"
+/messagerie,it,desktop,PASS,"server render, translated shared controls, source data preserved"
+/agenda,it,desktop,PASS,"server render, translated shared controls, source data preserved"
+/brain,it,desktop,PASS,"server render, translated shared controls, source data preserved"
+/journal,it,desktop,PASS,"server render, translated shared controls, source data preserved"
+/automatisations,it,desktop,PASS,"server render, translated shared controls, source data preserved"
+/connexions,it,desktop,PASS,"server render, translated shared controls, source data preserved"
+/telephonie,it,desktop,PASS,"server render, translated shared controls, source data preserved"

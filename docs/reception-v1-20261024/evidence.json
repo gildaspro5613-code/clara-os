@@ -1,0 +1,87 @@
+{
+  "decision": "NO-GO V1 complète; NO-GO Production",
+  "candidateCodeCommit": "196a00f2b16522e9b457d1dab6e66c198ebf208c",
+  "candidateHarnessCommit": "2f97cd169f7915c5f872e58725d3c8dd6ea3aa74",
+  "baseCommit": "01e3d253ea435d99462e5f80ba68c9c5e0582986",
+  "branch": "consolidation/os-v1-reception-20261024",
+  "published": false,
+  "newPr": false,
+  "remoteCiTriggered": false,
+  "matrix": {
+    "PASS": 24,
+    "PARTIEL": 8,
+    "BLOQUÉ": 2,
+    "NON EXÉCUTÉ": 0
+  },
+  "nodeTests": {
+    "nativeFinalLocked": 48,
+    "contractsFinal": 70,
+    "authentication": 3,
+    "sameTitleTwoOwnersTwoProjects": 1,
+    "actualProxyTransport": 3,
+    "totalFinalPassed": 125,
+    "failedFinal": 0,
+    "skippedFinal": 0
+  },
+  "browser": {
+    "google": {
+      "main": "PASS",
+      "actualServerRestart": "PASS",
+      "buildCodeCommit": "f40e7d778c7c6281b05ffaec7cd33c5dfa184c90",
+      "reuseProof": "Application diff to 196a00f is solely the uninvoked Make acknowledgement wording; that wording separately tested in contracts-candidate.log."
+    },
+    "documents": {
+      "main": "PASS",
+      "actualServerRestart": "PASS",
+      "buildCodeCommit": "196a00f2b16522e9b457d1dab6e66c198ebf208c",
+      "transport": "fresh loopback sockets, no retry; positive paths unchanged by additional partial-response negative handler, tested separately"
+    },
+    "totalPassed": 4,
+    "realProviders": false
+  },
+  "dependencyAudit": {
+    "before": {
+      "total": 20,
+      "critical": 1
+    },
+    "after": {
+      "total": 7,
+      "critical": 0,
+      "high": 4,
+      "moderate": 3
+    },
+    "next": "16.4.3",
+    "npmCi": "PASS",
+    "residualsNotHidden": true
+  },
+  "typeScript": "PASS",
+  "lintTargeted": "PASS",
+  "buildFinal": "PASS",
+  "lintGlobal": {
+    "errors": 9,
+    "warnings": 9,
+    "preexistingSourceComparison": true
+  },
+  "vitestGlobal": "historical failures retained, not rerun; no claim of candidate-wide PASS",
+  "providerBusinessCalls": 0,
+  "remoteMigrations": 0,
+  "deployments": 0,
+  "merges": 0,
+  "realSends": 0,
+  "historicalHttp503Reservation": "maintained; current harness 503 qualified as upstream transport, not extrapolated to all past failures",
+  "evidenceExclusions": [
+    "cookies",
+    "session tokens",
+    "private keys",
+    "connection strings",
+    "DB dumps",
+    "unfiltered environment"
+  ],
+  "sourceReuse": {
+    "native48": "Executed on locked 16.4.3 with native paths identical between f40e7d7 and 196a00f; only subsequent production-code difference is the unrelated Make acknowledgement wording, independently covered by the final 70 contracts.",
+    "browserGoogle": "Build f40e7d7; unchanged Google/Mission/Agenda/Drive/Journal sources at candidate 196a00f.",
+    "browserDocuments": "Build 196a00f, exact native documentary source; test harness changes add synchronization and negative network handling only."
+  },
+  "deterministicTestsTotal": 125,
+  "browserRecipesTotal": 4
+}

@@ -1,0 +1,68 @@
+Checked 38 native handler refusals.
+[CLARA] instrumentation ready; business runtime is request-scoped
+✔ native session handler rejects missing, malformed and duplicate cookies before storage or global runtime (272.339481ms)
+✔ default, external and absent explicit selectors cannot resume a global/native fallback (156.805017ms)
+✔ every fenced native HTTP handler refuses anonymous/invalid cookies without entering legacy business logic (1543.279911ms)
+✔ unavailable authority never leaks storage details or resumes the legacy runtime (270.968611ms)
+✔ even an explicitly authorized snapshot cannot unlock legacy native mutations (1176.781516ms)
+✔ all six native server pages return before invoking any global data loader (1185.852156ms)
+✔ reopened chat and native runtime/document handlers still refuse invalid authentication before business code (1806.469073ms)
+✔ server instrumentation never imports or starts a global business runtime (9.394958ms)
+✔ Uncertified Google/Brevo/Make connection routes reject invalid OS sessions before storage or provider I/O (1010.121614ms)
+✔ a verified native session cannot unlock Google credentials or Make configuration before connector certification (153.115295ms)
+▶ native document continuity: existing structured contract, real ledger, atomic Journal and scoped cognition
+  ✔ structured proposal preserves evidence, rejects invented locators and flags hypotheses (18335.043685ms)
+  ✔ lost acknowledgement/restart replay returns encrypted receipt without another analysis or Journal (15641.978634ms)
+  ✔ a new explicit operation is journaled, conflicts remain unresolved across two documents (21506.399787ms)
+  ✔ ordinary Brain replanning preserves the mission documentary references (10178.932197ms)
+  ✔ fresh thread explicitly resuming the same mission restores documentary knowledge (7043.260066ms)
+  ✔ another project, another owner and revoked rights cannot consume stored evidence or receipts (6335.619953ms)
+  ✔ verified provider failure is a durable failed receipt; replay never calls the model again (19431.864257ms)
+  ✔ concurrent submission has one owner; SQL revocation at commit cannot leak a cached result (22870.409964ms)
+  ✔ migration 026 reapplies without discarding receipts/history and never grants PUBLIC execution (3045.628548ms)
+✔ native document continuity: existing structured contract, real ledger, atomic Journal and scoped cognition (169191.113851ms)
+▶ Google native workspace: real PostgreSQL, exact confirmations, immutable scopes, single handoff, recovery and existing stores
+  ✔ consent transactions retain actual grants and reject missing or partial scopes (23348.829292ms)
+  ✔ explicit resource binding, two users/clients/projects and historical/primary/root refusals (44125.16573ms)
+  ✔ prepared encrypted file, exact human confirmation and concurrent one-time execution/replay (46659.760243ms)
+  ✔ lost provider acknowledgement, read-only reconciliation, fresh service/reconnect and no automatic resend (17798.8019ms)
+  ✔ conditional calendar update and Drive content/move preserve IDs, metadata, rights and versions (117508.781731ms)
+  ✔ project and Google resource revocation, read-only delegations, expired consent/proposals (28327.930357ms)
+  ✔ read delegation never becomes write authority; second owner retains independent mailbox/project resources (13597.224075ms)
+  ✔ single HTTP handoff never retries errors; explicit precondition and refusal receipt release scope (35240.086088ms)
+  ✔ uncertain no-effect blocks new handoffs and inbound maintenance cannot consume or expire native Google receipts (14695.178558ms)
+  ✔ 020 additive reapplication and pg_dump restoration preserve every operation/attestation/receipt (3437.259916ms)
+✔ Google native workspace: real PostgreSQL, exact confirmations, immutable scopes, single handoff, recovery and existing stores (383042.922074ms)
+✔ Google import validation rejects oversized bodies, ambiguous identities, native document conversion and offset-less times (31.475253ms)
+▶ V1 job ledger: legacy 026 regression, Google/chat/document coexistence, reapplication and restore
+  ✔ old constraint refuses Google receipts before any provider handoff (919.479637ms)
+  ✔ repair preserves all existing receipt kinds and rejects unknown types (1718.583958ms)
+  ✔ 026 and 028 reapplication preserve completed receipts byte for byte (3391.654559ms)
+  ✔ actual pg_dump and restore preserve histories, receipts and constraint (10930.042789ms)
+✔ V1 job ledger: legacy 026 regression, Google/chat/document coexistence, reapplication and restore (49769.318296ms)
+✔ IONOS real PostgreSQL: two independent authorities, explicit bindings, exact approvals, concurrent single-use SMTP, revocation and durable restart (234655.818287ms)
+▶ mission contact: real PostgreSQL business association, immutable conversation, CAS and revoke
+  ✔ mission first: explicit association activates an empty context, same IDs, one durable event and replay after fresh adapter (16631.420903ms)
+  ✔ existing turns: business link only; old history, active context, Brain and receipts stay unchanged (5993.609613ms)
+ERROR:  42501: NATIVE_SCOPE_DENIED
+  ✔ foreign owner/client/project, unbound history, foreign session and replacing an existing contact are refused (10020.562119ms)
+ERROR:  40001: NATIVE_MISSION_CONTACT_CONFLICT
+  ✔ genuine concurrent different contacts: one commit, one CAS conflict, no overwritten association (3339.682956ms)
+ERROR:  40001: NATIVE_MISSION_CONTACT_CONFLICT
+  ✔ identical concurrent requests and lost-ack replay never duplicate the association event (1980.283443ms)
+ERROR:  42501: NATIVE_ACQUISITION_DENIED
+  ✔ contact revoked after preparation rolls back business link, session activation and audit together (1768.460003ms)
+ERROR:  40001: NATIVE_MISSION_CONTACT_CONFLICT
+ERROR:  40001: NATIVE_NEW_SESSION_REQUIRED
+  ✔ SQL refuses a missing association proof or a forged active context on historical conversation (2007.559204ms)
+  ✔ migration preserves explicit runtime EXECUTE authority without granting PUBLIC or ownership (690.586399ms)
+  ✔ migration reapplication preserves the existing runtime and persisted association (2405.208386ms)
+✔ mission contact: real PostgreSQL business association, immutable conversation, CAS and revoke (65464.934682ms)
+ℹ tests 48
+ℹ suites 0
+ℹ pass 48
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 389185.71938

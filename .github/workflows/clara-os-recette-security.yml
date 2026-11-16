@@ -1,0 +1,105 @@
+name: Clara OS Recette - offline security regression
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'src/lib/recette/**'
+      - 'src/lib/auth/google-sign-in*'
+      - 'src/app/api/auth/google/**'
+      - 'src/lib/core/store/database.ts'
+      - 'src/tests/recette-google-sign-in.test.ts'
+      - 'src/app/actions/recette-attestation.ts'
+      - 'src/lib/capabilities/capability-policy.ts'
+      - 'src/lib/connectors/clara-live/execution-authority.ts'
+      - 'src/lib/connectors/brevo/client.ts'
+      - 'src/tests/recette-external-execution-guard.test.ts'
+      - 'src/tests/recette-auth-isolation.test.ts'
+      - 'src/tests/recette-network-provider-denials.test.ts'
+      - 'src/tests/recette-attestation-authorization.test.ts'
+      - '.github/workflows/clara-os-recette-security.yml'
+permissions:
+  contents: read
+jobs:
+  offline-security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Recette offline denial contracts
+        run: node --import tsx --test src/tests/recette-external-execution-guard.test.ts
+      - name: Recette authentication and isolation contracts
+        run: node --import tsx --test src/tests/recette-auth-isolation.test.ts
+      - name: Google authentication-only exception and database isolation
+        run: node --import tsx --test src/tests/recette-google-sign-in.test.ts
+      - name: Recette attestation owner/admin authorization tests
+        run: node --import tsx --test src/tests/recette-attestation-authorization.test.ts
+      - name: Recette provider network denial regressions
+        run: node --import tsx --test src/tests/recette-network-provider-denials.test.ts
+      - name: Existing capability policy regression (non-Recette)
+        run: node --import tsx --test src/tests/capability-policy.test.ts
+      - name: Inventory npm vulnerabilities without changing lockfile
+        shell: bash
+        run: |
+          npm audit --json --omit=dev > /tmp/recette-npm-audit.json || true
+          node -e '
+            const fs=require("node:fs");
+            const report=JSON.parse(fs.readFileSync("/tmp/recette-npm-audit.json","utf8"));
+            if (!report.metadata?.vulnerabilities) {
+              console.error("RECETTE_DEPENDENCY_AUDIT_UNAVAILABLE");
+              process.exitCode=1;
+            } else {
+              const counts=report.metadata.vulnerabilities;
+              console.log("RECETTE_PRODUCTION_DEPENDENCY_VULNERABILITIES",JSON.stringify(counts));
+              const critical=Object.entries(report.vulnerabilities??{}).filter(([,v])=>v.severity==="critical").map(([name])=>name);
+              console.log("RECETTE_CRITICAL_PACKAGE_NAMES",JSON.stringify(critical));
+              console.log("RECETTE_AFFECTED_PACKAGES",JSON.stringify(Object.entries(report.vulnerabilities??{}).map(([name,v])=>({name,severity:v.severity,isDirect:v.isDirect,range:v.range,fixAvailable:v.fixAvailable}))));
+              console.log("RECETTE_DEPENDENCY_GATE_PENDING_REVIEW");
+            }
+          '
+      - name: Validate targeted dependency remediation in disposable workspace
+        shell: bash
+        run: |
+          set -euo pipefail
+          workdir="$(mktemp -d)"
+          trap 'rm -rf "$workdir"' EXIT
+          cp package.json package-lock.json "$workdir/"
+          cd "$workdir"
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund 'next@^16.4.2' 'eslint-config-next@^16.4.2'
+          npm audit --omit=dev --json > /tmp/recette-remediation-audit.json || true
+          node -e '
+            const fs=require("node:fs");
+            const report=JSON.parse(fs.readFileSync("/tmp/recette-remediation-audit.json","utf8"));
+            if(!report.metadata?.vulnerabilities) process.exit(2);
+            console.log("RECETTE_CANDIDATE_AUDIT",JSON.stringify(report.metadata.vulnerabilities));
+            console.log("RECETTE_CANDIDATE_AFFECTED",JSON.stringify(Object.entries(report.vulnerabilities??{}).map(([name,v])=>({name,severity:v.severity,fixAvailable:v.fixAvailable}))));
+          '
+          echo "RECETTE_CANDIDATE_ONLY_NO_REPOSITORY_CHANGE"
+      - name: Compile patched candidate in disposable workspace
+        shell: bash
+        run: |
+          set -euo pipefail
+          workdir="$(mktemp -d)"
+          trap 'rm -rf "$workdir"' EXIT
+          tar --exclude=.git --exclude=node_modules -cf - . | (cd "$workdir" && tar -xf -)
+          cd "$workdir"
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund 'next@^16.4.2' 'eslint-config-next@^16.4.2'
+          npm ci --ignore-scripts --no-audit --no-fund
+          npx tsc --noEmit
+          npm run build
+          node --import tsx --test src/tests/recette-network-provider-denials.test.ts src/tests/recette-auth-isolation.test.ts src/tests/recette-external-execution-guard.test.ts src/tests/capability-policy.test.ts src/tests/recette-attestation-authorization.test.ts
+          echo "RECETTE_CANDIDATE_BUILD_AND_REGRESSION_PASSED"
+      - name: Inventory outbound call sites for manual Recette review
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "RECETTE_NETWORK_CALL_SITES_BEGIN"
+          grep -rEl --include='*.ts' --include='*.tsx' --include='*.js' --include='*.mjs' '(fetch[[:space:]]*\(|axios\.|https?\.request[[:space:]]*\(|\.sendMail[[:space:]]*\(|\.connect[[:space:]]*\(|new WebSocket[[:space:]]*\(|new EventSource[[:space:]]*\()' src/app/api src/lib | sort
+          echo "RECETTE_NETWORK_CALL_SITES_END"
+          echo "RECETTE_NETWORK_INVENTORY_REQUIRES_MANUAL_TRIAGE"

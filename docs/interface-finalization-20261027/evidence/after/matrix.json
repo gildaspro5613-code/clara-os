@@ -1,0 +1,742 @@
+{
+  "status": "PASS",
+  "providerCertified": false,
+  "matrix": [
+    {
+      "page": "/",
+      "locale": "fr",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/clara",
+      "locale": "fr",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/missions",
+      "locale": "fr",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/conversations",
+      "locale": "fr",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/contacts",
+      "locale": "fr",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/documents",
+      "locale": "fr",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/messagerie",
+      "locale": "fr",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/agenda",
+      "locale": "fr",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/brain",
+      "locale": "fr",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/journal",
+      "locale": "fr",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/automatisations",
+      "locale": "fr",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/connexions",
+      "locale": "fr",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/telephonie",
+      "locale": "fr",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/",
+      "locale": "fr",
+      "device": "tablet",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/clara",
+      "locale": "fr",
+      "device": "tablet",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/missions",
+      "locale": "fr",
+      "device": "tablet",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/conversations",
+      "locale": "fr",
+      "device": "tablet",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/contacts",
+      "locale": "fr",
+      "device": "tablet",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/documents",
+      "locale": "fr",
+      "device": "tablet",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/messagerie",
+      "locale": "fr",
+      "device": "tablet",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/agenda",
+      "locale": "fr",
+      "device": "tablet",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/brain",
+      "locale": "fr",
+      "device": "tablet",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/journal",
+      "locale": "fr",
+      "device": "tablet",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/automatisations",
+      "locale": "fr",
+      "device": "tablet",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/connexions",
+      "locale": "fr",
+      "device": "tablet",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/telephonie",
+      "locale": "fr",
+      "device": "tablet",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/",
+      "locale": "fr",
+      "device": "mobile",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/clara",
+      "locale": "fr",
+      "device": "mobile",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/missions",
+      "locale": "fr",
+      "device": "mobile",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/conversations",
+      "locale": "fr",
+      "device": "mobile",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/contacts",
+      "locale": "fr",
+      "device": "mobile",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/documents",
+      "locale": "fr",
+      "device": "mobile",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/messagerie",
+      "locale": "fr",
+      "device": "mobile",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/agenda",
+      "locale": "fr",
+      "device": "mobile",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/brain",
+      "locale": "fr",
+      "device": "mobile",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/journal",
+      "locale": "fr",
+      "device": "mobile",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/automatisations",
+      "locale": "fr",
+      "device": "mobile",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/connexions",
+      "locale": "fr",
+      "device": "mobile",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/telephonie",
+      "locale": "fr",
+      "device": "mobile",
+      "status": "PASS",
+      "proof": "real Next page/native PostgreSQL context; provider availability not certified"
+    },
+    {
+      "page": "/",
+      "locale": "fr",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/clara",
+      "locale": "fr",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/missions",
+      "locale": "fr",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/conversations",
+      "locale": "fr",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/contacts",
+      "locale": "fr",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/documents",
+      "locale": "fr",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/messagerie",
+      "locale": "fr",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/agenda",
+      "locale": "fr",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/brain",
+      "locale": "fr",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/journal",
+      "locale": "fr",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/automatisations",
+      "locale": "fr",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/connexions",
+      "locale": "fr",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/telephonie",
+      "locale": "fr",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/",
+      "locale": "en",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/clara",
+      "locale": "en",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/missions",
+      "locale": "en",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/conversations",
+      "locale": "en",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/contacts",
+      "locale": "en",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/documents",
+      "locale": "en",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/messagerie",
+      "locale": "en",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/agenda",
+      "locale": "en",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/brain",
+      "locale": "en",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/journal",
+      "locale": "en",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/automatisations",
+      "locale": "en",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/connexions",
+      "locale": "en",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/telephonie",
+      "locale": "en",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/",
+      "locale": "es",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/clara",
+      "locale": "es",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/missions",
+      "locale": "es",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/conversations",
+      "locale": "es",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/contacts",
+      "locale": "es",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/documents",
+      "locale": "es",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/messagerie",
+      "locale": "es",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/agenda",
+      "locale": "es",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/brain",
+      "locale": "es",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/journal",
+      "locale": "es",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/automatisations",
+      "locale": "es",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/connexions",
+      "locale": "es",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/telephonie",
+      "locale": "es",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/",
+      "locale": "de",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/clara",
+      "locale": "de",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/missions",
+      "locale": "de",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/conversations",
+      "locale": "de",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/contacts",
+      "locale": "de",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/documents",
+      "locale": "de",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/messagerie",
+      "locale": "de",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/agenda",
+      "locale": "de",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/brain",
+      "locale": "de",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/journal",
+      "locale": "de",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/automatisations",
+      "locale": "de",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/connexions",
+      "locale": "de",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/telephonie",
+      "locale": "de",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/",
+      "locale": "it",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/clara",
+      "locale": "it",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/missions",
+      "locale": "it",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/conversations",
+      "locale": "it",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/contacts",
+      "locale": "it",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/documents",
+      "locale": "it",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/messagerie",
+      "locale": "it",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/agenda",
+      "locale": "it",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/brain",
+      "locale": "it",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/journal",
+      "locale": "it",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/automatisations",
+      "locale": "it",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/connexions",
+      "locale": "it",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    },
+    {
+      "page": "/telephonie",
+      "locale": "it",
+      "device": "desktop",
+      "status": "PASS",
+      "proof": "server render, translated shared controls, source data preserved"
+    }
+  ],
+  "business": {
+    "explicitMission": true,
+    "contact": true,
+    "multilineConversation": true,
+    "reload": true,
+    "journal": true
+  },
+  "mailStates": "HTTP fixtures for empty/refused presentation; actual approval flow received separately"
+}

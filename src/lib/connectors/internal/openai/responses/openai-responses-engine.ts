@@ -1,3 +1,4 @@
+import { assertRecetteExternalExecutionBlocked } from "@/lib/recette/external-execution-guard";
 /**
  * ============================================
  * CLARA OS
@@ -28,12 +29,13 @@ export class OpenAIResponsesEngine {
   public async generate(
     context: OpenAIResponsesContext,
   ): Promise<OpenAIResponsesResult> {
+    assertRecetteExternalExecutionBlocked("openai.responses");
 
     try {
 
       const client = new OpenAI({
         apiKey: process.env.OPENAI_API_KEY,
-        ...(context.outputProfile === "conversation" ? {timeout:60_000,maxRetries:0} : {}),
+        ...((context.outputProfile === "conversation" || context.outputProfile === "live_production") ? {timeout:60_000,maxRetries:0} : {}),
       });
 
       const input =
@@ -65,9 +67,11 @@ export class OpenAIResponsesEngine {
 
         instructions: context.instructions,
 
+        ...(context.outputProfile === "live_production" && context.reasoningEffort === "low" ? {reasoning:{effort:"low" as const}} : {}),
+
         max_output_tokens: Math.min(
           context.maxTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,
-          context.outputProfile === "document_analysis" ? 6_000 : context.outputProfile === "conversation" ? 3_200 : HARD_MAX_OUTPUT_TOKENS,
+          context.outputProfile === "document_analysis" ? 6_000 : context.outputProfile === "live_production" ? 5_200 : context.outputProfile === "conversation" ? 3_200 : HARD_MAX_OUTPUT_TOKENS,
         ),
 
         metadata: context.metadata,

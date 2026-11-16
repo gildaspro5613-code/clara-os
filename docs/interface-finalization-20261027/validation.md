@@ -1,0 +1,71 @@
+# Validation de l’interface candidate
+
+Source initiale : `074909541b91f48024f4d83a1be3c7b3be9166da` ; correction applicative de visibilité P1 : `2da4a0fedc3757fc3def5bed4ac61db2eed590e1`, base `bc1fda97fcbb003479fbc49f7260e9c560c0b5e9`. Le delta applicatif depuis la réception transverse initiale est limité au placement du message P1 hors de la section repliée. Il est vérifié par la recette P1 ; les autres parcours, captures et preuves restent applicables. La CI du HEAD final rejoue aussi la matrice complète. Les commits de preuves ne changent pas l’application. Environnement : Next.js optimisé, Chromium local, proxy TLS et PostgreSQL jetable ; transport Neon substitué par l’adaptateur PostgreSQL existant. Aucune preuve de transport Neon HTTP/fournisseur réel n’est déduite.
+
+| Contrôle | Résultat local | Preuve |
+| --- | --- | --- |
+| Contrat natif Google + parité i18n existante | 12 PASS, 0 échec | evidence/unit-contract-i18n.txt |
+| Non-régression opérationnelle, commercial, OAuth durable et refus vocaux | 22 PASS, 0 échec | evidence/nonregression.txt |
+| Remise en exploitation/autorité en PostgreSQL réel local | 12 PASS, 0 échec, dont 11 sous-cas et leur parent | evidence/postgres-authority.txt |
+| TypeScript et build Next.js optimisé | PASS, code de sortie 0 | evidence/build-typescript.txt |
+| Lint des composants modifiés et recettes impactées | 0 erreur, avertissement préexistant sur le SVG img du logo | evidence/lint-targeted.txt |
+| Réception interface finale | 1 test transverse PASS ; 13 pages × 3 formats FR et × 5 langues desktop, soit 91 combinaisons distinctes | evidence/interface-browser.txt, browser-matrix.csv |
+| Deux écarts CI reproduits puis corrigés | 2 recettes ciblées PASS, build et lint réussis | evidence/ci-pair-before.txt, evidence/ci-pair-accepted.txt |
+| Continuité métier, document, approbation et redémarrage | 4 recettes PASS, dont reprise après redémarrage effectif ; zéro envoi réel | evidence/business-restart.txt |
+
+La première commande agrégée de tests opérationnels, sans CANONICAL_TEST_CONTAINER, avait 15 PASS et 1 SKIP (PostgreSQL). Ce sous-ensemble a ensuite été exécuté avec le conteneur réel et ses 12 contrôles PASS ; le SKIP n’est pas présenté comme réussi. Les résultats ci-dessus sont détaillés par commande, sans additionner plusieurs fois les mêmes scénarios.
+
+## Commandes et portée
+
+- `node --import tsx --test src/tests/google-native-hub.test.ts src/tests/i18n-consolidation.test.ts`
+- `node --import tsx --test src/tests/operational-reception.test.tsx src/tests/voice-route-security.test.ts src/tests/commercial-operational-continuity.test.ts src/tests/google-durable-oauth.test.ts`
+- `CANONICAL_TEST_CONTAINER=clara-canonical-test-postgres node --import tsx --test src/tests/operational-recovery-postgres.test.ts`
+- `npm run build` (inclut TypeScript) et ESLint ciblé sur les composants modifiés, nouveaux tests et recettes impactées.
+- `node --import tsx --test src/tests/interface-finalization-browser.e2e.mjs`, avec le serveur, TLS et fixture existants décrits dans `.github/workflows/native-authority-validation.yml`. Cette même recette est ajoutée au workflow existant sur une base jetable fraîche, sans nouveau workflow/service.
+- Réutilisation locale de `operational-recovery-browser.e2e.mjs`, `native-document-continuity-browser.e2e.mjs` avec `V1_FIRST_DAY=true`, redémarrage effectif de Next, puis recettes de reprise. Aucune migration distante.
+
+Le navigateur crée explicitement une mission, associe un contact autorisé, transmet un message multiligne, retrouve la conversation après rechargement, vérifie le Journal et visite les pages sur le même contexte durable. Il contrôle le menu clavier/Échap, la navigation active, l’absence de débordement horizontal sur les pages visitées et l’identité des fichiers logo/favicon. Les sources métier ne sont pas traduites lorsque la langue de l’interface change.
+
+Les captures des formats 1440×1000, 768×1024 et 390×844 correspondent à des viewports Chromium, pas à des tests de matériel iOS/Android/Safari. Le rendu, les frontières de présentation et les comportements exécutés sont reçus ; aucune certification complète d’accessibilité ou fournisseur n’est inventée.
+
+Les états Microsoft refusé et les états IONOS vide/refusé sont explicitement injectés à la frontière HTTP dans le test de présentation. Ils ne certifient aucune connexion. La campagne métier dédiée utilise les vrais handlers/services et SQL, avec injections de fournisseurs uniquement, et exige zéro tentative SMTP/écriture Google.
+
+## Échecs intermédiaires conservés
+
+- Premier test de la nouvelle recette : sélection ambiguë d’un nom Contact, pointant une option cachée. Le test cible maintenant la fiche identifiée, sans clic forcé ou délai augmenté.
+- Un passage intermédiaire complet a reçu la navigation multiformat/langue avant le dernier repli des réglages. Il n’est pas substitué à la campagne sur la source finale, qui a été rejouée avec succès.
+- Une exécution du lanceur de continuité a été interrompue par une commande parasite lors de sa modification locale. Les résultats partiels ne sont pas comptés. Le lanceur est ensuite figé et relancé sur une nouvelle base jetable ; la trace initiale est conservée.
+
+## Qualification du premier run CI
+
+Run 40556240352, SHA 11dcbad6203ede84a61d5ef84297122a6c167838 : FAIL terminé, annotations conservées dans evidence/ci-first-failure.json. Les deux échecs sont reproduits localement, sans augmenter les timeouts.
+
+- Commercial : le brouillon durable est replié après rechargement et nouvelle session authentifiée. La recette ouvre le panneau avant les mêmes assertions de contenu ; version/CAS/refus d’envoi restent contrôlés.
+- P1 : le message de nouveau fil était caché avec les commandes. Le composant le place désormais hors du panneau. La recette attend le contexte chargé, confirme que le panneau est replié, puis exige le message visible ; identité, historique, idempotence et refus NATIVE_NEW_SESSION_REQUIRED restent contrôlés.
+- Le premier passage ciblé a également révélé la seconde lecture repliée après réauthentification et une assertion d’état avant fin d’hydratation. Ces adaptations de tests sont tracées dans ci-pair-intermediate.txt ; aucune assertion métier n’est retirée.
+
+La nouvelle compilation et le lint ciblé sont conservés. Le résultat du dernier passage ciblé est consigné dans ci-pair-accepted.txt ; le run CI final sera lié dans la PR après achèvement, sans présenter le premier comme réussi.
+
+## Protections et réserves
+
+`git diff bc1fda9 -- src/app/api src/lib db/migrations package.json package-lock.json public` est vide. Aucun historique, autorité, contrat, transport, secret ou donnée distante modifié. Les nouvelles interactions testées n’autorisent pas de mutation implicitement : les contrôles natifs existants restent décisionnaires.
+
+Exclusion Vercel de la branche ajoutée dans `git.deploymentEnabled`, avec réutilisation des protections historiques. Les workflows manuels de déploiement ne sont pas lancés. Les résultats CI terminés et les déploiements observables GitHub du SHA publié seront consignés dans la PR. Aucune absence d’accès Vercel n’est présentée comme une absence de protection.
+
+Les anciennes réserves dépendances, lint global et HTTP 503 restent documentées ; aucune nouvelle campagne générale n’a été lancée. Les pages visitées doivent répondre 200 dans cette recette ; les 401/403/409/503 natifs attendus restent des refus explicites, pas de faux succès.
+
+
+## PR #218 — attente obsolète de recherche Cockpit
+
+Départ : a4835738112f8781871f17b19464d4843158e0dc. Échec du run [40559819307](https://github.com/gildaspro5613-code/clara-os/actions/runs/40559819307) transmis par le propriétaire, puis reproduit localement à la même assertion (native fixture et build optimisé existants).
+
+Cause démontrée : Header.tsx remplace volontairement le champ global désactivé par le lien « Rechercher dans les documents » vers /documents#document-search. Le bouton Notifications désactivé a également été remplacé par « Consulter le Journal ». Le test conservait trois attentes de l’ancien champ et une de l’ancien bouton. Aucun défaut applicatif n’est démontré ; aucun contrôle inactif n’est réintroduit.
+
+Seul cockpit-availability-browser.e2e.mjs est adapté : présence/destination des liens, absence des anciens contrôles inactifs, clic vers Documents, soumission réelle d’une recherche et refus 409 NATIVE_GOOGLE_EXPLICIT_SELECTION_REQUIRED, puis accès au Journal et à la mission persistée. Les assertions existantes de refus vocal, navigation, identité de session, perte d’acquittement, rejeu unique et lecture seule du fil historique sont conservées.
+
+- Avant : 1 échec reproduit, attente 30 s du textbox absent — evidence/cockpit-header-before.txt.
+- Après : 1 PASS, 0 FAIL, 0 SKIP (30,4 s) — evidence/cockpit-header-accepted.txt.
+- Syntaxe Node et ESLint ciblé : PASS — evidence/cockpit-header-lint.txt.
+- Aucun changement de composants, routes, stores, contrats, marques ou dépendances depuis a483573. Le build déjà reçu reste applicable (arbre applicatif identique vérifié par Git) ; aucune nouvelle compilation/campagne générale locale nécessaire pour ce changement de test uniquement.
+
+La publication du test correspond aux chemins déclenchant le workflow Native resource authority validation existant. Son résultat final doit être lu sur le nouveau SHA : cette instance refuse actuellement api.github.com dans sa politique réseau, malgré l’accès Git fonctionnel. Aucun nouveau résultat CI distant n’est déduit du PASS local ; aucun réglage réseau, OAuth, fournisseur ou Vercel n’est modifié.

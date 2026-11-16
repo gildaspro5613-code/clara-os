@@ -10,17 +10,19 @@ import { createEventJobStore, publicJob, EventJobConflict } from '@/lib/external
 import { createDocumentOperationStore, operationScopeKey } from '@/lib/external-capabilities/document-operations';
 import { authenticateExternalProduct } from '@/lib/external-capabilities/config';
 import { runEventJob, reconcilePendingDocuments } from '@/lib/external-capabilities/event-job-worker';
+import { production276Reception } from './production-276-reception';
 
 async function main() {
   const pg = isolatedPostgres(process.env.DOCUMENT_OPERATION_TEST_CONTAINER);
   await pg.runSql('SELECT 1 FROM clara_external_event_jobs LIMIT 1');
   const store = createEventJobStore(pg.query as unknown as Parameters<typeof createEventJobStore>[0]);
   let duration = 0; let providerFail = false; let automatic = true; let executions = 0;
-  const route = routeHarness(false, createDocumentOperationStore(pg.query), false, undefined, async () => {
+  const reception=process.env.ISSUE_276_RECEPTION==='1'?production276Reception():undefined;
+  const route = routeHarness(false, createDocumentOperationStore(pg.query), false, undefined, async (...args) => {
     executions++; await new Promise(resolve => setTimeout(resolve, duration));
     if (providerFail) throw new Error('synthetic-confidential-provider-error');
-    return 'Independent business work completed with existing facts.';
-  });
+    return reception?reception.compose(...args):'Independent business work completed with existing facts.';
+  },reception?.sourceFactory);
   const worker = (id: string | null = null) => runEventJob(id, store, route.execute, () => route.products);
   const pending = new Set<Promise<unknown>>();
   const modules: Record<string, unknown> = {
@@ -60,11 +62,12 @@ async function main() {
       if (incoming.url === '/test/config') {
         const config = JSON.parse(text); duration = Math.min(60_000, Math.max(0, config.duration ?? 0));
         providerFail = !!config.fail; automatic = config.automatic !== false;
+        if(reception)reception.state.mode=['completed','truncated','invalid','foreign'].includes(config.mode)?config.mode:'completed';
         outgoing.end('{}'); return;
       }
       if (incoming.url === '/test/metrics') {
         outgoing.setHeader('Content-Type', 'application/json');
-        outgoing.end(JSON.stringify({ executions, logs: route.logs, documentAnalyses: route.metrics.documentAnalyses })); return;
+        outgoing.end(JSON.stringify({ executions, logs: route.logs, documentAnalyses: route.metrics.documentAnalyses, ...(reception?{simulatedProvider:reception.state}: {}) })); return;
       }
       const handler = handlers.get(incoming.url ?? '');
       if (!handler) { outgoing.writeHead(404); outgoing.end(); return; }

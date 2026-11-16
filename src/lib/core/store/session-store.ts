@@ -1,3 +1,5 @@
+import {nativeContext,writableNativeContext} from "@/lib/native/scoped-context";
+import {RegistryError} from "@/lib/canonical/registry";
 /**
  * Clara durable session store.
  *
@@ -29,6 +31,9 @@ export async function saveSession(
   session: ClaraSession,
   sessionKey: string = DEFAULT_SESSION_KEY,
 ): Promise<void> {
+  const native=nativeContext();
+  if(native){if(sessionKey!==native.scope.sessionId)throw new RegistryError(403,"NATIVE_SCOPE_DENIED");writableNativeContext().session=session;return;}
+  if(sessionKey.startsWith("native:"))throw new RegistryError(403,"NATIVE_SCOPE_REQUIRED");
   const key = normalizeKey(sessionKey);
   await sql`
     INSERT INTO clara_sessions (id, data, updated_at)
@@ -44,10 +49,12 @@ export async function saveSession(
  * instead of recomputing focus from the global mission priority queue.
  */
 export async function loadMostRecentMissionSession(excludeExternal = false): Promise<StoredClaraSession | null> {
+  const native=nativeContext();
+  if(native)return {key:native.scope.sessionId,session:native.session};
   const rows = await sql`
     SELECT id, data
     FROM clara_sessions
-    WHERE data->'mission'->>'id' IS NOT NULL
+    WHERE id NOT LIKE 'native:%' AND data->'mission'->>'id' IS NOT NULL
       AND (${excludeExternal} = false OR id NOT LIKE 'external:%')
     ORDER BY updated_at DESC
     LIMIT 1
@@ -69,6 +76,9 @@ export async function loadMostRecentMissionSession(excludeExternal = false): Pro
 export async function loadSession(
   sessionKey: string = DEFAULT_SESSION_KEY,
 ): Promise<ClaraSession> {
+  const native=nativeContext();
+  if(native){if(sessionKey!==native.scope.sessionId)throw new RegistryError(403,"NATIVE_SCOPE_DENIED");return native.session;}
+  if(sessionKey.startsWith("native:"))throw new RegistryError(403,"NATIVE_SCOPE_REQUIRED");
   const key = normalizeKey(sessionKey);
   const rows = await sql`
     SELECT data FROM clara_sessions WHERE id = ${key} LIMIT 1
@@ -91,13 +101,16 @@ export async function loadSession(
 export async function loadSessionOwningMission(
   missionId: string,
 ): Promise<StoredClaraSession | null> {
+  const native=nativeContext();
+  if(native)return native.session.mission?.id===missionId?{key:native.scope.sessionId,session:native.session}:null;
+  if(missionId.startsWith("native:"))throw new RegistryError(403,"NATIVE_SCOPE_REQUIRED");
   const id = missionId.trim();
   if (!id) return null;
 
   const rows = await sql`
     SELECT id, data
     FROM clara_sessions
-    WHERE data->'mission'->>'id' = ${id}
+    WHERE id NOT LIKE 'native:%' AND data->'mission'->>'id' = ${id}
     ORDER BY (id = ${DEFAULT_SESSION_KEY}) ASC, updated_at DESC
     LIMIT 1
   ` as Array<{ id: string; data: ClaraSession }>;

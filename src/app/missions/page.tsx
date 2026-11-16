@@ -1,11 +1,14 @@
+import { nativePage } from "@/lib/native/page-fence";
 export const dynamic = "force-dynamic";
 
 import MainLayout from "@/components/layout/MainLayout";
 import MissionsStage from "@/modules/missions/MissionsStage";
 import { loadMissions } from "@/modules/missions/mission-store";
-import { orchestrateMissions } from "@/modules/missions/mission-orchestrator";
+import { resolveOperationalContext } from "@/lib/core/operational-context";
 
 export default async function MissionsPage() {
+  return nativePage(async()=>{
+
   let missions: Awaited<ReturnType<typeof loadMissions>> = [];
 
   try {
@@ -18,34 +21,15 @@ export default async function MissionsPage() {
     console.warn("[missions] persistent store unavailable; rendering empty state");
   }
 
-  const currentMissionId = orchestrateMissions(missions).current?.id ?? null;
+  const currentMissionId = (await resolveOperationalContext()).session.mission?.id ?? null;
 
-  // Compatibility repair for missions persisted before conversational/manual
-  // steps were distinguished from blocked execution steps. Only the mission
-  // currently owned by Clara's durable session is reclassified for display;
-  // historical missions remain untouched until explicitly resumed/archived.
-  if (currentMissionId) {
-    missions = missions.map((mission) => {
-      if (mission.id !== currentMissionId || mission.status !== "blocked") {
-        return mission;
-      }
-
-      const nextPendingTask = mission.tasks.find((task) => !task.completed);
-
-      if (!nextPendingTask || nextPendingTask.execution) {
-        return mission;
-      }
-
-      return {
-        ...mission,
-        status: "active",
-      };
-    });
-  }
+  // Show the persisted business status on every surface. A missing execution
+  // descriptor is not evidence that a blocked mission has become active.
 
   return (
     <MainLayout>
       <MissionsStage initialMissions={missions} currentMissionId={currentMissionId} />
     </MainLayout>
   );
+  });
 }
