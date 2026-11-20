@@ -40,6 +40,7 @@ jobs:
       - name: Native Calendar and preserved Drive READ — network denied
         run: >-
           node --import ./src/tests/helpers/make-calendar-offline.mjs --import tsx --test
+          src/tests/make-native-calendar-activation-blocked.test.ts
           src/tests/make-native-calendar-contract.test.ts
           src/tests/make-native-calendar-read.test.ts
           src/tests/make-native-calendar-selection.test.ts
