@@ -12,7 +12,12 @@
   ],
   "git": {
     "deploymentEnabled": {
-      "fix/voice-text-continuity-20261115": false,
+      "fix/make-drive-parent-continuity-20261116": false,
+      "fix/make-calendar-read-v3": false,
+      "fix/make-drive-query-boundary": false,
+      "fix/make-drive-native-failure-diagnostics-20261115": false,
+      "fix/make-drive-folder-lookup-20261115": false,
+      "fix/make-onboarding-http-diagnostic-20261115": false,
       "fix/builder-make-api-onboarding-20261114": false,
       "fix/connector-builder-native-gateway-20261114": false,
       "fix/production-context-276": false,
@@ -54,7 +59,8 @@
       "fix/live-production-output-budget-20261109": false,
       "fix/live-production-compact-composition-20261109": false,
       "fix/production-context-v1": false,
-      "fix/live-production-context-budget-20261109": false
+      "fix/live-production-context-budget-20261109": false,
+      "fix/voice-text-continuity-20261115": false
     }
   }
 }

@@ -1,0 +1,30 @@
+{
+  "reconstruction": "previous temporary files and trees absent; four narrowly scoped connections reconstructed from reviewed PR sources and validated conclusions",
+  "base": "8fbb0ca16995fcdcb49cdfc8a8f86669ae67ddba",
+  "pr": 281,
+  "branch": "fix/voice-text-continuity-20261115",
+  "tests": {
+    "passed": 35,
+    "failed": 0,
+    "skipped": 0,
+    "new_recovery_tests": 10
+  },
+  "typescript": "PASS",
+  "full_build": "not repeated; only hook changed; previous full build and current typecheck distinguished",
+  "supplier": "SIMULATED",
+  "supplier_calls": 0,
+  "brain_unchanged": true,
+  "make_pr_289_unchanged": true,
+  "preview_deployment_enabled": false,
+  "publication_authorized": true,
+  "merge_authorized": false,
+  "deploy_authorized": false,
+  "commands": [
+    "node --import tsx src/tests/runtime-voice-recovery.test.ts",
+    "node --import tsx src/tests/native-voice.test.ts",
+    "node --import tsx src/tests/product-voice.test.ts",
+    "node --import tsx src/tests/voice-route-security.test.ts",
+    "node --import tsx src/tests/clara-page-voice.test.ts",
+    "node node_modules/typescript/bin/tsc --noEmit --incremental false"
+  ]
+}

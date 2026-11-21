@@ -1,0 +1,10 @@
+✔ voice authorization uses existing server-owned workspace and operator permissions, rejects foreign origin before auth (88.773138ms)
+✔ four provider routes deny unauthenticated requests before any provider and localize secret-free failures in five languages (156.237539ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 249.836379

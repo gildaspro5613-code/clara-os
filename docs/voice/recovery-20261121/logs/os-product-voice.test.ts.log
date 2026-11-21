@@ -1,0 +1,14 @@
+✔ product voice is denied without product, explicit voice grant, callback, credential or provider configuration; readiness never calls a provider (683.398734ms)
+✔ bounded audio requires the issued content hash and a current consumed Live proof before shared STT; completion is acknowledged and rechecked (48.010006ms)
+✔ foreign workspace, wrong operation, permissions, invalid expiry, content alteration and arbitrary synthesis text refuse without provider IO (288.101345ms)
+✔ only exact persisted assistant narrative may be synthesized; no text supplied by the browser and no private provider diagnostics (61.160541ms)
+✔ malformed Live proof and unconfirmed completion never release audio; cleanup is attempted even when consume response was lost (25.749676ms)
+✔ revocation during provider work aborts its signal and releases neither partial nor complete audio, without retry (512.817307ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1626.202225

@@ -62,7 +62,7 @@ test('native readiness stays closed without provider configuration or in protect
  config.apiKey='synthetic';recette=true;assert.equal((await handlers(request())).status,503);
 });
 
-test('voice recovery adopts the existing native pending receipt on 202 without recording or repeating a supplier call',async()=>{
+test('voice recovery rejects a different native pending receipt without recording or repeating a supplier call',async()=>{
  const scope={workspaceId:'w',clientId:'c',projectId:'p',sessionId:'native:fixture'};
  const key='clara.pending-chat:'+scope.sessionId,storage=new Map([[key,JSON.stringify({operationId:'original-retry-001',sessionId:scope.sessionId,message:'Original retry'})]]);
  const pending={operationId:'server-pending-001',sessionId:scope.sessionId,message:'Actual pending request'};let stateIndex=0;const calls:string[]=[];
@@ -76,7 +76,7 @@ test('voice recovery adopts the existing native pending receipt on 202 without r
   fetch:async(path:string)=>{calls.push(path.split('?')[0]);if(path.startsWith('/api/voice/transcribe'))return Response.json({success:true});if(path.startsWith('/api/clara/chat'))return Response.json({pendingRequest:pending},{status:202});throw Error('No provider call during pending recovery');}
  });
  const hook=voiceModule.useClaraRuntimeVoice as(disabled:boolean,scope:unknown)=>{toggle:()=>Promise<void>};
- await hook(false,scope).toggle();assert.deepEqual(JSON.parse(storage.get(key)!),pending);
+ await hook(false,scope).toggle();assert.deepEqual(JSON.parse(storage.get(key)!),{operationId:'original-retry-001',sessionId:scope.sessionId,message:'Original retry'});
  assert.deepEqual(calls,['/api/voice/transcribe','/api/voice/transcribe','/api/clara/chat']);
 });
 

@@ -79,16 +79,28 @@ export function useClaraRuntimeVoice(disabled:boolean,scope?:NativeSelectors){
   };
   const fail=(error?:unknown)=>{if(r.epoch===epoch){const info=describeFailure(error,phase);stop();setFailure(info);setState('error');}};
   const deadline=()=>{if(r.deadline)clearTimeout(r.deadline);r.deadline=setTimeout(()=>fail(new VoiceFailure({stage:phase,kind:'timeout'})),120_000);};
+  const pause=(ms:number)=>new Promise<void>((resolve,reject)=>{
+   const cancel=()=>{clearTimeout(timer);reject(Error('VOICE_INTERRUPTED'));};
+   const timer=setTimeout(()=>{abort.signal.removeEventListener('abort',cancel);resolve();},ms);
+   if(abort.signal.aborted)cancel();else abort.signal.addEventListener('abort',cancel,{once:true});
+  });
   async function playAndCommit(operation:{operationId:string;message:string;sessionId?:string}){
-   await check();phase='conversation';setState('processing');
-   const response=await fetch('/api/clara/chat'+query,{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify(operation),signal:abort.signal});
-   const chat=await response.json();alive();
-   if(response.status===202){
+   phase='conversation';setState('processing');
+   // Replay the same atomically reserved native request, never a new generation.
+   let response:Response;let chat;
+   for(let attempt=0;;attempt++){
+    await check();
+    response=await fetch('/api/clara/chat'+query,{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify(operation),signal:abort.signal});
+    chat=await response.json();alive();
+    if(response.status!==202)break;
     const pending=chat.pendingRequest??operation;
-    if(key&&pending.sessionId===scope?.sessionId&&typeof pending.operationId==='string'&&typeof pending.message==='string')sessionStorage.setItem(key,JSON.stringify(pending));
-    throw Error('VOICE_CHAT_PENDING');
+    if(!scope || pending.sessionId!==scope.sessionId || pending.operationId!==operation.operationId || pending.message!==operation.message)throw Error('VOICE_PENDING_INVALID');
+    if(key)sessionStorage.setItem(key,JSON.stringify(operation));
+    if(attempt>=8)throw Error('VOICE_CHAT_PENDING');
+    await pause(Math.min(1000*2**attempt,10000));
    }
-   if(!response.ok||!chat.success)throw responseFailure('conversation',response,chat);
+   if(scope && response.headers.get('X-Clara-Operation-Completed')!=='1' && response.headers.get('X-Clara-Operation-Replayed')!=='1')throw Error('VOICE_CHAT_PENDING');
+   if(!response.ok||!chat.success){if(key)sessionStorage.removeItem(key);throw responseFailure('conversation',response,chat);}
    await check();
    let conversation:ClaraConversationMessage[]=chat.conversation;
    if(scope){
@@ -96,11 +108,11 @@ export function useClaraRuntimeVoice(disabled:boolean,scope?:NativeSelectors){
     const history=await response.json();if(!response.ok||!history.success)throw responseFailure('history',response,history);conversation=history.messages;
    }
    alive();if(!Array.isArray(conversation))throw Error('VOICE_HISTORY_UNAVAILABLE');
-   if(key)sessionStorage.removeItem(key);
-   window.dispatchEvent(new CustomEvent('clara:conversation-updated',{detail:{conversation,sessionId:scope?.sessionId}}));
    const receiptReply=(chat.conversation as ClaraConversationMessage[]|undefined)?.filter(m=>m.role==='clara').at(-1);
    const last=scope?conversation.find(m=>m.id===receiptReply?.id&&m.role==='clara'):receiptReply;
    if(!last)throw Error('VOICE_REPLY_REQUIRED'); // Never speak a later concurrent text reply instead.
+   if(key)sessionStorage.removeItem(key);
+   window.dispatchEvent(new CustomEvent('clara:conversation-updated',{detail:{conversation,sessionId:scope?.sessionId}}));
    await check();
    phase='synthesis';const audioResponse=await fetch('/api/voice/speak'+query,{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify(scope?{messageId:last.id}:{text:chat.message}),signal:abort.signal});
    if(!audioResponse.ok){const data=await audioResponse.json().catch(()=>({}));throw responseFailure('synthesis',audioResponse,data);}

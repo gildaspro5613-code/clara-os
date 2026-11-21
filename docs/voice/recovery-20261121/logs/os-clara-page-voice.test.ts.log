@@ -1,0 +1,13 @@
+✔ Clara page mounts existing native voice beside text using the same certified conversation (108.819634ms)
+✔ uncertified native conversation keeps voice disabled without falling back to the legacy provider (30.086573ms)
+✔ changing the selected conversation keys both interfaces to the new native session (13.848623ms)
+✔ page authority refuses before loading a conversation or exposing an audio control (11.43415ms)
+✔ non-native page keeps its existing provider component and never invents native scope (17.004848ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 206.997354

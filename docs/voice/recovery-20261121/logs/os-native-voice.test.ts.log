@@ -1,0 +1,20 @@
+✔ native voice requires current operator, writable project and certified thread; rejects revoked checks and aborted requests (194.418627ms)
+✔ native synthesis only accepts a Clara message read from the exact authorized history; no browser text or foreign message (71.615217ms)
+✔ native readiness stays closed without provider configuration or in protected Recette, without a provider call (29.649594ms)
+✔ voice recovery rejects a different native pending receipt without recording or repeating a supplier call (177.480046ms)
+✔ voice startup: a pre-start readiness response cannot undo a newer authority refusal (122.293192ms)
+✔ voice startup: unchanged active timeout fails closed but is not an access refusal (83.609879ms)
+✔ voice startup: a real HTTP denial retains its public status/code and stops before microphone (118.965743ms)
+✔ voice startup: browser microphone rejection is distinct from authority and contains no private error text (139.038102ms)
+✔ voice startup: initial readiness keeps its 10 s bound and never opens the microphone (53.953796ms)
+✔ voice startup: explicit stop wins over a late active denial without restarting or replacing the failure (58.584899ms)
+✔ voice startup: HTTP denial survives a malformed body; certification conflict is not called an ACL refusal (103.644203ms)
+✔ voice startup: periodic and foreground checks share one pending authority read without changing the 3 s bound (117.345248ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1297.082082
