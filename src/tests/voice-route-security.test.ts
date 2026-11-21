@@ -45,6 +45,7 @@ test('four provider routes deny unauthenticated requests before any provider and
   '@/lib/connectors/internal/telephony':{TELEPHONY_MODULE:{engine:{execute:async()=>{calls++;return {success:false,error:'PRIVATE_PROVIDER_SECRET'};}}}}
  };
  const routes=[['src/app/api/telephony/route.ts','POST'],['src/app/api/elevenlabs/session/route.ts','GET'],['src/app/api/voice/speak/route.ts','POST'],['src/app/api/voice/transcribe/route.ts','POST']] as const;
+ modules['@/lib/voice/transcription']=load('src/lib/voice/transcription.ts',modules,providerFetch);
  const handlers=routes.map(([file,method])=>load(file,modules,providerFetch)[method] as(request:Request)=>Promise<Response>);
  function request(index:number){if(index===1)return new Request('https://fixture.invalid/api/elevenlabs/session');if(index===3){const form=new FormData();form.append('audio',new File(['synthetic audio'],'sample.webm'));return new Request('https://fixture.invalid/api/voice/transcribe',{method:'POST',body:form});}return new Request('https://fixture.invalid/api/voice',{method:'POST',body:JSON.stringify({text:'Synthetic text',toNumber:'+33000000000'})});}
  for(let i=0;i<handlers.length;i++)assert.equal((await handlers[i](request(i))).status,403);assert.equal(calls,0);

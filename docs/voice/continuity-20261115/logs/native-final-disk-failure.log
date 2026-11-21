@@ -1,0 +1,13 @@
+▲ Next.js 16.4.3 (Turbopack)
+- Local:         http://127.0.0.1:3358
+- Network:       http://127.0.0.1:3358
+✓ Ready in 503ms
+✓ Running next.config.ts took 94ms
+Error: ENOSPC: no space left on device, mkdir '/workspace/os-voice-20261115/.next/dev'
+    at ignore-listed frames {
+  errno: -28,
+  code: 'ENOSPC',
+  syscall: 'mkdir',
+  path: '/workspace/os-voice-20261115/.next/dev'
+}
+[?25h

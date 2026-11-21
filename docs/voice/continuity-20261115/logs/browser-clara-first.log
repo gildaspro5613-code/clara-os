@@ -1,0 +1,30 @@
+✖ Hero native voice: actual microphone recorder, STT/chat/history/TTS, replay and SQL revocation stop recording/provider/audio (36848.691986ms)
+✖ startup checks: actual delayed SQL reads share one request; timeout, browser rejection and revocation fail closed (33108.438988ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 70780.150619
+
+✖ failing tests:
+
+test at src/tests/native-voice-browser.e2e.mjs:21:1
+✖ Hero native voice: actual microphone recorder, STT/chat/history/TTS, replay and SQL revocation stop recording/provider/audio (36848.691986ms)
+  page.waitForFunction: Timeout 30000ms exceeded.
+      at ready (/workspace/os-voice-20261115/src/tests/native-voice-browser.e2e.mjs:49:87)
+      at async TestContext.<anonymous> (/workspace/os-voice-20261115/src/tests/native-voice-browser.e2e.mjs:54:3) {
+    name: 'TimeoutError',
+    log: []
+  }
+
+test at src/tests/native-voice-browser.e2e.mjs:128:1
+✖ startup checks: actual delayed SQL reads share one request; timeout, browser rejection and revocation fail closed (33108.438988ms)
+  page.waitForFunction: Timeout 30000ms exceeded.
+      at ready (/workspace/os-voice-20261115/src/tests/native-voice-browser.e2e.mjs:136:149)
+      at TestContext.<anonymous> (/workspace/os-voice-20261115/src/tests/native-voice-browser.e2e.mjs:136:273) {
+    name: 'TimeoutError',
+    log: []
+  }

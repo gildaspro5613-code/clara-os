@@ -1,0 +1,63 @@
+{
+  "checked_at_utc": "2026-11-15T07:11:38.883Z",
+  "project": {
+    "id": "prj_jLIZqU5V98I4yl8RCbAaoqgM4KNJ",
+    "name": "clara-os"
+  },
+  "production_before": {
+    "id": "dpl_FqVzsmq3Xie86KJc8Ww2Zg99ZD5U",
+    "state": "READY",
+    "target": "production",
+    "commit": "9ea289efd039ba396fb146dfbd257efeec733a6a",
+    "branch": "delivery/clara-os-v1-20261025"
+  },
+  "repository_project_count": 1,
+  "branch": "fix/voice-text-continuity-20261115",
+  "deployment_disabled_in": "vercel.json",
+  "provider_environment_presence": [
+    {
+      "key": "ELEVENLABS_VOICE_ID",
+      "targets": [
+        "production"
+      ],
+      "gitBranch": null,
+      "type": "sensitive"
+    },
+    {
+      "key": "ELEVENLABS_API_KEY",
+      "targets": [
+        "production"
+      ],
+      "gitBranch": null,
+      "type": "sensitive"
+    },
+    {
+      "key": "ELEVENLABS_AGENT_PHONE_NUMBER_ID",
+      "targets": [
+        "preview"
+      ],
+      "gitBranch": "sprint-10-cockpit",
+      "type": "sensitive"
+    },
+    {
+      "key": "ELEVENLABS_AGENT_ID",
+      "targets": [
+        "preview"
+      ],
+      "gitBranch": "sprint-10-cockpit",
+      "type": "sensitive"
+    },
+    {
+      "key": "ELEVENLABS_API_KEY",
+      "targets": [
+        "preview"
+      ],
+      "gitBranch": "sprint-10-cockpit",
+      "type": "sensitive"
+    }
+  ],
+  "secrets_decrypted": false,
+  "provider_requests_made": false,
+  "production_configuration_changed": false,
+  "publish_skip_ci": true
+}

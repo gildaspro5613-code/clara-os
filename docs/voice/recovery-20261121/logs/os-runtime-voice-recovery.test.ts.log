@@ -1,0 +1,18 @@
+✔ 202 replay retains exact operation/session/text and speaks only the verified saved reply (283.795581ms)
+✔ native completion replay does not allocate a fresh cognitive operation (71.399295ms)
+✔ pending recovery is bounded and retains the receipt without synthesis (34.873678ms)
+✔ uncertain network completion has no blind replay and retains the original receipt (71.866189ms)
+✔ 200 without native finalization cannot authorize TTS or discard its receipt (33.985369ms)
+✔ a pending receipt with different identity, session or transcript is refused (158.333419ms)
+✔ history outage and unrelated later reply cannot substitute the response (103.553847ms)
+✔ finalized failure closes the receipt without speaking (32.885356ms)
+✔ button interruption stops recovery and keeps its native receipt (70.74826ms)
+✔ revocation between pending reads blocks both replay and synthesis (19.790442ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 891.681037

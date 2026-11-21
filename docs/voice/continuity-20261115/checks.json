@@ -1,0 +1,53 @@
+{
+  "date_utc": "2026-11-15T09:31:01.304031+00:00",
+  "base_sha": "9ea289efd039ba396fb146dfbd257efeec733a6a",
+  "branch": "fix/voice-text-continuity-20261115",
+  "os_unit_proxy": {
+    "pass": 43,
+    "fail": 0,
+    "skip": 0,
+    "log": "logs/final-voice-tests.log"
+  },
+  "os_native_browser": {
+    "pass": 2,
+    "fail": 0,
+    "log": "logs/browser-clara.log",
+    "storage": "Actual isolated PostgreSQL, Next dev Turbopack, HTTPS and Chromium",
+    "suppliers": "SIMULATED",
+    "real_microphone": false
+  },
+  "product_next_routes": {
+    "401_expected": 3,
+    "log": "logs/product-next-route-refusals.json"
+  },
+  "typecheck_exit_code": 0,
+  "typecheck_heap_mib": 2048,
+  "eslint_exit_code": 0,
+  "yaml_shell_exit_code": 0,
+  "git_diff_check_exit_code": 0,
+  "standard_next_production_build": "NOT VALIDATED; blocked Google Fonts, no fake downloads",
+  "live_backend": {
+    "pass": 59,
+    "fail": 0,
+    "storage": "Actual isolated MongoDB; suppliers simulated"
+  },
+  "live_frontend": {
+    "pass": 86,
+    "fail": 0
+  },
+  "live_browser": "Separate compiled Live and real OS audio handlers / HTTPS / Mongo; see Live PR report",
+  "real_supplier_requests": 0,
+  "physical_device_tested": false,
+  "remote_configuration_changed": false,
+  "github_actions_triggered": false,
+  "deployment_authorized": false,
+  "protected_paths_unchanged": [
+    "db/migrations",
+    "src/lib/brain",
+    "src/lib/core",
+    "src/lib/canonical",
+    "src/lib/auth",
+    "src/lib/external-capabilities",
+    "src/lib/connectors"
+  ]
+}

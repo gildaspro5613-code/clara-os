@@ -1,0 +1,13 @@
+CLARA_PAGE_CONTINUITY: typed and spoken turns share one SQL history; reload preserved all messages; no autonomous speech on typing.
+✔ Hero native voice: actual microphone recorder, STT/chat/history/TTS, replay and SQL revocation stop recording/provider/audio (138637.698818ms)
+STARTUP_SQL: actual delayed PostgreSQL; HTTP 200 / success true; max pending = 1
+STARTUP_TIMEOUT: browser TimeoutError at unchanged bound; same SQL authority still valid; no additional microphone
+✔ startup checks: actual delayed SQL reads share one request; timeout, browser rejection and revocation fail closed (13493.043379ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 152847.321961

@@ -1,0 +1,47 @@
+{
+  "scope": "Compiled Next development app, real local PostgreSQL/HTTPS/Chromium; simulated providers and microphone, no Production access",
+  "database": "native_browser_b072ab67e6d04277bb6670dce1427da7",
+  "started_utc": "2026-11-15T07:27:29.328216+00:00",
+  "browser_executed": true,
+  "warmup": [
+    {
+      "path": "/clara",
+      "status": 200,
+      "seconds": 12.34,
+      "bytes": 100718
+    },
+    {
+      "path": "/api/native/runtime",
+      "status": 401,
+      "seconds": 4.58,
+      "bytes": 60
+    },
+    {
+      "path": "/api/voice/transcribe",
+      "status": 403,
+      "seconds": 0.59,
+      "bytes": 17
+    },
+    {
+      "path": "/api/voice/speak",
+      "status": 405,
+      "seconds": 0.55,
+      "bytes": 0
+    },
+    {
+      "path": "/api/clara/chat",
+      "status": 405,
+      "seconds": 2.01,
+      "bytes": 0
+    },
+    {
+      "path": "/api/clara/conversation",
+      "status": 401,
+      "seconds": 0.52,
+      "bytes": 60
+    }
+  ],
+  "browser_exit_code": 1,
+  "ended_utc": "2026-11-15T07:29:10.165485+00:00",
+  "owned_processes_and_container_stopped": true
+}

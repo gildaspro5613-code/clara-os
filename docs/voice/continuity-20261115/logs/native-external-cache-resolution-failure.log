@@ -1,0 +1,34 @@
+▲ Next.js 16.4.3 (Turbopack)
+- Local:         http://127.0.0.1:3358
+- Network:       http://127.0.0.1:3358
+✓ Ready in 462ms
+✓ Running next.config.ts took 80ms
+[CLARA] instrumentation ready; business runtime is request-scoped
+
+✓ Generated AGENTS.md for AI agents. Set `agentRules: false` in next.config to disable.
+⨯ Error: Failed to load external module next/dist/build/adapter/setup-node-env.external.js: Error: Cannot find module 'next/dist/build/adapter/setup-node-env.external.js'
+Require stack:
+- /tmp/clara-os-voice-next-20261115/dev/server/chunks/[root-of-the-server]__1e08vgqcghr6z._.js
+- /tmp/clara-os-voice-next-20261115/dev/server/chunks/[turbopack]_runtime.js
+- /tmp/clara-os-voice-next-20261115/dev/server/instrumentation.js
+- /workspace/os-voice-20261115/node_modules/next/dist/server/lib/router-utils/instrumentation-globals.external.js
+- /workspace/os-voice-20261115/node_modules/next/dist/server/next-server.js
+- /workspace/os-voice-20261115/node_modules/next/dist/server/dev/next-dev-server.js
+- /workspace/os-voice-20261115/node_modules/next/dist/server/next.js
+- /workspace/os-voice-20261115/node_modules/next/dist/server/lib/start-server.js
+    at module evaluation (../../tmp/clara-os-voice-next-20261115/dev/server/chunks/[root-of-the-server]__1e08vgqcghr6z._.js:10:33)
+    at Object.<anonymous> (../../tmp/clara-os-voice-next-20261115/dev/server/middleware.js:4:3)
+⨯ Error: Failed to load external module react/jsx-runtime: Error: Cannot find module 'react/jsx-runtime'
+Require stack:
+- /tmp/clara-os-voice-next-20261115/dev/server/chunks/ssr/[externals]__1vp7etusa_gny._.js
+- /tmp/clara-os-voice-next-20261115/dev/server/chunks/ssr/[turbopack]_runtime.js
+- /tmp/clara-os-voice-next-20261115/dev/server/pages/_document.js
+- /workspace/os-voice-20261115/node_modules/next/dist/server/require.js
+- /workspace/os-voice-20261115/node_modules/next/dist/server/load-components.js
+- /workspace/os-voice-20261115/node_modules/next/dist/build/utils.js
+- /workspace/os-voice-20261115/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /workspace/os-voice-20261115/node_modules/next/dist/server/lib/router-server.js
+- /workspace/os-voice-20261115/node_modules/next/dist/server/lib/start-server.js
+    at module evaluation (../../tmp/clara-os-voice-next-20261115/dev/server/chunks/ssr/[externals]__1vp7etusa_gny._.js:28:33)
+    at Object.<anonymous> (../../tmp/clara-os-voice-next-20261115/dev/server/pages/_document.js:4:3)
+[?25h

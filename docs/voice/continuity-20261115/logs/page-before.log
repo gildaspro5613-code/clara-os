@@ -1,0 +1,70 @@
+✖ Clara page mounts existing native voice beside text using the same certified conversation (96.244139ms)
+✖ uncertified native conversation keeps voice disabled without falling back to the legacy provider (21.684126ms)
+✖ changing the selected conversation keys both interfaces to the new native session (16.123515ms)
+✔ page authority refuses before loading a conversation or exposing an audio control (24.739389ms)
+✔ non-native page keeps its existing provider component and never invents native scope (25.161114ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 2
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 902.763364
+
+✖ failing tests:
+
+test at src/tests/clara-page-voice.test.ts:2:3718
+✖ Clara page mounts existing native voice beside text using the same certified conversation (96.244139ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  0 !== 1
+
+      at TestContext.<anonymous> (/workspace/os-voice-20261115/src/tests/clara-page-voice.test.ts:39:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at src/tests/clara-page-voice.test.ts:2:4628
+✖ uncertified native conversation keeps voice disabled without falling back to the legacy provider (21.684126ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+
+  + undefined
+  - true
+
+      at TestContext.<anonymous> (/workspace/os-voice-20261115/src/tests/clara-page-voice.test.ts:48:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at src/tests/clara-page-voice.test.ts:2:5067
+✖ changing the selected conversation keys both interfaces to the new native session (16.123515ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+
+  + undefined
+  - 'session-b'
+
+      at TestContext.<anonymous> (/workspace/os-voice-20261115/src/tests/clara-page-voice.test.ts:54:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'session-b',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

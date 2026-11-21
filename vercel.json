@@ -59,7 +59,8 @@
       "fix/live-production-output-budget-20261109": false,
       "fix/live-production-compact-composition-20261109": false,
       "fix/production-context-v1": false,
-      "fix/live-production-context-budget-20261109": false
+      "fix/live-production-context-budget-20261109": false,
+      "fix/voice-text-continuity-20261115": false
     }
   }
 }

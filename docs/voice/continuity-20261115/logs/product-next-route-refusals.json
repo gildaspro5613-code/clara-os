@@ -1,0 +1,26 @@
+[
+  {
+    "path": "/api/core/voice/readiness",
+    "status": 401,
+    "body": {
+      "success": false,
+      "code": "VOICE_PRODUCT_REQUIRED"
+    }
+  },
+  {
+    "path": "/api/core/voice/transcribe",
+    "status": 401,
+    "body": {
+      "success": false,
+      "code": "VOICE_PRODUCT_REQUIRED"
+    }
+  },
+  {
+    "path": "/api/core/voice/speak",
+    "status": 401,
+    "body": {
+      "success": false,
+      "code": "VOICE_PRODUCT_REQUIRED"
+    }
+  }
+]

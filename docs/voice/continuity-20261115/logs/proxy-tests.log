@@ -1,0 +1,16 @@
+✔ isolated proxy: a pooled connection can reset, fresh forwarding preserves one request per socket (25.743785ms)
+ISOLATED_PROXY_UPSTREAM_ERROR ECONNRESET
+✔ isolated proxy: an upstream reset is explicit 503 and never causes a second handoff (3.969373ms)
+✔ isolated proxy: losing a response after headers cannot become a false complete receipt or retry (13.147802ms)
+✔ isolated proxy: browser cancellation closes the in-flight upstream without a retry (4.33124ms)
+ISOLATED_PROXY_UPSTREAM_ERROR ECONNRESET
+✔ isolated dev proxy forwards one Next HMR upgrade, opaque bytes and end-of-stream (5.807151ms)
+✔ isolated dev proxy rejects every non-HMR upgrade without reaching upstream (1.769356ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 144.245437
